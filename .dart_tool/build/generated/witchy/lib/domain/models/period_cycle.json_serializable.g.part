@@ -1,0 +1,19 @@
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$PeriodCycleImpl _$$PeriodCycleImplFromJson(Map<String, dynamic> json) =>
+    _$PeriodCycleImpl(
+      id: json['id'] as String,
+      startDate: DateTime.parse(json['startDate'] as String),
+      endDate: DateTime.parse(json['endDate'] as String),
+      isCompleted: json['isCompleted'] as bool? ?? false,
+    );
+
+Map<String, dynamic> _$$PeriodCycleImplToJson(_$PeriodCycleImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'startDate': instance.startDate.toIso8601String(),
+      'endDate': instance.endDate.toIso8601String(),
+      'isCompleted': instance.isCompleted,
+    };

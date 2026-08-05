@@ -1,0 +1,17 @@
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$PerimenopauseStateImpl _$$PerimenopauseStateImplFromJson(
+        Map<String, dynamic> json) =>
+    _$PerimenopauseStateImpl(
+      id: json['id'] as String,
+      isTracking: json['isTracking'] as bool? ?? false,
+    );
+
+Map<String, dynamic> _$$PerimenopauseStateImplToJson(
+        _$PerimenopauseStateImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'isTracking': instance.isTracking,
+    };

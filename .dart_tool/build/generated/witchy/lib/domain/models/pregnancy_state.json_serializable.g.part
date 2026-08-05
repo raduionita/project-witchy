@@ -1,0 +1,18 @@
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$PregnancyStateImpl _$$PregnancyStateImplFromJson(Map<String, dynamic> json) =>
+    _$PregnancyStateImpl(
+      id: json['id'] as String,
+      conceptionDate: DateTime.parse(json['conceptionDate'] as String),
+      isCurrent: json['isCurrent'] as bool? ?? false,
+    );
+
+Map<String, dynamic> _$$PregnancyStateImplToJson(
+        _$PregnancyStateImpl instance) =>
+    <String, dynamic>{
+      'id': instance.id,
+      'conceptionDate': instance.conceptionDate.toIso8601String(),
+      'isCurrent': instance.isCurrent,
+    };

@@ -21,7 +21,6 @@ Provide users with **private, accurate, and empowering reproductive health track
 **Dart** - Programming language for Flutter
 **Provider** - State management
 
-
 ---
 
 ## File Structure Conventions
@@ -47,5 +46,5 @@ import 'package:provider/provider.dart';
 import 'package:hive/hive.dart';
 
 // Relative imports
-import '../models/period\_cycle.dart';
-import '../services/period\_tracking\_service.dart';
+import '../models/period_cycle.dart';
+import '../services/period_tracking_service.dart';

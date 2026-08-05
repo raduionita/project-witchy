@@ -48,3 +48,10 @@ import 'package:hive/hive.dart';
 // Relative imports
 import '../models/period_cycle.dart';
 import '../services/period_tracking_service.dart';
+```
+
+---
+
+## Implementation
+
+- see IMPLEMENTATION.md

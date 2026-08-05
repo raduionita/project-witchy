@@ -1,0 +1,32 @@
+name: witchy
+description: "Witchy - Period Tracker & Cycle Calendar app"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.2
+  flutter: '>=3.16.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management (per AGENTS.md)
+  provider: ^6.1.5
+
+  # Local storage (shared_preferences, per user choice)
+  shared_preferences: ^2.3.5
+
+  # Date formatting (intl for date handling)
+  intl: ^0.19.0
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

@@ -17,33 +17,21 @@ lib/
 
 ---
 
-## Implementation
-
-### Phase 1: Initial Implementation
-- [x] `git init`
-- [x] `flutter create . --org com.qvonyx --project witchy`
-- [ ] ???
-
-### Phase 2: ???
-- [ ] ???
-
----
-
 ## Dependencies
 
 Required packages:
+- `provider` - State management
+- `shared_preferences` - Storage - reading and writing simple key-value pairs
 - `freezed` - For generating freezed models
 - `freezed_annotation` - For generating freezed models
-- `provider` - State management
 - `uuid` - Unique ID generation
-- `shared_preferences` - App preferences
 - `flutter_local_notifications` - Notifications
 - `flutter_launcher_icons` - App icon generation
 - `flutter_native_splash` - App splash screen
 - `intl` - Internationalization
-- `url_launcher` - URL launching
-- `json_serializable` - JSON serialization
-- `font_awesome_flutter` - Icons
+- `url_launcher` - Launching a URL. Supports web, phone, SMS, and email schemes
+- `json_serializable` - Auto-generate code for converting to and from JSON by annotating Dart classes
+- `font_awesome_flutter` - The Font Awesome Icon pack available as Flutter Icons
 - `device_info_plus` - Device information
 
 --- 
@@ -60,3 +48,15 @@ The app uses shared_preferences to store user data locally.
 flutter pub get
 flutter run
 ```
+
+---
+
+## Implementation status
+
+### Phase 1: Initial Implementation
+- [x] `git init`
+- [x] `flutter create . --org com.qvonyx --project witchy`
+- [ ] TODO
+
+### Phase 2: TODO
+- [ ] TODO

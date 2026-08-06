@@ -19,12 +19,14 @@ class MainShellScreen extends StatefulWidget {
 class _MainShellScreenState extends State<MainShellScreen> {
   int _index = 0;
 
-  static const List<Widget> _tabs = <Widget>[
-    HomeScreen(),
-    CalendarScreen(),
-    LoggingScreen(),
-    InsightsScreen(),
-    SettingsScreen(),
+  late final List<Widget> _tabs = <Widget>[
+    const HomeScreen(),
+    const CalendarScreen(),
+    LoggingScreen(
+      onOpenCalendar: () => setState(() => _index = 1),
+    ),
+    const InsightsScreen(),
+    const SettingsScreen(),
   ];
 
   @override

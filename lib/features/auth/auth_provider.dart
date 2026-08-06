@@ -64,10 +64,13 @@ class AuthProvider extends ChangeNotifier {
     if (_busy) return;
     _busy = true;
     notifyListeners();
-    await _service.signOut();
-    _session = null;
-    _errorMessage = null;
-    _busy = false;
-    notifyListeners();
+    try {
+      await _service.signOut();
+    } finally {
+      _session = null;
+      _errorMessage = null;
+      _busy = false;
+      notifyListeners();
+    }
   }
 }

@@ -13,6 +13,7 @@ import '../auth/auth_screen.dart';
 import '../auth/models/auth_session.dart';
 import '../couples/couples_screen.dart';
 import '../reminders/reminders_screen.dart';
+import 'theme_provider.dart';
 
 /// Settings hub.
 ///
@@ -35,6 +36,42 @@ class SettingsScreen extends StatelessWidget {
         SnackBar(content: Text('${trackingModeLabel(mode)} is now active.')),
       );
     }
+  }
+
+  void _comingSoon(BuildContext context, String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$feature is coming soon.')),
+    );
+  }
+
+  Widget _appearanceCard(BuildContext context) {
+    final ThemeProvider themeProvider = context.watch<ThemeProvider>();
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.palette_outlined),
+            title: const Text('Theme'),
+            subtitle: const Text('Choose how Witchy looks.'),
+          ),
+          for (final AppThemeOption option in AppThemeOption.values)
+            RadioListTile<AppThemeOption>(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.kMd,
+              ),
+              value: option,
+              groupValue: themeProvider.option,
+              title: Text(option.label),
+              onChanged: (AppThemeOption? value) {
+                if (value != null) {
+                  context.read<ThemeProvider>().setOption(value);
+                }
+              },
+            ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -96,29 +133,27 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.kMd),
-          const AppCard(
+          AppCard(
             child: Column(
               children: [
                 ListTile(
-                  leading: Icon(Icons.privacy_tip_outlined),
-                  title: Text('Privacy'),
-                  subtitle: Text('Your data stays on your device.'),
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: const Text('Privacy'),
+                  subtitle: const Text('Your data stays on your device.'),
+                  onTap: () => _comingSoon(context, 'Privacy'),
                 ),
-                Divider(height: 1),
+                const Divider(height: 1),
                 ListTile(
-                  leading: Icon(Icons.palette_outlined),
-                  title: Text('Appearance'),
-                  subtitle: Text('Theme and display options.'),
-                ),
-                Divider(height: 1),
-                ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('About'),
-                  subtitle: Text('Witchy version and legal info.'),
+                  leading: const Icon(Icons.info_outline),
+                  title: const Text('About'),
+                  subtitle: const Text('Witchy version and legal info.'),
+                  onTap: () => _comingSoon(context, 'About'),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: AppSpacing.kMd),
+          _appearanceCard(context),
           const SizedBox(height: AppSpacing.kMd),
           AppCard(
             child: ListTile(
@@ -164,68 +199,38 @@ class SettingsScreen extends StatelessWidget {
 
     if (session != null) {
       return AppCard(
-        child: Column(
-          children: [
-            ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                child: Text(
-                  session.displayName.isEmpty
-                      ? '?'
-                      : session.displayName.substring(0, 1).toUpperCase(),
-                ),
-              ),
-              title: Text(session.displayName),
-              subtitle: Text(
-                session.email ?? authProviderLabel(session.provider),
-              ),
-              trailing: TextButton(
-                onPressed: () => context.read<AuthProvider>().signOut(),
-                child: const Text('Sign out'),
-              ),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            child: Text(
+              session.displayName.isEmpty
+                  ? '?'
+                  : session.displayName.substring(0, 1).toUpperCase(),
             ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.favorite_outline),
-              title: const Text('Couples mode'),
-              subtitle: const Text('Share a private space (coming soon).'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const CouplesScreen(),
-                ),
-              ),
-            ),
-          ],
+          ),
+          title: Text(session.displayName),
+          subtitle: Text(
+            session.email ?? authProviderLabel(session.provider),
+          ),
+          trailing: TextButton(
+            onPressed: () => context.read<AuthProvider>().signOut(),
+            child: const Text('Sign out'),
+          ),
         ),
       );
     }
 
     return AppCard(
-      child: Column(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.account_circle_outlined),
-            title: const Text('Account'),
-            subtitle: const Text('Sign in to enable optional features. '
-                'Your data stays on your device.'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const AuthScreen()),
-            ),
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.favorite_outline),
-            title: const Text('Couples mode'),
-            subtitle: const Text('Share a private space (coming soon).'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const CouplesScreen()),
-            ),
-          ),
-        ],
+      child: ListTile(
+        leading: const Icon(Icons.account_circle_outlined),
+        title: const Text('Account'),
+        subtitle: const Text('Sign in to enable optional features. '
+            'Your data stays on your device.'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const AuthScreen()),
+        ),
       ),
     );
   }

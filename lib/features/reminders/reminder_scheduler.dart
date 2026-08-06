@@ -8,13 +8,26 @@ import '../../models/reminder.dart';
 import '../../models/reminder_type.dart';
 import 'reminder_defaults.dart';
 
+/// FNV-1a over [value], masked to a positive 31-bit id.
+///
+/// Unlike [Object.hash] this is deterministic across app launches, so
+/// previously scheduled platform notifications can always be cancelled and
+/// replaced instead of silently stacking duplicates on every relaunch.
+int _stableHashCode(String value) {
+  int hash = 0x811c9dc5;
+  for (final int unit in value.codeUnits) {
+    hash ^= unit;
+    hash = (hash * 0x01000193) & 0x7fffffff;
+  }
+  return hash;
+}
+
 /// Stable notification id for [reminder] recurring on [weekday] (ISO 1-7).
 int notificationIdFor(Reminder reminder, int weekday) =>
-    Object.hash(reminder.id, weekday) & 0x7fffffff;
+    _stableHashCode('${reminder.id}|$weekday');
 
 /// Stable notification id for [reminder]'s period-based one-shot alert.
-int oneShotIdFor(Reminder reminder) =>
-    Object.hash(reminder.id, 'period') & 0x7fffffff;
+int oneShotIdFor(Reminder reminder) => _stableHashCode('${reminder.id}|period');
 
 /// Next occurrence of [weekday] at [hour]:[minute] in [location], using today
 /// if that time is still ahead, otherwise the following matching weekday.

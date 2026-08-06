@@ -69,7 +69,6 @@ class CouplesScreen extends StatelessWidget {
                       leading: const Icon(Icons.link),
                       title: const Text('Your placeholder link'),
                       subtitle: const Text('Local only — not sent anywhere.'),
-                      trailing: const Icon(Icons.chevron_right),
                     ),
                     Text(
                       link.code,

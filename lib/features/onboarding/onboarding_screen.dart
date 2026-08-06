@@ -195,6 +195,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  Future<void> _signInAccount(
+    Future<bool> Function() action,
+  ) async {
+    final bool ok = await action();
+    if (!mounted) return;
+    final AuthProvider auth = context.read<AuthProvider>();
+    if (ok || auth.errorMessage == null) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(auth.errorMessage!)),
+    );
+  }
+
   Widget _accountStep() {
     final AuthProvider auth = context.watch<AuthProvider>();
     return AppCard(
@@ -216,7 +228,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           FilledButton.icon(
             onPressed: auth.busy
                 ? null
-                : () => context.read<AuthProvider>().signInWithGoogle(),
+                : () => _signInAccount(auth.signInWithGoogle),
             icon: const Icon(Icons.g_mobiledata),
             label: const Text('Continue with Google'),
           ),
@@ -224,7 +236,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           OutlinedButton.icon(
             onPressed: auth.busy
                 ? null
-                : () => context.read<AuthProvider>().signInWithApple(),
+                : () => _signInAccount(auth.signInWithApple),
             icon: const Icon(Icons.apple),
             label: const Text('Continue with Apple'),
           ),

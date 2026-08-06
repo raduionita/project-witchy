@@ -11,7 +11,11 @@ import 'log_period_sheet.dart';
 
 /// The Logging tab: quick entry + history of recent logs.
 class LoggingScreen extends StatefulWidget {
-  const LoggingScreen({super.key});
+  const LoggingScreen({super.key, this.onOpenCalendar});
+
+  /// Invoked when the user asks to log from the calendar, so the shell can
+  /// switch to the Calendar tab. Falls back to a hint when null.
+  final VoidCallback? onOpenCalendar;
 
   @override
   State<LoggingScreen> createState() => _LoggingScreenState();
@@ -20,6 +24,17 @@ class LoggingScreen extends StatefulWidget {
 class _LoggingScreenState extends State<LoggingScreen> {
   Future<void> _openSheetForToday() async {
     await LogPeriodSheet.show(context: context, date: DateTime.now());
+  }
+
+  void _openCalendar(BuildContext context) {
+    final VoidCallback? onOpen = widget.onOpenCalendar;
+    if (onOpen != null) {
+      onOpen();
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Use the Calendar tab to pick a day.')),
+    );
   }
 
   @override
@@ -52,9 +67,7 @@ class _LoggingScreenState extends State<LoggingScreen> {
                   leading: const Icon(Icons.edit_calendar),
                   title: const Text('Log from calendar'),
                   subtitle: const Text('Pick a day to log or edit'),
-                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Use the Calendar tab to pick a day.')),
-                  ),
+                  onTap: () => _openCalendar(context),
                 ),
               ],
             ),

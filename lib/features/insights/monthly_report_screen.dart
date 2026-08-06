@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/cycle.dart';
 import '../../models/cycle_prediction.dart';
 import '../../models/cycle_stats.dart';
 import '../../models/period_log.dart';
@@ -12,6 +13,7 @@ import '../../providers/cycle_provider.dart';
 import '../../providers/symptom_provider.dart';
 import '../../services/cycle_history_service.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/date_utils.dart';
 import '../../widgets/app_card.dart';
 
 /// Summary of the current month: period, predicted next period, top symptoms.
@@ -43,15 +45,18 @@ class MonthlyReportScreen extends StatelessWidget {
     final int symptomDays = symptomLogs.length;
 
     final CycleHistoryService history = CycleHistoryService();
-    final CycleMetrics metrics =
-        history.computeMetrics(history.deriveCycles(state.logs.periodLogs.items));
-    final PredictionAccuracy accuracy = history.computePredictionAccuracy(
-      history.deriveCycles(state.logs.periodLogs.items),
-    );
+    final List<Cycle> cycles =
+        history.deriveCycles(state.logs.periodLogs.items);
+    final CycleMetrics metrics = history.computeMetrics(cycles);
+    final PredictionAccuracy accuracy =
+        history.computePredictionAccuracy(cycles);
     final List<String> topSymptoms = symptomProvider.insights.topSymptoms
         .take(3)
         .map((SymptomFrequency f) => f.symptom)
         .toList();
+    final Set<DateTime> periodDaysSet = {
+      for (final PeriodLog log in periodLogs) dateOnly(log.date),
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -150,9 +155,7 @@ class MonthlyReportScreen extends StatelessWidget {
             for (final PeriodLog log in periodLogs)
               _periodTile(context, log),
           for (final SymptomLog log in symptomLogs)
-            if (!periodLogs.any(
-                (PeriodLog p) => DateFormat('yMMd').format(p.date) ==
-                    DateFormat('yMMd').format(log.date)))
+            if (!periodDaysSet.contains(dateOnly(log.date)))
               _symptomTile(context, log),
           const SizedBox(height: AppSpacing.kMd),
           AppCard(

@@ -208,7 +208,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   String _subtitle(BuildContext context, Reminder reminder) {
     if (ReminderDefaults.isPeriodBased(reminder.type)) {
       final DateTime? next = context
-          .read<CycleProvider>()
+          .watch<CycleProvider>()
           .prediction
           ?.nextPeriodStart;
       if (next != null) {

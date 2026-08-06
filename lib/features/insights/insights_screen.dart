@@ -32,7 +32,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
     final List<String> symptoms = insights.topSymptoms
         .map((SymptomFrequency f) => f.symptom)
         .toList();
-    final String? selected = _selectedSymptom ?? (symptoms.isNotEmpty ? symptoms.first : null);
+    // A previously selected symptom may fall out of the top list after new
+    // logs; DropdownButton asserts when its value isn't among the items.
+    final String? selected = symptoms.isEmpty
+        ? null
+        : (symptoms.contains(_selectedSymptom) ? _selectedSymptom! : symptoms.first);
 
     return SafeArea(
       child: ListView(

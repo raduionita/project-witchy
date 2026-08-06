@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../app/router/app_route_path.dart';
+import '../../app/router/app_router_delegate.dart';
 import '../../models/cycle_phase.dart';
 import '../../models/cycle_prediction.dart';
 import '../../models/tracking_mode.dart';
@@ -88,10 +90,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _onboardingCard(BuildContext context) {
     return AppCard(
+      onTap: () {
+        final AppRouterDelegate delegate =
+            Router.of(context).routerDelegate as AppRouterDelegate;
+        delegate.go(const AppOnboardingRoute());
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.auto_awesome, color: Theme.of(context).colorScheme.primary),
+          Row(
+            children: [
+              Icon(Icons.auto_awesome,
+                  color: Theme.of(context).colorScheme.primary),
+              const Spacer(),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
           const SizedBox(height: AppSpacing.kSm),
           Text(
             'Set up your cycle',

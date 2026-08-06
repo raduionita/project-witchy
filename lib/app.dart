@@ -10,6 +10,7 @@ import 'features/couples/couples_provider.dart';
 import 'features/couples/couples_service.dart';
 import 'features/reminders/reminder_provider.dart';
 import 'features/reminders/reminder_scheduler.dart';
+import 'features/settings/theme_provider.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/cycle_provider.dart';
 import 'providers/symptom_provider.dart';
@@ -41,6 +42,7 @@ class _WitchyAppState extends State<WitchyApp> {
   ReminderProvider? _reminderProvider;
   AuthProvider? _authProvider;
   CouplesProvider? _couplesProvider;
+  ThemeProvider? _themeProvider;
 
   @override
   void initState() {
@@ -71,6 +73,7 @@ class _WitchyAppState extends State<WitchyApp> {
         ..load();
       _couplesProvider = CouplesProvider(CoupleService(state.storage))
         ..load();
+      _themeProvider = ThemeProvider(state.storage)..load();
     }
   }
 
@@ -95,6 +98,7 @@ class _WitchyAppState extends State<WitchyApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
+      themeMode: _themeProvider?.themeMode ?? ThemeMode.light,
       routerDelegate: _routerDelegate,
       routeInformationParser: _routeInformationParser,
     );
@@ -114,6 +118,7 @@ class _WitchyAppState extends State<WitchyApp> {
         ChangeNotifierProvider<CouplesProvider>.value(
           value: _couplesProvider!,
         ),
+        ChangeNotifierProvider<ThemeProvider>.value(value: _themeProvider!),
       ],
       child: app,
     );

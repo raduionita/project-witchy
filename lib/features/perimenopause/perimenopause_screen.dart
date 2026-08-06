@@ -6,7 +6,6 @@ import '../../models/symptom_log.dart';
 import '../../providers/symptom_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/date_utils.dart';
-import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_section_header.dart';
 import '../trackers/shared_tracker_text.dart';
@@ -101,20 +100,6 @@ class PerimenopauseScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.kMd),
           for (final PerimenopauseCategory category in kPerimenopauseCategories)
             _categorySection(context, category),
-          const SizedBox(height: AppSpacing.kSm),
-          AppButton(
-            label: 'Save symptoms for today',
-            onPressed: () async {
-              await context.read<SymptomProvider>().logSymptoms(
-                    dateOnly(DateTime.now()),
-                  );
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('No changes — symptoms saved.')),
-                );
-              }
-            },
-          ),
         ],
       ),
     );

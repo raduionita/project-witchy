@@ -64,6 +64,7 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
     _body = TextEditingController(text: seed?.body ?? '');
     _time = seed?.time ?? const TimeOfDayModel(hour: 12, minute: 0);
     _weekdays = List<int>.from(seed?.weekday ?? const <int>[]);
+    if (seed == null) _applyDefaults(_type);
   }
 
   @override
@@ -91,6 +92,12 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
   }
 
   Future<void> _save() async {
+    if (!_isPeriodBased && _weekdays.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pick at least one day for this reminder.')),
+      );
+      return;
+    }
     final Reminder result = Reminder(
       id: widget.reminder?.id ?? '',
       type: _type,

@@ -8,6 +8,7 @@ import 'package:witchy/models/reminder.dart';
 import 'package:witchy/models/reminder_type.dart';
 import 'package:witchy/models/symptom_log.dart';
 import 'package:witchy/models/time_of_day_model.dart';
+import 'package:witchy/models/tracking_mode.dart';
 import 'package:witchy/models/user_profile.dart';
 
 void main() {
@@ -33,6 +34,19 @@ void main() {
       expect(restored.averagePeriodLength, 5);
       expect(restored.lutealPhaseLength, 14);
       expect(restored.onboarded, isFalse);
+    });
+
+    test('round-trips tracking mode and pregnancy lmp', () {
+      final UserProfile profile = UserProfile(
+        id: 'p3',
+        mode: TrackingMode.pregnancy,
+        pregnancyLmp: DateTime(2026, 1, 5),
+      );
+
+      final UserProfile restored = UserProfile.fromJson(profile.toJson());
+
+      expect(restored.mode, TrackingMode.pregnancy);
+      expect(restored.pregnancyLmp, DateTime(2026, 1, 5));
     });
   });
 

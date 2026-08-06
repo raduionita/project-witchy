@@ -79,7 +79,7 @@ test/
 - [x] **0.6** Root bootstrap: `app/app.dart` with root `MultiProvider` + `AppBootstrap` (async load placeholder).
 - [x] **0.7** Replace scaffold `lib/main.dart` pointing at `MaterialApp.router`.
 
-**Gate (0):** ✅ `flutter analyze` clean, `flutter build apk --debug` succeeds, `flutter test` passes, `flutter run` boots to shell screen.
+**Gate:** ✅ `flutter analyze` clean, `flutter build apk --debug` succeeds, `flutter test` passes, `flutter run` boots to shell screen.
 
 ---
 
@@ -95,7 +95,7 @@ test/
 - [x] **1.6** Unit tests: model (de)serialization; repository round-trip with a mock `shared_preferences` (`SharedPreferences.setMockInitialValues`).
 - [x] **1.7** Run `build_runner`.
 
-**Gate (phase):** ✅ `flutter analyze`, ✅ `flutter build apk --debug`, ✅ `flutter test` (15 tests) all pass.
+**Gate:** ✅ `flutter analyze`, ✅ `flutter build apk --debug`, ✅ `flutter test` (15 tests) all pass.
 
 ---
 
@@ -109,7 +109,7 @@ test/
 - [x] **2.6** Unit tests: ovulation, fertile window, next-period across multiple realistic datasets (22 tests for engine + fetcher + provider).
 - [x] **2.6b** Fixed `PersistedListMixin.update/remove` to match by `idOf` (value-equality matching broke `copyWith` updates).
 
-**Gate (phase):** ✅ analyze clean, ✅ build, ✅ tests green (37 total).
+**Gate:** ✅ analyze clean, ✅ build, ✅ tests green (37 total).
 
 ---
 
@@ -134,19 +134,19 @@ test/
 - [x] **4.4** Report generation: per-month summary screen (lengths, symptoms, insights) — be careful to use existing/safe data.
 - [x] **4.5** Merritt per the privacy mission: all reports computed locally.
 
-**Gate (phase):** analyze, build, `flutter test` green — **passed** (`analyze` clean, `build apk --debug` OK, 54 tests).
+**Gate:** ✅ analyze clean, ✅ `flutter build apk --debug` OK, ✅ `flutter test` 66 passed — **passed**. (Symptom CRUD lives in `features/logging/`; reports computed locally per 4.5.)
 
 ---
 
 ## Phase 5 — Pregnancy & Perimenopause Trackers
 
-- [ ] **5.1** Pregnancy mode: weeks/trimester calculator, phase-based guidance content.
-- [ ] **5.2** Perimenopause mode: localized symptom categories + personalized tracking.
-- [ ] **5.3** Shared accurate text/insight rendering for both modes.
-- [ ] **5.4** Mode switching from Settings; state persisted in `ProfileRepository`.
-- [ ] **5.5** Integrate into shell navigation (mode-aware home).
+- [x] **5.1** Pregnancy mode: weeks/trimester calculator, phase-based guidance content.
+- [x] **5.2** Perimenopause mode: localized symptom categories + personalized tracking.
+- [x] **5.3** Shared accurate text/insight rendering for both modes.
+- [x] **5.4** Mode switching from Settings; state persisted in `ProfileRepository`.
+- [x] **5.5** Integrate into shell navigation (mode-aware home).
 
-**Gate:** analyze, build, test.
+**Gate:** ✅ analyze clean, ✅ `flutter build apk --debug` OK, ✅ `flutter test` 78 passed — **passed**. (Fixed days-to-go calc to use 40 weeks; added targeted tests for guidance, catalog, shared text, and Settings mode-switch.)
 
 ---
 

@@ -9,13 +9,17 @@ import 'package:flutter/foundation.dart';
 /// Strips the time component, keeping only the calendar date.
 DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
-/// Adds [days] days to [d] (preserving the date-only comparison).
+/// Adds [days] days to [d], using calendar-day arithmetic so results stay at
+/// midnight (DST-safe) and preserve the date-only invariant.
 DateTime addDays(DateTime d, int days) =>
-    d.add(Duration(days: days));
+    DateTime(d.year, d.month, d.day + days);
 
 /// Whole days from [a] to [b] (negative when [b] precedes [a]).
-int daysBetween(DateTime a, DateTime b) =>
-    dateOnly(b).difference(dateOnly(a)).inDays;
+///
+/// Computed in UTC to stay exact across daylight-saving transitions.
+int daysBetween(DateTime a, DateTime b) => DateTime.utc(b.year, b.month, b.day)
+    .difference(DateTime.utc(a.year, a.month, a.day))
+    .inDays;
 
 @immutable
 class DaySpan {

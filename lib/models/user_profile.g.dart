@@ -16,6 +16,13 @@ _$UserProfileImpl _$$UserProfileImplFromJson(Map<String, dynamic> json) =>
           json['firstPeriodDate'] == null
               ? null
               : DateTime.parse(json['firstPeriodDate'] as String),
+      mode:
+          $enumDecodeNullable(_$TrackingModeEnumMap, json['mode']) ??
+          TrackingMode.cycle,
+      pregnancyLmp:
+          json['pregnancyLmp'] == null
+              ? null
+              : DateTime.parse(json['pregnancyLmp'] as String),
       onboarded: json['onboarded'] as bool? ?? false,
     );
 
@@ -26,5 +33,13 @@ Map<String, dynamic> _$$UserProfileImplToJson(_$UserProfileImpl instance) =>
       'averagePeriodLength': instance.averagePeriodLength,
       'lutealPhaseLength': instance.lutealPhaseLength,
       'firstPeriodDate': instance.firstPeriodDate?.toIso8601String(),
+      'mode': _$TrackingModeEnumMap[instance.mode]!,
+      'pregnancyLmp': instance.pregnancyLmp?.toIso8601String(),
       'onboarded': instance.onboarded,
     };
+
+const _$TrackingModeEnumMap = {
+  TrackingMode.cycle: 'cycle',
+  TrackingMode.pregnancy: 'pregnancy',
+  TrackingMode.perimenopause: 'perimenopause',
+};

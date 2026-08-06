@@ -26,6 +26,8 @@ mixin _$UserProfile {
   int get averagePeriodLength => throw _privateConstructorUsedError;
   int get lutealPhaseLength => throw _privateConstructorUsedError;
   DateTime? get firstPeriodDate => throw _privateConstructorUsedError;
+  TrackingMode get mode => throw _privateConstructorUsedError;
+  DateTime? get pregnancyLmp => throw _privateConstructorUsedError;
   bool get onboarded => throw _privateConstructorUsedError;
 
   /// Serializes this UserProfile to a JSON map.
@@ -51,6 +53,8 @@ abstract class $UserProfileCopyWith<$Res> {
     int averagePeriodLength,
     int lutealPhaseLength,
     DateTime? firstPeriodDate,
+    TrackingMode mode,
+    DateTime? pregnancyLmp,
     bool onboarded,
   });
 }
@@ -75,6 +79,8 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
     Object? averagePeriodLength = null,
     Object? lutealPhaseLength = null,
     Object? firstPeriodDate = freezed,
+    Object? mode = null,
+    Object? pregnancyLmp = freezed,
     Object? onboarded = null,
   }) {
     return _then(
@@ -104,6 +110,16 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
                     ? _value.firstPeriodDate
                     : firstPeriodDate // ignore: cast_nullable_to_non_nullable
                         as DateTime?,
+            mode:
+                null == mode
+                    ? _value.mode
+                    : mode // ignore: cast_nullable_to_non_nullable
+                        as TrackingMode,
+            pregnancyLmp:
+                freezed == pregnancyLmp
+                    ? _value.pregnancyLmp
+                    : pregnancyLmp // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
             onboarded:
                 null == onboarded
                     ? _value.onboarded
@@ -130,6 +146,8 @@ abstract class _$$UserProfileImplCopyWith<$Res>
     int averagePeriodLength,
     int lutealPhaseLength,
     DateTime? firstPeriodDate,
+    TrackingMode mode,
+    DateTime? pregnancyLmp,
     bool onboarded,
   });
 }
@@ -153,6 +171,8 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     Object? averagePeriodLength = null,
     Object? lutealPhaseLength = null,
     Object? firstPeriodDate = freezed,
+    Object? mode = null,
+    Object? pregnancyLmp = freezed,
     Object? onboarded = null,
   }) {
     return _then(
@@ -182,6 +202,16 @@ class __$$UserProfileImplCopyWithImpl<$Res>
                 ? _value.firstPeriodDate
                 : firstPeriodDate // ignore: cast_nullable_to_non_nullable
                     as DateTime?,
+        mode:
+            null == mode
+                ? _value.mode
+                : mode // ignore: cast_nullable_to_non_nullable
+                    as TrackingMode,
+        pregnancyLmp:
+            freezed == pregnancyLmp
+                ? _value.pregnancyLmp
+                : pregnancyLmp // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
         onboarded:
             null == onboarded
                 ? _value.onboarded
@@ -201,6 +231,8 @@ class _$UserProfileImpl implements _UserProfile {
     this.averagePeriodLength = 5,
     this.lutealPhaseLength = 14,
     this.firstPeriodDate,
+    this.mode = TrackingMode.cycle,
+    this.pregnancyLmp,
     this.onboarded = false,
   });
 
@@ -222,11 +254,16 @@ class _$UserProfileImpl implements _UserProfile {
   final DateTime? firstPeriodDate;
   @override
   @JsonKey()
+  final TrackingMode mode;
+  @override
+  final DateTime? pregnancyLmp;
+  @override
+  @JsonKey()
   final bool onboarded;
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, averageCycleLength: $averageCycleLength, averagePeriodLength: $averagePeriodLength, lutealPhaseLength: $lutealPhaseLength, firstPeriodDate: $firstPeriodDate, onboarded: $onboarded)';
+    return 'UserProfile(id: $id, averageCycleLength: $averageCycleLength, averagePeriodLength: $averagePeriodLength, lutealPhaseLength: $lutealPhaseLength, firstPeriodDate: $firstPeriodDate, mode: $mode, pregnancyLmp: $pregnancyLmp, onboarded: $onboarded)';
   }
 
   @override
@@ -243,6 +280,9 @@ class _$UserProfileImpl implements _UserProfile {
                 other.lutealPhaseLength == lutealPhaseLength) &&
             (identical(other.firstPeriodDate, firstPeriodDate) ||
                 other.firstPeriodDate == firstPeriodDate) &&
+            (identical(other.mode, mode) || other.mode == mode) &&
+            (identical(other.pregnancyLmp, pregnancyLmp) ||
+                other.pregnancyLmp == pregnancyLmp) &&
             (identical(other.onboarded, onboarded) ||
                 other.onboarded == onboarded));
   }
@@ -256,6 +296,8 @@ class _$UserProfileImpl implements _UserProfile {
     averagePeriodLength,
     lutealPhaseLength,
     firstPeriodDate,
+    mode,
+    pregnancyLmp,
     onboarded,
   );
 
@@ -280,6 +322,8 @@ abstract class _UserProfile implements UserProfile {
     final int averagePeriodLength,
     final int lutealPhaseLength,
     final DateTime? firstPeriodDate,
+    final TrackingMode mode,
+    final DateTime? pregnancyLmp,
     final bool onboarded,
   }) = _$UserProfileImpl;
 
@@ -296,6 +340,10 @@ abstract class _UserProfile implements UserProfile {
   int get lutealPhaseLength;
   @override
   DateTime? get firstPeriodDate;
+  @override
+  TrackingMode get mode;
+  @override
+  DateTime? get pregnancyLmp;
   @override
   bool get onboarded;
 

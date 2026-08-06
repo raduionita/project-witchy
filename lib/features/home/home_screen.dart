@@ -4,12 +4,19 @@ import 'package:provider/provider.dart';
 
 import '../../models/cycle_phase.dart';
 import '../../models/cycle_prediction.dart';
+import '../../models/tracking_mode.dart';
 import '../../providers/cycle_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/date_utils.dart';
 import '../../widgets/app_card.dart';
+import '../perimenopause/perimenopause_screen.dart';
+import '../pregnancy/pregnancy_screen.dart';
 
 /// The Home tab: today's status and cycle predictions.
+///
+/// Content adapts to the user's [TrackingMode]: cycle mode shows the classic
+/// prediction cards, while pregnancy/perimenopause modes hand off to their
+/// stage-specific screens.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -32,6 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final CycleProvider provider = context.watch<CycleProvider>();
     final CyclePrediction? prediction = provider.prediction;
     final bool onboarded = provider.profile?.onboarded ?? false;
+
+    final TrackingMode mode = provider.profile?.mode ?? TrackingMode.cycle;
+    if (mode == TrackingMode.pregnancy) return const PregnancyScreen();
+    if (mode == TrackingMode.perimenopause) return const PerimenopauseScreen();
 
     return SafeArea(
       child: ListView(

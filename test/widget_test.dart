@@ -1,23 +1,24 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:witchy/main.dart';
+import 'package:witchy/services/storage_service.dart';
+import 'package:witchy/services/cycle_service.dart';
+import 'package:witchy/services/notification_service.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const WitchyApp());
+  testWidgets('App initialization test', (WidgetTester tester) async {
+    final storageService = StorageService();
+    final cycleService = CycleService();
+    final notificationService = NotificationService();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.pumpWidget(
+      WitchyApp(
+        storageService: storageService,
+        cycleService: cycleService,
+        notificationService: notificationService,
+      ),
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(find.byType(WitchyApp), findsOneWidget);
   });
 }

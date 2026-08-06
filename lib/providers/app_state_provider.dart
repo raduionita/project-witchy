@@ -13,10 +13,16 @@ import '../services/storage_service.dart';
 /// these repositories rather than touching storage directly.
 class AppStateProvider extends ChangeNotifier {
   AppStateProvider(StorageService storage)
-      : profile = ProfileRepository(storage),
+      : _storage = storage,
+        profile = ProfileRepository(storage),
         cycles = CycleRepository(storage),
         logs = LogsRepository(storage),
         reminders = ReminderRepository(storage);
+
+  final StorageService _storage;
+
+  /// Underlying storage, shared by feature services that persist directly.
+  StorageService get storage => _storage;
 
   final ProfileRepository profile;
   final CycleRepository cycles;

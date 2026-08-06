@@ -154,25 +154,25 @@ test/
 
 > Requires platform config (Android exact alarms, iOS notification permissions).
 
-- [ ] **6.1** Add `flutter_local_notifications` + `timezone` + `flutter_timezone`; init and request permissions.
-- [ ] **6.2** `ReminderService`: schedule period-start/end, medication, water, sleep, custom reminders.
-- [ ] **6.3** Reminder CRUD UI (`ReminderRepository` + screen), selectable frequencies.
-- [ ] **6.4** Platform config: AndroidManifest permissions (`POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`), iOS `Info.plist` notification settings, plugin init in `AndroidManifest`/`AppDelegate`.
-- [ ] **6.5** Nice defaults + permission-denied fallback UI.
+- [x] **6.1** Add `flutter_local_notifications` + `timezone` + `flutter_timezone`; init and request permissions.
+- [x] **6.2** `ReminderService`: schedule period-start/end, medication, water, sleep, custom reminders.
+- [x] **6.3** Reminder CRUD UI (`ReminderRepository` + screen), selectable frequencies.
+- [x] **6.4** Platform config: AndroidManifest permissions (`POST_NOTIFICATIONS`, `SCHEDULE_EXACT_ALARM`), iOS `Info.plist` notification settings, plugin init in `AndroidManifest`/`AppDelegate`.
+- [x] **6.5** Nice defaults + permission-denied fallback UI.
 
-**Gate:** analyze, build. Notifications require device; verify platform config manually on a device.
+**Gate:** ✅ analyze clean, ✅ `flutter build apk --debug` OK, ✅ `flutter build ios --release --no-codesign` OK, ✅ `flutter test` 102 passed — **passed**. Device verification of delivered notifications still required. Notes: `flutter_timezone` pinned to `^4.1.1` (5.x needs Kotlin 1.9+); Android desugaring enabled for the plugin; iOS needs no Info.plist change (permission is requested at runtime in Dart); period reminders schedule a one-shot at the predicted cycle date and re-anchor on prediction changes.
 
 ---
 
 ## Phase 7 — Authentication & Couples Mode (placeholder)
 
-- [ ] **7.1** Add `google_sign_in` + `sign_in_with_apple` deps.
-- [ ] **7.2** `AuthService` + `AuthProvider`; persisted session via `shared_preferences`.
-- [ ] **7.3** Google Sign-In flow; Apple Sign-In with iOS entitlements (Android fallback non-root).
-- [ ] **7.4** Couples Mode: **placeholder only** — local share-token/model + UI stub, real backend deferred. Document design.
-- [ ] **7.5** Auth UI (sign-in/sign-up screen) + optional account creation during onboarding.
+- [x] **7.1** Add `google_sign_in` + `sign_in_with_apple` deps.
+- [x] **7.2** `AuthService` + `AuthProvider`; persisted session via `shared_preferences`.
+- [x] **7.3** Google Sign-In flow; Apple Sign-In with iOS entitlements (Android fallback non-root).
+- [x] **7.4** Couples Mode: **placeholder only** — local share-token/model + UI stub, real backend deferred. Document design.
+- [x] **7.5** Auth UI (sign-in/sign-up screen) + optional account creation during onboarding.
 
-**Gate:** analyze, build, auth flow manual test on device.
+**Gate:** ✅ analyze clean, ✅ `flutter build apk --debug` OK, ✅ `flutter build ios --release --no-codesign` OK, ✅ `flutter test` 123 passed — **passed**. Auth flow manual test on device still required. Notes: NO Firebase — sessions are local-only identities persisted via `shared_preferences` (`witchy.auth.session`, no tokens/PII); `AuthSession` is a freezed model with `google`/`apple` providers behind an `AuthGateway` interface (native plugins swappable for tests); Apple Sign-In needs the iOS `Runner.entitlements` (`com.apple.developer.applesignin`, wired into all Runner configs) and a real Apple developer account; Google Sign-In needs `google-services.json` (Android) / `GoogleService-Info.plist` + URL scheme (iOS) from the Google Cloud Console before device flows work — until then the UI surfaces a friendly "not configured" message instead of crashing. Couples mode is a local stub: `CoupleLink` model + 12-char `XXXX-XXXX-XXXX` share code generated on-device, nothing transmitted.
 
 ---
 

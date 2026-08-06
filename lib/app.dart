@@ -3,6 +3,13 @@ import 'package:provider/provider.dart';
 
 import 'app/app_bootstrap.dart';
 import 'app/app_router.dart';
+import 'features/auth/auth_gateway.dart';
+import 'features/auth/auth_provider.dart';
+import 'features/auth/auth_service.dart';
+import 'features/couples/couples_provider.dart';
+import 'features/couples/couples_service.dart';
+import 'features/reminders/reminder_provider.dart';
+import 'features/reminders/reminder_scheduler.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/cycle_provider.dart';
 import 'providers/symptom_provider.dart';
@@ -31,6 +38,9 @@ class _WitchyAppState extends State<WitchyApp> {
   AppStateProvider? _state;
   CycleProvider? _cycleProvider;
   SymptomProvider? _symptomProvider;
+  ReminderProvider? _reminderProvider;
+  AuthProvider? _authProvider;
+  CouplesProvider? _couplesProvider;
 
   @override
   void initState() {
@@ -49,6 +59,18 @@ class _WitchyAppState extends State<WitchyApp> {
       _cycleProvider = CycleProvider(state)..recompute();
       _symptomProvider =
           SymptomProvider(state, _cycleProvider!)..recompute();
+      _reminderProvider = ReminderProvider(
+        state,
+        ReminderScheduler(),
+        cycle: _cycleProvider,
+      )
+        ..load();
+      _authProvider = AuthProvider(
+        AuthService(storage: state.storage, gateway: NativeAuthGateway()),
+      )
+        ..load();
+      _couplesProvider = CouplesProvider(CoupleService(state.storage))
+        ..load();
     }
   }
 
@@ -84,6 +106,13 @@ class _WitchyAppState extends State<WitchyApp> {
         ChangeNotifierProvider<CycleProvider>.value(value: cycleProvider),
         ChangeNotifierProvider<SymptomProvider>.value(
           value: _symptomProvider!,
+        ),
+        ChangeNotifierProvider<ReminderProvider>.value(
+          value: _reminderProvider!,
+        ),
+        ChangeNotifierProvider<AuthProvider>.value(value: _authProvider!),
+        ChangeNotifierProvider<CouplesProvider>.value(
+          value: _couplesProvider!,
         ),
       ],
       child: app,

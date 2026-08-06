@@ -11,6 +11,7 @@ import '../../providers/cycle_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
+import '../auth/auth_provider.dart';
 
 /// First-run onboarding that collects baseline cycle data.
 ///
@@ -24,7 +25,7 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  static const int _lastStep = 3;
+  static const int _lastStep = 4;
 
   int _step = 0;
   DateTime _lastPeriod = _today();
@@ -124,7 +125,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       0 => _welcome(),
       1 => _lastPeriodStep(),
       2 => _cycleLengthStep(),
-      _ => _periodLengthStep(),
+      3 => _periodLengthStep(),
+      _ => _accountStep(),
     };
   }
 
@@ -190,6 +192,49 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       max: 10,
       suffix: ' days',
       onChanged: (double v) => setState(() => _periodLength = v.roundToDouble()),
+    );
+  }
+
+  Widget _accountStep() {
+    final AuthProvider auth = context.watch<AuthProvider>();
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Create an account (optional)',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: AppSpacing.kSm),
+          const Text(
+            'Witchy works perfectly without an account. Signing in later '
+            'enables optional features — everything stays on your device.',
+          ),
+          const SizedBox(height: AppSpacing.kMd),
+          FilledButton.icon(
+            onPressed: auth.busy
+                ? null
+                : () => context.read<AuthProvider>().signInWithGoogle(),
+            icon: const Icon(Icons.g_mobiledata),
+            label: const Text('Continue with Google'),
+          ),
+          const SizedBox(height: AppSpacing.kSm),
+          OutlinedButton.icon(
+            onPressed: auth.busy
+                ? null
+                : () => context.read<AuthProvider>().signInWithApple(),
+            icon: const Icon(Icons.apple),
+            label: const Text('Continue with Apple'),
+          ),
+          const SizedBox(height: AppSpacing.kSm),
+          TextButton(
+            onPressed: _saving ? null : _finish,
+            child: const Text('Skip for now'),
+          ),
+        ],
+      ),
     );
   }
 

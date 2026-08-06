@@ -47,6 +47,18 @@ mixin PersistedListMixin<T> {
     await _persist();
   }
 
+  /// Adds [item] or replaces an existing item with the same id, then persists.
+  Future<void> upsert(T item) async {
+    load();
+    final int index = _indexOfId(idOf(item));
+    if (index == -1) {
+      _cache.add(item);
+    } else {
+      _cache[index] = item;
+    }
+    await _persist();
+  }
+
   /// Removes the item matching [item]'s id and persists.
   Future<void> remove(T item) async {
     load();

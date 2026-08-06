@@ -123,4 +123,51 @@ void main() {
     await tester.pumpAndSettle();
     expect(provider.reminders.single.enabled, isFalse);
   });
+
+  testWidgets('editing a reminder updates its title',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await provider.save(Reminder(
+      id: 'w1',
+      type: ReminderType.water,
+      title: 'Water',
+      body: 'Drink up',
+      time: const TimeOfDayModel(hour: 10, minute: 0),
+      weekday: const <int>[1, 2, 3, 4, 5],
+    ));
+    await pumpScreen(tester);
+
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+    expect(find.text('Edit reminder'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).first, 'Hydrate');
+    await tester.tap(find.text('Save reminder'));
+    await tester.pumpAndSettle();
+
+    expect(provider.reminders.single.title, 'Hydrate');
+    expect(find.text('Hydrate'), findsOneWidget);
+  });
+
+  testWidgets('deleting a reminder removes it and shows the empty state',
+      (WidgetTester tester) async {
+    await provider.save(Reminder(
+      id: 'w1',
+      type: ReminderType.water,
+      title: 'Water',
+      body: 'Drink up',
+      time: const TimeOfDayModel(hour: 10, minute: 0),
+      weekday: const <int>[1, 2, 3, 4, 5],
+    ));
+    await pumpScreen(tester);
+
+    await tester.tap(find.text('Delete'));
+    await tester.pumpAndSettle();
+
+    expect(provider.reminders, isEmpty);
+    expect(find.text('No reminders yet'), findsOneWidget);
+  });
 }

@@ -1,4 +1,4 @@
-# Witchy - Period Tracker & Cycle Calendar App
+# PLAN.md - Witchy - Period Tracker & Cycle Calendar App
 
 A comprehensive health tracking application designed to help you understand and monitor your menstrual cycle, fertility window, pregnancy, and overall reproductive health.
 
@@ -6,18 +6,18 @@ A comprehensive health tracking application designed to help you understand and 
 
 ```
 lib/
-├── main.dart                          # App entry point with Provider setup
-├── models/                            # Models 
+├── main.dart                          # app entry point with Provider setup
+├── models/                            # Models (i.e. profile, etc.)
 ├── services/                          # API calls  
-├── providers/                         # Providers  
-├── screens/                           # Screens    
-├── widgets/                           # Widgets    
+├── providers/                         # Providers
+├── screens/                           # Screens
+├── widgets/                           # Widgets common to screens
 └── utils/
 ```
 
 ---
 
-## Implementation Status
+## Implementation
 
 ### Phase 1: Initial Implementation
 - [x] `git init`

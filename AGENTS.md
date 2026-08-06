@@ -16,6 +16,12 @@ Provide users with **private, accurate, and empowering reproductive health track
 
 ---
 
+## Rules
+
+- If the LLM continously loops back to the same prompt, STOP and ask for clarification.
+
+---
+
 ## Technology Stack
 **Flutter** - Cross-platform mobile UI framework
 **Dart** - Programming language for Flutter

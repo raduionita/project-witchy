@@ -40,6 +40,9 @@ class AuthProvider extends ChangeNotifier {
 
   Future<bool> signInWithApple() => _signIn(_service.signInWithApple);
 
+  /// Simulated Google sign-in for debug/test/dev. No external request is made.
+  Future<bool> signInAnonymously() => _signIn(_service.signInAnonymously);
+
   Future<bool> _signIn(Future<AuthSession> Function() action) async {
     if (_busy) return false;
     _busy = true;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
+import '../widgets/app_icon.dart';
 
 /// Loading screen shown while [AppBootstrap] initializes storage.
 class SplashScreen extends StatelessWidget {
@@ -16,7 +17,11 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.water_drop, size: 72, color: Colors.white),
+            const AppIcon(
+              Icons.water_drop,
+              size: AppIconSize.huge,
+              color: Colors.white,
+            ),
             const SizedBox(height: AppSpacing.kSm),
             Text(
               'Witchy',

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "video-cycle-tracker-how-to",
+    "title": "How to track your cycle with confidence",
+    "category": "Cycle basics",
+    "url": "https://example.com/cycle-tracker",
+    "description": "A short walkthrough of logging your period, symptoms, and mood every day and reading the predictions Witchy shows you.",
+    "publishedAt": "2026-01-15"
+  },
+  {
+    "id": "video-fertility-awareness",
+    "title": "Fertility awareness, explained",
+    "category": "Fertility",
+    "url": "https://example.com/fertility-awareness",
+    "description": "An introduction to the fertile window and why calendar estimates are an estimate, not a birth-control method.",
+    "publishedAt": "2026-02-10"
+  },
+  {
+    "id": "video-early-pregnancy",
+    "title": "What to expect in early pregnancy",
+    "category": "Pregnancy",
+    "url": "https://example.com/early-pregnancy",
+    "description": "A reassuring overview of the first trimester, common symptoms, and when to speak with a healthcare provider.",
+    "publishedAt": "2026-03-22"
+  },
+  {
+    "id": "video-pms-relief",
+    "title": "Soothing PMS naturally",
+    "category": "Wellness",
+    "url": "https://example.com/pms-relief",
+    "description": "Simple lifestyle tips for easing bloating, cramps, and low mood in the days before your period.",
+    "publishedAt": "2026-04-18"
+  }
+]

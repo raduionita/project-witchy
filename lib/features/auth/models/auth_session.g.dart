@@ -27,4 +27,5 @@ Map<String, dynamic> _$$AuthSessionImplToJson(_$AuthSessionImpl instance) =>
 const _$AuthProviderTypeEnumMap = {
   AuthProviderType.google: 'google',
   AuthProviderType.apple: 'apple',
+  AuthProviderType.anonymous: 'anonymous',
 };

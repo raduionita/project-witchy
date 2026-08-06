@@ -29,6 +29,14 @@ class FakeAuthGateway implements AuthGateway {
         provider: AuthProviderType.apple,
         signedInAt: DateTime(2026, 1, 1),
       );
+
+  @override
+  Future<AuthSession> signInAnonymously() async => AuthSession(
+        id: 'anon',
+        displayName: 'Anonymous user',
+        provider: AuthProviderType.anonymous,
+        signedInAt: DateTime(2026, 1, 1),
+      );
 }
 
 void main() {

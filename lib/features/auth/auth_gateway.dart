@@ -31,6 +31,13 @@ abstract interface class AuthGateway {
 
   /// Starts the Sign in with Apple flow.
   Future<AuthSession> signInWithApple();
+
+  /// Signs in anonymously (debug/test/dev only).
+  ///
+  /// Simulates a Google Sign-In — producing a session shaped exactly like one —
+  /// but never touches the network or the sign-in plugins. Used by the app's
+  /// anonymous button so flows can be exercised locally.
+  Future<AuthSession> signInAnonymously();
 }
 
 /// Real gateway backed by `google_sign_in` and `sign_in_with_apple`.
@@ -102,6 +109,19 @@ class NativeAuthGateway implements AuthGateway {
       ].whereType<String>().join(' ').trim(),
       email: credential.email,
       provider: AuthProviderType.apple,
+      signedInAt: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<AuthSession> signInAnonymously() async {
+    // Simulates the shape of a Google session without any plugin or network
+    // call. Debug/test/dev only — gated at the call site.
+    return AuthSession(
+      id: 'anonymous',
+      displayName: 'Anonymous user',
+      email: null,
+      provider: AuthProviderType.anonymous,
       signedInAt: DateTime.now(),
     );
   }

@@ -41,6 +41,13 @@ class AuthService {
     return session;
   }
 
+  /// Signs in anonymously (simulated Google) and persists the session.
+  Future<AuthSession> signInAnonymously() async {
+    final AuthSession session = await _gateway.signInAnonymously();
+    await _persist(session);
+    return session;
+  }
+
   Future<void> _persist(AuthSession session) =>
       _storage.write(_kSessionKey, session.toJson());
 

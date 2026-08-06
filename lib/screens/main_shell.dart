@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../features/calendar/calendar_screen.dart';
+import '../features/content/content_library_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/insights/insights_screen.dart';
 import '../features/logging/logging_screen.dart';
@@ -26,6 +27,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
       onOpenCalendar: () => setState(() => _index = 1),
     ),
     const InsightsScreen(),
+    const ContentLibraryScreen(),
     const SettingsScreen(),
   ];
 
@@ -57,6 +59,11 @@ class _MainShellScreenState extends State<MainShellScreen> {
             icon: Icon(Icons.insights_outlined),
             selectedIcon: Icon(Icons.insights),
             label: 'Insights',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.menu_book_outlined),
+            selectedIcon: Icon(Icons.menu_book),
+            label: 'Library',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),

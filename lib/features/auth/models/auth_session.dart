@@ -4,7 +4,7 @@ part 'auth_session.freezed.dart';
 part 'auth_session.g.dart';
 
 /// Which provider authenticated this local session.
-enum AuthProviderType { google, apple }
+enum AuthProviderType { google, apple, anonymous }
 
 /// Local-only authentication session.
 ///
@@ -29,4 +29,5 @@ abstract class AuthSession with _$AuthSession {
 String authProviderLabel(AuthProviderType provider) => switch (provider) {
       AuthProviderType.google => 'Google',
       AuthProviderType.apple => 'Apple',
+      AuthProviderType.anonymous => 'Anonymous',
     };

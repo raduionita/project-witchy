@@ -103,6 +103,22 @@ void main() {
     expect(log.notes, 'feeling rough');
   });
 
+  testWidgets('period sheet groups symptoms into categories',
+      (WidgetTester tester) async {
+    await pumpSheets(tester);
+
+    await tester.tap(find.text('open period'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pain & discomfort'), findsOneWidget);
+    expect(find.text('Digestive'), findsOneWidget);
+    expect(find.text('Breast & skin'), findsOneWidget);
+    expect(find.text('Energy & mood'), findsOneWidget);
+    // Individual symptoms still appear inside their groups.
+    expect(find.text('Headache'), findsOneWidget);
+    expect(find.text('Nausea'), findsOneWidget);
+  });
+
   testWidgets('symptom sheet saves symptoms, mood and notes for the day',
       (WidgetTester tester) async {
     final (_, SymptomProvider symptom) = await pumpSheets(tester);

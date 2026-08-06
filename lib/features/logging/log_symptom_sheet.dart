@@ -5,7 +5,8 @@ import 'package:provider/provider.dart';
 import '../../providers/symptom_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_button.dart';
-import 'log_period_sheet.dart' show kCommonMoods, kCommonSymptoms;
+import 'log_period_sheet.dart' show kCommonMoods;
+import 'widgets/symptom_chip_group.dart';
 
 /// Bottom sheet for logging symptoms + mood without a period.
 class LogSymptomSheet extends StatefulWidget {
@@ -74,18 +75,11 @@ class _LogSymptomSheetState extends State<LogSymptomSheet> {
             const SizedBox(height: AppSpacing.kMd),
             _label('Symptoms'),
             const SizedBox(height: AppSpacing.kSm),
-            Wrap(
-              spacing: AppSpacing.kSm,
-              runSpacing: AppSpacing.kSm,
-              children: kCommonSymptoms
-                  .map((String item) => FilterChip(
-                        label: Text(item),
-                        selected: _symptoms.contains(item),
-                        onSelected: (_) => setState(() {
-                          if (!_symptoms.add(item)) _symptoms.remove(item);
-                        }),
-                      ))
-                  .toList(),
+            SymptomChipGroup(
+              selected: _symptoms,
+              onToggle: (String value) => setState(() {
+                if (!_symptoms.add(value)) _symptoms.remove(value);
+              }),
             ),
             const SizedBox(height: AppSpacing.kMd),
             _label('Mood'),

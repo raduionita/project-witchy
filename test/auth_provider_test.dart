@@ -12,6 +12,7 @@ class FakeAuthGateway implements AuthGateway {
   bool configErrorNext = false;
   int googleCalls = 0;
   int appleCalls = 0;
+  int anonymousCalls = 0;
 
   static final AuthSession _googleSession = AuthSession(
     id: 'g1',
@@ -43,6 +44,17 @@ class FakeAuthGateway implements AuthGateway {
     if (cancelNext) throw const AuthCancelledException();
     if (configErrorNext) throw const AuthConfigException('not configured');
     return _appleSession;
+  }
+
+  @override
+  Future<AuthSession> signInAnonymously() async {
+    anonymousCalls++;
+    return AuthSession(
+      id: 'anon',
+      displayName: 'Anonymous user',
+      provider: AuthProviderType.anonymous,
+      signedInAt: DateTime(2026, 1, 3),
+    );
   }
 }
 
@@ -96,6 +108,24 @@ void main() {
     expect(ok, isTrue);
     expect(provider.session!.provider, AuthProviderType.apple);
     expect(provider.session!.email, 'ann@example.com');
+  });
+
+  test('anonymous sign-in persists a session without an external gateway',
+      () async {
+    final bool ok = await provider.signInAnonymously();
+
+    expect(ok, isTrue);
+    expect(provider.isSignedIn, isTrue);
+    expect(provider.session!.provider, AuthProviderType.anonymous);
+    expect(provider.session!.id, 'anon');
+    expect(gateway.anonymousCalls, 1);
+    expect(gateway.googleCalls, 0);
+
+    final AuthProvider reloaded = AuthProvider(
+      AuthService(storage: storage, gateway: FakeAuthGateway()),
+    )..load();
+    expect(reloaded.isSignedIn, isTrue);
+    expect(reloaded.session!.provider, AuthProviderType.anonymous);
   });
 
   test('cancellation is silent and leaves the user signed out', () async {

@@ -1,4 +1,5 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -73,7 +74,7 @@ class AuthScreen extends StatelessWidget {
                   ? null
                   : () => _signIn(context, auth.signInWithGoogle),
               icon: const Icon(FontAwesomeIcons.google),
-              label: const Text('Continue with Google'),
+              label: const Text('Google Sign In'),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
@@ -87,7 +88,7 @@ class AuthScreen extends StatelessWidget {
                   ? null
                   : () => _signIn(context, auth.signInWithApple),
               icon: const Icon(FontAwesomeIcons.apple),
-              label: const Text('Continue with Apple'),
+              label: const Text('Apple Sign In'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
@@ -95,6 +96,22 @@ class AuthScreen extends StatelessWidget {
                 ),
               ),
             ),
+            if (kDebugMode) ...[
+              const SizedBox(height: AppSpacing.kSm),
+              TextButton.icon(
+                onPressed: auth.busy
+                    ? null
+                    : () => _signIn(context, auth.signInAnonymously),
+                icon: const Icon(Icons.person_off_outlined),
+                label: const Text('Anonymous Sign In (debug)'),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size.fromHeight(52),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.kRadiusMd),
+                  ),
+                ),
+              ),
+            ],
             if (auth.busy) const SizedBox(height: AppSpacing.kMd),
             if (auth.busy)
               const Center(

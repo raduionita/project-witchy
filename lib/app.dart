@@ -6,6 +6,7 @@ import 'app/app_router.dart';
 import 'features/auth/auth_gateway.dart';
 import 'features/auth/auth_provider.dart';
 import 'features/auth/auth_service.dart';
+import 'features/content/content_provider.dart';
 import 'features/couples/couples_provider.dart';
 import 'features/couples/couples_service.dart';
 import 'features/reminders/reminder_provider.dart';
@@ -43,6 +44,7 @@ class _WitchyAppState extends State<WitchyApp> {
   AuthProvider? _authProvider;
   CouplesProvider? _couplesProvider;
   ThemeProvider? _themeProvider;
+  ContentProvider? _contentProvider;
 
   @override
   void initState() {
@@ -74,6 +76,7 @@ class _WitchyAppState extends State<WitchyApp> {
       _couplesProvider = CouplesProvider(CoupleService(state.storage))
         ..load();
       _themeProvider = ThemeProvider(state.storage)..load();
+      _contentProvider = ContentProvider(state.storage)..load();
     }
   }
 
@@ -119,6 +122,9 @@ class _WitchyAppState extends State<WitchyApp> {
           value: _couplesProvider!,
         ),
         ChangeNotifierProvider<ThemeProvider>.value(value: _themeProvider!),
+        ChangeNotifierProvider<ContentProvider>.value(
+          value: _contentProvider!,
+        ),
       ],
       child: app,
     );

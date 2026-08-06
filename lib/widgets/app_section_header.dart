@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../utils/app_theme.dart';
+import 'app_text.dart';
 
 /// Section header with optional trailing action, used across feature screens.
 class AppSectionHeader extends StatelessWidget {
@@ -20,11 +21,10 @@ class AppSectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
+          AppText(
             title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            variant: AppTextVariant.title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           if (trailing != null) trailing!,
         ],

@@ -26,6 +26,14 @@ class FakeAuthGateway implements AuthGateway {
         provider: AuthProviderType.apple,
         signedInAt: DateTime(2026, 1, 1),
       );
+
+  @override
+  Future<AuthSession> signInAnonymously() async => AuthSession(
+        id: 'anon',
+        displayName: 'Anonymous user',
+        provider: AuthProviderType.anonymous,
+        signedInAt: DateTime(2026, 1, 1),
+      );
 }
 
 Future<AuthProvider> pumpOnboarding(WidgetTester tester) async {
@@ -57,8 +65,8 @@ void main() {
     }
 
     expect(find.text('Create an account (optional)'), findsOneWidget);
-    expect(find.text('Continue with Google'), findsOneWidget);
-    expect(find.text('Continue with Apple'), findsOneWidget);
+    expect(find.text('Google Sign In'), findsOneWidget);
+    expect(find.text('Apple Sign In'), findsOneWidget);
     expect(find.text('Skip for now'), findsOneWidget);
   });
 
@@ -71,7 +79,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    await tester.tap(find.text('Continue with Google'));
+    await tester.tap(find.text('Google Sign In'));
     await tester.pumpAndSettle();
 
     expect(auth.isSignedIn, isTrue);

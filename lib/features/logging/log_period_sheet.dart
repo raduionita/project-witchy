@@ -6,17 +6,7 @@ import '../../models/flow_intensity.dart';
 import '../../providers/cycle_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_button.dart';
-
-const List<String> kCommonSymptoms = [
-  'Cramps',
-  'Bloating',
-  'Headache',
-  'Fatigue',
-  'Tender breasts',
-  'Back pain',
-  'Acne',
-  'Nausea',
-];
+import 'widgets/symptom_chip_group.dart';
 
 const List<String> kCommonMoods = ['Happy', 'Calm', 'Anxious', 'Irritable', 'Sad', 'Energetic'];
 
@@ -90,8 +80,7 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
             const SizedBox(height: AppSpacing.kMd),
             _sectionTitle('Symptoms'),
             const SizedBox(height: AppSpacing.kSm),
-            _chipSelector(
-              items: kCommonSymptoms,
+            SymptomChipGroup(
               selected: _symptoms,
               onToggle: (String value) => setState(() {
                 if (!_symptoms.add(value)) _symptoms.remove(value);

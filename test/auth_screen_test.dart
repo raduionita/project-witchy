@@ -13,6 +13,7 @@ import 'package:witchy/services/storage_service.dart';
 class FakeAuthGateway implements AuthGateway {
   bool configError = false;
   int calls = 0;
+  int anonymousCalls = 0;
 
   @override
   Future<AuthSession> signInWithGoogle() async {
@@ -39,6 +40,17 @@ class FakeAuthGateway implements AuthGateway {
       signedInAt: DateTime(2026, 1, 1),
     );
   }
+
+  @override
+  Future<AuthSession> signInAnonymously() async {
+    anonymousCalls++;
+    return AuthSession(
+      id: 'anon',
+      displayName: 'Anonymous user',
+      provider: AuthProviderType.anonymous,
+      signedInAt: DateTime(2026, 1, 1),
+    );
+  }
 }
 
 Future<StorageService> freshStorage() async {
@@ -51,6 +63,10 @@ Future<AuthProvider> pumpAuthScreen(
   WidgetTester tester,
   FakeAuthGateway gateway,
 ) async {
+  tester.view.physicalSize = const Size(800, 1400);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.reset);
+
   final AuthProvider provider = AuthProvider(
     AuthService(storage: await freshStorage(), gateway: gateway),
   )..load();
@@ -69,8 +85,10 @@ void main() {
     await pumpAuthScreen(tester, FakeAuthGateway());
 
     expect(find.text('Sign in (optional)'), findsOneWidget);
-    expect(find.text('Continue with Google'), findsOneWidget);
-    expect(find.text('Continue with Apple'), findsOneWidget);
+    expect(find.text('Google Sign In'), findsOneWidget);
+    expect(find.text('Apple Sign In'), findsOneWidget);
+    // Debug-only anonymous option is present in tests (debug mode).
+    expect(find.text('Anonymous Sign In (debug)'), findsOneWidget);
   });
 
   testWidgets('successful Google sign-in updates the provider',
@@ -78,7 +96,7 @@ void main() {
     final FakeAuthGateway gateway = FakeAuthGateway();
     final AuthProvider provider = await pumpAuthScreen(tester, gateway);
 
-    await tester.tap(find.text('Continue with Google'));
+    await tester.tap(find.text('Google Sign In'));
     await tester.pumpAndSettle();
 
     expect(gateway.calls, 1);
@@ -86,12 +104,25 @@ void main() {
     expect(provider.session!.provider, AuthProviderType.google);
   });
 
+  testWidgets('anonymous sign-in signs in without an external request',
+      (WidgetTester tester) async {
+    final FakeAuthGateway gateway = FakeAuthGateway();
+    final AuthProvider provider = await pumpAuthScreen(tester, gateway);
+
+    await tester.tap(find.text('Anonymous Sign In (debug)'));
+    await tester.pumpAndSettle();
+
+    expect(gateway.anonymousCalls, 1);
+    expect(provider.isSignedIn, isTrue);
+    expect(provider.session!.provider, AuthProviderType.anonymous);
+  });
+
   testWidgets('configuration errors surface a friendly message',
       (WidgetTester tester) async {
     final FakeAuthGateway gateway = FakeAuthGateway()..configError = true;
     final AuthProvider provider = await pumpAuthScreen(tester, gateway);
 
-    await tester.tap(find.text('Continue with Apple'));
+    await tester.tap(find.text('Apple Sign In'));
     await tester.pumpAndSettle();
 
     expect(provider.isSignedIn, isFalse);

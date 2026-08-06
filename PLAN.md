@@ -178,11 +178,11 @@ test/
 
 ## Phase 8 — Content Library
 
-- [ ] **8.1** `Article`/`Video` models + seeded local content under `assets/content/` (privacy-first: no personal data, curated locally).
-- [ ] **8.2** Browse/search/filter UI; categories and favorites (persisted locally).
-- [ ] **8.3** Reading/viewing screen for articles.
+- [x] **8.1** `Article`/`Video` models + seeded local content under `assets/content/` (privacy-first: no personal data, curated locally).
+- [x] **8.2** Browse/search/filter UI; categories and favorites (persisted locally).
+- [x] **8.3** Reading/viewing screen for articles.
 
-**Gate:** analyze, build, tests for filtering.
+**Gate:** ✅ analyze clean, ✅ `flutter build apk --debug` OK, ✅ `flutter test` 178 passed — **passed**. Notes: `Article` existed since Phase 1; added freezed `Video` model + generated code, seeded 8 articles / 4 videos in `assets/content/*.json` (registered in pubspec). `ContentSource` (abstract) + `AssetContentSource` keep the loader testable. `ContentProvider` loads the catalog, persists favorites (`witchy.content.favorites` — content IDs only, no PII) via `StorageService`, and drives a pure `filterContent` (type/category/query). New `Library` bottom-nav tab (6 tabs) hosting browse/search/`SegmentedButton` type filter/category chips/favorite stars; articles open `ArticleReaderScreen`, videos open `VideoDetailScreen` (launches via `url_launcher`). 10 new tests for filtering + favorites persistence. Caveat: the library uses a static loading text instead of an indeterminate spinner — a repeating spinner animation leaks across `testWidgets` cases in one process and hangs `pumpAndSettle`.
 
 ---
 

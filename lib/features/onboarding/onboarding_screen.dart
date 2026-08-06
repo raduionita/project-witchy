@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -229,17 +231,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             onPressed: auth.busy
                 ? null
                 : () => _signInAccount(auth.signInWithGoogle),
-            icon: const Icon(Icons.g_mobiledata),
-            label: const Text('Continue with Google'),
+            icon: const Icon(FontAwesomeIcons.google),
+            label: const Text('Google Sign In'),
           ),
           const SizedBox(height: AppSpacing.kSm),
           OutlinedButton.icon(
             onPressed: auth.busy
                 ? null
                 : () => _signInAccount(auth.signInWithApple),
-            icon: const Icon(Icons.apple),
-            label: const Text('Continue with Apple'),
+            icon: const Icon(FontAwesomeIcons.apple),
+            label: const Text('Apple Sign In'),
           ),
+          if (kDebugMode) ...[
+            const SizedBox(height: AppSpacing.kSm),
+            TextButton.icon(
+              onPressed: auth.busy
+                  ? null
+                  : () => _signInAccount(auth.signInAnonymously),
+              icon: const Icon(Icons.person_off_outlined),
+              label: const Text('Anonymous Sign In (debug)'),
+            ),
+          ],
           const SizedBox(height: AppSpacing.kSm),
           TextButton(
             onPressed: _saving ? null : _finish,

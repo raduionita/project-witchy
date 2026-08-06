@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../utils/app_theme.dart';
 import 'auth_provider.dart';
 
@@ -18,13 +19,14 @@ class AuthScreen extends StatelessWidget {
     BuildContext context,
     Future<bool> Function() action,
   ) async {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final bool ok = await action();
     if (!context.mounted) return;
 
     final AuthProvider auth = context.read<AuthProvider>();
     if (ok && auth.session != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Signed in. Your account stays on this device.')),
+        SnackBar(content: Text(l10n.authSignedIn)),
       );
       if (Navigator.canPop(context)) Navigator.pop(context);
       return;
@@ -40,10 +42,11 @@ class AuthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AuthProvider auth = context.watch<AuthProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Account')),
+      appBar: AppBar(title: Text(l10n.settingsAccountTitle)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.kLg),
@@ -55,17 +58,15 @@ class AuthScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.kMd),
             Text(
-              'Sign in (optional)',
+              l10n.authSignInOptional,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: AppSpacing.kSm),
-            const Text(
-              'Witchy never needs an account. Signing in gives you a '
-              'consistent identity for features like Couples mode — '
-              'everything stays on your device.',
+            Text(
+              l10n.authBody,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.kXl),
@@ -74,7 +75,7 @@ class AuthScreen extends StatelessWidget {
                   ? null
                   : () => _signIn(context, auth.signInWithGoogle),
               icon: const Icon(FontAwesomeIcons.google),
-              label: const Text('Google Sign In'),
+              label: Text(l10n.authGoogleSignIn),
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
@@ -88,7 +89,7 @@ class AuthScreen extends StatelessWidget {
                   ? null
                   : () => _signIn(context, auth.signInWithApple),
               icon: const Icon(FontAwesomeIcons.apple),
-              label: const Text('Apple Sign In'),
+              label: Text(l10n.authAppleSignIn),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
@@ -103,7 +104,7 @@ class AuthScreen extends StatelessWidget {
                     ? null
                     : () => _signIn(context, auth.signInAnonymously),
                 icon: const Icon(Icons.person_off_outlined),
-                label: const Text('Anonymous Sign In (debug)'),
+                label: Text(l10n.authAnonymousDebug),
                 style: TextButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
                   shape: RoundedRectangleBorder(

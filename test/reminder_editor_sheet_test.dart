@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:witchy/features/reminders/widgets/reminder_editor_sheet.dart';
+import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/models/reminder.dart';
 import 'package:witchy/models/reminder_type.dart';
 import 'package:witchy/models/time_of_day_model.dart';
@@ -56,7 +57,11 @@ void main() {
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(
-      MaterialApp(home: _EditorHost(reminder: reminder)),
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: _EditorHost(reminder: reminder),
+      ),
     );
     await tester.pumpAndSettle();
   }

@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../models/symptom_insights.dart';
 import '../../../utils/app_theme.dart';
 
@@ -12,13 +13,14 @@ class SymptomFrequencyBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ColorScheme scheme = Theme.of(context).colorScheme;
     if (frequencies.isEmpty) {
       return SizedBox(
         height: 160,
         child: Center(
           child: Text(
-            'Log symptoms to see patterns here.',
+            l10n.chartSymptomsEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.outline,
                 ),
@@ -85,12 +87,15 @@ class SymptomFrequencyBarChart extends StatelessWidget {
               getTooltipItem: (BarChartGroupData group, int groupIndex,
                       BarChartRodData rod, int rodIndex) =>
                   BarTooltipItem(
-                '${frequencies[groupIndex].count}× ${frequencies[groupIndex].symptom}',
-                TextStyle(
-                  color: scheme.onInverseSurface,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+                    l10n.chartFrequencyTooltip(
+                      frequencies[groupIndex].count,
+                      frequencies[groupIndex].symptom,
+                    ),
+                    TextStyle(
+                      color: scheme.onInverseSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
             ),
           ),
           barGroups: List<BarChartGroupData>.generate(

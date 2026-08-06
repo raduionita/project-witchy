@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/reminder.dart';
 import '../../models/reminder_type.dart';
 import '../../providers/app_state_provider.dart';
@@ -79,8 +80,9 @@ class ReminderProvider extends ChangeNotifier {
   }
 
   /// Creates a new reminder pre-filled for [type] and saves it.
-  Future<Reminder> create(ReminderType type) async {
+  Future<Reminder> create(AppLocalizations l10n, ReminderType type) async {
     final Reminder reminder = ReminderDefaults.forType(
+      l10n,
       type,
       id: _uuid.v4(),
     );

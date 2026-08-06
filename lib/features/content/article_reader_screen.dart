@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/article.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_card.dart';
@@ -13,11 +14,12 @@ class ArticleReaderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<String> paragraphs =
         article.body.split('\n\n').where((String p) => p.trim().isNotEmpty).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Article')),
+      appBar: AppBar(title: Text(l10n.contentArticle)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.kMd),
@@ -56,8 +58,7 @@ class ArticleReaderScreen extends StatelessWidget {
             ],
             AppCard(
               child: Text(
-                'These articles are for general education and are not medical '
-                'advice. Talk to a healthcare professional about your health.',
+                l10n.contentArticleDisclaimer,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.outline,
                     ),

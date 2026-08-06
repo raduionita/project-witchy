@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -13,8 +15,12 @@ import 'package:witchy/features/couples/couples_service.dart';
 import 'package:witchy/features/reminders/reminder_provider.dart';
 import 'package:witchy/features/reminders/reminder_scheduler.dart';
 import 'package:witchy/features/reminders/reminders_screen.dart';
+import 'package:witchy/features/settings/legal_document_screen.dart';
+import 'package:witchy/features/settings/locale_provider.dart';
+import 'package:witchy/features/settings/privacy_provider.dart';
 import 'package:witchy/features/settings/settings_screen.dart';
 import 'package:witchy/features/settings/theme_provider.dart';
+import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/models/reminder.dart';
 import 'package:witchy/models/user_profile.dart';
 import 'package:witchy/providers/app_state_provider.dart';
@@ -41,12 +47,15 @@ class FakeReminderScheduler extends ReminderScheduler {
 }
 
 void main() {
-  Future<void> pumpSettings(WidgetTester tester) async {
+  Future<void> pumpSettings(
+    WidgetTester tester, {
+    Map<String, Object> prefs = const <String, Object>{},
+  }) async {
     tester.view.physicalSize = const Size(800, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    SharedPreferences.setMockInitialValues(<String, Object>{});
+    SharedPreferences.setMockInitialValues(prefs);
     final StorageService storage =
         StorageService(await SharedPreferences.getInstance());
     final AppStateProvider state = AppStateProvider(storage)..load();
@@ -67,6 +76,8 @@ void main() {
     final CouplesProvider couples = CouplesProvider(CoupleService(storage))
       ..load();
     final ThemeProvider theme = ThemeProvider(storage)..load();
+    final PrivacyProvider privacy = PrivacyProvider(storage)..load();
+    final LocaleProvider locale = LocaleProvider(storage)..load();
 
     await tester.pumpWidget(
       MultiProvider(
@@ -78,21 +89,77 @@ void main() {
           ChangeNotifierProvider<AuthProvider>.value(value: auth),
           ChangeNotifierProvider<CouplesProvider>.value(value: couples),
           ChangeNotifierProvider<ThemeProvider>.value(value: theme),
+          ChangeNotifierProvider<PrivacyProvider>.value(value: privacy),
+          ChangeNotifierProvider<LocaleProvider>.value(value: locale),
         ],
-        child: const MaterialApp(home: Scaffold(body: SettingsScreen())),
+        child: Consumer<LocaleProvider>(
+          builder: (BuildContext context, LocaleProvider locale, Widget? _) {
+            return MaterialApp(
+              locale: locale.option.locale,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: const Scaffold(body: SettingsScreen()),
+            );
+          },
+        ),
       ),
     );
     await tester.pumpAndSettle();
   }
 
-  testWidgets('privacy tile shows a coming-soon snackbar',
+  testWidgets('anonymous mode toggle persists, signs out, and hides the '
+      'account card', (WidgetTester tester) async {
+    final Map<String, Object> prefs = <String, Object>{
+      'witchy.auth.session': jsonEncode(<String, Object>{
+        'id': 'u1',
+        'displayName': 'Ada',
+        'provider': 'google',
+        'signedInAt': DateTime(2026, 1, 1).toIso8601String(),
+      }),
+    };
+    await pumpSettings(tester, prefs: prefs);
+
+    expect(find.text('Ada'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.byType(SwitchListTile), 300);
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Anonymous mode is now on.'), findsOneWidget);
+    expect(find.text('Ada'), findsNothing);
+    expect(find.text('Account'), findsNothing);
+
+    final SharedPreferences stored =
+        await SharedPreferences.getInstance();
+    expect(stored.getString('witchy.auth.session'), isNull);
+    expect(
+      stored.getBool('witchy.privacy.anonymousMode'),
+      isTrue,
+    );
+  });
+
+  testWidgets('privacy policy tile opens the legal document screen',
       (WidgetTester tester) async {
     await pumpSettings(tester);
 
-    await tester.scrollUntilVisible(find.text('Privacy'), 300);
-    await tester.tap(find.text('Privacy'));
+    await tester.scrollUntilVisible(find.text('Privacy Policy'), 300);
+    await tester.tap(find.text('Privacy Policy'));
     await tester.pumpAndSettle();
-    expect(find.text('Privacy is coming soon.'), findsOneWidget);
+
+    expect(find.byType(LegalDocumentScreen), findsOneWidget);
+    expect(find.text('Your data stays on your device'), findsOneWidget);
+  });
+
+  testWidgets('terms of service tile opens the legal document screen',
+      (WidgetTester tester) async {
+    await pumpSettings(tester);
+
+    await tester.scrollUntilVisible(find.text('Terms of Service'), 300);
+    await tester.tap(find.text('Terms of Service'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LegalDocumentScreen), findsOneWidget);
+    expect(find.text('Acceptance of terms'), findsOneWidget);
   });
 
   testWidgets('about tile shows a coming-soon snackbar',
@@ -136,5 +203,26 @@ void main() {
 
     expect(find.byType(AuthScreen), findsOneWidget);
     expect(find.text('Sign in (optional)'), findsOneWidget);
+  });
+
+  testWidgets('language section sits above the theme card and switching to '
+      'Español localizes the screen', (WidgetTester tester) async {
+    await pumpSettings(tester);
+
+    await tester.scrollUntilVisible(find.text('Theme'), 300);
+    final double themeTop = tester.getTopLeft(find.text('Theme')).dy;
+    await tester.scrollUntilVisible(find.text('Language'), -300);
+    final double languageTop = tester.getTopLeft(find.text('Language')).dy;
+    expect(languageTop, lessThan(themeTop));
+
+    await tester.scrollUntilVisible(find.text('Español'), 300);
+    await tester.tap(find.text('Español'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Idioma'), findsOneWidget);
+    expect(find.text('Modo anónimo'), findsOneWidget);
+
+    final SharedPreferences stored = await SharedPreferences.getInstance();
+    expect(stored.getString('witchy.appearance.locale'), '"es"');
   });
 }

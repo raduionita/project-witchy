@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_card.dart';
 import 'article_reader_screen.dart';
@@ -28,10 +29,11 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ContentProvider provider = context.watch<ContentProvider>();
 
     if (!provider.loaded) {
-      return const Center(child: Text('Loading library…'));
+      return Center(child: Text(l10n.contentLoading));
     }
 
     final List<ContentItem> visible = provider.visibleContent;
@@ -48,7 +50,7 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
               AppSpacing.kSm,
             ),
             child: Text(
-              'Library',
+              l10n.navLibrary,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -60,7 +62,7 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
               controller: _searchController,
               onChanged: provider.setQuery,
               decoration: InputDecoration(
-                hintText: 'Search articles and videos',
+                hintText: l10n.contentSearch,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.kRadiusMd),
@@ -90,18 +92,19 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
   }
 
   Widget _typeSelector(BuildContext context, ContentProvider provider) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kMd),
       child: SegmentedButton<ContentType?>(
-        segments: const [
-          ButtonSegment<ContentType?>(value: null, label: Text('All')),
+        segments: <ButtonSegment<ContentType?>>[
+          ButtonSegment<ContentType?>(value: null, label: Text(l10n.contentAll)),
           ButtonSegment<ContentType?>(
             value: ContentType.article,
-            label: Text('Articles'),
+            label: Text(l10n.contentArticles),
           ),
           ButtonSegment<ContentType?>(
             value: ContentType.video,
-            label: Text('Videos'),
+            label: Text(l10n.contentVideos),
           ),
         ],
         selected: <ContentType?>{provider.typeFilter},
@@ -115,7 +118,8 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
   }
 
   Widget _categoryChips(BuildContext context, ContentProvider provider) {
-    final List<String> categories = <String>['All', ...provider.categories];
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final List<String> categories = <String>[l10n.contentAll, ...provider.categories];
     final String? active = provider.categoryFilter;
 
     return SizedBox(
@@ -149,6 +153,7 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
     ContentProvider provider,
     ContentItem item,
   ) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final bool favorite = provider.isFavorite(item.id);
 
@@ -176,7 +181,9 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
                 ),
                 const SizedBox(height: AppSpacing.kXs),
                 Text(
-                  item.type == ContentType.article ? 'Article' : 'Video',
+                  item.type == ContentType.article
+                      ? l10n.contentArticle
+                      : l10n.contentVideo,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: scheme.outline,
                       ),
@@ -185,7 +192,9 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
             ),
           ),
           IconButton(
-            tooltip: favorite ? 'Remove from favorites' : 'Add to favorites',
+            tooltip: favorite
+                ? l10n.contentRemoveFavorite
+                : l10n.contentAddFavorite,
             icon: Icon(
               favorite ? Icons.star : Icons.star_border,
               color: favorite ? scheme.tertiary : scheme.outline,
@@ -198,6 +207,7 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
   }
 
   Widget _emptyState(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.kLg),
@@ -211,12 +221,12 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
             ),
             const SizedBox(height: AppSpacing.kMd),
             Text(
-              'Nothing matches your search.',
+              l10n.contentEmptyTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: AppSpacing.kXs),
             Text(
-              'Try a different keyword or clear the filters.',
+              l10n.contentEmptyBody,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context).colorScheme.outline,
                   ),

@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../models/cycle_stats.dart';
 import '../../../utils/app_theme.dart';
 
@@ -13,13 +14,14 @@ class CycleLengthChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ColorScheme scheme = Theme.of(context).colorScheme;
     if (points.length < 2) {
       return SizedBox(
         height: 180,
         child: Center(
           child: Text(
-            'Track a few full cycles to see your length trend here.',
+            l10n.chartLengthEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.outline,
                 ),
@@ -98,7 +100,7 @@ class CycleLengthChart extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                   labelResolver: (HorizontalLine line) =>
-                      'avg ${average.toStringAsFixed(0)}d',
+                      l10n.chartAvg(average.toStringAsFixed(0)),
                 ),
               ),
             ],
@@ -110,7 +112,7 @@ class CycleLengthChart extends StatelessWidget {
               getTooltipItems: (List<LineBarSpot> touchedSpots) {
                 return touchedSpots.map((LineBarSpot spot) {
                   return LineTooltipItem(
-                    '${spot.y.toInt()} days',
+                    l10n.chartDays(spot.y.toInt()),
                     TextStyle(
                       color: scheme.onInverseSurface,
                       fontWeight: FontWeight.w600,

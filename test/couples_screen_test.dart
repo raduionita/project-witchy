@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/features/couples/couples_provider.dart';
 import 'package:witchy/features/couples/couples_screen.dart';
 import 'package:witchy/features/couples/couples_service.dart';
+import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/services/storage_service.dart';
 
 Future<StorageService> freshStorage() async {
@@ -22,7 +23,11 @@ Future<CouplesProvider> pumpCouplesScreen(
   await tester.pumpWidget(
     ChangeNotifierProvider<CouplesProvider>.value(
       value: provider,
-      child: const MaterialApp(home: CouplesScreen()),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const CouplesScreen(),
+      ),
     ),
   );
   await tester.pumpAndSettle();

@@ -1,3 +1,4 @@
+import '../../l10n/app_localizations.dart';
 import '../../models/reminder.dart';
 import '../../models/reminder_type.dart';
 import '../../models/time_of_day_model.dart';
@@ -5,19 +6,24 @@ import '../../models/time_of_day_model.dart';
 /// Sensible per-type defaults and labels for reminders.
 abstract class ReminderDefaults {
   /// Human label for a [ReminderType].
-  static String typeLabel(ReminderType type) => switch (type) {
-        ReminderType.periodStart => 'Period start',
-        ReminderType.periodEnd => 'Period end',
-        ReminderType.medication => 'Medication',
-        ReminderType.water => 'Water',
-        ReminderType.sleep => 'Sleep',
-        ReminderType.custom => 'Custom',
+  static String typeLabel(AppLocalizations l10n, ReminderType type) =>
+      switch (type) {
+        ReminderType.periodStart => l10n.reminderTypePeriodStart,
+        ReminderType.periodEnd => l10n.reminderTypePeriodEnd,
+        ReminderType.medication => l10n.reminderTypeMedication,
+        ReminderType.water => l10n.reminderTypeWater,
+        ReminderType.sleep => l10n.reminderTypeSleep,
+        ReminderType.custom => l10n.reminderTypeCustom,
       };
 
   /// A fully-formed [Reminder] pre-filled with a sensible configuration.
-  static Reminder forType(ReminderType type, {required String id}) {
+  static Reminder forType(
+    AppLocalizations l10n,
+    ReminderType type, {
+    required String id,
+  }) {
     final (String title, String body, TimeOfDayModel time, List<int> weekdays) =
-        _preset(type);
+        _preset(l10n, type);
     return Reminder(
       id: id,
       type: type,
@@ -28,7 +34,8 @@ abstract class ReminderDefaults {
     );
   }
 
-  static (String, String, TimeOfDayModel, List<int>) _preset(ReminderType type) {
+  static (String, String, TimeOfDayModel, List<int>) _preset(
+      AppLocalizations l10n, ReminderType type) {
     const TimeOfDayModel morning = TimeOfDayModel(hour: 8, minute: 0);
     const TimeOfDayModel midday = TimeOfDayModel(hour: 10, minute: 0);
     const TimeOfDayModel evening = TimeOfDayModel(hour: 21, minute: 30);
@@ -36,38 +43,38 @@ abstract class ReminderDefaults {
 
     return switch (type) {
       ReminderType.periodStart => (
-          'Period coming up',
-          'Your period is expected to start soon.',
+          l10n.presetPeriodComingUp,
+          l10n.presetBodyPeriodComingUp,
           morning,
           const <int>[],
         ),
       ReminderType.periodEnd => (
-          'Period reminder',
-          'Your period may be wrapping up.',
+          l10n.presetPeriodReminder,
+          l10n.presetBodyPeriodReminder,
           morning,
           const <int>[],
         ),
       ReminderType.medication => (
-          'Medication',
-          'Take your medication now.',
+          l10n.presetMedication,
+          l10n.presetBodyMedication,
           TimeOfDayModel(hour: 9, minute: 0),
           everyDay,
         ),
       ReminderType.water => (
-          'Water break',
-          'Time for some water.',
+          l10n.presetWaterBreak,
+          l10n.presetBodyWater,
           midday,
           everyDay,
         ),
       ReminderType.sleep => (
-          'Wind down',
-          'Start winding down for the night.',
+          l10n.presetWindDown,
+          l10n.presetBodySleep,
           evening,
           everyDay,
         ),
       ReminderType.custom => (
-          'Reminder',
-          'You set this reminder.',
+          l10n.presetReminder,
+          l10n.presetBodyCustom,
           midday,
           everyDay,
         ),

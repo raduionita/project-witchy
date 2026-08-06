@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../models/symptom_log.dart';
 import '../../../utils/date_utils.dart';
 
@@ -14,6 +15,7 @@ class SymptomsOverTimeChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final DateTime now = dateOnly(DateTime.now());
 
@@ -38,7 +40,7 @@ class SymptomsOverTimeChart extends StatelessWidget {
         height: 180,
         child: Center(
           child: Text(
-            'Symptom entries will appear here once you start logging.',
+            l10n.chartOverTimeEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.outline,
                 ),
@@ -101,7 +103,7 @@ class SymptomsOverTimeChart extends StatelessWidget {
               getTooltipItems: (List<LineBarSpot> touchedSpots) {
                 return touchedSpots.map((LineBarSpot spot) {
                   return LineTooltipItem(
-                    '${spot.y.toInt()} entries',
+                    l10n.chartEntries(spot.y.toInt()),
                     TextStyle(
                       color: scheme.onInverseSurface,
                       fontWeight: FontWeight.w600,

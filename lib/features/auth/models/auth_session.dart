@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 part 'auth_session.freezed.dart';
 part 'auth_session.g.dart';
 
@@ -26,8 +28,9 @@ abstract class AuthSession with _$AuthSession {
 }
 
 /// Localized label for a sign-in provider.
-String authProviderLabel(AuthProviderType provider) => switch (provider) {
-      AuthProviderType.google => 'Google',
-      AuthProviderType.apple => 'Apple',
-      AuthProviderType.anonymous => 'Anonymous',
+String authProviderLabel(AppLocalizations l10n, AuthProviderType provider) =>
+    switch (provider) {
+      AuthProviderType.google => l10n.authProviderGoogle,
+      AuthProviderType.apple => l10n.authProviderApple,
+      AuthProviderType.anonymous => l10n.authProviderAnonymous,
     };

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/pregnancy_status.dart';
 import '../../models/user_profile.dart';
 import '../../providers/app_state_provider.dart';
@@ -38,7 +39,7 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
       initialDate: initial,
       firstDate: DateTime(initial.year - 2),
       lastDate: dateOnly(DateTime.now()),
-      helpText: 'First day of your last period',
+      helpText: AppLocalizations.of(context).pregnancyPickerHelp,
     );
     if (picked == null || !mounted) return;
 
@@ -52,6 +53,7 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final UserProfile? profile = context.watch<AppStateProvider>().profile.profile;
     final DateTime? lmp = profile?.pregnancyLmp;
 
@@ -60,7 +62,7 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
         padding: const EdgeInsets.all(AppSpacing.kMd),
         children: [
           Text(
-            'Pregnancy',
+            l10n.pregnancyTitle,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -78,6 +80,7 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
   }
 
   Widget _setupCard(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,25 +88,25 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
           Icon(Icons.pregnant_woman, color: Theme.of(context).colorScheme.primary),
           const SizedBox(height: AppSpacing.kSm),
           Text(
-            'Set your last period date',
+            l10n.pregnancySetupTitle,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: AppSpacing.kXs),
           Text(
-            'Weeks and due date are calculated from the first day of your '
-            'last menstrual period.',
+            l10n.pregnancySetupBody,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: AppSpacing.kMd),
-          AppButton(label: 'Choose date', onPressed: _pickLmp),
+          AppButton(label: l10n.pregnancyChooseDate, onPressed: _pickLmp),
         ],
       ),
     );
   }
 
   Widget _statusCards(BuildContext context, PregnancyStatus status) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final double progress =
         PregnancyCalculator().progressPercent(status).clamp(0, 100);
@@ -116,14 +119,14 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Today',
+                l10n.homeToday,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
               const SizedBox(height: AppSpacing.kSm),
               Text(
-                TrackerInsightText.pregnancyHeadline(status),
+                TrackerInsightText.pregnancyHeadline(l10n, status),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: scheme.primary,
@@ -140,38 +143,39 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
               ),
               const SizedBox(height: AppSpacing.kXs),
               Text(
-                '${progress.round()}% of 40 weeks',
+                l10n.pregnancyProgress(progress.round()),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: scheme.outline,
                     ),
               ),
               const SizedBox(height: AppSpacing.kMd),
               Text(
-                TrackerInsightText.pregnancyDueLine(status),
+                TrackerInsightText.pregnancyDueLine(l10n, status),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
           ),
         ),
         const SizedBox(height: AppSpacing.kMd),
-        const AppSectionHeader(title: 'This stage'),
+        AppSectionHeader(title: l10n.pregnancyThisStage),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                PregnancyGuidance.trimesterTitle(status.trimester),
+                PregnancyGuidance.trimesterTitle(l10n, status.trimester),
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
               const SizedBox(height: AppSpacing.kSm),
               Text(
-                PregnancyGuidance.stageSummary(status.trimester),
+                PregnancyGuidance.stageSummary(l10n, status.trimester),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: AppSpacing.kMd),
-              for (final String tip in PregnancyGuidance.tipsFor(status.trimester))
+              for (final String tip
+                  in PregnancyGuidance.tipsFor(l10n, status.trimester))
                 _tipRow(context, tip),
             ],
           ),
@@ -205,7 +209,7 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
 
   Widget _disclaimerCard(BuildContext context) {
     return Text(
-      TrackerInsightText.disclaimer(),
+      TrackerInsightText.disclaimer(AppLocalizations.of(context)),
       style: Theme.of(context).textTheme.bodySmall?.copyWith(
             fontStyle: FontStyle.italic,
             color: Theme.of(context).colorScheme.outline,

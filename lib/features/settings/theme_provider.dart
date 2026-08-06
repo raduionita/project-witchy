@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../services/storage_service.dart';
 
 /// Theme appearance options shown in Settings.
@@ -10,8 +11,8 @@ enum AppThemeOption {
 /// Presentation helpers for [AppThemeOption].
 extension AppThemeOptionX on AppThemeOption {
   /// Human label shown in the Settings picker.
-  String get label => switch (this) {
-        AppThemeOption.light => 'Default (light)',
+  String label(AppLocalizations l10n) => switch (this) {
+        AppThemeOption.light => l10n.themeDefaultLight,
       };
 
   /// The [ThemeMode] that materializes this option.

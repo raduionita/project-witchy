@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/features/reminders/reminder_provider.dart';
 import 'package:witchy/features/reminders/reminder_scheduler.dart';
 import 'package:witchy/features/reminders/reminders_screen.dart';
+import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/models/reminder.dart';
 import 'package:witchy/models/reminder_type.dart';
 import 'package:witchy/models/time_of_day_model.dart';
@@ -64,7 +65,11 @@ void main() {
           ChangeNotifierProvider<AppStateProvider>.value(value: state),
           ChangeNotifierProvider<ReminderProvider>.value(value: provider),
         ],
-        child: const MaterialApp(home: RemindersScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const RemindersScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

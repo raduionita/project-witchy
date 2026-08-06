@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/symptom_insights.dart';
 import '../../providers/symptom_provider.dart';
 import '../../services/symptom_pattern_service.dart';
@@ -26,6 +27,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final SymptomProvider provider = context.watch<SymptomProvider>();
     final SymptomInsights insights = provider.insights;
 
@@ -43,7 +45,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
         padding: const EdgeInsets.all(AppSpacing.kMd),
         children: [
           Text(
-            'Insights',
+            l10n.navInsights,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -51,10 +53,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
           const SizedBox(height: AppSpacing.kSm),
           Text(
             insights.totalLogs == 0
-                ? 'Log symptoms from the calendar to unlock personalized insights.'
-                : 'Based on ${insights.totalLogs} logged '
-                    '${insights.totalLogs == 1 ? 'day' : 'days'} · '
-                    '${insights.totalSymptomCount} symptom entries.',
+                ? l10n.insightsEmpty
+                : l10n.insightsSummary(
+                    insights.totalLogs,
+                    insights.totalSymptomCount,
+                  ),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 ),
@@ -70,7 +73,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.history),
-                  label: const Text('Cycle history'),
+                  label: Text(l10n.cycleHistoryTitle),
                 ),
               ),
               const SizedBox(width: AppSpacing.kSm),
@@ -82,25 +85,25 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     ),
                   ),
                   icon: const Icon(Icons.receipt_long),
-                  label: const Text('Monthly report'),
+                  label: Text(l10n.monthlyReportTitle),
                 ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.kMd),
-          const AppSectionHeader(title: 'Top symptoms'),
+          AppSectionHeader(title: l10n.insightsTopSymptoms),
           AppCard(
             child: SymptomFrequencyBarChart(frequencies: insights.topSymptoms),
           ),
           const SizedBox(height: AppSpacing.kMd),
-          const AppSectionHeader(title: 'Symptoms over time'),
+          AppSectionHeader(title: l10n.insightsSymptomsOverTime),
           AppCard(
             child: SymptomsOverTimeChart(logs: provider.recentLogs),
           ),
           const SizedBox(height: AppSpacing.kMd),
           if (selected != null) ...[
             AppSectionHeader(
-              title: 'When does "$selected" happen?',
+              title: l10n.insightsWhen(selected),
               trailing: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: selected,
@@ -146,14 +149,15 @@ class _TrendLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final SymptomTrend trend = provider.trendFor(symptom);
     final (IconData icon, String label) = switch (trend) {
-      SymptomTrend.increasing => (Icons.trending_up, 'Rising trend'),
-      SymptomTrend.decreasing => (Icons.trending_down, 'Falling trend'),
-      SymptomTrend.stable => (Icons.trending_flat, 'Consistent'),
+      SymptomTrend.increasing => (Icons.trending_up, l10n.trendRising),
+      SymptomTrend.decreasing => (Icons.trending_down, l10n.trendFalling),
+      SymptomTrend.stable => (Icons.trending_flat, l10n.trendConsistent),
       SymptomTrend.insufficient => (
           Icons.info_outline,
-          'Keep logging to spot a trend',
+          l10n.trendInsufficient,
         ),
     };
 
@@ -184,6 +188,7 @@ class _DayIndexCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final List<int> dayIndexes = provider.dayIndexesFor(symptom);
 
     return AppCard(
@@ -191,7 +196,7 @@ class _DayIndexCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Typical cycle day',
+            l10n.insightsTypicalDay,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -199,7 +204,7 @@ class _DayIndexCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.kSm),
           if (dayIndexes.isEmpty)
             Text(
-              'No pattern found yet — keep logging.',
+              l10n.insightsNoPattern,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.outline,
                   ),
@@ -212,14 +217,14 @@ class _DayIndexCard extends StatelessWidget {
   }
 
   Widget _strip(BuildContext context, List<int> dayIndexes) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final int average =
         dayIndexes.fold<int>(0, (int sum, int v) => sum + v) ~/ dayIndexes.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'On average around day $average of your cycle '
-          '(range ${dayIndexes.first}–${dayIndexes.last}).',
+          l10n.insightsAverage(average, dayIndexes.first, dayIndexes.last),
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: AppSpacing.kSm),
@@ -229,7 +234,7 @@ class _DayIndexCard extends StatelessWidget {
           children: [
             for (final int index in dayIndexes)
               Chip(
-                label: Text('Day $index'),
+                label: Text(l10n.insightsDay(index)),
                 labelStyle: Theme.of(context).textTheme.labelSmall,
                 visualDensity: VisualDensity.compact,
               ),

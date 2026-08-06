@@ -6,8 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/features/auth/auth_gateway.dart';
 import 'package:witchy/features/auth/auth_provider.dart';
 import 'package:witchy/features/auth/auth_service.dart';
+import 'package:witchy/features/settings/locale_provider.dart';
+import 'package:witchy/features/settings/privacy_provider.dart';
 import 'package:witchy/features/settings/settings_screen.dart';
 import 'package:witchy/features/settings/theme_provider.dart';
+import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/providers/app_state_provider.dart';
 import 'package:witchy/services/storage_service.dart';
 
@@ -24,14 +27,22 @@ Future<ThemeProvider> pumpSettingsScreen(WidgetTester tester) async {
   final AuthProvider authProvider = AuthProvider(
     AuthService(storage: storage, gateway: NativeAuthGateway()),
   )..load();
+  final PrivacyProvider privacyProvider = PrivacyProvider(storage)..load();
+  final LocaleProvider localeProvider = LocaleProvider(storage)..load();
   await tester.pumpWidget(
     MultiProvider(
       providers: [
         ChangeNotifierProvider<AppStateProvider>.value(value: state),
         ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+        ChangeNotifierProvider<PrivacyProvider>.value(value: privacyProvider),
+        ChangeNotifierProvider<LocaleProvider>.value(value: localeProvider),
       ],
-      child: const MaterialApp(home: SettingsScreen()),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const SettingsScreen(),
+      ),
     ),
   );
   await tester.pumpAndSettle();

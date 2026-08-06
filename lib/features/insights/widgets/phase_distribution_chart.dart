@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../models/cycle_phase.dart';
 import '../../../models/symptom_insights.dart';
 
@@ -25,7 +26,7 @@ class PhaseDistributionChart extends StatelessWidget {
         height: 180,
         child: Center(
           child: Text(
-            'No phase data yet for this symptom.',
+            AppLocalizations.of(context).chartPhaseEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 ),
@@ -73,6 +74,7 @@ class PhaseDistributionChart extends StatelessWidget {
   }
 
   Widget _legendRow(BuildContext context, CyclePhase phase) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final int count = breakdown.byPhase[phase] ?? 0;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
@@ -89,7 +91,12 @@ class PhaseDistributionChart extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              _phaseLabel(phase),
+              switch (phase) {
+                CyclePhase.menstruation => l10n.chartPhaseMenstrual,
+                CyclePhase.follicular => l10n.chartPhaseFollicular,
+                CyclePhase.ovulatory => l10n.chartPhaseOvulation,
+                CyclePhase.luteal => l10n.chartPhaseLuteal,
+              },
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
@@ -103,11 +110,4 @@ class PhaseDistributionChart extends StatelessWidget {
       ),
     );
   }
-
-  String _phaseLabel(CyclePhase phase) => switch (phase) {
-        CyclePhase.menstruation => 'Menstrual',
-        CyclePhase.follicular => 'Follicular',
-        CyclePhase.ovulatory => 'Ovulation',
-        CyclePhase.luteal => 'Luteal',
-      };
 }

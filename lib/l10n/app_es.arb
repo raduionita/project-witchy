@@ -1,0 +1,577 @@
+{
+  "@@locale": "es",
+  "settingsTitle": "Ajustes",
+  "privacy": "Privacidad",
+  "anonymousMode": "Modo anónimo",
+  "anonymousModeDescription": "Oculta tu nombre y correo de los datos guardados en este dispositivo.",
+  "privacyPolicy": "Política de privacidad",
+  "termsOfService": "Términos del servicio",
+  "privacyPolicyTitle": "Política de privacidad",
+  "termsOfServiceTitle": "Términos del servicio",
+  "about": "Acerca de",
+  "language": "Idioma",
+  "systemDefault": "Predeterminado del sistema",
+  "systemDefaultDescription": "Sigue el idioma de tu dispositivo.",
+  "navHome": "Inicio",
+  "navCalendar": "Calendario",
+  "navLogging": "Registro",
+  "navInsights": "Análisis",
+  "navLibrary": "Biblioteca",
+  "navSettings": "Ajustes",
+  "homeWelcomeTitle": "Bienvenida a Witchy",
+  "homeSetupTitle": "Configura tu ciclo",
+  "homeSetupBody": "Completa la breve configuración para desbloquear predicciones personalizadas.",
+  "homeToday": "Hoy",
+  "homeCycleDay": "Día {day} de tu ciclo",
+  "@homeCycleDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "homeNextPeriod": "Próxima regla",
+  "homeInDays": "{count, plural, one{En 1 día} other{En {count} días}}",
+  "@homeInDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeFertileWindow": "Ventana fértil",
+  "phaseMenstruation": "Menstruación",
+  "phaseFollicular": "Fase folicular",
+  "phaseOvulation": "Ovulación",
+  "phaseLuteal": "Fase lútea",
+  "settingsModeActive": "{mode} está ahora activo.",
+  "@settingsModeActive": {
+    "placeholders": {
+      "mode": {
+        "type": "Object"
+      }
+    }
+  },
+  "settingsComingSoon": "{feature} llegará pronto.",
+  "@settingsComingSoon": {
+    "placeholders": {
+      "feature": {
+        "type": "Object"
+      }
+    }
+  },
+  "settingsAnonymousOn": "El modo anónimo ahora está activado.",
+  "settingsAnonymousOff": "El modo anónimo ahora está desactivado.",
+  "settingsPrivacySubtitle": "Cómo se protegen tus datos.",
+  "settingsTermsSubtitle": "Reglas para usar Witchy.",
+  "settingsAboutSubtitle": "Versión de Witchy e información legal.",
+  "settingsTrackingModeTitle": "Modo de seguimiento",
+  "settingsTrackingModeSubtitle": "Elige en qué se enfoca Witchy.",
+  "settingsLogsShared": "Los registros se comparten",
+  "settingsLogsSharedSubtitle": "Tus registros de síntomas y regla permanecen contigo en todos los modos.",
+  "settingsRemindersTitle": "Recordatorios",
+  "settingsRemindersSubtitle": "Regla, medicación, agua y sueño.",
+  "settingsCouplesTitle": "Modo pareja",
+  "settingsCouplesSubtitle": "Comparte un espacio privado (próximamente).",
+  "settingsLanguageSubtitle": "Elige cómo te lee Witchy.",
+  "settingsThemeTitle": "Tema",
+  "settingsThemeSubtitle": "Elige cómo se ve Witchy.",
+  "settingsSignOut": "Cerrar sesión",
+  "settingsAccountTitle": "Cuenta",
+  "settingsAccountSubtitle": "Inicia sesión para activar funciones opcionales. Tus datos permanecen en tu dispositivo.",
+  "themeDefaultLight": "Claro (por defecto)",
+  "trackingModeCycle": "Seguimiento del ciclo",
+  "trackingModePregnancy": "Embarazo",
+  "trackingModePerimenopause": "Perimenopausia",
+  "trackingModeCycleDesc": "Regla, fertilidad y predicciones del ciclo.",
+  "trackingModePregnancyDesc": "Seguimiento de semanas, trimestre y fecha prevista.",
+  "trackingModePerimenopauseDesc": "Seguimiento centrado en síntomas para esta etapa.",
+  "authSignedIn": "Sesión iniciada. Tu cuenta permanece en este dispositivo.",
+  "authSignInOptional": "Iniciar sesión (opcional)",
+  "authBody": "Witchy nunca necesita una cuenta. Iniciar sesión te da una identidad constante para funciones como el modo pareja: todo permanece en tu dispositivo.",
+  "authGoogleSignIn": "Iniciar sesión con Google",
+  "authAppleSignIn": "Iniciar sesión con Apple",
+  "authAnonymousDebug": "Iniciar sesión anónima (debug)",
+  "authProviderGoogle": "Google",
+  "authProviderApple": "Apple",
+  "authProviderAnonymous": "Anónimo",
+  "onboardingBack": "Atrás",
+  "onboardingFinish": "Finalizar",
+  "onboardingNext": "Siguiente",
+  "onboardingWelcomeBody": "Vamos a configurar tu ciclo para mostrar predicciones precisas.",
+  "onboardingDisclaimer": "Witchy es educativo y no es una herramienta de diagnóstico ni un método anticonceptivo.",
+  "onboardingLastPeriod": "Inicio de la última regla",
+  "onboardingCycleLength": "¿Cuál es tu duración promedio del ciclo?",
+  "onboardingPeriodLength": "¿Cuánto dura tu regla?",
+  "onboardingDaysSuffix": " días",
+  "onboardingAccountTitle": "Crear una cuenta (opcional)",
+  "onboardingAccountBody": "Witchy funciona perfectamente sin una cuenta. Iniciar sesión más adelante activa funciones opcionales: todo permanece en tu dispositivo.",
+  "onboardingSkip": "Omitir por ahora",
+  "loggingUseCalendar": "Usa la pestaña Calendario para elegir un día.",
+  "loggingLogPeriod": "Registrar regla",
+  "loggingLogPeriodSubtitle": "Flujo, síntomas, ánimo y notas",
+  "loggingLogFromCalendar": "Registrar desde el calendario",
+  "loggingLogFromCalendarSubtitle": "Elige un día para registrar o editar",
+  "loggingRecentLogs": "Registros recientes",
+  "loggingEmpty": "Aún no hay registros. Toca \"Registrar regla\" para empezar.",
+  "logFlowIntensity": "Intensidad del flujo",
+  "logSymptoms": "Síntomas",
+  "logMood": "Ánimo",
+  "logNotes": "Notas (opcional)",
+  "logSave": "Guardar registro",
+  "logPeriodTitle": "Registrar {date}",
+  "@logPeriodTitle": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "logSymptomTitle": "Síntomas · {date}",
+  "@logSymptomTitle": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "flowLight": "Ligero",
+  "flowMedium": "Moderado",
+  "flowHeavy": "Abundante",
+  "moodHappy": "Feliz",
+  "moodCalm": "Tranquila",
+  "moodAnxious": "Ansiosa",
+  "moodIrritable": "Irritable",
+  "moodSad": "Triste",
+  "moodEnergetic": "Enérgica",
+  "symptomCategoryPain": "Dolor y molestias",
+  "symptomCramps": "Calambres",
+  "symptomHeadache": "Dolor de cabeza",
+  "symptomBackPain": "Dolor de espalda",
+  "symptomCategoryDigestive": "Digestivo",
+  "symptomBloating": "Hinchazón",
+  "symptomNausea": "Náuseas",
+  "symptomCategoryBreastSkin": "Pecho y piel",
+  "symptomTenderBreasts": "Pechos sensibles",
+  "symptomAcne": "Acné",
+  "symptomCategoryEnergyMood": "Energía y ánimo",
+  "symptomFatigue": "Fatiga",
+  "remindersTitle": "Recordatorios",
+  "remindersNew": "Nuevo recordatorio",
+  "remindersYour": "Tus recordatorios",
+  "remindersNotificationsOff": "Las notificaciones están desactivadas",
+  "remindersNotificationsOffBody": "Activa las notificaciones para que se puedan enviar tus recordatorios.",
+  "remindersEnable": "Activar notificaciones",
+  "remindersHint": "Los recordatorios se programan en tu dispositivo y nunca lo abandonan.",
+  "remindersEmptyTitle": "Aún no hay recordatorios",
+  "remindersEmptyBody": "Crea uno para recibir un aviso suave en el momento adecuado.",
+  "remindersEdit": "Editar",
+  "remindersDelete": "Eliminar",
+  "remindersBasedOnPrediction": "Basado en tu próxima regla prevista ({date}).",
+  "@remindersBasedOnPrediction": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "remindersFollowsPrediction": "Sigue las fechas previstas de tu regla.",
+  "remindersEveryAt": "Cada {days} a las {time}",
+  "@remindersEveryAt": {
+    "placeholders": {
+      "days": {
+        "type": "Object"
+      },
+      "time": {
+        "type": "Object"
+      }
+    }
+  },
+  "reminderTypePeriodStart": "Inicio de la regla",
+  "reminderTypePeriodEnd": "Fin de la regla",
+  "reminderTypeMedication": "Medicación",
+  "reminderTypeWater": "Agua",
+  "reminderTypeSleep": "Sueño",
+  "reminderTypeCustom": "Personalizado",
+  "presetPeriodComingUp": "Regla próxima",
+  "presetPeriodReminder": "Recordatorio de regla",
+  "presetMedication": "Medicación",
+  "presetWaterBreak": "Pausa para el agua",
+  "presetWindDown": "Relajarse",
+  "presetReminder": "Recordatorio",
+  "presetBodyPeriodComingUp": "Se espera que tu regla comience pronto.",
+  "presetBodyPeriodReminder": "Tu regla puede estar terminando.",
+  "presetBodyMedication": "Toma tu medicación ahora.",
+  "presetBodyWater": "Hora de beber un poco de agua.",
+  "presetBodySleep": "Empieza a relajarte para la noche.",
+  "presetBodyCustom": "Tú configuraste este recordatorio.",
+  "weekdayMon": "Lun",
+  "weekdayTue": "Mar",
+  "weekdayWed": "Mié",
+  "weekdayThu": "Jue",
+  "weekdayFri": "Vie",
+  "weekdaySat": "Sáb",
+  "weekdaySun": "Dom",
+  "calendarWeekdayMon": "L",
+  "calendarWeekdayTue": "M",
+  "calendarWeekdayWed": "X",
+  "calendarWeekdayThu": "J",
+  "calendarWeekdayFri": "V",
+  "calendarWeekdaySat": "S",
+  "calendarWeekdaySun": "D",
+  "reminderEditorPickDay": "Elige al menos un día para este recordatorio.",
+  "reminderEditorDefaultTitle": "Recordatorio",
+  "reminderEditorEdit": "Editar recordatorio",
+  "reminderEditorType": "Tipo",
+  "reminderEditorTitle": "Título",
+  "reminderEditorMessage": "Mensaje",
+  "reminderEditorTime": "Hora",
+  "reminderEditorFollowsPeriod": "Este recordatorio sigue las fechas previstas de tu regla.",
+  "reminderEditorSave": "Guardar recordatorio",
+  "timeAm": "a. m.",
+  "timePm": "p. m.",
+  "contentLoading": "Cargando biblioteca…",
+  "contentSearch": "Buscar artículos y videos",
+  "contentAll": "Todo",
+  "contentArticles": "Artículos",
+  "contentVideos": "Videos",
+  "contentArticle": "Artículo",
+  "contentVideo": "Video",
+  "contentRemoveFavorite": "Quitar de favoritos",
+  "contentAddFavorite": "Añadir a favoritos",
+  "contentEmptyTitle": "Nada coincide con tu búsqueda.",
+  "contentEmptyBody": "Prueba con otra palabra clave o limpia los filtros.",
+  "contentArticleDisclaimer": "Estos artículos son para educación general y no constituyen consejo médico. Habla con un profesional de la salud sobre tu bienestar.",
+  "contentVideoError": "No se pudo abrir este video.",
+  "contentWatch": "Ver",
+  "couplesTitle": "Modo pareja",
+  "couplesYourLink": "Tu enlace: {code}",
+  "@couplesYourLink": {
+    "placeholders": {
+      "code": {
+        "type": "Object"
+      }
+    }
+  },
+  "couplesComingSoon": "Próximamente",
+  "couplesBody": "El modo pareja permite que dos personas compartan un espacio privado para su ciclo. La vinculación necesita un backend seguro que aún está en desarrollo: nada se comparte todavía y tus datos permanecen en tu dispositivo.",
+  "couplesCreateLink": "Crear mi enlace de compartir",
+  "couplesPlaceholderLink": "Tu enlace provisional",
+  "couplesLocalOnly": "Solo local: no se envía a ningún sitio.",
+  "couplesCreated": "Creado {date}",
+  "@couplesCreated": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "relativeJustNow": "ahora mismo",
+  "relativeMinutes": "hace {count} min",
+  "@relativeMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeHours": "hace {count} h",
+  "@relativeHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeDays": "hace {count} d",
+  "@relativeDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightsEmpty": "Registra síntomas desde el calendario para desbloquear análisis personalizados.",
+  "insightsSummary": "Basado en {count} {count, plural, one{día registrado} other{días registrados}} · {total} entradas de síntomas.",
+  "@insightsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "cycleHistoryTitle": "Historial del ciclo",
+  "monthlyReportTitle": "Informe mensual",
+  "insightsTopSymptoms": "Síntomas principales",
+  "insightsSymptomsOverTime": "Síntomas a lo largo del tiempo",
+  "insightsWhen": "¿Cuándo ocurre \"{symptom}\"?",
+  "@insightsWhen": {
+    "placeholders": {
+      "symptom": {
+        "type": "Object"
+      }
+    }
+  },
+  "trendRising": "Tendencia al alza",
+  "trendFalling": "Tendencia a la baja",
+  "trendConsistent": "Constante",
+  "trendInsufficient": "Sigue registrando para detectar una tendencia",
+  "insightsTypicalDay": "Día típico del ciclo",
+  "insightsNoPattern": "Aún no se encuentra un patrón: sigue registrando.",
+  "insightsAverage": "En promedio, alrededor del día {average} de tu ciclo (rango {first}–{last}).",
+  "@insightsAverage": {
+    "placeholders": {
+      "average": {
+        "type": "int"
+      },
+      "first": {
+        "type": "int"
+      },
+      "last": {
+        "type": "int"
+      }
+    }
+  },
+  "insightsDay": "Día {index}",
+  "@insightsDay": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "cycleHistoryEmpty": "Aún no se detectan ciclos. Registra algunos días de regla y aquí aparecerá tu historial.",
+  "cycleLengthTrendTitle": "Tendencia de la duración del ciclo",
+  "nextPeriodPredicted": "Próxima regla prevista",
+  "cycleHistoryCycles": "Ciclos",
+  "cycleHistoryGlance": "Tu ciclo de un vistazo",
+  "metricAverageLength": "Duración promedio",
+  "metricCompletedCycles": "Ciclos completados",
+  "metricRange": "Rango (corto–largo)",
+  "metricPredictionAccuracy": "Precisión de la predicción",
+  "cycleCurrent": "Ciclo actual",
+  "cycleLengthDays": "{length} días",
+  "@cycleLengthDays": {
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "metricAccuracyDays": "±{days} días",
+  "@metricAccuracyDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reportThisMonth": "Este mes",
+  "reportPeriodDays": "Días de regla registrados",
+  "reportDaysLogged": "Días registrados",
+  "reportCycleMetrics": "Métricas del ciclo",
+  "reportAverageCycleLength": "Duración promedio del ciclo",
+  "reportMostLogged": "Lo más registrado este mes",
+  "reportLogs": "Registros",
+  "reportNoLogs": "Aún no hay registros este mes.",
+  "reportLocalOnly": "Todos los informes se calculan localmente en tu dispositivo. Nada los abandona.",
+  "reportPredictionEmpty": "Registra un par de reglas para poder predecir la próxima con precisión.",
+  "reportPrediction": "Se espera tu próxima regla alrededor del {date}. Tu ventana fértil va del {start} al {end}.",
+  "@reportPrediction": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      },
+      "start": {
+        "type": "Object"
+      },
+      "end": {
+        "type": "Object"
+      }
+    }
+  },
+  "perimenopauseSummaryTitle": "Tu resumen",
+  "perimenopauseEmpty": "Aún no hay registros de síntomas en esta etapa.",
+  "perimenopauseLogToday": "Registrar hoy",
+  "perimenopauseLogTodayBody": "Toca un síntoma para registrarlo hoy.",
+  "perimenopauseLogged": "\"{symptom}\" registrado para hoy.",
+  "@perimenopauseLogged": {
+    "placeholders": {
+      "symptom": {
+        "type": "Object"
+      }
+    }
+  },
+  "periCatBodyTemp": "Temperatura corporal",
+  "periCatSleep": "Sueño y energía",
+  "periCatMood": "Ánimo y concentración",
+  "periCatCycle": "Cambios en el ciclo",
+  "periCatOther": "Otros",
+  "periHotFlashes": "Sofocos",
+  "periNightSweats": "Sudores nocturnos",
+  "periChills": "Escalofríos",
+  "periTroubleSleeping": "Problemas para dormir",
+  "periFatigue": "Fatiga",
+  "periWakingNight": "Despertarse por la noche",
+  "periMoodSwings": "Cambios de ánimo",
+  "periIrritability": "Irritabilidad",
+  "periBrainFog": "Niebla mental",
+  "periAnxiety": "Ansiedad",
+  "periIrregularPeriods": "Reglas irregulares",
+  "periHeavierFlow": "Flujo más abundante",
+  "periLighterFlow": "Flujo más ligero",
+  "periMissedPeriods": "Reglas perdidas",
+  "periVaginalDryness": "Sequedad vaginal",
+  "periJointPain": "Dolor articular",
+  "periHeadaches": "Dolores de cabeza",
+  "periLowLibido": "Poca libido",
+  "pregnancyTitle": "Embarazo",
+  "pregnancyPickerHelp": "Primer día de tu última regla",
+  "pregnancySetupTitle": "Define la fecha de tu última regla",
+  "pregnancySetupBody": "Las semanas y la fecha prevista se calculan desde el primer día de tu última regla.",
+  "pregnancyChooseDate": "Elegir fecha",
+  "pregnancyProgress": "{percent}% de 40 semanas",
+  "@pregnancyProgress": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "pregnancyThisStage": "Esta etapa",
+  "trimesterFirst": "Primer trimestre",
+  "trimesterSecond": "Segundo trimestre",
+  "trimesterThird": "Tercer trimestre",
+  "stageSummaryFirst": "Se están formando los órganos y sistemas principales. Son comunes la fatiga y las náuseas.",
+  "stageSummarySecond": "El crecimiento se acelera y muchas personas sienten un aumento de energía. A menudo comienzan los movimientos del bebé.",
+  "stageSummaryThird": "El bebé crece rápidamente y se prepara para el nacimiento. Importan el descanso y planificar con antelación.",
+  "tipFirst1": "Toma un suplemento de ácido fólico (400–800 mcg) si un profesional lo recomienda.",
+  "tipFirst2": "Mantente hidratada y come porciones pequeñas y frecuentes si las náuseas son un problema.",
+  "tipFirst3": "Evita el alcohol, el tabaco y los alimentos sin pasteurizar.",
+  "tipSecond1": "Mantén una actividad suave y regular con la aprobación de tu profesional de la salud.",
+  "tipSecond2": "Vigila tus niveles de hierro; las necesidades aumentan a medida que el bebé crece.",
+  "tipSecond3": "Anota la primera vez que sientas movimientos: avísale a tu equipo de cuidado.",
+  "tipThird1": "Prepara la maleta del hospital y planifica el transporte antes de la fecha prevista.",
+  "tipThird2": "Duerme de lado y practica ejercicios de suelo pélvico.",
+  "tipThird3": "Conversa un plan de parto y las opciones de alivio del dolor con tu equipo de cuidado.",
+  "weekHeadlineEarly": "Embarazo temprano: confirma tu cuidado temprano.",
+  "weekHeadlineFirst": "Primer trimestre: se están formando los órganos.",
+  "weekHeadlineSecond": "Segundo trimestre: crecimiento y movimiento.",
+  "weekHeadlineThird": "Tercer trimestre: preparación para el nacimiento.",
+  "trackerPregnantHeadline": "Tienes {weeks} semanas y {days} días de embarazo.",
+  "@trackerPregnantHeadline": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trackerDueLine": "Fecha prevista de parto: {date} (faltan {days} días según tus fechas).",
+  "@trackerDueLine": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trackerStageLine": "Estás en el {trimester} trimestre.",
+  "@trackerStageLine": {
+    "placeholders": {
+      "trimester": {
+        "type": "Object"
+      }
+    }
+  },
+  "trackerPeriEmpty": "Registra síntomas para ver cuáles son los más frecuentes para ti.",
+  "trackerPeriSummary": "Has registrado síntomas en {count, plural, one{1 día} other{{count} días}}. Tu síntoma más frecuente es \"{top}\".",
+  "@trackerPeriSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "top": {
+        "type": "Object"
+      }
+    }
+  },
+  "trackerDisclaimer": "Witchy es educativo y no es una herramienta de diagnóstico ni un método anticonceptivo. Consulta siempre a un profesional de la salud cualificado sobre tu bienestar.",
+  "ordinalFirst": "primer",
+  "ordinalSecond": "segundo",
+  "ordinalThird": "tercer",
+  "chartLengthEmpty": "Registra algunos ciclos completos para ver aquí tu tendencia de duración.",
+  "chartAvg": "prom {value}d",
+  "@chartAvg": {
+    "placeholders": {
+      "value": {
+        "type": "Object"
+      }
+    }
+  },
+  "chartDays": "{days} días",
+  "@chartDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "chartSymptomsEmpty": "Registra síntomas para ver patrones aquí.",
+  "chartFrequencyTooltip": "{count}× {symptom}",
+  "@chartFrequencyTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "symptom": {
+        "type": "Object"
+      }
+    }
+  },
+  "chartPhaseEmpty": "Aún no hay datos de fase para este síntoma.",
+  "chartPhaseMenstrual": "Menstrual",
+  "chartPhaseFollicular": "Folicular",
+  "chartPhaseOvulation": "Ovulación",
+  "chartPhaseLuteal": "Lútea",
+  "chartOverTimeEmpty": "Las entradas de síntomas aparecerán aquí cuando empieces a registrar.",
+  "chartEntries": "{count} entradas",
+  "@chartEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "privacySec1Title": "Tus datos permanecen en tu dispositivo",
+  "privacySec1Body": "Witchy es un registrador de regla centrado en la privacidad. Todos tus registros — fechas de regla, síntomas, ánimos, notas y recordatorios — se guardan localmente en tu dispositivo mediante almacenamiento en el dispositivo. Nada se envía a nuestros servidores y no se requiere una cuenta para usar la app.",
+  "privacySec2Title": "Sin rastreo ni analíticas",
+  "privacySec2Body": "Witchy no incluye analíticas de terceros, publicidad ni SDK de rastreo. No tenemos forma de ver tus datos del ciclo, y tampoco nadie más: tu información nunca abandona tu dispositivo.",
+  "privacySec3Title": "Modo anónimo",
+  "privacySec3Body": "Cuando el modo anónimo está activado, la app borra cualquier identificador de cuenta guardado (tu nombre y correo) y deja de mostrarlos. Puedes seguir usando Witchy sin vincular una identidad.",
+  "privacySec4Title": "Cómo se usan tus datos",
+  "privacySec4Body": "Tus registros alimentan las predicciones, análisis e informes que ves en la app. Solo se usan para calcular esos resultados localmente y nunca se comparten con terceros.",
+  "privacySec5Title": "Eliminar tus datos",
+  "privacySec5Body": "Puedes borrar todos los datos en cualquier momento eliminando Witchy de tu dispositivo o borrando los datos de la app. Como todo se guarda localmente, la eliminación es inmediata y permanente.",
+  "privacySec6Title": "No es consejo médico",
+  "privacySec6Body": "Witchy ofrece solo información educativa y estimaciones. No es un dispositivo médico ni diagnostica, trata o previene ninguna afección. Consulta siempre a un profesional de la salud cualificado sobre tu bienestar.",
+  "termsSec1Title": "Aceptación de los términos",
+  "termsSec1Body": "Al usar Witchy aceptas estos términos. Si no estás de acuerdo, no uses la app.",
+  "termsSec2Title": "Uso de la app",
+  "termsSec2Body": "Witchy se ofrece para un uso personal y no comercial con el fin de ayudarte a comprender y seguir tu salud reproductiva. Aceptas no hacer un mal uso de la app ni usarla para dañar a otros.",
+  "termsSec3Title": "Sin garantía médica",
+  "termsSec3Body": "Witchy ofrece estimaciones y contenido educativo que pueden no ser precisos para tu cuerpo. No es una herramienta de diagnóstico ni anticonceptiva. Eres responsable de las decisiones que tomes basándote en la app.",
+  "termsSec4Title": "Tus datos",
+  "termsSec4Body": "Todos los datos que ingresas se guardan en tu dispositivo. Eres responsable de respaldarlos y puedes eliminarlos en cualquier momento. No recopilamos ni procesamos tus datos personales.",
+  "termsSec5Title": "Cambios en estos términos",
+  "termsSec5Body": "Podemos actualizar estos términos de vez en cuando. El uso continuado de la app después de publicar los cambios constituye la aceptación de los términos actualizados.",
+  "termsSec6Title": "Contacto",
+  "termsSec6Body": "Las preguntas sobre estos términos o tu privacidad pueden dirigirse a través de los canales estándar de soporte de la app."
+}

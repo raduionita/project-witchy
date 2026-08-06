@@ -2,13 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/flow_intensity.dart';
 import '../../providers/cycle_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_button.dart';
 import 'widgets/symptom_chip_group.dart';
 
-const List<String> kCommonMoods = ['Happy', 'Calm', 'Anxious', 'Irritable', 'Sad', 'Energetic'];
+/// Common quick moods offered when logging a day, localized via [l10n].
+List<String> kCommonMoods(AppLocalizations l10n) => <String>[
+      l10n.moodHappy,
+      l10n.moodCalm,
+      l10n.moodAnxious,
+      l10n.moodIrritable,
+      l10n.moodSad,
+      l10n.moodEnergetic,
+    ];
 
 /// Bottom sheet for logging a period day with intensity, symptoms and mood.
 class LogPeriodSheet extends StatefulWidget {
@@ -56,6 +65,7 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.only(
         left: AppSpacing.kLg,
@@ -68,17 +78,17 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Log ${DateFormat('EEE, MMM d').format(widget.date)}',
+              l10n.logPeriodTitle(DateFormat('EEE, MMM d').format(widget.date)),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: AppSpacing.kMd),
-            _sectionTitle('Flow intensity'),
+            _sectionTitle(l10n.logFlowIntensity),
             const SizedBox(height: AppSpacing.kSm),
             _intensitySelector(),
             const SizedBox(height: AppSpacing.kMd),
-            _sectionTitle('Symptoms'),
+            _sectionTitle(l10n.logSymptoms),
             const SizedBox(height: AppSpacing.kSm),
             SymptomChipGroup(
               selected: _symptoms,
@@ -87,10 +97,10 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
               }),
             ),
             const SizedBox(height: AppSpacing.kMd),
-            _sectionTitle('Mood'),
+            _sectionTitle(l10n.logMood),
             const SizedBox(height: AppSpacing.kSm),
             _chipSelector(
-              items: kCommonMoods,
+              items: kCommonMoods(l10n),
               selected: _mood == null ? <String>{} : <String>{_mood!},
               onToggle: (String value) => setState(() => _mood = value),
             ),
@@ -98,13 +108,13 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
             TextField(
               controller: _notes,
               maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Notes (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.logNotes,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: AppSpacing.kLg),
-            AppButton(label: 'Save log', onPressed: _save),
+            AppButton(label: l10n.logSave, onPressed: _save),
           ],
         ),
       ),
@@ -121,6 +131,7 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
   }
 
   Widget _intensitySelector() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Row(
       children: FlowIntensity.values.map((FlowIntensity intensity) {
         final bool selected = _intensity == intensity;
@@ -128,7 +139,7 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kXs),
             child: ChoiceChip(
-              label: Text(intensity.name),
+              label: Text(flowIntensityLabel(l10n, intensity)),
               selected: selected,
               onSelected: (_) => setState(() => _intensity = intensity),
             ),

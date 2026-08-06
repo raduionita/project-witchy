@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/symptom_log.dart';
 import '../../providers/symptom_provider.dart';
 import '../../utils/app_theme.dart';
@@ -20,6 +21,7 @@ class PerimenopauseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final SymptomProvider provider = context.watch<SymptomProvider>();
     final List<SymptomLog> recent = provider.recentLogs.take(5).toList();
 
@@ -28,7 +30,7 @@ class PerimenopauseScreen extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.kMd),
         children: [
           Text(
-            'Perimenopause',
+            l10n.trackingModePerimenopause,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -41,24 +43,25 @@ class PerimenopauseScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Your summary',
+                  l10n.perimenopauseSummaryTitle,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                 ),
                 const SizedBox(height: AppSpacing.kSm),
                 Text(
-                  TrackerInsightText.perimenopauseSummary(provider.insights),
+                  TrackerInsightText.perimenopauseSummary(
+                      l10n, provider.insights),
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.kMd),
-          const AppSectionHeader(title: 'Recent logs'),
+          AppSectionHeader(title: l10n.loggingRecentLogs),
           if (recent.isEmpty)
             Text(
-              'No symptom logs yet in this stage.',
+              l10n.perimenopauseEmpty,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.outline,
                   ),
@@ -68,7 +71,7 @@ class PerimenopauseScreen extends StatelessWidget {
               _logTile(context, log),
           const SizedBox(height: AppSpacing.kMd),
           Text(
-            TrackerInsightText.disclaimer(),
+            TrackerInsightText.disclaimer(l10n),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
                   color: Theme.of(context).colorScheme.outline,
@@ -80,25 +83,27 @@ class PerimenopauseScreen extends StatelessWidget {
   }
 
   Widget _logCard(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Log today',
+            l10n.perimenopauseLogToday,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
           ),
           const SizedBox(height: AppSpacing.kSm),
           Text(
-            'Tap a symptom to log it for today.',
+            l10n.perimenopauseLogTodayBody,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 ),
           ),
           const SizedBox(height: AppSpacing.kMd),
-          for (final PerimenopauseCategory category in kPerimenopauseCategories)
+          for (final PerimenopauseCategory category
+              in kPerimenopauseCategories(l10n))
             _categorySection(context, category),
         ],
       ),
@@ -106,6 +111,7 @@ class PerimenopauseScreen extends StatelessWidget {
   }
 
   Widget _categorySection(BuildContext context, PerimenopauseCategory category) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.kMd),
       child: Column(
@@ -139,7 +145,8 @@ class PerimenopauseScreen extends StatelessWidget {
                       );
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('"$symptom" logged for today.')),
+                          SnackBar(
+                              content: Text(l10n.perimenopauseLogged(symptom))),
                         );
                       }
                     },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../providers/symptom_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_button.dart';
@@ -55,6 +56,7 @@ class _LogSymptomSheetState extends State<LogSymptomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.only(
         left: AppSpacing.kLg,
@@ -67,13 +69,13 @@ class _LogSymptomSheetState extends State<LogSymptomSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              'Symptoms · ${DateFormat('EEE, MMM d').format(widget.date)}',
+              l10n.logSymptomTitle(DateFormat('EEE, MMM d').format(widget.date)),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: AppSpacing.kMd),
-            _label('Symptoms'),
+            _label(l10n.logSymptoms),
             const SizedBox(height: AppSpacing.kSm),
             SymptomChipGroup(
               selected: _symptoms,
@@ -82,12 +84,12 @@ class _LogSymptomSheetState extends State<LogSymptomSheet> {
               }),
             ),
             const SizedBox(height: AppSpacing.kMd),
-            _label('Mood'),
+            _label(l10n.logMood),
             const SizedBox(height: AppSpacing.kSm),
             Wrap(
               spacing: AppSpacing.kSm,
               runSpacing: AppSpacing.kSm,
-              children: kCommonMoods
+              children: kCommonMoods(l10n)
                   .map((String item) => FilterChip(
                         label: Text(item),
                         selected: _mood == item,
@@ -99,13 +101,13 @@ class _LogSymptomSheetState extends State<LogSymptomSheet> {
             TextField(
               controller: _notes,
               maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Notes (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.logNotes,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: AppSpacing.kLg),
-            AppButton(label: 'Save log', onPressed: _save),
+            AppButton(label: l10n.logSave, onPressed: _save),
           ],
         ),
       ),

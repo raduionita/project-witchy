@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/cycle.dart';
 import '../../models/cycle_stats.dart';
 import '../../providers/app_state_provider.dart';
@@ -18,6 +19,7 @@ class CycleHistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AppStateProvider state = context.watch<AppStateProvider>();
     final CycleProvider cycleProvider = context.watch<CycleProvider>();
 
@@ -29,14 +31,13 @@ class CycleHistoryScreen extends StatelessWidget {
     final List<CycleLengthPoint> points = service.cycleLengthPoints(cycles);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cycle history')),
+      appBar: AppBar(title: Text(l10n.cycleHistoryTitle)),
       body: cycles.isEmpty
           ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.kLg),
                 child: Text(
-                  'No cycles detected yet. Track a few period days and your '
-                  'history will appear here.',
+                  l10n.cycleHistoryEmpty,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.outline,
@@ -49,7 +50,7 @@ class CycleHistoryScreen extends StatelessWidget {
               children: [
                 _metricsCard(context, metrics, accuracy),
                 const SizedBox(height: AppSpacing.kMd),
-                const AppSectionHeader(title: 'Cycle length trend'),
+                AppSectionHeader(title: l10n.cycleLengthTrendTitle),
                 _chartCard(context, points),
                 const SizedBox(height: AppSpacing.kMd),
                 AppCard(
@@ -61,7 +62,7 @@ class CycleHistoryScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Next period predicted',
+                        l10n.nextPeriodPredicted,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       Text(
@@ -77,7 +78,7 @@ class CycleHistoryScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: AppSpacing.kMd),
-                const AppSectionHeader(title: 'Cycles'),
+                AppSectionHeader(title: l10n.cycleHistoryCycles),
                 for (final Cycle cycle in cycles) _cycleCard(context, cycle),
               ],
             ),
@@ -89,33 +90,44 @@ class CycleHistoryScreen extends StatelessWidget {
     CycleMetrics metrics,
     PredictionAccuracy accuracy,
   ) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Your cycle at a glance',
+            l10n.cycleHistoryGlance,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
           ),
           const SizedBox(height: AppSpacing.kSm),
-          _metric(_round(metrics.averageLength), 'Average length'),
-          _metric(metrics.cycleCount.toString(), 'Completed cycles'),
-          _metric('${metrics.shortestLength}–${metrics.longestLength}',
-              'Range (short–long)'),
+          _metric(l10n, _round(l10n, metrics.averageLength), l10n.metricAverageLength),
           _metric(
+            l10n,
+            metrics.cycleCount.toString(),
+            l10n.metricCompletedCycles,
+          ),
+          _metric(
+            l10n,
+            '${metrics.shortestLength}–${metrics.longestLength}',
+            l10n.metricRange,
+          ),
+          _metric(
+            l10n,
             accuracy.averageErrorDays == null
                 ? '—'
-                : '±${accuracy.averageErrorDays!.toStringAsFixed(0)} days',
-            'Prediction accuracy',
+                : l10n.metricAccuracyDays(
+                    accuracy.averageErrorDays!.round(),
+                  ),
+            l10n.metricPredictionAccuracy,
           ),
         ],
       ),
     );
   }
 
-  Widget _metric(String value, String label) {
+  Widget _metric(AppLocalizations l10n, String value, String label) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -136,6 +148,7 @@ class CycleHistoryScreen extends StatelessWidget {
   }
 
   Widget _cycleCard(BuildContext context, Cycle cycle) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final int? length = cycle.length;
     final String start = DateFormat('MMM d, yyyy').format(cycle.startDate);
     final String range = cycle.endDate == null
@@ -151,7 +164,7 @@ class CycleHistoryScreen extends StatelessWidget {
             color: Theme.of(context).colorScheme.primary,
           ),
           title: Text(
-            length == null ? 'Current cycle' : '$length days',
+            length == null ? l10n.cycleCurrent : l10n.cycleLengthDays(length),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -162,6 +175,6 @@ class CycleHistoryScreen extends StatelessWidget {
     );
   }
 
-  String _round(double? value) =>
-      value == null ? '—' : '${value.toStringAsFixed(0)} days';
+  String _round(AppLocalizations l10n, double? value) =>
+      value == null ? '—' : l10n.cycleLengthDays(value.round());
 }

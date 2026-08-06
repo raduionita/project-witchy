@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../models/reminder.dart';
 import '../../../models/reminder_type.dart';
 import '../../../models/time_of_day_model.dart';
@@ -13,10 +14,14 @@ import '../reminder_defaults.dart';
 /// that type's sensible defaults. Period-based reminders skip the weekday pick
 /// because they anchor to the predicted cycle instead.
 class ReminderEditorSheet extends StatefulWidget {
-  const ReminderEditorSheet({super.key, this.reminder});
+  const ReminderEditorSheet({super.key, this.reminder, required this.l10n});
 
   /// The reminder being edited, or null to create a new one.
   final Reminder? reminder;
+
+  /// Active localization, captured before the sheet opens so defaults can be
+  /// applied during [State.initState].
+  final AppLocalizations l10n;
 
   static Future<Reminder?> show(
     BuildContext context, {
@@ -26,7 +31,10 @@ class ReminderEditorSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => ReminderEditorSheet(reminder: reminder),
+      builder: (_) => ReminderEditorSheet(
+        reminder: reminder,
+        l10n: AppLocalizations.of(context),
+      ),
     );
   }
 
@@ -35,15 +43,16 @@ class ReminderEditorSheet extends StatefulWidget {
 }
 
 class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
-  static const List<(int, String)> _weekdayLabels = <(int, String)>[
-    (1, 'Mon'),
-    (2, 'Tue'),
-    (3, 'Wed'),
-    (4, 'Thu'),
-    (5, 'Fri'),
-    (6, 'Sat'),
-    (7, 'Sun'),
-  ];
+  static List<(int, String)> _weekdayLabels(AppLocalizations l10n) =>
+      <(int, String)>[
+        (1, l10n.weekdayMon),
+        (2, l10n.weekdayTue),
+        (3, l10n.weekdayWed),
+        (4, l10n.weekdayThu),
+        (5, l10n.weekdayFri),
+        (6, l10n.weekdaySat),
+        (7, l10n.weekdaySun),
+      ];
 
   late ReminderType _type;
   late final TextEditingController _title;
@@ -75,7 +84,7 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
   }
 
   void _applyDefaults(ReminderType type) {
-    final Reminder preset = ReminderDefaults.forType(type, id: '');
+    final Reminder preset = ReminderDefaults.forType(widget.l10n, type, id: '');
     _title.text = preset.title;
     _body.text = preset.body ?? '';
     _time = preset.time;
@@ -94,14 +103,16 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
   Future<void> _save() async {
     if (!_isPeriodBased && _weekdays.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pick at least one day for this reminder.')),
+        SnackBar(content: Text(widget.l10n.reminderEditorPickDay)),
       );
       return;
     }
     final Reminder result = Reminder(
       id: widget.reminder?.id ?? '',
       type: _type,
-      title: _title.text.trim().isEmpty ? 'Reminder' : _title.text.trim(),
+      title: _title.text.trim().isEmpty
+          ? widget.l10n.reminderEditorDefaultTitle
+          : _title.text.trim(),
       body: _body.text.trim(),
       time: _time,
       weekday: _isPeriodBased ? const <int>[] : _weekdays,
@@ -112,6 +123,7 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = widget.l10n;
     return Padding(
       padding: EdgeInsets.only(
         left: AppSpacing.kMd,
@@ -124,7 +136,7 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              _isNew ? 'New reminder' : 'Edit reminder',
+              _isNew ? l10n.remindersNew : l10n.reminderEditorEdit,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -133,15 +145,15 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
             if (_isNew) ...[
               DropdownButtonFormField<ReminderType>(
                 value: _type,
-                decoration: const InputDecoration(
-                  labelText: 'Type',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.reminderEditorType,
+                  border: const OutlineInputBorder(),
                 ),
                 items: <DropdownMenuItem<ReminderType>>[
                   for (final ReminderType type in ReminderType.values)
                     DropdownMenuItem<ReminderType>(
                       value: type,
-                      child: Text(ReminderDefaults.typeLabel(type)),
+                      child: Text(ReminderDefaults.typeLabel(l10n, type)),
                     ),
                 ],
                 onChanged: (ReminderType? type) {
@@ -156,24 +168,24 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
             ],
             TextField(
               controller: _title,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.reminderEditorTitle,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: AppSpacing.kMd),
             TextField(
               controller: _body,
-              decoration: const InputDecoration(
-                labelText: 'Message',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: l10n.reminderEditorMessage,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: AppSpacing.kMd),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.schedule),
-              title: const Text('Time'),
+              title: Text(l10n.reminderEditorTime),
               trailing: Text(
                 _timeLabel(),
                 style: Theme.of(context).textTheme.titleMedium,
@@ -186,7 +198,8 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
                 spacing: AppSpacing.kSm,
                 runSpacing: AppSpacing.kSm,
                 children: [
-                  for (final (int weekday, String label) in _weekdayLabels)
+                  for (final (int weekday, String label)
+                      in _weekdayLabels(l10n))
                     FilterChip(
                       label: Text(label),
                       selected: _weekdays.contains(weekday),
@@ -204,7 +217,7 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
               Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.kSm),
                 child: Text(
-                  'This reminder follows your predicted period dates.',
+                  l10n.reminderEditorFollowsPeriod,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.outline,
                       ),
@@ -213,11 +226,11 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
             const SizedBox(height: AppSpacing.kLg),
             FilledButton(
               onPressed: _save,
-              child: const Text('Save reminder'),
+              child: Text(l10n.reminderEditorSave),
             ),
             const SizedBox(height: AppSpacing.kMd),
             Text(
-              TrackerInsightText.disclaimer(),
+              TrackerInsightText.disclaimer(l10n),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontStyle: FontStyle.italic,

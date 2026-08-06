@@ -8,6 +8,7 @@ import 'package:witchy/features/auth/auth_gateway.dart';
 import 'package:witchy/features/auth/auth_provider.dart';
 import 'package:witchy/features/auth/auth_service.dart';
 import 'package:witchy/features/auth/models/auth_session.dart';
+import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/features/onboarding/onboarding_screen.dart';
 import 'package:witchy/providers/app_state_provider.dart';
 import 'package:witchy/providers/cycle_provider.dart';
@@ -61,7 +62,11 @@ void main() {
           ChangeNotifierProvider<CycleProvider>.value(value: cycle),
           ChangeNotifierProvider<AuthProvider>.value(value: auth),
         ],
-        child: const MaterialApp(home: OnboardingScreen()),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const OnboardingScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

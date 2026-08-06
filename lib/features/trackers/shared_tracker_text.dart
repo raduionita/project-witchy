@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/pregnancy_status.dart';
 import '../../models/symptom_insights.dart';
 import '../../services/pregnancy_calculator.dart';
@@ -13,43 +14,38 @@ abstract class TrackerInsightText {
   static final DateFormat _date = DateFormat('MMMM d, yyyy');
 
   /// Headline for the pregnancy home card.
-  static String pregnancyHeadline(PregnancyStatus status) =>
-      'You are ${status.weeks} weeks and ${status.days} days pregnant.';
+  static String pregnancyHeadline(AppLocalizations l10n, PregnancyStatus status) =>
+      l10n.trackerPregnantHeadline(status.weeks, status.days);
 
   /// Summary line including the estimated due date.
-  static String pregnancyDueLine(PregnancyStatus status) {
+  static String pregnancyDueLine(AppLocalizations l10n, PregnancyStatus status) {
     final int daysToGo =
         PregnancyCalculator.kGestationDays - status.totalDays;
-    return 'Estimated due date: ${_date.format(status.dueDate)} '
-        '($daysToGo days to go based on your dates).';
+    return l10n.trackerDueLine(_date.format(status.dueDate), daysToGo);
   }
 
   /// Body copy for the current trimester.
-  static String pregnancyStageLine(PregnancyStatus status) =>
-      'You are in the ${_trimesterOrdinal(status.trimester)} trimester.';
+  static String pregnancyStageLine(AppLocalizations l10n, PregnancyStatus status) =>
+      l10n.trackerStageLine(_trimesterOrdinal(l10n, status.trimester));
 
   /// Summary for perimenopause from the logged symptom history.
-  static String perimenopauseSummary(SymptomInsights insights) {
+  static String perimenopauseSummary(AppLocalizations l10n, SymptomInsights insights) {
     if (insights.totalLogs == 0) {
-      return 'Log symptoms to see which ones are most frequent for you.';
+      return l10n.trackerPeriEmpty;
     }
     final String top = insights.topSymptoms.isEmpty
         ? '—'
         : insights.topSymptoms.first.symptom;
-    return 'You have logged symptoms on ${insights.totalLogs} '
-        '${insights.totalLogs == 1 ? 'day' : 'days'}. '
-        'Your most frequent symptom is "$top".';
+    return l10n.trackerPeriSummary(insights.totalLogs, top);
   }
 
   /// Shared educational disclaimer shown in both modes.
-  static String disclaimer() =>
-      'Witchy is educational and not a diagnostic tool, and is not a method '
-      'of contraception. Always consult a qualified healthcare professional '
-      'about your health.';
+  static String disclaimer(AppLocalizations l10n) => l10n.trackerDisclaimer;
 
-  static String _trimesterOrdinal(Trimester trimester) => switch (trimester) {
-        Trimester.first => 'first',
-        Trimester.second => 'second',
-        Trimester.third => 'third',
+  static String _trimesterOrdinal(AppLocalizations l10n, Trimester trimester) =>
+      switch (trimester) {
+        Trimester.first => l10n.ordinalFirst,
+        Trimester.second => l10n.ordinalSecond,
+        Trimester.third => l10n.ordinalThird,
       };
 }

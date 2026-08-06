@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/tracking_mode.dart';
 import '../../models/user_profile.dart';
 import '../../providers/app_state_provider.dart';
@@ -13,6 +14,10 @@ import '../auth/auth_screen.dart';
 import '../auth/models/auth_session.dart';
 import '../couples/couples_screen.dart';
 import '../reminders/reminders_screen.dart';
+import 'legal_content.dart';
+import 'legal_document_screen.dart';
+import 'locale_provider.dart';
+import 'privacy_provider.dart';
 import 'theme_provider.dart';
 
 /// Settings hub.
@@ -32,43 +37,96 @@ class SettingsScreen extends StatelessWidget {
     context.read<CycleProvider>().recompute();
     context.read<SymptomProvider>().recompute();
     if (context.mounted) {
+      final AppLocalizations l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${trackingModeLabel(mode)} is now active.')),
+        SnackBar(
+          content: Text(l10n.settingsModeActive(trackingModeLabel(l10n, mode))),
+        ),
       );
     }
   }
 
   void _comingSoon(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$feature is coming soon.')),
+      SnackBar(
+        content: Text(AppLocalizations.of(context).settingsComingSoon(feature)),
+      ),
     );
   }
 
-  Widget _appearanceCard(BuildContext context) {
-    final ThemeProvider themeProvider = context.watch<ThemeProvider>();
+  /// Enables/disables anonymous mode. Enabling also clears any stored account
+  /// identity so no name/email remains persisted on this device.
+  Future<void> _setAnonymousMode(BuildContext context, bool enabled) async {
+    final PrivacyProvider privacy = context.read<PrivacyProvider>();
+    final AuthProvider auth = context.read<AuthProvider>();
+    await privacy.setAnonymousMode(enabled);
+    if (enabled && auth.isSignedIn) await auth.signOut();
+    if (!context.mounted) return;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          enabled ? l10n.settingsAnonymousOn : l10n.settingsAnonymousOff,
+        ),
+      ),
+    );
+  }
+
+  void _openLegal(
+    BuildContext context, {
+    required String title,
+    required List<LegalSection> sections,
+  }) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => LegalDocumentScreen(title: title, sections: sections),
+      ),
+    );
+  }
+
+  Widget _privacyCard(BuildContext context, AppLocalizations l10n) {
+    final PrivacyProvider privacy = context.watch<PrivacyProvider>();
     return AppCard(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ListTile(
-            leading: const Icon(Icons.palette_outlined),
-            title: const Text('Theme'),
-            subtitle: const Text('Choose how Witchy looks.'),
+          SwitchListTile(
+            secondary: const Icon(Icons.person_off_outlined),
+            title: Text(l10n.anonymousMode),
+            subtitle: Text(l10n.anonymousModeDescription),
+            value: privacy.anonymousMode,
+            onChanged: (bool enabled) => _setAnonymousMode(context, enabled),
           ),
-          for (final AppThemeOption option in AppThemeOption.values)
-            RadioListTile<AppThemeOption>(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.kMd,
-              ),
-              value: option,
-              groupValue: themeProvider.option,
-              title: Text(option.label),
-              onChanged: (AppThemeOption? value) {
-                if (value != null) {
-                  context.read<ThemeProvider>().setOption(value);
-                }
-              },
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: Text(l10n.privacyPolicy),
+            subtitle: Text(l10n.settingsPrivacySubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _openLegal(
+              context,
+              title: l10n.privacyPolicyTitle,
+              sections: kPrivacyPolicySections(l10n),
             ),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.description_outlined),
+            title: Text(l10n.termsOfService),
+            subtitle: Text(l10n.settingsTermsSubtitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _openLegal(
+              context,
+              title: l10n.termsOfServiceTitle,
+              sections: kTermsOfServiceSections(l10n),
+            ),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.info_outline),
+            title: Text(l10n.about),
+            subtitle: Text(l10n.settingsAboutSubtitle),
+            onTap: () => _comingSoon(context, l10n.about),
+          ),
         ],
       ),
     );
@@ -78,20 +136,25 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppStateProvider state = context.watch<AppStateProvider>();
     final TrackingMode mode = state.profile.profile?.mode ?? TrackingMode.cycle;
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final PrivacyProvider privacy = context.watch<PrivacyProvider>();
+    final bool anonymous = privacy.anonymousMode;
 
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.kMd),
         children: [
           Text(
-            'Settings',
+            l10n.settingsTitle,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: AppSpacing.kMd),
-          _accountCard(context),
-          const SizedBox(height: AppSpacing.kMd),
+          if (!anonymous) ...[
+            _accountCard(context),
+            const SizedBox(height: AppSpacing.kMd),
+          ],
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,8 +164,8 @@ class SettingsScreen extends StatelessWidget {
                     Icons.swap_horiz,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  title: const Text('Tracking mode'),
-                  subtitle: const Text('Choose what Witchy focuses on.'),
+                  title: Text(l10n.settingsTrackingModeTitle),
+                  subtitle: Text(l10n.settingsTrackingModeSubtitle),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kMd),
@@ -113,8 +176,8 @@ class SettingsScreen extends StatelessWidget {
                           contentPadding: EdgeInsets.zero,
                           value: candidate,
                           groupValue: mode,
-                          title: Text(trackingModeLabel(candidate)),
-                          subtitle: Text(trackingModeDescription(candidate)),
+                          title: Text(trackingModeLabel(l10n, candidate)),
+                          subtitle: Text(trackingModeDescription(l10n, candidate)),
                           onChanged: (TrackingMode? value) {
                             if (value != null) _setMode(context, value);
                           },
@@ -123,35 +186,18 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
                 const Divider(height: 1),
-                const ListTile(
-                  leading: Icon(Icons.info_outline),
-                  title: Text('Logs are shared'),
-                  subtitle: Text('Your symptom and period logs stay with you '
-                      'across modes.'),
+                ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: Text(l10n.settingsLogsShared),
+                  subtitle: Text(l10n.settingsLogsSharedSubtitle),
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.kMd),
-          AppCard(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.privacy_tip_outlined),
-                  title: const Text('Privacy'),
-                  subtitle: const Text('Your data stays on your device.'),
-                  onTap: () => _comingSoon(context, 'Privacy'),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: const Text('About'),
-                  subtitle: const Text('Witchy version and legal info.'),
-                  onTap: () => _comingSoon(context, 'About'),
-                ),
-              ],
-            ),
-          ),
+          _privacyCard(context, l10n),
+          const SizedBox(height: AppSpacing.kMd),
+          _languageCard(context, l10n),
           const SizedBox(height: AppSpacing.kMd),
           _appearanceCard(context),
           const SizedBox(height: AppSpacing.kMd),
@@ -161,8 +207,8 @@ class SettingsScreen extends StatelessWidget {
                 Icons.alarm_add,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              title: const Text('Reminders'),
-              subtitle: const Text('Period, medication, water and sleep.'),
+              title: Text(l10n.settingsRemindersTitle),
+              subtitle: Text(l10n.settingsRemindersSubtitle),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -178,8 +224,8 @@ class SettingsScreen extends StatelessWidget {
                 Icons.favorite,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              title: const Text('Couples mode'),
-              subtitle: const Text('Share a private space (coming soon).'),
+              title: Text(l10n.settingsCouplesTitle),
+              subtitle: Text(l10n.settingsCouplesSubtitle),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -193,7 +239,88 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  Widget _languageCard(BuildContext context, AppLocalizations l10n) {
+    final LocaleProvider locale = context.watch<LocaleProvider>();
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: Icon(
+              Icons.translate,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(l10n.language),
+            subtitle: Text(l10n.settingsLanguageSubtitle),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kMd),
+            child: Column(
+              children: [
+                for (final AppLocaleOption option in AppLocaleOption.values)
+                  RadioListTile<AppLocaleOption>(
+                    contentPadding: EdgeInsets.zero,
+                    value: option,
+                    groupValue: locale.option,
+                    title: Text(_localeLabel(option, l10n)),
+                    subtitle: option.isSystem
+                        ? Text(l10n.systemDefaultDescription)
+                        : null,
+                    onChanged: (AppLocaleOption? value) {
+                      if (value != null) {
+                        context.read<LocaleProvider>().setOption(value);
+                      }
+                    },
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _localeLabel(AppLocaleOption option, AppLocalizations l10n) {
+    return switch (option) {
+      AppLocaleOption.system => l10n.systemDefault,
+      AppLocaleOption.english => 'English',
+      AppLocaleOption.spanish => 'Español',
+    };
+  }
+
+  Widget _appearanceCard(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final ThemeProvider themeProvider = context.watch<ThemeProvider>();
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.palette_outlined),
+            title: Text(l10n.settingsThemeTitle),
+            subtitle: Text(l10n.settingsThemeSubtitle),
+          ),
+          for (final AppThemeOption option in AppThemeOption.values)
+            RadioListTile<AppThemeOption>(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.kMd,
+              ),
+              value: option,
+              groupValue: themeProvider.option,
+              title: Text(option.label(l10n)),
+              onChanged: (AppThemeOption? value) {
+                if (value != null) {
+                  context.read<ThemeProvider>().setOption(value);
+                }
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _accountCard(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AuthProvider auth = context.watch<AuthProvider>();
     final AuthSession? session = auth.session;
 
@@ -211,11 +338,11 @@ class SettingsScreen extends StatelessWidget {
           ),
           title: Text(session.displayName),
           subtitle: Text(
-            session.email ?? authProviderLabel(session.provider),
+            session.email ?? authProviderLabel(l10n, session.provider),
           ),
           trailing: TextButton(
             onPressed: () => context.read<AuthProvider>().signOut(),
-            child: const Text('Sign out'),
+            child: Text(l10n.settingsSignOut),
           ),
         ),
       );
@@ -224,9 +351,8 @@ class SettingsScreen extends StatelessWidget {
     return AppCard(
       child: ListTile(
         leading: const Icon(Icons.account_circle_outlined),
-        title: const Text('Account'),
-        subtitle: const Text('Sign in to enable optional features. '
-            'Your data stays on your device.'),
+        title: Text(l10n.settingsAccountTitle),
+        subtitle: Text(l10n.settingsAccountSubtitle),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute<void>(builder: (_) => const AuthScreen()),

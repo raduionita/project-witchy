@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../../models/flow_intensity.dart';
 import '../../models/period_log.dart';
 import '../../providers/cycle_provider.dart';
 import '../../utils/app_theme.dart';
@@ -33,12 +35,15 @@ class _LoggingScreenState extends State<LoggingScreen> {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Use the Calendar tab to pick a day.')),
+      SnackBar(
+        content: Text(AppLocalizations.of(context).loggingUseCalendar),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final CycleProvider provider = context.watch<CycleProvider>();
     final List<PeriodLog> recent = provider.recentPeriodLogs;
 
@@ -47,7 +52,7 @@ class _LoggingScreenState extends State<LoggingScreen> {
         padding: const EdgeInsets.all(AppSpacing.kMd),
         children: [
           Text(
-            'Logging',
+            l10n.navLogging,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -58,27 +63,27 @@ class _LoggingScreenState extends State<LoggingScreen> {
               children: [
                 ListTile(
                   leading: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
-                  title: const Text('Log period'),
-                  subtitle: const Text('Flow, symptoms, mood and notes'),
+                  title: Text(l10n.loggingLogPeriod),
+                  subtitle: Text(l10n.loggingLogPeriodSubtitle),
                   onTap: _openSheetForToday,
                 ),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.edit_calendar),
-                  title: const Text('Log from calendar'),
-                  subtitle: const Text('Pick a day to log or edit'),
+                  title: Text(l10n.loggingLogFromCalendar),
+                  subtitle: Text(l10n.loggingLogFromCalendarSubtitle),
                   onTap: () => _openCalendar(context),
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.kMd),
-          const AppSectionHeader(title: 'Recent logs'),
+          AppSectionHeader(title: l10n.loggingRecentLogs),
           if (recent.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.kLg),
               child: Text(
-                'No logs yet. Tap "Log period" to get started.',
+                l10n.loggingEmpty,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             )
@@ -90,6 +95,7 @@ class _LoggingScreenState extends State<LoggingScreen> {
   }
 
   Widget _logTile(BuildContext context, PeriodLog log) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kMd, vertical: AppSpacing.kSm),
       child: Row(
@@ -107,7 +113,8 @@ class _LoggingScreenState extends State<LoggingScreen> {
                 if (log.intensity != null || log.symptoms.isNotEmpty)
                   Text(
                     [
-                      if (log.intensity != null) log.intensity!.name,
+                      if (log.intensity != null)
+                        flowIntensityLabel(l10n, log.intensity!),
                       ...log.symptoms,
                     ].join(' · '),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(

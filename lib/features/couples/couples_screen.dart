@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_card.dart';
 import 'couples_provider.dart';
@@ -19,16 +20,21 @@ class CouplesScreen extends StatelessWidget {
         await context.read<CouplesProvider>().createLink();
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Your link: ${link.code}')),
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context).couplesYourLink(link.code),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final CoupleLink? link = context.watch<CouplesProvider>().link;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Couples mode')),
+      appBar: AppBar(title: Text(l10n.couplesTitle)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.kLg),
@@ -40,18 +46,15 @@ class CouplesScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.kMd),
             Text(
-              'Coming soon',
+              l10n.couplesComingSoon,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: AppSpacing.kSm),
-            const Text(
-              'Couples mode lets two partners share a private space for '
-              'their cycle. Pairing needs a secure backend, which is still in '
-              'development — nothing is shared yet, and your data stays '
-              'on your device.',
+            Text(
+              l10n.couplesBody,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.kLg),
@@ -59,7 +62,7 @@ class CouplesScreen extends StatelessWidget {
               FilledButton.icon(
                 onPressed: () => _createLink(context),
                 icon: const Icon(Icons.link),
-                label: const Text('Create my share link'),
+                label: Text(l10n.couplesCreateLink),
               )
             else
               AppCard(
@@ -67,8 +70,8 @@ class CouplesScreen extends StatelessWidget {
                   children: [
                     ListTile(
                       leading: const Icon(Icons.link),
-                      title: const Text('Your placeholder link'),
-                      subtitle: const Text('Local only — not sent anywhere.'),
+                      title: Text(l10n.couplesPlaceholderLink),
+                      subtitle: Text(l10n.couplesLocalOnly),
                     ),
                     Text(
                       link.code,
@@ -80,7 +83,9 @@ class CouplesScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.kSm),
                     Text(
-                      'Created ${DateFormatHelper.relative(link.createdAt)}',
+                      l10n.couplesCreated(
+                        DateFormatHelper.relative(l10n, link.createdAt),
+                      ),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
@@ -95,11 +100,11 @@ class CouplesScreen extends StatelessWidget {
 
 /// Small helper to avoid importing intl in this widget.
 abstract final class DateFormatHelper {
-  static String relative(DateTime date) {
+  static String relative(AppLocalizations l10n, DateTime date) {
     final Duration diff = DateTime.now().difference(date);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inHours < 1) return '${diff.inMinutes} min ago';
-    if (diff.inDays < 1) return '${diff.inHours} h ago';
-    return '${diff.inDays} d ago';
+    if (diff.inMinutes < 1) return l10n.relativeJustNow;
+    if (diff.inHours < 1) return l10n.relativeMinutes(diff.inMinutes);
+    if (diff.inDays < 1) return l10n.relativeHours(diff.inHours);
+    return l10n.relativeDays(diff.inDays);
   }
 }

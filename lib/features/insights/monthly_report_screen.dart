@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/cycle.dart';
 import '../../models/cycle_prediction.dart';
 import '../../models/cycle_stats.dart';
+import '../../models/flow_intensity.dart';
 import '../../models/period_log.dart';
 import '../../models/symptom_insights.dart';
 import '../../models/symptom_log.dart';
@@ -22,6 +24,7 @@ class MonthlyReportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AppStateProvider state = context.watch<AppStateProvider>();
     final CycleProvider cycleProvider = context.watch<CycleProvider>();
     final SymptomProvider symptomProvider = context.watch<SymptomProvider>();
@@ -70,24 +73,33 @@ class MonthlyReportScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'This month',
+                  l10n.reportThisMonth,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                 ),
                 const SizedBox(height: AppSpacing.kSm),
-                _row(context, Icons.water_drop, 'Period days logged',
-                    '$periodDays'),
+                _row(
+                  context,
+                  Icons.water_drop,
+                  l10n.reportPeriodDays,
+                  '$periodDays',
+                ),
                 _row(
                   context,
                   Icons.track_changes,
-                  'Next period predicted',
+                  l10n.nextPeriodPredicted,
                   cycleProvider.prediction == null
                       ? '—'
                       : DateFormat('MMM d')
                           .format(cycleProvider.prediction!.nextPeriodStart),
                 ),
-                _row(context, Icons.insights, 'Days logged', '$symptomDays'),
+                _row(
+                  context,
+                  Icons.insights,
+                  l10n.reportDaysLogged,
+                  '$symptomDays',
+                ),
               ],
             ),
           ),
@@ -97,7 +109,7 @@ class MonthlyReportScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Cycle metrics',
+                  l10n.reportCycleMetrics,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -106,31 +118,33 @@ class MonthlyReportScreen extends StatelessWidget {
                 _row(
                   context,
                   Icons.timelapse,
-                  'Average cycle length',
+                  l10n.reportAverageCycleLength,
                   metrics.averageLength == null
                       ? '—'
-                      : '${metrics.averageLength!.round()} days',
+                      : l10n.cycleLengthDays(metrics.averageLength!.round()),
                 ),
                 _row(
                   context,
                   Icons.link,
-                  'Completed cycles',
+                  l10n.metricCompletedCycles,
                   '${metrics.cycleCount}',
                 ),
                 _row(
                   context,
                   Icons.gps_fixed,
-                  'Prediction accuracy',
+                  l10n.metricPredictionAccuracy,
                   accuracy.averageErrorDays == null
                       ? '—'
-                      : '±${accuracy.averageErrorDays!.round()} days',
+                      : l10n.metricAccuracyDays(
+                          accuracy.averageErrorDays!.round(),
+                        ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: AppSpacing.kMd),
           if (topSymptoms.isNotEmpty) ...[
-            _section(context, 'Most logged this month'),
+            _section(context, l10n.reportMostLogged),
             const SizedBox(height: AppSpacing.kSm),
             Wrap(
               spacing: AppSpacing.kSm,
@@ -142,11 +156,11 @@ class MonthlyReportScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.kMd),
           ],
-          _section(context, 'Logs'),
+          _section(context, l10n.reportLogs),
           const SizedBox(height: AppSpacing.kSm),
           if (periodLogs.isEmpty && symptomLogs.isEmpty)
             Text(
-              'No logs for this month yet.',
+              l10n.reportNoLogs,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.outline,
                   ),
@@ -176,8 +190,7 @@ class MonthlyReportScreen extends StatelessWidget {
               const SizedBox(width: AppSpacing.kXs),
               Flexible(
                 child: Text(
-                  'All reports are computed locally on your device. '
-                  'Nothing leaves it.',
+                  l10n.reportLocalOnly,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.outline,
@@ -233,6 +246,7 @@ class MonthlyReportScreen extends StatelessWidget {
   }
 
   Widget _periodTile(BuildContext context, PeriodLog log) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return ListTile(
       dense: true,
       leading: Icon(
@@ -241,7 +255,7 @@ class MonthlyReportScreen extends StatelessWidget {
       ),
       title: Text(DateFormat('EEE, MMM d').format(log.date)),
       subtitle: Text([
-        if (log.intensity != null) log.intensity!.name,
+        if (log.intensity != null) flowIntensityLabel(l10n, log.intensity!),
         ...log.symptoms,
       ].join(' · ')),
     );
@@ -256,12 +270,14 @@ class MonthlyReportScreen extends StatelessWidget {
     );
   }
 
-  String _predictionBlurb(BuildContext context, CyclePrediction? prediction) =>
-      prediction == null
-          ? 'Log a couple of periods so we can predict your next one accurately.'
-          : 'Your next period is expected around '
-              '${DateFormat('MMMM d').format(prediction.nextPeriodStart)}. '
-              'Your fertile window runs '
-              '${DateFormat('MMM d').format(prediction.fertileWindow.start)}'
-              '–${DateFormat('MMM d').format(prediction.fertileWindow.end)}.';
+  String _predictionBlurb(BuildContext context, CyclePrediction? prediction) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return prediction == null
+        ? l10n.reportPredictionEmpty
+        : l10n.reportPrediction(
+            DateFormat('MMMM d').format(prediction.nextPeriodStart),
+            DateFormat('MMM d').format(prediction.fertileWindow.start),
+            DateFormat('MMM d').format(prediction.fertileWindow.end),
+          );
+  }
 }

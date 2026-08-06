@@ -1,0 +1,577 @@
+{
+  "@@locale": "en",
+  "settingsTitle": "Settings",
+  "privacy": "Privacy",
+  "anonymousMode": "Anonymous mode",
+  "anonymousModeDescription": "Hides your name and email from stored data on this device.",
+  "privacyPolicy": "Privacy Policy",
+  "termsOfService": "Terms of Service",
+  "privacyPolicyTitle": "Privacy Policy",
+  "termsOfServiceTitle": "Terms of Service",
+  "about": "About",
+  "language": "Language",
+  "systemDefault": "System default",
+  "systemDefaultDescription": "Follows your device's language.",
+  "navHome": "Home",
+  "navCalendar": "Calendar",
+  "navLogging": "Logging",
+  "navInsights": "Insights",
+  "navLibrary": "Library",
+  "navSettings": "Settings",
+  "homeWelcomeTitle": "Welcome to Witchy",
+  "homeSetupTitle": "Set up your cycle",
+  "homeSetupBody": "Complete the short onboarding to unlock personalized predictions.",
+  "homeToday": "Today",
+  "homeCycleDay": "Day {day} of your cycle",
+  "@homeCycleDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "homeNextPeriod": "Next period",
+  "homeInDays": "{count, plural, one{In 1 day} other{In {count} days}}",
+  "@homeInDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeFertileWindow": "Fertile window",
+  "phaseMenstruation": "Menstruation",
+  "phaseFollicular": "Follicular phase",
+  "phaseOvulation": "Ovulation",
+  "phaseLuteal": "Luteal phase",
+  "settingsModeActive": "{mode} is now active.",
+  "@settingsModeActive": {
+    "placeholders": {
+      "mode": {
+        "type": "Object"
+      }
+    }
+  },
+  "settingsComingSoon": "{feature} is coming soon.",
+  "@settingsComingSoon": {
+    "placeholders": {
+      "feature": {
+        "type": "Object"
+      }
+    }
+  },
+  "settingsAnonymousOn": "Anonymous mode is now on.",
+  "settingsAnonymousOff": "Anonymous mode is now off.",
+  "settingsPrivacySubtitle": "How your data is protected.",
+  "settingsTermsSubtitle": "Rules for using Witchy.",
+  "settingsAboutSubtitle": "Witchy version and legal info.",
+  "settingsTrackingModeTitle": "Tracking mode",
+  "settingsTrackingModeSubtitle": "Choose what Witchy focuses on.",
+  "settingsLogsShared": "Logs are shared",
+  "settingsLogsSharedSubtitle": "Your symptom and period logs stay with you across modes.",
+  "settingsRemindersTitle": "Reminders",
+  "settingsRemindersSubtitle": "Period, medication, water and sleep.",
+  "settingsCouplesTitle": "Couples mode",
+  "settingsCouplesSubtitle": "Share a private space (coming soon).",
+  "settingsLanguageSubtitle": "Choose how Witchy reads to you.",
+  "settingsThemeTitle": "Theme",
+  "settingsThemeSubtitle": "Choose how Witchy looks.",
+  "settingsSignOut": "Sign out",
+  "settingsAccountTitle": "Account",
+  "settingsAccountSubtitle": "Sign in to enable optional features. Your data stays on your device.",
+  "themeDefaultLight": "Default (light)",
+  "trackingModeCycle": "Cycle tracking",
+  "trackingModePregnancy": "Pregnancy",
+  "trackingModePerimenopause": "Perimenopause",
+  "trackingModeCycleDesc": "Periods, fertility and cycle predictions.",
+  "trackingModePregnancyDesc": "Track weeks, trimester and due date.",
+  "trackingModePerimenopauseDesc": "Symptom-focused tracking for this stage.",
+  "authSignedIn": "Signed in. Your account stays on this device.",
+  "authSignInOptional": "Sign in (optional)",
+  "authBody": "Witchy never needs an account. Signing in gives you a consistent identity for features like Couples mode — everything stays on your device.",
+  "authGoogleSignIn": "Google Sign In",
+  "authAppleSignIn": "Apple Sign In",
+  "authAnonymousDebug": "Anonymous Sign In (debug)",
+  "authProviderGoogle": "Google",
+  "authProviderApple": "Apple",
+  "authProviderAnonymous": "Anonymous",
+  "onboardingBack": "Back",
+  "onboardingFinish": "Finish",
+  "onboardingNext": "Next",
+  "onboardingWelcomeBody": "Let''s set up your cycle so we can show accurate predictions.",
+  "onboardingDisclaimer": "Witchy is educational and not a diagnostic tool, and is not a method of contraception.",
+  "onboardingLastPeriod": "Last period start",
+  "onboardingCycleLength": "What is your average cycle length?",
+  "onboardingPeriodLength": "How long does your period last?",
+  "onboardingDaysSuffix": " days",
+  "onboardingAccountTitle": "Create an account (optional)",
+  "onboardingAccountBody": "Witchy works perfectly without an account. Signing in later enables optional features — everything stays on your device.",
+  "onboardingSkip": "Skip for now",
+  "loggingUseCalendar": "Use the Calendar tab to pick a day.",
+  "loggingLogPeriod": "Log period",
+  "loggingLogPeriodSubtitle": "Flow, symptoms, mood and notes",
+  "loggingLogFromCalendar": "Log from calendar",
+  "loggingLogFromCalendarSubtitle": "Pick a day to log or edit",
+  "loggingRecentLogs": "Recent logs",
+  "loggingEmpty": "No logs yet. Tap \"Log period\" to get started.",
+  "logFlowIntensity": "Flow intensity",
+  "logSymptoms": "Symptoms",
+  "logMood": "Mood",
+  "logNotes": "Notes (optional)",
+  "logSave": "Save log",
+  "logPeriodTitle": "Log {date}",
+  "@logPeriodTitle": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "logSymptomTitle": "Symptoms · {date}",
+  "@logSymptomTitle": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "flowLight": "Light",
+  "flowMedium": "Medium",
+  "flowHeavy": "Heavy",
+  "moodHappy": "Happy",
+  "moodCalm": "Calm",
+  "moodAnxious": "Anxious",
+  "moodIrritable": "Irritable",
+  "moodSad": "Sad",
+  "moodEnergetic": "Energetic",
+  "symptomCategoryPain": "Pain & discomfort",
+  "symptomCramps": "Cramps",
+  "symptomHeadache": "Headache",
+  "symptomBackPain": "Back pain",
+  "symptomCategoryDigestive": "Digestive",
+  "symptomBloating": "Bloating",
+  "symptomNausea": "Nausea",
+  "symptomCategoryBreastSkin": "Breast & skin",
+  "symptomTenderBreasts": "Tender breasts",
+  "symptomAcne": "Acne",
+  "symptomCategoryEnergyMood": "Energy & mood",
+  "symptomFatigue": "Fatigue",
+  "remindersTitle": "Reminders",
+  "remindersNew": "New reminder",
+  "remindersYour": "Your reminders",
+  "remindersNotificationsOff": "Notifications are off",
+  "remindersNotificationsOffBody": "Enable notifications so your reminders can be delivered.",
+  "remindersEnable": "Enable notifications",
+  "remindersHint": "Reminders are scheduled on your device and never leave it.",
+  "remindersEmptyTitle": "No reminders yet",
+  "remindersEmptyBody": "Create one to get a gentle nudge at the right time.",
+  "remindersEdit": "Edit",
+  "remindersDelete": "Delete",
+  "remindersBasedOnPrediction": "Based on your next predicted period ({date}).",
+  "@remindersBasedOnPrediction": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "remindersFollowsPrediction": "Follows your predicted period dates.",
+  "remindersEveryAt": "Every {days} at {time}",
+  "@remindersEveryAt": {
+    "placeholders": {
+      "days": {
+        "type": "Object"
+      },
+      "time": {
+        "type": "Object"
+      }
+    }
+  },
+  "reminderTypePeriodStart": "Period start",
+  "reminderTypePeriodEnd": "Period end",
+  "reminderTypeMedication": "Medication",
+  "reminderTypeWater": "Water",
+  "reminderTypeSleep": "Sleep",
+  "reminderTypeCustom": "Custom",
+  "presetPeriodComingUp": "Period coming up",
+  "presetPeriodReminder": "Period reminder",
+  "presetMedication": "Medication",
+  "presetWaterBreak": "Water break",
+  "presetWindDown": "Wind down",
+  "presetReminder": "Reminder",
+  "presetBodyPeriodComingUp": "Your period is expected to start soon.",
+  "presetBodyPeriodReminder": "Your period may be wrapping up.",
+  "presetBodyMedication": "Take your medication now.",
+  "presetBodyWater": "Time for some water.",
+  "presetBodySleep": "Start winding down for the night.",
+  "presetBodyCustom": "You set this reminder.",
+  "weekdayMon": "Mon",
+  "weekdayTue": "Tue",
+  "weekdayWed": "Wed",
+  "weekdayThu": "Thu",
+  "weekdayFri": "Fri",
+  "weekdaySat": "Sat",
+  "weekdaySun": "Sun",
+  "calendarWeekdayMon": "M",
+  "calendarWeekdayTue": "T",
+  "calendarWeekdayWed": "W",
+  "calendarWeekdayThu": "T",
+  "calendarWeekdayFri": "F",
+  "calendarWeekdaySat": "S",
+  "calendarWeekdaySun": "S",
+  "reminderEditorPickDay": "Pick at least one day for this reminder.",
+  "reminderEditorDefaultTitle": "Reminder",
+  "reminderEditorEdit": "Edit reminder",
+  "reminderEditorType": "Type",
+  "reminderEditorTitle": "Title",
+  "reminderEditorMessage": "Message",
+  "reminderEditorTime": "Time",
+  "reminderEditorFollowsPeriod": "This reminder follows your predicted period dates.",
+  "reminderEditorSave": "Save reminder",
+  "timeAm": "AM",
+  "timePm": "PM",
+  "contentLoading": "Loading library…",
+  "contentSearch": "Search articles and videos",
+  "contentAll": "All",
+  "contentArticles": "Articles",
+  "contentVideos": "Videos",
+  "contentArticle": "Article",
+  "contentVideo": "Video",
+  "contentRemoveFavorite": "Remove from favorites",
+  "contentAddFavorite": "Add to favorites",
+  "contentEmptyTitle": "Nothing matches your search.",
+  "contentEmptyBody": "Try a different keyword or clear the filters.",
+  "contentArticleDisclaimer": "These articles are for general education and are not medical advice. Talk to a healthcare professional about your health.",
+  "contentVideoError": "Could not open this video.",
+  "contentWatch": "Watch",
+  "couplesTitle": "Couples mode",
+  "couplesYourLink": "Your link: {code}",
+  "@couplesYourLink": {
+    "placeholders": {
+      "code": {
+        "type": "Object"
+      }
+    }
+  },
+  "couplesComingSoon": "Coming soon",
+  "couplesBody": "Couples mode lets two partners share a private space for their cycle. Pairing needs a secure backend, which is still in development — nothing is shared yet, and your data stays on your device.",
+  "couplesCreateLink": "Create my share link",
+  "couplesPlaceholderLink": "Your placeholder link",
+  "couplesLocalOnly": "Local only — not sent anywhere.",
+  "couplesCreated": "Created {date}",
+  "@couplesCreated": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "relativeJustNow": "just now",
+  "relativeMinutes": "{count} min ago",
+  "@relativeMinutes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeHours": "{count} h ago",
+  "@relativeHours": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "relativeDays": "{count} d ago",
+  "@relativeDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightsEmpty": "Log symptoms from the calendar to unlock personalized insights.",
+  "insightsSummary": "Based on {count} logged {count, plural, one{day} other{days}} · {total} symptom entries.",
+  "@insightsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "cycleHistoryTitle": "Cycle history",
+  "monthlyReportTitle": "Monthly report",
+  "insightsTopSymptoms": "Top symptoms",
+  "insightsSymptomsOverTime": "Symptoms over time",
+  "insightsWhen": "When does \"{symptom}\" happen?",
+  "@insightsWhen": {
+    "placeholders": {
+      "symptom": {
+        "type": "Object"
+      }
+    }
+  },
+  "trendRising": "Rising trend",
+  "trendFalling": "Falling trend",
+  "trendConsistent": "Consistent",
+  "trendInsufficient": "Keep logging to spot a trend",
+  "insightsTypicalDay": "Typical cycle day",
+  "insightsNoPattern": "No pattern found yet — keep logging.",
+  "insightsAverage": "On average around day {average} of your cycle (range {first}–{last}).",
+  "@insightsAverage": {
+    "placeholders": {
+      "average": {
+        "type": "int"
+      },
+      "first": {
+        "type": "int"
+      },
+      "last": {
+        "type": "int"
+      }
+    }
+  },
+  "insightsDay": "Day {index}",
+  "@insightsDay": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "cycleHistoryEmpty": "No cycles detected yet. Track a few period days and your history will appear here.",
+  "cycleLengthTrendTitle": "Cycle length trend",
+  "nextPeriodPredicted": "Next period predicted",
+  "cycleHistoryCycles": "Cycles",
+  "cycleHistoryGlance": "Your cycle at a glance",
+  "metricAverageLength": "Average length",
+  "metricCompletedCycles": "Completed cycles",
+  "metricRange": "Range (short–long)",
+  "metricPredictionAccuracy": "Prediction accuracy",
+  "cycleCurrent": "Current cycle",
+  "cycleLengthDays": "{length} days",
+  "@cycleLengthDays": {
+    "placeholders": {
+      "length": {
+        "type": "int"
+      }
+    }
+  },
+  "metricAccuracyDays": "±{days} days",
+  "@metricAccuracyDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "reportThisMonth": "This month",
+  "reportPeriodDays": "Period days logged",
+  "reportDaysLogged": "Days logged",
+  "reportCycleMetrics": "Cycle metrics",
+  "reportAverageCycleLength": "Average cycle length",
+  "reportMostLogged": "Most logged this month",
+  "reportLogs": "Logs",
+  "reportNoLogs": "No logs for this month yet.",
+  "reportLocalOnly": "All reports are computed locally on your device. Nothing leaves it.",
+  "reportPredictionEmpty": "Log a couple of periods so we can predict your next one accurately.",
+  "reportPrediction": "Your next period is expected around {date}. Your fertile window runs {start}–{end}.",
+  "@reportPrediction": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      },
+      "start": {
+        "type": "Object"
+      },
+      "end": {
+        "type": "Object"
+      }
+    }
+  },
+  "perimenopauseSummaryTitle": "Your summary",
+  "perimenopauseEmpty": "No symptom logs yet in this stage.",
+  "perimenopauseLogToday": "Log today",
+  "perimenopauseLogTodayBody": "Tap a symptom to log it for today.",
+  "perimenopauseLogged": "\"{symptom}\" logged for today.",
+  "@perimenopauseLogged": {
+    "placeholders": {
+      "symptom": {
+        "type": "Object"
+      }
+    }
+  },
+  "periCatBodyTemp": "Body temperature",
+  "periCatSleep": "Sleep & energy",
+  "periCatMood": "Mood & focus",
+  "periCatCycle": "Cycle changes",
+  "periCatOther": "Other",
+  "periHotFlashes": "Hot flashes",
+  "periNightSweats": "Night sweats",
+  "periChills": "Chills",
+  "periTroubleSleeping": "Trouble sleeping",
+  "periFatigue": "Fatigue",
+  "periWakingNight": "Waking at night",
+  "periMoodSwings": "Mood swings",
+  "periIrritability": "Irritability",
+  "periBrainFog": "Brain fog",
+  "periAnxiety": "Anxiety",
+  "periIrregularPeriods": "Irregular periods",
+  "periHeavierFlow": "Heavier flow",
+  "periLighterFlow": "Lighter flow",
+  "periMissedPeriods": "Missed periods",
+  "periVaginalDryness": "Vaginal dryness",
+  "periJointPain": "Joint pain",
+  "periHeadaches": "Headaches",
+  "periLowLibido": "Low libido",
+  "pregnancyTitle": "Pregnancy",
+  "pregnancyPickerHelp": "First day of your last period",
+  "pregnancySetupTitle": "Set your last period date",
+  "pregnancySetupBody": "Weeks and due date are calculated from the first day of your last menstrual period.",
+  "pregnancyChooseDate": "Choose date",
+  "pregnancyProgress": "{percent}% of 40 weeks",
+  "@pregnancyProgress": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "pregnancyThisStage": "This stage",
+  "trimesterFirst": "First trimester",
+  "trimesterSecond": "Second trimester",
+  "trimesterThird": "Third trimester",
+  "stageSummaryFirst": "Major organs and systems are forming. Fatigue and nausea are common.",
+  "stageSummarySecond": "Growth accelerates and many people feel a boost in energy. Baby movements often begin.",
+  "stageSummaryThird": "The baby grows rapidly and prepares for birth. Rest and planning ahead matter.",
+  "tipFirst1": "Take a folic acid supplement (400–800 mcg) if advised by a clinician.",
+  "tipFirst2": "Stay hydrated and eat small, frequent meals if nausea is an issue.",
+  "tipFirst3": "Avoid alcohol, tobacco and unpasteurised foods.",
+  "tipSecond1": "Keep up gentle, regular activity with clinician approval.",
+  "tipSecond2": "Monitor iron levels; iron needs rise as the baby grows.",
+  "tipSecond3": "Note when you first feel movements — tell your care team.",
+  "tipThird1": "Pack a hospital bag and plan transport ahead of the due date.",
+  "tipThird2": "Sleep on your side and practise pelvic floor exercises.",
+  "tipThird3": "Discuss a birth plan and pain-relief options with your care team.",
+  "weekHeadlineEarly": "Early pregnancy — confirm care early.",
+  "weekHeadlineFirst": "First trimester — organs are forming.",
+  "weekHeadlineSecond": "Second trimester — growth and movement.",
+  "weekHeadlineThird": "Third trimester — preparing for birth.",
+  "trackerPregnantHeadline": "You are {weeks} weeks and {days} days pregnant.",
+  "@trackerPregnantHeadline": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trackerDueLine": "Estimated due date: {date} ({days} days to go based on your dates).",
+  "@trackerDueLine": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trackerStageLine": "You are in the {trimester} trimester.",
+  "@trackerStageLine": {
+    "placeholders": {
+      "trimester": {
+        "type": "Object"
+      }
+    }
+  },
+  "trackerPeriEmpty": "Log symptoms to see which ones are most frequent for you.",
+  "trackerPeriSummary": "You have logged symptoms on {count, plural, one{1 day} other{{count} days}}. Your most frequent symptom is \"{top}\".",
+  "@trackerPeriSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "top": {
+        "type": "Object"
+      }
+    }
+  },
+  "trackerDisclaimer": "Witchy is educational and not a diagnostic tool, and is not a method of contraception. Always consult a qualified healthcare professional about your health.",
+  "ordinalFirst": "first",
+  "ordinalSecond": "second",
+  "ordinalThird": "third",
+  "chartLengthEmpty": "Track a few full cycles to see your length trend here.",
+  "chartAvg": "avg {value}d",
+  "@chartAvg": {
+    "placeholders": {
+      "value": {
+        "type": "Object"
+      }
+    }
+  },
+  "chartDays": "{days} days",
+  "@chartDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "chartSymptomsEmpty": "Log symptoms to see patterns here.",
+  "chartFrequencyTooltip": "{count}× {symptom}",
+  "@chartFrequencyTooltip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "symptom": {
+        "type": "Object"
+      }
+    }
+  },
+  "chartPhaseEmpty": "No phase data yet for this symptom.",
+  "chartPhaseMenstrual": "Menstrual",
+  "chartPhaseFollicular": "Follicular",
+  "chartPhaseOvulation": "Ovulation",
+  "chartPhaseLuteal": "Luteal",
+  "chartOverTimeEmpty": "Symptom entries will appear here once you start logging.",
+  "chartEntries": "{count} entries",
+  "@chartEntries": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "privacySec1Title": "Your data stays on your device",
+  "privacySec1Body": "Witchy is a privacy-first period tracker. All of your logs — period dates, symptoms, moods, notes, and reminders — are stored locally on your device using on-device storage. Nothing is sent to our servers, and no account is required to use the app.",
+  "privacySec2Title": "No tracking or analytics",
+  "privacySec2Body": "Witchy does not include third-party analytics, advertising, or tracking SDKs. We have no way to see your cycle data, and neither does anyone else: your information never leaves your device.",
+  "privacySec3Title": "Anonymous mode",
+  "privacySec3Body": "When anonymous mode is enabled, the app clears any stored account identifier (your name and email) and no longer displays them. You can keep using Witchy without linking an identity.",
+  "privacySec4Title": "How your data is used",
+  "privacySec4Body": "Your logs power the predictions, insights, and reports you see in the app. They are used only to compute those results locally and are never shared with third parties.",
+  "privacySec5Title": "Deleting your data",
+  "privacySec5Body": "You can clear all data at any time by removing Witchy from your device or clearing the app data. Because everything is stored locally, deletion is immediate and permanent.",
+  "privacySec6Title": "Not medical advice",
+  "privacySec6Body": "Witchy provides educational information and estimates only. It is not a medical device and does not diagnose, treat, or prevent any condition. Always consult a qualified healthcare professional about your health.",
+  "termsSec1Title": "Acceptance of terms",
+  "termsSec1Body": "By using Witchy, you agree to these terms. If you do not agree, please do not use the app.",
+  "termsSec2Title": "Use of the app",
+  "termsSec2Body": "Witchy is provided for personal, non-commercial use to help you understand and track your reproductive health. You agree not to misuse the app or use it to harm others.",
+  "termsSec3Title": "No medical guarantee",
+  "termsSec3Body": "Witchy provides estimates and educational content that may not be accurate for your body. It is not a diagnostic or contraceptive tool. You are responsible for decisions you make based on the app.",
+  "termsSec4Title": "Your data",
+  "termsSec4Body": "All data you enter is stored on your device. You are responsible for backing it up, and you may delete it at any time. We do not collect or process your personal data.",
+  "termsSec5Title": "Changes to these terms",
+  "termsSec5Body": "We may update these terms from time to time. Continued use of the app after changes are posted constitutes acceptance of the updated terms.",
+  "termsSec6Title": "Contact",
+  "termsSec6Body": "Questions about these terms or your privacy can be directed through the standard app support channels."
+}

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../../utils/app_theme.dart';
 import '../symptom_categories.dart';
 
@@ -22,10 +23,11 @@ class SymptomChipGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final SymptomCategory category in kSymptomCategories)
+        for (final SymptomCategory category in kSymptomCategories(l10n))
           _category(context, category),
       ],
     );

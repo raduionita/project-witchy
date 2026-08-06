@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../app/router/app_route_path.dart';
 import '../../app/router/app_router_delegate.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/cycle_phase.dart';
 import '../../models/cycle_prediction.dart';
 import '../../models/tracking_mode.dart';
@@ -67,6 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _greeting(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final String now = DateFormat('EEEE, MMM d').format(DateTime.now());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: AppSpacing.kXs),
         Text(
-          'Welcome to Witchy',
+          l10n.homeWelcomeTitle,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -89,6 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _onboardingCard(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return AppCard(
       onTap: () {
         final AppRouterDelegate delegate =
@@ -108,14 +111,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: AppSpacing.kSm),
           Text(
-            'Set up your cycle',
+            l10n.homeSetupTitle,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: AppSpacing.kXs),
           Text(
-            'Complete the short onboarding to unlock personalized predictions.',
+            l10n.homeSetupBody,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
@@ -124,6 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _todayCard(BuildContext context, CycleProvider provider, CyclePrediction prediction) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final CyclePhase phase = prediction.currentCyclePhase;
     final int cycleDay = daysBetween(prediction.currentCycleStart, DateTime.now()) + 1;
@@ -132,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Today', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+          Text(l10n.homeToday, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: AppSpacing.kMd),
           Row(
             children: [
@@ -142,9 +146,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_phaseLabel(phase), style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(cyclePhaseLabel(l10n, phase), style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: AppSpacing.kXs),
-                    Text('Day $cycleDay of your cycle', style: Theme.of(context).textTheme.bodyMedium),
+                    Text(l10n.homeCycleDay(cycleDay), style: Theme.of(context).textTheme.bodyMedium),
                   ],
                 ),
               ),
@@ -156,6 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _nextPeriodCard(BuildContext context, CyclePrediction prediction) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final int days = daysBetween(DateTime.now(), prediction.nextPeriodStart);
     return AppCard(
       child: Row(
@@ -166,8 +171,8 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Next period', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                Text('In $days day${days == 1 ? '' : 's'}', style: Theme.of(context).textTheme.bodyLarge),
+                Text(l10n.homeNextPeriod, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(l10n.homeInDays(days), style: Theme.of(context).textTheme.bodyLarge),
               ],
             ),
           ),
@@ -181,6 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _fertileCard(BuildContext context, CyclePrediction prediction) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final bool fertileNow = prediction.fertileWindow.contains(DateTime.now());
     return AppCard(
       child: Row(
@@ -194,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Fertile window', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(l10n.homeFertileWindow, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                 Text(
                   '${DateFormat('MMM d').format(prediction.fertileWindow.start)} – ${DateFormat('MMM d').format(prediction.fertileWindow.end)}',
                   style: Theme.of(context).textTheme.bodyMedium,
@@ -222,15 +228,6 @@ class _HomeScreenState extends State<HomeScreen> {
       CyclePhase.follicular => Icons.spa,
       CyclePhase.ovulatory => Icons.brightness_5,
       CyclePhase.luteal => Icons.nightlight,
-    };
-  }
-
-  String _phaseLabel(CyclePhase phase) {
-    return switch (phase) {
-      CyclePhase.menstruation => 'Menstruation',
-      CyclePhase.follicular => 'Follicular phase',
-      CyclePhase.ovulatory => 'Ovulation',
-      CyclePhase.luteal => 'Luteal phase',
     };
   }
 }

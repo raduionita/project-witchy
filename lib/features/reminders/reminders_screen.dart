@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/reminder.dart';
 import '../../models/reminder_type.dart';
 import '../../providers/cycle_provider.dart';
@@ -46,15 +47,16 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ReminderProvider provider = context.watch<ReminderProvider>();
     final List<Reminder> reminders = provider.reminders;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reminders')),
+      appBar: AppBar(title: Text(l10n.remindersTitle)),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _create,
         icon: const Icon(Icons.add_alarm),
-        label: const Text('New reminder'),
+        label: Text(l10n.remindersNew),
       ),
       body: SafeArea(
         child: ListView(
@@ -68,7 +70,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
             if (reminders.isEmpty)
               _emptyState(context)
             else ...[
-              const AppSectionHeader(title: 'Your reminders'),
+              AppSectionHeader(title: l10n.remindersYour),
               const SizedBox(height: AppSpacing.kSm),
               for (final Reminder reminder in reminders)
                 _reminderTile(context, reminder),
@@ -80,6 +82,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Widget _permissionCard(BuildContext context, ReminderProvider provider) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return AppCard(
       child: Column(
@@ -91,7 +94,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               const SizedBox(width: AppSpacing.kMd),
               Expanded(
                 child: Text(
-                  'Notifications are off',
+                  l10n.remindersNotificationsOff,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -101,14 +104,14 @@ class _RemindersScreenState extends State<RemindersScreen> {
           ),
           const SizedBox(height: AppSpacing.kSm),
           Text(
-            'Enable notifications so your reminders can be delivered.',
+            l10n.remindersNotificationsOffBody,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: AppSpacing.kMd),
           FilledButton.icon(
             onPressed: () => provider.requestPermissions(),
             icon: const Icon(Icons.notifications_active_outlined),
-            label: const Text('Enable notifications'),
+            label: Text(l10n.remindersEnable),
           ),
         ],
       ),
@@ -116,6 +119,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Widget _hintCard(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return AppCard(
       child: Row(
         children: [
@@ -124,7 +128,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
           const SizedBox(width: AppSpacing.kMd),
           Expanded(
             child: Text(
-              'Reminders are scheduled on your device and never leave it.',
+              l10n.remindersHint,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
@@ -134,6 +138,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Widget _emptyState(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,14 +147,14 @@ class _RemindersScreenState extends State<RemindersScreen> {
               color: Theme.of(context).colorScheme.primary),
           const SizedBox(height: AppSpacing.kSm),
           Text(
-            'No reminders yet',
+            l10n.remindersEmptyTitle,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: AppSpacing.kXs),
           Text(
-            'Create one to get a gentle nudge at the right time.',
+            l10n.remindersEmptyBody,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.outline,
                 ),
@@ -160,6 +165,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Widget _reminderTile(BuildContext context, Reminder reminder) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final ReminderProvider provider = context.read<ReminderProvider>();
     return AppCard(
       padding: EdgeInsets.zero,
@@ -187,12 +193,12 @@ class _RemindersScreenState extends State<RemindersScreen> {
             children: [
               TextButton(
                 onPressed: () => _edit(reminder),
-                child: const Text('Edit'),
+                child: Text(l10n.remindersEdit),
               ),
               TextButton(
                 onPressed: () => provider.remove(reminder.id),
                 child: Text(
-                  'Delete',
+                  l10n.remindersDelete,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.error,
                   ),
@@ -206,31 +212,33 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   String _subtitle(BuildContext context, Reminder reminder) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     if (ReminderDefaults.isPeriodBased(reminder.type)) {
       final DateTime? next = context
           .watch<CycleProvider>()
           .prediction
           ?.nextPeriodStart;
       if (next != null) {
-        return 'Based on your next predicted period (${DateFormat('MMM d').format(next)}).';
+        return l10n.remindersBasedOnPrediction(DateFormat('MMM d').format(next));
       }
-      return 'Follows your predicted period dates.';
+      return l10n.remindersFollowsPrediction;
     }
-    final List<String> days = reminder.weekday.map(_dayLabel).toList();
+    final List<String> days =
+        reminder.weekday.map((int day) => _dayLabel(l10n, day)).toList();
     final String time = DateFormat('h:mm a').format(
       DateTime(2000, 1, 1, reminder.time.hour, reminder.time.minute),
     );
-    return 'Every ${days.join(', ')} at $time';
+    return l10n.remindersEveryAt(days.join(', '), time);
   }
 
-  String _dayLabel(int weekday) => switch (weekday) {
-        1 => 'Mon',
-        2 => 'Tue',
-        3 => 'Wed',
-        4 => 'Thu',
-        5 => 'Fri',
-        6 => 'Sat',
-        _ => 'Sun',
+  String _dayLabel(AppLocalizations l10n, int weekday) => switch (weekday) {
+        1 => l10n.weekdayMon,
+        2 => l10n.weekdayTue,
+        3 => l10n.weekdayWed,
+        4 => l10n.weekdayThu,
+        5 => l10n.weekdayFri,
+        6 => l10n.weekdaySat,
+        _ => l10n.weekdaySun,
       };
 
   IconData _typeIcon(ReminderType type) => switch (type) {

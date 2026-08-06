@@ -11,7 +11,10 @@ import 'features/couples/couples_provider.dart';
 import 'features/couples/couples_service.dart';
 import 'features/reminders/reminder_provider.dart';
 import 'features/reminders/reminder_scheduler.dart';
+import 'features/settings/locale_provider.dart';
+import 'features/settings/privacy_provider.dart';
 import 'features/settings/theme_provider.dart';
+import 'l10n/app_localizations.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/cycle_provider.dart';
 import 'providers/symptom_provider.dart';
@@ -45,6 +48,8 @@ class _WitchyAppState extends State<WitchyApp> {
   CouplesProvider? _couplesProvider;
   ThemeProvider? _themeProvider;
   ContentProvider? _contentProvider;
+  PrivacyProvider? _privacyProvider;
+  LocaleProvider? _localeProvider;
 
   @override
   void initState() {
@@ -77,6 +82,8 @@ class _WitchyAppState extends State<WitchyApp> {
         ..load();
       _themeProvider = ThemeProvider(state.storage)..load();
       _contentProvider = ContentProvider(state.storage)..load();
+      _privacyProvider = PrivacyProvider(state.storage)..load();
+      _localeProvider = LocaleProvider(state.storage)..load();
     }
   }
 
@@ -102,6 +109,9 @@ class _WitchyAppState extends State<WitchyApp> {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: _themeProvider?.themeMode ?? ThemeMode.light,
+      locale: _localeProvider?.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerDelegate: _routerDelegate,
       routeInformationParser: _routeInformationParser,
     );
@@ -125,6 +135,10 @@ class _WitchyAppState extends State<WitchyApp> {
         ChangeNotifierProvider<ContentProvider>.value(
           value: _contentProvider!,
         ),
+        ChangeNotifierProvider<PrivacyProvider>.value(
+          value: _privacyProvider!,
+        ),
+        ChangeNotifierProvider<LocaleProvider>.value(value: _localeProvider!),
       ],
       child: app,
     );

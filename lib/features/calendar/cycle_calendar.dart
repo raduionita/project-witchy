@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/calendar_day.dart';
 import '../../models/cycle_prediction.dart';
 import '../../models/user_profile.dart';
@@ -31,8 +32,6 @@ class _CycleCalendarState extends State<CycleCalendar> {
   DateTime _visibleMonth = dateOnly(DateTime.now());
 
   static final DateFormat _monthTitle = DateFormat('MMMM yyyy');
-
-  static const List<String> _weekdays = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   void _changeMonth(int delta) {
     setState(() {
@@ -120,8 +119,18 @@ class _CycleCalendarState extends State<CycleCalendar> {
   }
 
   Widget _buildWeekdayRow() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final List<String> weekdays = <String>[
+      l10n.weekdayMon,
+      l10n.weekdayTue,
+      l10n.weekdayWed,
+      l10n.weekdayThu,
+      l10n.weekdayFri,
+      l10n.weekdaySat,
+      l10n.weekdaySun,
+    ];
     return Row(
-      children: _weekdays
+      children: weekdays
           .map(
             (String label) => Expanded(
               child: Text(

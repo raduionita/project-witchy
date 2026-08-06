@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../app/router/app_route_path.dart';
 import '../../app/router/app_router_delegate.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/user_profile.dart';
 import '../../providers/app_state_provider.dart';
 import '../../providers/cycle_provider.dart';
@@ -74,6 +75,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -101,14 +103,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         onPressed: _saving
                             ? null
                             : () => setState(() => _step -= 1),
-                        child: const Text('Back'),
+                        child: Text(l10n.onboardingBack),
                       ),
                     ),
                   if (_step > 0) const SizedBox(width: AppSpacing.kMd),
                   Expanded(
                     flex: 2,
                     child: AppButton(
-                      label: _step == _lastStep ? 'Finish' : 'Next',
+                      label: _step == _lastStep
+                          ? l10n.onboardingFinish
+                          : l10n.onboardingNext,
                       isLoading: _saving,
                       onPressed: _next,
                     ),
@@ -133,21 +137,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _welcome() {
-    return const AppCard(
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return AppCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Welcome to Witchy',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            l10n.homeWelcomeTitle,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: AppSpacing.kSm),
-          Text('Let\'s set up your cycle so we can show accurate predictions.'),
-          SizedBox(height: AppSpacing.kMd),
+          const SizedBox(height: AppSpacing.kSm),
+          Text(l10n.onboardingWelcomeBody),
+          const SizedBox(height: AppSpacing.kMd),
           Text(
-            'Witchy is educational and not a diagnostic tool, and is not a method of contraception.',
-            style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+            l10n.onboardingDisclaimer,
+            style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
           ),
         ],
       ),
@@ -155,10 +160,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _lastPeriodStep() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return AppCard(
       child: ListTile(
         leading: const Icon(Icons.event),
-        title: const Text('Last period start'),
+        title: Text(l10n.onboardingLastPeriod),
         subtitle: Text(DateFormat.yMMMd().format(_lastPeriod)),
         onTap: () async {
           final DateTime? picked = await showDatePicker(
@@ -174,25 +180,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _cycleLengthStep() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return _sliderCard(
       icon: Icons.autorenew,
-      title: 'What is your average cycle length?',
+      title: l10n.onboardingCycleLength,
       value: _cycleLength,
       min: 21,
       max: 35,
-      suffix: ' days',
+      suffix: l10n.onboardingDaysSuffix,
       onChanged: (double v) => setState(() => _cycleLength = v.roundToDouble()),
     );
   }
 
   Widget _periodLengthStep() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return _sliderCard(
       icon: Icons.water_drop,
-      title: 'How long does your period last?',
+      title: l10n.onboardingPeriodLength,
       value: _periodLength,
       min: 2,
       max: 10,
-      suffix: ' days',
+      suffix: l10n.onboardingDaysSuffix,
       onChanged: (double v) => setState(() => _periodLength = v.roundToDouble()),
     );
   }
@@ -210,21 +218,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _accountStep() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final AuthProvider auth = context.watch<AuthProvider>();
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Create an account (optional)',
+            l10n.onboardingAccountTitle,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: AppSpacing.kSm),
-          const Text(
-            'Witchy works perfectly without an account. Signing in later '
-            'enables optional features — everything stays on your device.',
+          Text(
+            l10n.onboardingAccountBody,
           ),
           const SizedBox(height: AppSpacing.kMd),
           FilledButton.icon(
@@ -232,7 +240,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ? null
                 : () => _signInAccount(auth.signInWithGoogle),
             icon: const Icon(FontAwesomeIcons.google),
-            label: const Text('Google Sign In'),
+            label: Text(l10n.authGoogleSignIn),
           ),
           const SizedBox(height: AppSpacing.kSm),
           OutlinedButton.icon(
@@ -240,7 +248,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ? null
                 : () => _signInAccount(auth.signInWithApple),
             icon: const Icon(FontAwesomeIcons.apple),
-            label: const Text('Apple Sign In'),
+            label: Text(l10n.authAppleSignIn),
           ),
           if (kDebugMode) ...[
             const SizedBox(height: AppSpacing.kSm),
@@ -249,13 +257,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ? null
                   : () => _signInAccount(auth.signInAnonymously),
               icon: const Icon(Icons.person_off_outlined),
-              label: const Text('Anonymous Sign In (debug)'),
+              label: Text(l10n.authAnonymousDebug),
             ),
           ],
           const SizedBox(height: AppSpacing.kSm),
           TextButton(
             onPressed: _saving ? null : _finish,
-            child: const Text('Skip for now'),
+            child: Text(l10n.onboardingSkip),
           ),
         ],
       ),

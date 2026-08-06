@@ -8,6 +8,7 @@ import 'package:witchy/features/auth/auth_provider.dart';
 import 'package:witchy/features/auth/auth_screen.dart';
 import 'package:witchy/features/auth/auth_service.dart';
 import 'package:witchy/features/auth/models/auth_session.dart';
+import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/services/storage_service.dart';
 
 class FakeAuthGateway implements AuthGateway {
@@ -73,7 +74,11 @@ Future<AuthProvider> pumpAuthScreen(
   await tester.pumpWidget(
     ChangeNotifierProvider<AuthProvider>.value(
       value: provider,
-      child: const MaterialApp(home: AuthScreen()),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: const AuthScreen(),
+      ),
     ),
   );
   await tester.pumpAndSettle();

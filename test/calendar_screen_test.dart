@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/features/calendar/cycle_calendar.dart';
 import 'package:witchy/features/logging/log_period_sheet.dart';
 import 'package:witchy/features/logging/log_symptom_sheet.dart';
+import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/models/user_profile.dart';
 import 'package:witchy/providers/app_state_provider.dart';
 import 'package:witchy/providers/cycle_provider.dart';
@@ -43,7 +44,11 @@ void main() {
           ChangeNotifierProvider<AppStateProvider>.value(value: state),
           ChangeNotifierProvider<CycleProvider>.value(value: cycle),
         ],
-        child: const MaterialApp(home: Scaffold(body: CycleCalendar())),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: CycleCalendar()),
+        ),
       ),
     );
     await tester.pumpAndSettle();

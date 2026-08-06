@@ -188,12 +188,12 @@ test/
 
 ## Phase 9 — Privacy, Anonymous Mode & Localization
 
-- [ ] **9.1** Anonymous mode toggle: hides identifiers from persisted data.
-- [ ] **9.2** i18n skeleton via `flutter_localizations` + `intl` messages (English default; ARB structure ready for translation).
-- [ ] **9.3** Privacy Information screens (Terms of Service, Privacy Policy) supplied locally.
-- [ ] **9.4** Settings hub with privacy + anonymous controls.
+- [x] **9.1** Anonymous mode toggle: hides identifiers from persisted data.
+- [x] **9.2** i18n skeleton via `flutter_localizations` + `intl` messages (English default; ARB structure ready for translation).
+- [x] **9.3** Privacy Information screens (Terms of Service, Privacy Policy) supplied locally.
+- [x] **9.4** Settings hub with privacy + anonymous controls.
 
-**Gate:** analyze, build, tests.
+**Gate:** ✅ analyze clean, ✅ `flutter build apk --debug` OK, ✅ `flutter build ios --release --no-codesign` OK, ✅ `flutter test` 191 passed — **passed**. Notes: `PrivacyProvider` persists the anonymous-mode flag (`witchy.privacy.anonymousMode`); enabling it in Settings also clears the stored auth session (`witchy.auth.session`) so no name/email identifier remains on device, and the account card is hidden while active. i18n uses Flutter gen-l10n: `l10n.yaml` + `lib/l10n/app_en.arb` (English template; `synthetic-package: false` writes `app_localizations*.dart` into `lib/l10n/`), delegates wired into `MaterialApp.router`, first strings adopted by the Settings hub. Legal screens are local-only curated content (`legal_content.dart` + reusable `LegalDocumentScreen`) opened from Settings. An in-app language switcher sits **above** the theme card in Settings via `LocaleProvider` (`AppLocaleOption.system`/`english`/`spanish`, persisted under `appearance.locale`); the system option defers to the device locale with English as the fallback when a device language is unsupported. `app_es.arb` adds Spanish, and switching to Español live-localizes the screen. 11 new tests (locale provider unit tests, l10n Spanish resolution, settings language-switch ordering test); the two stale "coming soon" privacy tests were replaced.
 
 ---
 

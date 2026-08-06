@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:witchy/features/logging/log_period_sheet.dart';
 import 'package:witchy/features/logging/logging_screen.dart';
+import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/models/user_profile.dart';
 import 'package:witchy/providers/app_state_provider.dart';
 import 'package:witchy/providers/cycle_provider.dart';
@@ -40,6 +41,8 @@ void main() {
           ChangeNotifierProvider<CycleProvider>.value(value: cycle),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: LoggingScreen(onOpenCalendar: onOpenCalendar),
           ),

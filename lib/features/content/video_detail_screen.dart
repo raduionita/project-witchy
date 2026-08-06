@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../../models/video.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_button.dart';
@@ -18,7 +19,9 @@ class VideoDetailScreen extends StatelessWidget {
     if (uri == null || !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open this video.')),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).contentVideoError),
+          ),
         );
       }
     }
@@ -26,8 +29,9 @@ class VideoDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Video')),
+      appBar: AppBar(title: Text(l10n.contentVideo)),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.kMd),
@@ -78,7 +82,7 @@ class VideoDetailScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.kLg),
             ],
             AppButton(
-              label: 'Watch',
+              label: l10n.contentWatch,
               icon: Icons.play_arrow,
               onPressed: () => _open(context),
             ),

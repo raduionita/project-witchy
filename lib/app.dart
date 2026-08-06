@@ -5,6 +5,7 @@ import 'app/app_bootstrap.dart';
 import 'app/app_router.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/cycle_provider.dart';
+import 'providers/symptom_provider.dart';
 import 'utils/app_theme.dart';
 
 /// Root widget for Witchy.
@@ -29,6 +30,7 @@ class _WitchyAppState extends State<WitchyApp> {
 
   AppStateProvider? _state;
   CycleProvider? _cycleProvider;
+  SymptomProvider? _symptomProvider;
 
   @override
   void initState() {
@@ -45,6 +47,8 @@ class _WitchyAppState extends State<WitchyApp> {
     if (state != null && _state == null) {
       _state = state;
       _cycleProvider = CycleProvider(state)..recompute();
+      _symptomProvider =
+          SymptomProvider(state, _cycleProvider!)..recompute();
     }
   }
 
@@ -78,6 +82,9 @@ class _WitchyAppState extends State<WitchyApp> {
       providers: [
         ChangeNotifierProvider<AppStateProvider>.value(value: state),
         ChangeNotifierProvider<CycleProvider>.value(value: cycleProvider),
+        ChangeNotifierProvider<SymptomProvider>.value(
+          value: _symptomProvider!,
+        ),
       ],
       child: app,
     );

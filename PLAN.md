@@ -128,13 +128,13 @@ test/
 
 ## Phase 4 — Insights, Symptoms & Reports
 
-- [ ] **4.1** Symptom tracker CRUD with categories + `SymptomPatternService` (recurrence + trend detection).
-- [ ] **4.2** Cycle history view: past cycles list with average/count/metrics.
-- [ ] **4.3** Trend & graphs using `fl_chart` (cycle length, symptoms over time, prediction accuracy).
-- [ ] **4.4** Report generation: per-month summary screen (lengths, symptoms, insights) — be careful to use existing/safe data.
-- [ ] **4.5** Merritt per the privacy mission: all reports computed locally.
+- [x] **4.1** Symptom tracker CRUD with categories + `SymptomPatternService` (recurrence + trend detection).
+- [x] **4.2** Cycle history view: past cycles list with average/count/metrics.
+- [x] **4.3** Trend & graphs using `fl_chart` (cycle length, symptoms over time, prediction accuracy).
+- [x] **4.4** Report generation: per-month summary screen (lengths, symptoms, insights) — be careful to use existing/safe data.
+- [x] **4.5** Merritt per the privacy mission: all reports computed locally.
 
-**Gate (phase):** analyze, build, `flutter test` green.
+**Gate (phase):** analyze, build, `flutter test` green — **passed** (`analyze` clean, `build apk --debug` OK, 54 tests).
 
 ---
 
@@ -169,9 +169,7 @@ test/
 - [ ] **7.1** Add `google_sign_in` + `sign_in_with_apple` deps.
 - [ ] **7.2** `AuthService` + `AuthProvider`; persisted session via `shared_preferences`.
 - [ ] **7.3** Google Sign-In flow; Apple Sign-In with iOS entitlements (Android fallback non-root).
-
 - [ ] **7.4** Couples Mode: **placeholder only** — local share-token/model + UI stub, real backend deferred. Document design.
-
 - [ ] **7.5** Auth UI (sign-in/sign-up screen) + optional account creation during onboarding.
 
 **Gate:** analyze, build, auth flow manual test on device.

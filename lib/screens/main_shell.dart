@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../features/calendar/calendar_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/insights/insights_screen.dart';
 import '../features/logging/logging_screen.dart';
 import '../features/settings/settings_screen.dart';
-import '../utils/app_theme.dart';
 
 /// The primary app shell with bottom navigation.
 ///
@@ -23,11 +23,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
     HomeScreen(),
     CalendarScreen(),
     LoggingScreen(),
-    _TabPlaceholder(
-      Icons.insights_outlined,
-      'Insights',
-      'See trends and reports about your cycle.',
-    ),
+    InsightsScreen(),
     SettingsScreen(),
   ];
 
@@ -66,44 +62,6 @@ class _MainShellScreenState extends State<MainShellScreen> {
             label: 'Settings',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _TabPlaceholder extends StatelessWidget {
-  const _TabPlaceholder(this.icon, this.label, this.description);
-
-  final IconData icon;
-  final String label;
-  final String description;
-
-  @override
-  Widget build(BuildContext context) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.kXl),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 56, color: scheme.primary),
-            const SizedBox(height: AppSpacing.kMd),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.kSm),
-            Text(
-              description,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -10,6 +10,7 @@ import '../../services/calendar_fetcher.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/date_utils.dart';
 import '../logging/log_period_sheet.dart';
+import '../logging/log_symptom_sheet.dart';
 
 /// Default profile used to render the calendar before onboarding completes.
 const UserProfile kDefaultCalendarProfile = UserProfile(id: 'default');
@@ -48,6 +49,10 @@ class _CycleCalendarState extends State<CycleCalendar> {
     }
   }
 
+  Future<void> _onDayLongPress(CalendarDay day) async {
+    await LogSymptomSheet.show(context: context, date: day.date);
+  }
+
   @override
   Widget build(BuildContext context) {
     final CycleProvider provider = context.watch<CycleProvider>();
@@ -80,8 +85,11 @@ class _CycleCalendarState extends State<CycleCalendar> {
                 crossAxisSpacing: 4,
               ),
               itemCount: grid.length,
-              itemBuilder: (BuildContext context, int index) =>
-                  _DayCell(day: grid[index], onTap: _onDayTap),
+              itemBuilder: (BuildContext context, int index) => _DayCell(
+                day: grid[index],
+                onTap: _onDayTap,
+                onLongPress: _onDayLongPress,
+              ),
             ),
           ),
         ),
@@ -132,10 +140,15 @@ class _CycleCalendarState extends State<CycleCalendar> {
 }
 
 class _DayCell extends StatelessWidget {
-  const _DayCell({required this.day, required this.onTap});
+  const _DayCell({
+    required this.day,
+    required this.onTap,
+    required this.onLongPress,
+  });
 
   final CalendarDay day;
   final Future<void> Function(CalendarDay day) onTap;
+  final Future<void> Function(CalendarDay day) onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -154,6 +167,7 @@ class _DayCell extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(AppSpacing.kRadiusLg),
       onTap: () => onTap(day),
+      onLongPress: () => onLongPress(day),
       child: Container(
         alignment: Alignment.center,
         decoration: stateColor == null

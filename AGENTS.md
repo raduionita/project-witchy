@@ -19,6 +19,8 @@ Provide users with **private, accurate, and empowering reproductive health track
 ## Rules
 
 - If the LLM continously loops back to the same prompt, STOP and ask for clarification.
+- NO Firebase
+- `shared_preferences` and `provider` for storage and state management
 
 ---
 
@@ -26,6 +28,7 @@ Provide users with **private, accurate, and empowering reproductive health track
 **Flutter** - Cross-platform mobile UI framework
 **Dart** - Programming language for Flutter
 **Provider** - State management
+**Authentication** - Google and Apple Sign-In, (NO Firebase)
 
 ---
 
@@ -54,3 +57,13 @@ import 'package:hive/hive.dart';
 // Relative imports
 import '../models/period_cycle.dart';
 import '../services/period_tracking_service.dart';
+```
+
+---
+
+## Running the App
+
+```bash
+flutter pub get
+flutter run
+```

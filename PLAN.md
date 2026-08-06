@@ -20,8 +20,10 @@ lib/
 ## Dependencies
 
 Required packages:
-- `provider` - State management
-- `shared_preferences` - Storage - reading and writing simple key-value pairs
+- `provider` - State management, lazy-loading, wrapper around InheritedWidget
+- `shared_preferences` - Storage - local - reading and writing simple key-value pairs
+- `google_sign_in` - Google Sign-In
+- `sign_in_with_apple` - Apple Sign-In
 - `freezed` - For generating freezed models
 - `freezed_annotation` - For generating freezed models
 - `uuid` - Unique ID generation
@@ -33,21 +35,6 @@ Required packages:
 - `json_serializable` - Auto-generate code for converting to and from JSON by annotating Dart classes
 - `font_awesome_flutter` - The Font Awesome Icon pack available as Flutter Icons
 - `device_info_plus` - Device information
-
---- 
-
-## Data Storage
-
-The app uses shared_preferences to store user data locally.
-
----
-
-## Running the App
-
-```bash
-flutter pub get
-flutter run
-```
 
 ---
 

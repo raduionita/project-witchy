@@ -1,9 +1,5 @@
 # Witchy - Witchy Period Tracker & Cycle Calendar app for iOS and Android using Flutter and Dart
 
----
-
-## Overview
-
 Witchy is a comprehensive health tracking application designed to help you understand and monitor your menstrual cycle, fertility window, pregnancy, and overall reproductive health. Witchy combines personalized insights with evidence-based medical guidance.
 
 ---
@@ -38,7 +34,6 @@ Witchy is a comprehensive health tracking application designed to help you under
 
 ## Important Disclaimers
 
-⚠️ **Please Note**:
 - Witchy is **not a diagnostic tool** and should not replace professional medical advice
 - Should **not** be used as a contraception or fertility method
 - Predictions and information are for **educational** purposes only
@@ -46,7 +41,7 @@ Witchy is a comprehensive health tracking application designed to help you under
 
 ---
 
-## About Witchy & QVONYX.com.
+## About Witchy & QVONYX.com
 
 **Developer**: qvonyx.com  
 **Email**: witchy@qvonyx.com

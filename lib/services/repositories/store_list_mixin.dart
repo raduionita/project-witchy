@@ -11,6 +11,9 @@ mixin PersistedListMixin<T> {
 
   T Function(Map<String, dynamic> json) get fromJson;
 
+  /// Extracts the stable identifier used to locate [T] within the list.
+  Object? idOf(T item);
+
   List<T> _cache = <T>[];
 
   List<T> get items => List<T>.unmodifiable(_cache);
@@ -35,19 +38,19 @@ mixin PersistedListMixin<T> {
     await _persist();
   }
 
-  /// Updates an existing item (matched by identity) and persists.
+  /// Replaces the stored item with the same [idOf] as [item], then persists.
   Future<void> update(T item) async {
     load();
-    final int index = _cache.indexOf(item);
+    final int index = _indexOfId(idOf(item));
     if (index == -1) return;
     _cache[index] = item;
     await _persist();
   }
 
-  /// Removes [item] and persists.
+  /// Removes the item matching [item]'s id and persists.
   Future<void> remove(T item) async {
     load();
-    _cache.remove(item);
+    _cache.removeWhere((T e) => idOf(e) == idOf(item));
     await _persist();
   }
 
@@ -55,5 +58,12 @@ mixin PersistedListMixin<T> {
   Future<void> clear() async {
     _cache = <T>[];
     await _persist();
+  }
+
+  int _indexOfId(Object? id) {
+    for (int i = 0; i < _cache.length; i++) {
+      if (idOf(_cache[i]) == id) return i;
+    }
+    return -1;
   }
 }

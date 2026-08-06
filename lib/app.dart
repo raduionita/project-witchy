@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'app/app_bootstrap.dart';
 import 'app/app_router.dart';
 import 'providers/app_state_provider.dart';
+import 'providers/cycle_provider.dart';
 import 'utils/app_theme.dart';
 
 /// Root widget for Witchy.
@@ -26,16 +27,30 @@ class _WitchyAppState extends State<WitchyApp> {
   late final AppRouterDelegate _routerDelegate;
   late final AppRouteInformationParser _routeInformationParser;
 
+  AppStateProvider? _state;
+  CycleProvider? _cycleProvider;
+
   @override
   void initState() {
     super.initState();
     _routerDelegate = AppRouterDelegate(bootstrap: widget.bootstrap);
     _routeInformationParser = const AppRouteInformationParser();
     widget.bootstrap.addListener(_onBootstrapChanged);
+    // Adopt already-completed bootstrap (e.g. bootstrap awaited in tests).
+    _adoptStateIfAvailable();
+  }
+
+  void _adoptStateIfAvailable() {
+    final AppStateProvider? state = widget.bootstrap.state;
+    if (state != null && _state == null) {
+      _state = state;
+      _cycleProvider = CycleProvider(state)..recompute();
+    }
   }
 
   void _onBootstrapChanged() {
-    if (widget.bootstrap.state != null) setState(() {});
+    _adoptStateIfAvailable();
+    setState(() {});
   }
 
   @override
@@ -46,7 +61,8 @@ class _WitchyAppState extends State<WitchyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final AppStateProvider? state = widget.bootstrap.state;
+    final AppStateProvider? state = _state;
+    final CycleProvider? cycleProvider = _cycleProvider;
 
     final Widget app = MaterialApp.router(
       title: 'Witchy',
@@ -57,7 +73,13 @@ class _WitchyAppState extends State<WitchyApp> {
       routeInformationParser: _routeInformationParser,
     );
 
-    if (state == null) return app;
-    return ChangeNotifierProvider<AppStateProvider>.value(value: state, child: app);
+    if (state == null || cycleProvider == null) return app;
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AppStateProvider>.value(value: state),
+        ChangeNotifierProvider<CycleProvider>.value(value: cycleProvider),
+      ],
+      child: app,
+    );
   }
 }

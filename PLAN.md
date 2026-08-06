@@ -101,27 +101,28 @@ test/
 
 ## Phase 2 — Cycle Domain Logic (the engine)
 
-- [ ] **2.1** `CycleCalculator` service: cycle-length, period-length, next-period prediction (reverse-count luteal phase), ovulation date, fertile window.
-- [ ] **2.2** `CalendarFetcher`: month-grid generation; mark period days, fertile days, ovulation day, predicted days.
-- [ ] **2.3** Cycle phasing utilities: menstrual / follicular / ovulatory / luteal.
-- [ ] **2.4** `CycleProvider` (ChangeNotifier): point flow — add/edit/delete logs, recompute predictions reactively.
-- [ ] **2.5** Prediction edge cases: irregular cycles, first-log onboarding, missing/incomplete data.
-- [ ] **2.6** Unit tests: ovulation, fertile window, next-period across multiple realistic datasets.
+- [x] **2.1** `CycleCalculator` service: cycle-length, period-length, next-period prediction (reverse-count luteal phase), ovulation date, fertile window. Injectable `now` for testability.
+- [x] **2.2** `CalendarFetcher`: month-grid generation (42-cell, Monday-start); mark period days, fertile days, ovulation day, predicted days.
+- [x] **2.3** Cycle phasing utilities: `CyclePhase` (menstrual / follicular / ovulatory / luteal) + `phaseAt`.
+- [x] **2.4** `CycleProvider` (ChangeNotifier): point flow — add/edit/delete logs, recompute predictions reactively.
+- [x] **2.5** Prediction edge cases: irregular/overdue cycles, first-log, missing data (profile `firstPeriodDate` fallback, median-length adaptation).
+- [x] **2.6** Unit tests: ovulation, fertile window, next-period across multiple realistic datasets (22 tests for engine + fetcher + provider).
+- [x] **2.6b** Fixed `PersistedListMixin.update/remove` to match by `idOf` (value-equality matching broke `copyWith` updates).
 
-**Gate (phase):** analyze clean, build, tests green.
+**Gate (phase):** ✅ analyze clean, ✅ build, ✅ tests green (37 total).
 
 ---
 
 ## Phase 3 — Core Tracking UI (calendar, dashboard, onboarding)
 
-- [ ] **3.1** Calendar widget: custom month grid, colored day states (period / fertile / ovulation / predicted), swipe month navigation.
-- [ ] **3.2** Logging quick-entry flow: log period start/end, flow intensity, symptoms, discharge, mood (bottom sheet or dedicated screen).
-- [ ] **3.3** Home dashboard: today's status, current cycle day, prediction summary, daily insight card.
-- [ ] **3.4** Onboarding screen: collect first period date, cycle length, period length → write to `ProfileRepository` + `CycleRepository`.
-- [ ] **3.5** App shell with bottom nav: Home / Calendar / Logging / Insights / Settings. Provide the `CycleProvider`, `LogsRepository` wiring.
-- [ ] **3.6** Wire navigation: boot → Onboarding (if first run) → Shell.
+- [x] **3.1** Calendar widget: custom `CycleCalendar` (42-cell Monday-first grid), colored day states (period / fertile / ovulation / predicted), swipe + arrow navigation. Moved into `features/calendar/`.
+- [x] **3.2** Logging flow: `LogPeriodSheet` (intensity chips, symptom chips, mood, notes) + `LoggingScreen` with recent logs.
+- [x] **3.3** `HomeScreen` dashboard: today's phase, cycle day, next-period countdown, fertile window card.
+- [x] **3.4** `OnboardingScreen` in `features/onboarding/` (old `screens/` placeholder removed): last period date, cycle length, period length → saves profile + logs first day + navigates to shell.
+- [x] **3.5** App shell bottom nav wired to real Home / Calendar / Logging screens + `CycleProvider` provided via `MultiProvider` in `app.dart`.
+- [x] **3.6** Navigation wiring: boot → onboarding (first run) → shell; `AppRouterDelegate._destinationAfterBootstrap()`.
 
-**Gate (phase):** analyze, build, manual smoke via `flutter run`, `flutter test` green.
+**Gate:** ✅ analyze, ✅ build, ✅ tests (38). Manual smoke deferred to a device run.
 
 ---
 

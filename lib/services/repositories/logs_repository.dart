@@ -37,6 +37,9 @@ class PeriodLogsStore with PersistedListMixin<PeriodLog> {
 
   @override
   PeriodLog Function(Map<String, dynamic> json) get fromJson => PeriodLog.fromJson;
+
+  @override
+  Object? idOf(PeriodLog item) => item.id;
 }
 
 class SymptomLogsStore with PersistedListMixin<SymptomLog> {
@@ -52,4 +55,7 @@ class SymptomLogsStore with PersistedListMixin<SymptomLog> {
 
   @override
   SymptomLog Function(Map<String, dynamic> json) get fromJson => SymptomLog.fromJson;
+
+  @override
+  Object? idOf(SymptomLog item) => item.id;
 }

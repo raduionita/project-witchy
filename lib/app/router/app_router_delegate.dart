@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../screens/onboarding_screen.dart';
+import '../../features/onboarding/onboarding_screen.dart';
 import '../../screens/splash_screen.dart';
 import '../../screens/main_shell.dart';
 import '../app_bootstrap.dart';
@@ -37,10 +37,15 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
 
   void _onBootstrapChanged() {
     if (_bootstrap.isBootstrapped && _currentPath is AppSplashRoute) {
-      _currentPath = const AppShellRoute();
+      _currentPath = _destinationAfterBootstrap();
       notifyListeners();
     }
   }
+
+  /// Where to land once bootstrap finishes (onboarding first-run, else shell).
+  AppRoutePath _destinationAfterBootstrap() => _bootstrap.isFirstRun
+      ? const AppOnboardingRoute()
+      : const AppShellRoute();
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +77,7 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
   @override
   Future<void> setInitialRoutePath(AppRoutePath configuration) async {
     _currentPath = _bootstrap.isBootstrapped
-        ? const AppShellRoute()
+        ? _destinationAfterBootstrap()
         : configuration;
     notifyListeners();
   }

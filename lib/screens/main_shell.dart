@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../features/calendar/calendar_screen.dart';
+import '../features/home/home_screen.dart';
+import '../features/logging/logging_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../utils/app_theme.dart';
 
 /// The primary app shell with bottom navigation.
 ///
-/// Tabs render placeholder content in Phase 0; feature screens are wired in
-/// during later phases. An [IndexedStack] preserves each tab's state.
+/// An [IndexedStack] preserves each tab's state across switches.
 class MainShellScreen extends StatefulWidget {
   const MainShellScreen({super.key});
 
@@ -18,21 +20,9 @@ class _MainShellScreenState extends State<MainShellScreen> {
   int _index = 0;
 
   static const List<Widget> _tabs = <Widget>[
-    _TabPlaceholder(
-      Icons.home_outlined,
-      'Home',
-      'Today\'s cycle status and predictions appear here.',
-    ),
-    _TabPlaceholder(
-      Icons.calendar_month_outlined,
-      'Calendar',
-      'Browse and log your cycle on the calendar.',
-    ),
-    _TabPlaceholder(
-      Icons.add_circle_outline,
-      'Logging',
-      'Quickly log period, symptoms, and mood.',
-    ),
+    HomeScreen(),
+    CalendarScreen(),
+    LoggingScreen(),
     _TabPlaceholder(
       Icons.insights_outlined,
       'Insights',

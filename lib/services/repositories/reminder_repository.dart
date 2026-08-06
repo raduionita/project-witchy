@@ -17,6 +17,9 @@ class ReminderRepository with PersistedListMixin<Reminder> {
   @override
   Reminder Function(Map<String, dynamic> json) get fromJson => Reminder.fromJson;
 
+  @override
+  Object? idOf(Reminder item) => item.id;
+
   /// Only reminders that are currently enabled.
   List<Reminder> get enabled =>
       items.where((Reminder r) => r.enabled).toList();

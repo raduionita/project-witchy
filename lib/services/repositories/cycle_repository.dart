@@ -17,6 +17,9 @@ class CycleRepository with PersistedListMixin<Cycle> {
   @override
   Cycle Function(Map<String, dynamic> json) get fromJson => Cycle.fromJson;
 
+  @override
+  Object? idOf(Cycle item) => item.id;
+
   /// All cycles ordered newest-first.
   List<Cycle> get cyclesSorted =>
       List<Cycle>.from(items)..sort((Cycle a, Cycle b) => b.startDate.compareTo(a.startDate));

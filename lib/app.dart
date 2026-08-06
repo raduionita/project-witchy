@@ -3,30 +3,61 @@ import 'package:provider/provider.dart';
 
 import 'app/app_bootstrap.dart';
 import 'app/app_router.dart';
+import 'providers/app_state_provider.dart';
 import 'utils/app_theme.dart';
 
 /// Root widget for Witchy.
 ///
 /// Owns the app-wide providers and wires the Navigator 2.0 router into
-/// [MaterialApp].
-class WitchyApp extends StatelessWidget {
+/// [MaterialApp]. While [AppBootstrap] initializes storage the router shows
+/// the splash screen; once repositories are ready they are provided to the
+/// tree through [ChangeNotifierProvider].
+class WitchyApp extends StatefulWidget {
   const WitchyApp({super.key, required this.bootstrap});
 
   /// Shared bootstrap state used to derive the initial route.
   final AppBootstrap bootstrap;
 
   @override
+  State<WitchyApp> createState() => _WitchyAppState();
+}
+
+class _WitchyAppState extends State<WitchyApp> {
+  late final AppRouterDelegate _routerDelegate;
+  late final AppRouteInformationParser _routeInformationParser;
+
+  @override
+  void initState() {
+    super.initState();
+    _routerDelegate = AppRouterDelegate(bootstrap: widget.bootstrap);
+    _routeInformationParser = const AppRouteInformationParser();
+    widget.bootstrap.addListener(_onBootstrapChanged);
+  }
+
+  void _onBootstrapChanged() {
+    if (widget.bootstrap.state != null) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    widget.bootstrap.removeListener(_onBootstrapChanged);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<AppBootstrap>.value(
-      value: bootstrap,
-      child: MaterialApp.router(
-        title: 'Witchy',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light(),
-        darkTheme: AppTheme.dark(),
-        routerDelegate: AppRouterDelegate(bootstrap: bootstrap),
-        routeInformationParser: const AppRouteInformationParser(),
-      ),
+    final AppStateProvider? state = widget.bootstrap.state;
+
+    final Widget app = MaterialApp.router(
+      title: 'Witchy',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      routerDelegate: _routerDelegate,
+      routeInformationParser: _routeInformationParser,
     );
+
+    if (state == null) return app;
+    return ChangeNotifierProvider<AppStateProvider>.value(value: state, child: app);
   }
 }

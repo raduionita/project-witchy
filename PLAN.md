@@ -87,15 +87,15 @@ test/
 
 >> Creates offline-first persisted storage that honors the privacy mission.
 
-- [ ] **1.1** Freezed models: `UserProfile`, `PeriodLog`, `Cycle`, `SymptomLog`, `Reminder`, `Article` (fields, equality, `copyWith`).
-- [ ] **1.2** `json_serializable` `fromJson`/`toJson` for each model.
-- [ ] **1.3** `StorageService`: typed get/set/remove wrappers over `shared_preferences`, key-namespacing, error handling, `clear`.
-- [ ] **1.4** Repository layer: `ProfileRepository`, `CycleRepository`, `LogsRepository`, `ReminderRepository` — CRUD + persist/load, in-memory cache + disk sync.
-- [ ] **1.5** Provider layer: `AppStateProvider` (async load of all repos at boot), then start down-binding.
-- [ ] **1.6** Unit tests: model (de)serialization; repository round-trip with a mock `shared_preferences` (`SharedPreferences.setMockInitialValues`).
-- [ ] **1.7** Run `build_runner`.
+- [x] **1.1** Freezed models: `UserProfile`, `PeriodLog`, `Cycle`, `SymptomLog`, `Reminder`, `Article` (fields, equality, `copyWith`). Nested `TimeOfDayModel` moved to its own file.
+- [x] **1.2** `json_serializable` `fromJson`/`toJson` for each model. Added `build.yaml` with `explicit_to_json: true` for nested freezed types.
+- [x] **1.3** `StorageService`: typed get/set/remove wrappers over `shared_preferences`, key-namespacing, error handling, `clear`.
+- [x] **1.4** Repository layer: `ProfileRepository`, `CycleRepository`, `LogsRepository`, `ReminderRepository` — CRUD + persist/load, in-memory cache + disk sync (via `PersistedListMixin`).
+- [x] **1.5** Provider layer: `AppStateProvider` (async load of all repos at boot), provided through the widget tree on bootstrap completion.
+- [x] **1.6** Unit tests: model (de)serialization; repository round-trip with a mock `shared_preferences` (`SharedPreferences.setMockInitialValues`).
+- [x] **1.7** Run `build_runner`.
 
-**Gate (phase):** `flutter analyze`, `flutter build apk --debug`, `flutter test` all pass.
+**Gate (phase):** ✅ `flutter analyze`, ✅ `flutter build apk --debug`, ✅ `flutter test` (15 tests) all pass.
 
 ---
 

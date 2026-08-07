@@ -27,6 +27,12 @@ class ContentProvider extends ChangeNotifier {
   Set<String> _favoriteIds = <String>{};
   bool _loaded = false;
 
+  /// Clears cached favorites after a full data reset (app data was wiped).
+  void reset() {
+    _favoriteIds = <String>{};
+    notifyListeners();
+  }
+
   ContentType? _typeFilter;
   String? _categoryFilter;
   String _query = '';

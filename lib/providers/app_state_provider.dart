@@ -36,4 +36,19 @@ class AppStateProvider extends ChangeNotifier {
     logs.load();
     reminders.load();
   }
+
+  /// Permanently removes every stored value and empties the in-memory caches.
+  ///
+  /// Used by the "clear all data" action in Settings. Clears the raw storage
+  /// prefixes first, then resets each repository so subsequent reads observe
+  /// a fresh, empty state.
+  Future<void> clearAll() async {
+    await _storage.clearAll();
+    profile.clear();
+    await cycles.clear();
+    await logs.periodLogs.clear();
+    await logs.symptomLogs.clear();
+    await reminders.clear();
+    notifyListeners();
+  }
 }

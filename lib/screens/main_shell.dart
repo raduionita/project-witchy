@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../features/auth/auth_provider.dart';
@@ -31,15 +32,30 @@ class _MainShellScreenState extends State<MainShellScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _index = 0;
 
-  late final List<Widget> _tabs = <Widget>[const HomeScreen(), const CalendarScreen(), LoggingScreen(onOpenCalendar: () => setState(() => _index = 1)), const InsightsScreen()];
+  late final List<Widget> _tabs = <Widget>[
+    const HomeScreen(),
+    const CalendarScreen(),
+    LoggingScreen(onOpenCalendar: () => setState(() => _index = 1)),
+    const InsightsScreen(),
+  ];
 
   void _openSettings(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen()));
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen()));
   }
 
   void _openContentLibrary(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
-    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => Scaffold(appBar: AppBar(title: Text(l10n.navMagic)), body: const ContentLibraryScreen())));
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder:
+            (_) => Scaffold(
+              appBar: AppBar(title: Text(l10n.navMagic)),
+              body: const ContentLibraryScreen(),
+            ),
+      ),
+    );
   }
 
   String _titleFor(AppLocalizations l10n) {
@@ -57,8 +73,19 @@ class _MainShellScreenState extends State<MainShellScreen> {
     return Scaffold(
       key: _scaffoldKey,
       extendBody: true,
-      appBar: AppBar(automaticallyImplyLeading: false, actions: <Widget>[Container()], centerTitle: true, title: Text(_titleFor(l10n))),
-      body: Stack(alignment: Alignment.bottomCenter, children: [IndexedStack(index: _index, children: _tabs), _navConainer(l10n)]),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        actions: <Widget>[Container()],
+        centerTitle: true,
+        title: Text(_titleFor(l10n)),
+      ),
+      body: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          IndexedStack(index: _index, children: _tabs),
+          _navConainer(l10n),
+        ],
+      ),
       endDrawer: _endDrawer(context, l10n),
     );
   }
@@ -67,8 +94,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
     final AuthProvider auth = context.watch<AuthProvider>();
     return Drawer(
       child: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _accountHeader(context, l10n, auth),
             const Divider(height: 1),
@@ -81,19 +108,15 @@ class _MainShellScreenState extends State<MainShellScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: Text(l10n.navSettings),
-              onTap: () {
-                Navigator.of(context).pop();
-                _openSettings(context);
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.alarm_add_outlined),
               title: Text(l10n.settingsRemindersTitle),
               onTap: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const RemindersScreen()));
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const RemindersScreen(),
+                  ),
+                );
               },
             ),
             ListTile(
@@ -101,7 +124,21 @@ class _MainShellScreenState extends State<MainShellScreen> {
               title: Text(l10n.settingsCouplesTitle),
               onTap: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const CouplesScreen()));
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const CouplesScreen(),
+                  ),
+                );
+              },
+            ),
+            const Spacer(),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.settings_outlined),
+              title: Text(l10n.navSettings),
+              onTap: () {
+                Navigator.of(context).pop();
+                _openSettings(context);
               },
             ),
           ],
@@ -110,7 +147,11 @@ class _MainShellScreenState extends State<MainShellScreen> {
     );
   }
 
-  Widget _accountHeader(BuildContext context, AppLocalizations l10n, AuthProvider auth) {
+  Widget _accountHeader(
+    BuildContext context,
+    AppLocalizations l10n,
+    AuthProvider auth,
+  ) {
     final AuthSession? session = auth.session;
     final ColorScheme scheme = Theme.of(context).colorScheme;
     if (session != null) {
@@ -119,14 +160,26 @@ class _MainShellScreenState extends State<MainShellScreen> {
         padding: const EdgeInsets.all(AppSpacing.kMd),
         child: Row(
           children: [
-            CircleAvatar(backgroundColor: scheme.primary, foregroundColor: scheme.onPrimary, child: Text(session.displayName.isEmpty ? '?' : session.displayName.substring(0, 1).toUpperCase())),
+            CircleAvatar(
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              child: Text(
+                session.displayName.isEmpty
+                    ? '?'
+                    : session.displayName.substring(0, 1).toUpperCase(),
+              ),
+            ),
             const SizedBox(width: AppSpacing.kMd),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(session.displayName, style: Theme.of(context).textTheme.titleMedium),
-                  if (session.email case final String email) Text(email, style: Theme.of(context).textTheme.bodySmall),
+                  Text(
+                    session.displayName,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  if (session.email case final String email)
+                    Text(email, style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ),
@@ -141,14 +194,22 @@ class _MainShellScreenState extends State<MainShellScreen> {
         children: [
           Icon(Icons.account_circle_outlined, size: 48, color: scheme.primary),
           const SizedBox(height: AppSpacing.kSm),
-          Text(l10n.settingsAccountTitle, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            l10n.settingsAccountTitle,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: AppSpacing.kXs),
-          Text(l10n.settingsAccountSubtitle, style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            l10n.settingsAccountSubtitle,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
           const SizedBox(height: AppSpacing.kSm),
           FilledButton.tonal(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AuthScreen()));
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const AuthScreen()),
+              );
             },
             child: Text(l10n.authGoogleSignIn),
           ),
@@ -160,12 +221,18 @@ class _MainShellScreenState extends State<MainShellScreen> {
   Widget _navConainer(AppLocalizations l10n) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.kMd, left: AppSpacing.kMd, right: AppSpacing.kMd),
+      padding: const EdgeInsets.only(
+        bottom: AppSpacing.kMd,
+        left: AppSpacing.kMd,
+        right: AppSpacing.kMd,
+      ),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: scheme.onPrimaryContainer,
           borderRadius: BorderRadius.circular(AppSpacing.kRadiusXl),
-          boxShadow: [BoxShadow(color: scheme.primary, blurRadius: AppSpacing.kRadiusSm)],
+          boxShadow: [
+            BoxShadow(color: scheme.primary, blurRadius: AppSpacing.kRadiusSm),
+          ],
           border: Border.all(color: scheme.onPrimary.withAlpha(140), width: 1),
         ),
         child: Padding(
@@ -174,10 +241,31 @@ class _MainShellScreenState extends State<MainShellScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _navButton(index: 0, unselectedIcon: Icons.home_outlined, selectedIcon: Icons.home, tooltip: l10n.navHome),
-              _navButton(index: 1, unselectedIcon: Icons.calendar_month_outlined, selectedIcon: Icons.calendar_month, tooltip: l10n.navCalendar),
-              _navButton(index: 2, unselectedIcon: Icons.add_outlined, selectedIcon: Icons.add, tooltip: l10n.navLogging, iconsScale: 1.4),
-              _navButton(index: 3, unselectedIcon: Icons.insights_outlined, selectedIcon: Icons.insights, tooltip: l10n.navInsights),
+              _navButton(
+                index: 0,
+                unselectedIcon: FontAwesomeIcons.moon,
+                selectedIcon: FontAwesomeIcons.moon,
+                tooltip: l10n.navHome,
+              ),
+              _navButton(
+                index: 1,
+                unselectedIcon: Icons.calendar_month_outlined,
+                selectedIcon: Icons.calendar_month,
+                tooltip: l10n.navCalendar,
+              ),
+              _navButton(
+                index: 2,
+                unselectedIcon: Icons.add_outlined,
+                selectedIcon: Icons.add,
+                tooltip: l10n.navLogging,
+                iconsScale: 1.4,
+              ),
+              _navButton(
+                index: 3,
+                unselectedIcon: Icons.insights_outlined,
+                selectedIcon: Icons.insights,
+                tooltip: l10n.navInsights,
+              ),
               _navButton(
                 index: 4,
                 unselectedIcon: Icons.account_circle_outlined,
@@ -192,7 +280,15 @@ class _MainShellScreenState extends State<MainShellScreen> {
     );
   }
 
-  Widget _navButton({required int index, required IconData unselectedIcon, IconData? selectedIcon, double iconsScale = 1.0, double shiftY = 0.0, required String tooltip, VoidCallback? onTap}) {
+  Widget _navButton({
+    required int index,
+    required IconData unselectedIcon,
+    IconData? selectedIcon,
+    double iconsScale = 1.0,
+    double shiftY = 0.0,
+    required String tooltip,
+    VoidCallback? onTap,
+  }) {
     final bool selected = onTap == null && _index == index;
     final ColorScheme scheme = Theme.of(context).colorScheme;
     return Expanded(
@@ -204,11 +300,17 @@ class _MainShellScreenState extends State<MainShellScreen> {
           child: Container(
             width: AppSizing.kXl8 * iconsScale,
             height: AppSizing.kXl8 * iconsScale,
-            decoration: BoxDecoration(shape: BoxShape.circle), //  border: shiftY != 0.0 ? Border.all(color: Colors.white) : null),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+            ), //  border: shiftY != 0.0 ? Border.all(color: Colors.white) : null),
             alignment: Alignment.center,
             transformAlignment: AlignmentDirectional.center,
             transform: Matrix4.translationValues(0, shiftY, 0),
-            child: Icon(selected ? (selectedIcon ?? unselectedIcon) : unselectedIcon, size: selected ? iconsScale * 30 : iconsScale * 22, color: selected ? scheme.secondary : scheme.onPrimary),
+            child: Icon(
+              selected ? (selectedIcon ?? unselectedIcon) : unselectedIcon,
+              size: selected ? iconsScale * 30 : iconsScale * 22,
+              color: selected ? scheme.secondary : scheme.onPrimary,
+            ),
           ),
         ),
       ),

@@ -395,6 +395,42 @@ abstract class AppLocalizations {
   /// **'Sign out'**
   String get settingsSignOut;
 
+  /// No description provided for @settingsClearData.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all data'**
+  String get settingsClearData;
+
+  /// No description provided for @settingsClearDataSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Erase every cycle, log, reminder and setting from this device.'**
+  String get settingsClearDataSubtitle;
+
+  /// No description provided for @settingsClearDataConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Erase all data?'**
+  String get settingsClearDataConfirmTitle;
+
+  /// No description provided for @settingsClearDataConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently deletes your profile, period and symptom logs, reminders and settings from this device. This cannot be undone.'**
+  String get settingsClearDataConfirmBody;
+
+  /// No description provided for @settingsClearDataAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get settingsClearDataAction;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
   /// No description provided for @settingsAccountTitle.
   ///
   /// In en, this message translates to:

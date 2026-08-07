@@ -173,6 +173,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSignOut => 'Sign out';
 
   @override
+  String get settingsClearData => 'Clear all data';
+
+  @override
+  String get settingsClearDataSubtitle => 'Erase every cycle, log, reminder and setting from this device.';
+
+  @override
+  String get settingsClearDataConfirmTitle => 'Erase all data?';
+
+  @override
+  String get settingsClearDataConfirmBody => 'This permanently deletes your profile, period and symptom logs, reminders and settings from this device. This cannot be undone.';
+
+  @override
+  String get settingsClearDataAction => 'Clear';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
   String get settingsAccountTitle => 'Account';
 
   @override

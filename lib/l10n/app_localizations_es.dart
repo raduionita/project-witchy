@@ -173,6 +173,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsSignOut => 'Cerrar sesión';
 
   @override
+  String get settingsClearData => 'Borrar todos los datos';
+
+  @override
+  String get settingsClearDataSubtitle => 'Borra de este dispositivo cada ciclo, registro, recordatorio y ajuste.';
+
+  @override
+  String get settingsClearDataConfirmTitle => '¿Borrar todos los datos?';
+
+  @override
+  String get settingsClearDataConfirmBody => 'Esto elimina de forma permanente tu perfil, los registros de regla y síntomas, los recordatorios y los ajustes de este dispositivo. Esta acción no se puede deshacer.';
+
+  @override
+  String get settingsClearDataAction => 'Borrar';
+
+  @override
+  String get cancel => 'Cancelar';
+
+  @override
   String get settingsAccountTitle => 'Cuenta';
 
   @override

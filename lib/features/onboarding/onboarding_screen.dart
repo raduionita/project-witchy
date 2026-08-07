@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
@@ -250,16 +249,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             icon: const Icon(FontAwesomeIcons.apple),
             label: Text(l10n.authAppleSignIn),
           ),
-          if (kDebugMode) ...[
-            const SizedBox(height: AppSpacing.kSm),
-            TextButton.icon(
+          TextButton.icon(
               onPressed: auth.busy
                   ? null
                   : () => _signInAccount(auth.signInAnonymously),
               icon: const Icon(Icons.person_off_outlined),
-              label: Text(l10n.authAnonymousDebug),
+              label: Text(l10n.authAnonymous),
             ),
-          ],
           const SizedBox(height: AppSpacing.kSm),
           TextButton(
             onPressed: _saving ? null : _finish,

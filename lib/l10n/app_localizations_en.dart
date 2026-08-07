@@ -63,6 +63,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navSettings => 'Settings';
 
   @override
+  String get navAccount => 'Account';
+
+  @override
   String get homeWelcomeTitle => 'Welcome to Witchy';
 
   @override
@@ -212,7 +215,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authAppleSignIn => 'Apple Sign In';
 
   @override
-  String get authAnonymousDebug => 'Anonymous Sign In (debug)';
+  String get authAnonymous => 'Anonymous';
 
   @override
   String get authProviderGoogle => 'Google';

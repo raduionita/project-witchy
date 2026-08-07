@@ -21,6 +21,7 @@ Provide users with **private, accurate, and empowering reproductive health track
 - If the LLM continously loops back to the same prompt, STOP and ask for clarification.
 - NO Firebase
 - `shared_preferences` and `provider` for storage and state management
+- `build()` function should be the last defined function in the Widget class
 
 ---
 

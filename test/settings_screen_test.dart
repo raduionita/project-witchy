@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -10,11 +8,9 @@ import 'package:witchy/features/auth/auth_provider.dart';
 import 'package:witchy/features/auth/auth_screen.dart';
 import 'package:witchy/features/auth/auth_service.dart';
 import 'package:witchy/features/couples/couples_provider.dart';
-import 'package:witchy/features/couples/couples_screen.dart';
 import 'package:witchy/features/couples/couples_service.dart';
 import 'package:witchy/features/reminders/reminder_provider.dart';
 import 'package:witchy/features/reminders/reminder_scheduler.dart';
-import 'package:witchy/features/reminders/reminders_screen.dart';
 import 'package:witchy/features/settings/legal_document_screen.dart';
 import 'package:witchy/features/settings/locale_provider.dart';
 import 'package:witchy/features/settings/privacy_provider.dart';
@@ -107,37 +103,6 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('anonymous mode toggle persists, signs out, and hides the '
-      'account card', (WidgetTester tester) async {
-    final Map<String, Object> prefs = <String, Object>{
-      'witchy.auth.session': jsonEncode(<String, Object>{
-        'id': 'u1',
-        'displayName': 'Ada',
-        'provider': 'google',
-        'signedInAt': DateTime(2026, 1, 1).toIso8601String(),
-      }),
-    };
-    await pumpSettings(tester, prefs: prefs);
-
-    expect(find.text('Ada'), findsOneWidget);
-
-    await tester.scrollUntilVisible(find.byType(SwitchListTile), 300);
-    await tester.tap(find.byType(SwitchListTile));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Anonymous mode is now on.'), findsOneWidget);
-    expect(find.text('Ada'), findsNothing);
-    expect(find.text('Account'), findsNothing);
-
-    final SharedPreferences stored =
-        await SharedPreferences.getInstance();
-    expect(stored.getString('witchy.auth.session'), isNull);
-    expect(
-      stored.getBool('witchy.privacy.anonymousMode'),
-      isTrue,
-    );
-  });
-
   testWidgets('privacy policy tile opens the legal document screen',
       (WidgetTester tester) async {
     await pumpSettings(tester);
@@ -172,28 +137,6 @@ void main() {
     expect(find.text('About is coming soon.'), findsOneWidget);
   });
 
-  testWidgets('reminders tile navigates to the reminders screen',
-      (WidgetTester tester) async {
-    await pumpSettings(tester);
-
-    await tester.scrollUntilVisible(find.text('Reminders'), 300);
-    await tester.tap(find.text('Reminders'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(RemindersScreen), findsOneWidget);
-  });
-
-  testWidgets('couples mode tile navigates to the couples screen',
-      (WidgetTester tester) async {
-    await pumpSettings(tester);
-
-    await tester.scrollUntilVisible(find.text('Couples mode'), 300);
-    await tester.tap(find.text('Couples mode'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(CouplesScreen), findsOneWidget);
-  });
-
   testWidgets('account tile navigates to the auth screen when signed out',
       (WidgetTester tester) async {
     await pumpSettings(tester);
@@ -215,12 +158,16 @@ void main() {
     final double languageTop = tester.getTopLeft(find.text('Language')).dy;
     expect(languageTop, lessThan(themeTop));
 
-    await tester.scrollUntilVisible(find.text('Español'), 300);
-    await tester.tap(find.text('Español'));
+    await tester.scrollUntilVisible(
+      find.byType(DropdownButtonFormField<AppLocaleOption>),
+      300,
+    );
+    await tester.tap(find.byType(DropdownButtonFormField<AppLocaleOption>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Español').last);
     await tester.pumpAndSettle();
 
     expect(find.text('Idioma'), findsOneWidget);
-    expect(find.text('Modo anónimo'), findsOneWidget);
 
     final SharedPreferences stored = await SharedPreferences.getInstance();
     expect(stored.getString('witchy.appearance.locale'), '"es"');

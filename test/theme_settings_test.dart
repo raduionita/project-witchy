@@ -73,11 +73,10 @@ void main() {
 
     await tester.scrollUntilVisible(find.text('Theme'), 200);
     expect(find.text('Theme'), findsOneWidget);
-    final RadioListTile<AppThemeOption> radio = tester
-        .widget<RadioListTile<AppThemeOption>>(
-      find.widgetWithText(RadioListTile<AppThemeOption>, 'Default (light)'),
+    final DropdownButtonFormField<AppThemeOption> dropdown = tester
+        .widget<DropdownButtonFormField<AppThemeOption>>(
+      find.byType(DropdownButtonFormField<AppThemeOption>),
     );
-    expect(radio.value, provider.option);
-    expect(radio.groupValue, AppThemeOption.light);
+    expect(dropdown.initialValue, provider.option);
   });
 }

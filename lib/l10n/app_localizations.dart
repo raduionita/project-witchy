@@ -203,6 +203,12 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get navSettings;
 
+  /// No description provided for @navAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get navAccount;
+
   /// No description provided for @homeWelcomeTitle.
   ///
   /// In en, this message translates to:
@@ -473,11 +479,11 @@ abstract class AppLocalizations {
   /// **'Apple Sign In'**
   String get authAppleSignIn;
 
-  /// No description provided for @authAnonymousDebug.
+  /// No description provided for @authAnonymous.
   ///
   /// In en, this message translates to:
-  /// **'Anonymous Sign In (debug)'**
-  String get authAnonymousDebug;
+  /// **'Anonymous'**
+  String get authAnonymous;
 
   /// No description provided for @authProviderGoogle.
   ///

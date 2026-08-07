@@ -66,9 +66,13 @@ void main() {
       (WidgetTester tester) async {
     await launch(tester, _prefs());
 
-    await tester.tap(find.byIcon(Icons.settings_outlined));
+    await tester.tap(find.byIcon(Icons.account_circle_outlined));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(RadioListTile<TrackingMode>, 'Pregnancy'));
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButtonFormField<TrackingMode>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Pregnancy').last);
     await tester.pumpAndSettle();
 
     expect(find.text('Pregnancy is now active.'), findsOneWidget);

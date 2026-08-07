@@ -92,8 +92,7 @@ void main() {
     expect(find.text('Sign in (optional)'), findsOneWidget);
     expect(find.text('Google Sign In'), findsOneWidget);
     expect(find.text('Apple Sign In'), findsOneWidget);
-    // Debug-only anonymous option is present in tests (debug mode).
-    expect(find.text('Anonymous Sign In (debug)'), findsOneWidget);
+    expect(find.text('Anonymous'), findsOneWidget);
   });
 
   testWidgets('successful Google sign-in updates the provider',
@@ -114,7 +113,7 @@ void main() {
     final FakeAuthGateway gateway = FakeAuthGateway();
     final AuthProvider provider = await pumpAuthScreen(tester, gateway);
 
-    await tester.tap(find.text('Anonymous Sign In (debug)'));
+    await tester.tap(find.text('Anonymous'));
     await tester.pumpAndSettle();
 
     expect(gateway.anonymousCalls, 1);

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../features/calendar/calendar_screen.dart';
@@ -65,7 +63,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
         padding: const EdgeInsets.all(0),
         margin: const EdgeInsets.only(bottom: AppSpacing.kMd, left: AppSpacing.kMd, right: AppSpacing.kMd),
         decoration: BoxDecoration(
-          color: scheme.primary,
+          color: scheme.onPrimaryContainer,
           borderRadius: BorderRadius.circular(AppSpacing.kRadiusXl),
           boxShadow: [BoxShadow(color: scheme.primary, blurRadius: AppSpacing.kRadiusSm)],
           border: Border.all(color: scheme.onPrimary.withAlpha(140), width: 1),
@@ -100,11 +98,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
             alignment: Alignment.center,
             transformAlignment: AlignmentDirectional.center,
             transform: Matrix4.translationValues(0, shiftY, 0),
-            child: Icon(
-              selected ? (selectedIcon ?? unselectedIcon) : unselectedIcon,
-              size: selected ? iconsScale * 30 : iconsScale * 22,
-              color: selected ? scheme.onPrimary : scheme.onPrimaryContainer,
-            ),
+            child: Icon(selected ? (selectedIcon ?? unselectedIcon) : unselectedIcon, size: selected ? iconsScale * 30 : iconsScale * 22, color: selected ? scheme.secondary : scheme.onPrimary),
           ),
         ),
       ),

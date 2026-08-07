@@ -11,13 +11,13 @@ import 'widgets/symptom_chip_group.dart';
 
 /// Common quick moods offered when logging a day, localized via [l10n].
 List<String> kCommonMoods(AppLocalizations l10n) => <String>[
-      l10n.moodHappy,
-      l10n.moodCalm,
-      l10n.moodAnxious,
-      l10n.moodIrritable,
-      l10n.moodSad,
-      l10n.moodEnergetic,
-    ];
+  l10n.moodHappy,
+  l10n.moodCalm,
+  l10n.moodAnxious,
+  l10n.moodIrritable,
+  l10n.moodSad,
+  l10n.moodEnergetic,
+];
 
 /// Bottom sheet for logging a period day with intensity, symptoms and mood.
 class LogPeriodSheet extends StatefulWidget {
@@ -26,7 +26,10 @@ class LogPeriodSheet extends StatefulWidget {
   final DateTime date;
 
   /// Shows the sheet and awaits a boolean indicating whether a log was saved.
-  static Future<bool> show({required BuildContext context, required DateTime date}) {
+  static Future<bool> show({
+    required BuildContext context,
+    required DateTime date,
+  }) {
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
@@ -53,12 +56,12 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
 
   Future<void> _save() async {
     await context.read<CycleProvider>().logPeriodDay(
-          widget.date,
-          intensity: _intensity,
-          symptoms: _symptoms.toList(),
-          mood: _mood,
-          notes: _notes.text.isEmpty ? null : _notes.text,
-        );
+      widget.date,
+      intensity: _intensity,
+      symptoms: _symptoms.toList(),
+      mood: _mood,
+      notes: _notes.text.isEmpty ? null : _notes.text,
+    );
     if (!mounted) return;
     Navigator.of(context).pop(true);
   }
@@ -66,56 +69,61 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
-    return Padding(
-      padding: EdgeInsets.only(
-        left: AppSpacing.kLg,
-        right: AppSpacing.kLg,
-        bottom: AppSpacing.kLg + MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              l10n.logPeriodTitle(DateFormat('EEE, MMM d').format(widget.date)),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.kMd),
-            _sectionTitle(l10n.logFlowIntensity),
-            const SizedBox(height: AppSpacing.kSm),
-            _intensitySelector(),
-            const SizedBox(height: AppSpacing.kMd),
-            _sectionTitle(l10n.logSymptoms),
-            const SizedBox(height: AppSpacing.kSm),
-            SymptomChipGroup(
-              selected: _symptoms,
-              onToggle: (String value) => setState(() {
-                if (!_symptoms.add(value)) _symptoms.remove(value);
-              }),
-            ),
-            const SizedBox(height: AppSpacing.kMd),
-            _sectionTitle(l10n.logMood),
-            const SizedBox(height: AppSpacing.kSm),
-            _chipSelector(
-              items: kCommonMoods(l10n),
-              selected: _mood == null ? <String>{} : <String>{_mood!},
-              onToggle: (String value) => setState(() => _mood = value),
-            ),
-            const SizedBox(height: AppSpacing.kMd),
-            TextField(
-              controller: _notes,
-              maxLines: 2,
-              decoration: InputDecoration(
-                labelText: l10n.logNotes,
-                border: const OutlineInputBorder(),
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.kLg,
+          right: AppSpacing.kLg,
+          bottom: AppSpacing.kLg + MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.logPeriodTitle(
+                  DateFormat('EEE, MMM d').format(widget.date),
+                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: AppSpacing.kLg),
-            AppButton(label: l10n.logSave, onPressed: _save),
-          ],
+              const SizedBox(height: AppSpacing.kMd),
+              _sectionTitle(l10n.logFlowIntensity),
+              const SizedBox(height: AppSpacing.kSm),
+              _intensitySelector(),
+              const SizedBox(height: AppSpacing.kMd),
+              _sectionTitle(l10n.logSymptoms),
+              const SizedBox(height: AppSpacing.kSm),
+              SymptomChipGroup(
+                selected: _symptoms,
+                onToggle:
+                    (String value) => setState(() {
+                      if (!_symptoms.add(value)) _symptoms.remove(value);
+                    }),
+              ),
+              const SizedBox(height: AppSpacing.kMd),
+              _sectionTitle(l10n.logMood),
+              const SizedBox(height: AppSpacing.kSm),
+              _chipSelector(
+                items: kCommonMoods(l10n),
+                selected: _mood == null ? <String>{} : <String>{_mood!},
+                onToggle: (String value) => setState(() => _mood = value),
+              ),
+              const SizedBox(height: AppSpacing.kMd),
+              TextField(
+                controller: _notes,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: l10n.logNotes,
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.kLg),
+              AppButton(label: l10n.logSave, onPressed: _save),
+            ],
+          ),
         ),
       ),
     );
@@ -124,28 +132,29 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
   Widget _sectionTitle(String title) {
     return Text(
       title,
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
     );
   }
 
   Widget _intensitySelector() {
     final AppLocalizations l10n = AppLocalizations.of(context);
     return Row(
-      children: FlowIntensity.values.map((FlowIntensity intensity) {
-        final bool selected = _intensity == intensity;
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kXs),
-            child: ChoiceChip(
-              label: Text(flowIntensityLabel(l10n, intensity)),
-              selected: selected,
-              onSelected: (_) => setState(() => _intensity = intensity),
-            ),
-          ),
-        );
-      }).toList(),
+      children:
+          FlowIntensity.values.map((FlowIntensity intensity) {
+            final bool selected = _intensity == intensity;
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kXs),
+                child: ChoiceChip(
+                  label: Text(flowIntensityLabel(l10n, intensity)),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _intensity = intensity),
+                ),
+              ),
+            );
+          }).toList(),
     );
   }
 
@@ -157,15 +166,16 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
     return Wrap(
       spacing: AppSpacing.kSm,
       runSpacing: AppSpacing.kSm,
-      children: items
-          .map(
-            (String item) => FilterChip(
-              label: Text(item),
-              selected: selected.contains(item),
-              onSelected: (_) => onToggle(item),
-            ),
-          )
-          .toList(),
+      children:
+          items
+              .map(
+                (String item) => FilterChip(
+                  label: Text(item),
+                  selected: selected.contains(item),
+                  onSelected: (_) => onToggle(item),
+                ),
+              )
+              .toList(),
     );
   }
 }

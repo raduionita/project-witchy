@@ -57,7 +57,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get navInsights => 'Análisis';
 
   @override
-  String get navLibrary => 'Biblioteca';
+  String get navMagic => 'Magia';
 
   @override
   String get navSettings => 'Ajustes';
@@ -544,7 +544,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timePm => 'p. m.';
 
   @override
-  String get contentLoading => 'Cargando biblioteca…';
+  String get contentLoading => 'Cargando magia…';
 
   @override
   String get contentSearch => 'Buscar artículos y videos';

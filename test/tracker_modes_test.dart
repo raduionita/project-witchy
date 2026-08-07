@@ -66,7 +66,7 @@ void main() {
       (WidgetTester tester) async {
     await launch(tester, _prefs());
 
-    await tester.tap(find.text('Settings'));
+    await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(RadioListTile<TrackingMode>, 'Pregnancy'));
     await tester.pumpAndSettle();
@@ -77,7 +77,7 @@ void main() {
         jsonDecode(prefs.getString('witchy.profile')!) as Map<String, dynamic>;
     expect(stored['mode'], TrackingMode.pregnancy.name);
 
-    await tester.tap(find.text('Home'));
+    await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.byType(PregnancyScreen), findsOneWidget);
   });

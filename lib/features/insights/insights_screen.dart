@@ -45,13 +45,6 @@ class _InsightsScreenState extends State<InsightsScreen> {
         padding: const EdgeInsets.all(AppSpacing.kMd),
         children: [
           Text(
-            l10n.navInsights,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: AppSpacing.kSm),
-          Text(
             insights.totalLogs == 0
                 ? l10n.insightsEmpty
                 : l10n.insightsSummary(

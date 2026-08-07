@@ -102,11 +102,12 @@ class SettingsScreen extends StatelessWidget {
             title: Text(l10n.privacyPolicy),
             subtitle: Text(l10n.settingsPrivacySubtitle),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _openLegal(
-              context,
-              title: l10n.privacyPolicyTitle,
-              sections: kPrivacyPolicySections(l10n),
-            ),
+            onTap:
+                () => _openLegal(
+                  context,
+                  title: l10n.privacyPolicyTitle,
+                  sections: kPrivacyPolicySections(l10n),
+                ),
           ),
           const Divider(height: 1),
           ListTile(
@@ -114,11 +115,12 @@ class SettingsScreen extends StatelessWidget {
             title: Text(l10n.termsOfService),
             subtitle: Text(l10n.settingsTermsSubtitle),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _openLegal(
-              context,
-              title: l10n.termsOfServiceTitle,
-              sections: kTermsOfServiceSections(l10n),
-            ),
+            onTap:
+                () => _openLegal(
+                  context,
+                  title: l10n.termsOfServiceTitle,
+                  sections: kTermsOfServiceSections(l10n),
+                ),
           ),
           const Divider(height: 1),
           ListTile(
@@ -140,101 +142,104 @@ class SettingsScreen extends StatelessWidget {
     final PrivacyProvider privacy = context.watch<PrivacyProvider>();
     final bool anonymous = privacy.anonymousMode;
 
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(AppSpacing.kMd),
-        children: [
-          Text(
-            l10n.settingsTitle,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: AppSpacing.kMd),
-          if (!anonymous) ...[
-            _accountCard(context),
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.settingsTitle)),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(AppSpacing.kMd),
+          children: [
+            if (!anonymous) ...[
+              _accountCard(context),
+              const SizedBox(height: AppSpacing.kMd),
+            ],
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    leading: Icon(
+                      Icons.swap_horiz,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    title: Text(l10n.settingsTrackingModeTitle),
+                    subtitle: Text(l10n.settingsTrackingModeSubtitle),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.kMd,
+                    ),
+                    child: Column(
+                      children: [
+                        for (final TrackingMode candidate
+                            in TrackingMode.values)
+                          RadioListTile<TrackingMode>(
+                            contentPadding: EdgeInsets.zero,
+                            value: candidate,
+                            groupValue: mode,
+                            title: Text(trackingModeLabel(l10n, candidate)),
+                            subtitle: Text(
+                              trackingModeDescription(l10n, candidate),
+                            ),
+                            onChanged: (TrackingMode? value) {
+                              if (value != null) _setMode(context, value);
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: const Icon(Icons.info_outline),
+                    title: Text(l10n.settingsLogsShared),
+                    subtitle: Text(l10n.settingsLogsSharedSubtitle),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: AppSpacing.kMd),
+            _privacyCard(context, l10n),
+            const SizedBox(height: AppSpacing.kMd),
+            _languageCard(context, l10n),
+            const SizedBox(height: AppSpacing.kMd),
+            _appearanceCard(context),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: ListTile(
+                leading: Icon(
+                  Icons.alarm_add,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: Text(l10n.settingsRemindersTitle),
+                subtitle: Text(l10n.settingsRemindersSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap:
+                    () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const RemindersScreen(),
+                      ),
+                    ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: ListTile(
+                leading: Icon(
+                  Icons.favorite,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: Text(l10n.settingsCouplesTitle),
+                subtitle: Text(l10n.settingsCouplesSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap:
+                    () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const CouplesScreen(),
+                      ),
+                    ),
+              ),
+            ),
           ],
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ListTile(
-                  leading: Icon(
-                    Icons.swap_horiz,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: Text(l10n.settingsTrackingModeTitle),
-                  subtitle: Text(l10n.settingsTrackingModeSubtitle),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kMd),
-                  child: Column(
-                    children: [
-                      for (final TrackingMode candidate in TrackingMode.values)
-                        RadioListTile<TrackingMode>(
-                          contentPadding: EdgeInsets.zero,
-                          value: candidate,
-                          groupValue: mode,
-                          title: Text(trackingModeLabel(l10n, candidate)),
-                          subtitle: Text(trackingModeDescription(l10n, candidate)),
-                          onChanged: (TrackingMode? value) {
-                            if (value != null) _setMode(context, value);
-                          },
-                        ),
-                    ],
-                  ),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.info_outline),
-                  title: Text(l10n.settingsLogsShared),
-                  subtitle: Text(l10n.settingsLogsSharedSubtitle),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.kMd),
-          _privacyCard(context, l10n),
-          const SizedBox(height: AppSpacing.kMd),
-          _languageCard(context, l10n),
-          const SizedBox(height: AppSpacing.kMd),
-          _appearanceCard(context),
-          const SizedBox(height: AppSpacing.kMd),
-          AppCard(
-            child: ListTile(
-              leading: Icon(
-                Icons.alarm_add,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: Text(l10n.settingsRemindersTitle),
-              subtitle: Text(l10n.settingsRemindersSubtitle),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const RemindersScreen(),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.kMd),
-          AppCard(
-            child: ListTile(
-              leading: Icon(
-                Icons.favorite,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              title: Text(l10n.settingsCouplesTitle),
-              subtitle: Text(l10n.settingsCouplesSubtitle),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const CouplesScreen(),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -263,9 +268,10 @@ class SettingsScreen extends StatelessWidget {
                     value: option,
                     groupValue: locale.option,
                     title: Text(_localeLabel(option, l10n)),
-                    subtitle: option.isSystem
-                        ? Text(l10n.systemDefaultDescription)
-                        : null,
+                    subtitle:
+                        option.isSystem
+                            ? Text(l10n.systemDefaultDescription)
+                            : null,
                     onChanged: (AppLocaleOption? value) {
                       if (value != null) {
                         context.read<LocaleProvider>().setOption(value);
@@ -354,9 +360,10 @@ class SettingsScreen extends StatelessWidget {
         title: Text(l10n.settingsAccountTitle),
         subtitle: Text(l10n.settingsAccountSubtitle),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => const AuthScreen()),
-        ),
+        onTap:
+            () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute<void>(builder: (_) => const AuthScreen())),
       ),
     );
   }

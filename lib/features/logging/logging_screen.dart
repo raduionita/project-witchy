@@ -51,13 +51,6 @@ class _LoggingScreenState extends State<LoggingScreen> {
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.kMd),
         children: [
-          Text(
-            l10n.navLogging,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: AppSpacing.kMd),
           AppCard(
             child: Column(
               children: [

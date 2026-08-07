@@ -18,6 +18,7 @@ abstract class AppSpacing {
   static const double kRadiusSm = 8;
   static const double kRadiusMd = 16;
   static const double kRadiusLg = 24;
+  static const double kRadiusXl = 32;
 }
 
 abstract class AppTypography {
@@ -30,32 +31,15 @@ abstract class AppTheme {
     final ColorScheme colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.kPrimary,
       brightness: Brightness.light,
-    ).copyWith(
-      primary: AppColors.kPrimary,
-      secondary: AppColors.kSecondary,
-      tertiary: AppColors.kTertiary,
-      surface: AppColors.kSurface,
-      error: AppColors.kError,
-    );
+    ).copyWith(primary: AppColors.kPrimary, secondary: AppColors.kSecondary, tertiary: AppColors.kTertiary, surface: AppColors.kSurface, error: AppColors.kError);
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       fontFamily: AppTypography.kFontFamily,
       scaffoldBackgroundColor: colorScheme.surface,
-      appBarTheme: AppBarTheme(
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        elevation: 0,
-      ),
-      cardTheme: const CardThemeData(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(AppSpacing.kRadiusMd),
-          ),
-        ),
-      ),
+      appBarTheme: AppBarTheme(backgroundColor: colorScheme.surface, foregroundColor: colorScheme.onSurface, elevation: 0),
+      cardTheme: const CardThemeData(elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(AppSpacing.kRadiusMd)))),
     );
   }
 
@@ -63,31 +47,15 @@ abstract class AppTheme {
     final ColorScheme colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.kPrimary,
       brightness: Brightness.dark,
-    ).copyWith(
-      primary: AppColors.kPrimary,
-      secondary: AppColors.kSecondary,
-      tertiary: AppColors.kTertiary,
-      error: AppColors.kError,
-    );
+    ).copyWith(primary: AppColors.kPrimary, secondary: AppColors.kSecondary, tertiary: AppColors.kTertiary, error: AppColors.kError);
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       fontFamily: AppTypography.kFontFamily,
       scaffoldBackgroundColor: colorScheme.surface,
-      appBarTheme: AppBarTheme(
-        backgroundColor: colorScheme.surface,
-        foregroundColor: colorScheme.onSurface,
-        elevation: 0,
-      ),
-      cardTheme: const CardThemeData(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(AppSpacing.kRadiusMd),
-          ),
-        ),
-      ),
+      appBarTheme: AppBarTheme(backgroundColor: colorScheme.surface, foregroundColor: colorScheme.onSurface, elevation: 0),
+      cardTheme: const CardThemeData(elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(AppSpacing.kRadiusMd)))),
     );
   }
 }

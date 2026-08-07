@@ -44,6 +44,7 @@ void main() {
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
+            appBar: AppBar(title: const Text('Logging')),
             body: LoggingScreen(onOpenCalendar: onOpenCalendar),
           ),
         ),

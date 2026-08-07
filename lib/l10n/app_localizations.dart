@@ -191,11 +191,11 @@ abstract class AppLocalizations {
   /// **'Insights'**
   String get navInsights;
 
-  /// No description provided for @navLibrary.
+  /// No description provided for @navMagic.
   ///
   /// In en, this message translates to:
-  /// **'Library'**
-  String get navLibrary;
+  /// **'Magic'**
+  String get navMagic;
 
   /// No description provided for @navSettings.
   ///
@@ -1124,7 +1124,7 @@ abstract class AppLocalizations {
   /// No description provided for @contentLoading.
   ///
   /// In en, this message translates to:
-  /// **'Loading library…'**
+  /// **'Loading magic…'**
   String get contentLoading;
 
   /// No description provided for @contentSearch.

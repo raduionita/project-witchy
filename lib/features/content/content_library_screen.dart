@@ -49,15 +49,6 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
               AppSpacing.kMd,
               AppSpacing.kSm,
             ),
-            child: Text(
-              l10n.navLibrary,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kMd),
             child: TextField(
               controller: _searchController,
               onChanged: provider.setQuery,

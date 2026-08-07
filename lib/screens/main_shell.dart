@@ -56,8 +56,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
         title: Text(_titleFor(l10n)),
         actions: <Widget>[IconButton(icon: const Icon(Icons.settings_outlined), tooltip: l10n.navSettings, onPressed: () => _openSettings(context))],
       ),
-      body: IndexedStack(index: _index, children: _tabs),
-      bottomNavigationBar: _navConainer(l10n),
+      body: Stack(alignment: Alignment.bottomCenter, children: [IndexedStack(index: _index, children: _tabs), _navConainer(l10n)]),
     );
   }
 

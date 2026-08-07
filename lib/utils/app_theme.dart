@@ -21,6 +21,18 @@ abstract class AppSpacing {
   static const double kRadiusXl = 32;
 }
 
+abstract class AppSizing {
+  static const double kXs = 4;
+  static const double kSm = 8;
+  static const double kMd = 16;
+  static const double kLg = 24;
+  static const double kXl = 32;
+  static const double kXl2 = 34;
+  static const double kXl4 = 36;
+  static const double kXl8 = 40;
+  static const double kXxl = 48;
+}
+
 abstract class AppTypography {
   static const String kFontFamily = 'SF Pro Display';
 }

@@ -48,7 +48,6 @@ class _MainShellScreenState extends State<MainShellScreen> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
-    final ColorScheme scheme = Theme.of(context).colorScheme;
     return Scaffold(
       extendBody: true,
       appBar: AppBar(
@@ -58,26 +57,34 @@ class _MainShellScreenState extends State<MainShellScreen> {
         actions: <Widget>[IconButton(icon: const Icon(Icons.settings_outlined), tooltip: l10n.navSettings, onPressed: () => _openSettings(context))],
       ),
       body: IndexedStack(index: _index, children: _tabs),
-      bottomNavigationBar: Container(
-        height: 60,
-        padding: const EdgeInsets.all(0),
-        margin: const EdgeInsets.only(bottom: AppSpacing.kMd, left: AppSpacing.kMd, right: AppSpacing.kMd),
+      bottomNavigationBar: _navConainer(l10n),
+    );
+  }
+
+  Widget _navConainer(AppLocalizations l10n) {
+    final ColorScheme scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.kMd, left: AppSpacing.kMd, right: AppSpacing.kMd),
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: scheme.onPrimaryContainer,
           borderRadius: BorderRadius.circular(AppSpacing.kRadiusXl),
           boxShadow: [BoxShadow(color: scheme.primary, blurRadius: AppSpacing.kRadiusSm)],
           border: Border.all(color: scheme.onPrimary.withAlpha(140), width: 1),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _navButton(index: 0, unselectedIcon: Icons.home_outlined, selectedIcon: Icons.home, tooltip: l10n.navHome),
-            _navButton(index: 1, unselectedIcon: Icons.calendar_month_outlined, selectedIcon: Icons.calendar_month, tooltip: l10n.navCalendar),
-            _navButton(index: 2, unselectedIcon: Icons.add_outlined, selectedIcon: Icons.add, tooltip: l10n.navLogging, iconsScale: 1.2),
-            _navButton(index: 3, unselectedIcon: Icons.insights_outlined, selectedIcon: Icons.insights, tooltip: l10n.navInsights),
-            _navButton(index: 4, unselectedIcon: Icons.auto_fix_high_outlined, selectedIcon: Icons.auto_fix_high, tooltip: l10n.navMagic),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.kXs),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _navButton(index: 0, unselectedIcon: Icons.home_outlined, selectedIcon: Icons.home, tooltip: l10n.navHome),
+              _navButton(index: 1, unselectedIcon: Icons.calendar_month_outlined, selectedIcon: Icons.calendar_month, tooltip: l10n.navCalendar),
+              _navButton(index: 2, unselectedIcon: Icons.add_outlined, selectedIcon: Icons.add, tooltip: l10n.navLogging, iconsScale: 1.4),
+              _navButton(index: 3, unselectedIcon: Icons.insights_outlined, selectedIcon: Icons.insights, tooltip: l10n.navInsights),
+              _navButton(index: 4, unselectedIcon: Icons.auto_fix_high_outlined, selectedIcon: Icons.auto_fix_high, tooltip: l10n.navMagic),
+            ],
+          ),
         ),
       ),
     );
@@ -93,7 +100,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
           onTap: () => setState(() => _index = index),
           borderRadius: BorderRadius.circular(32),
           child: Container(
-            // margin: const EdgeInsets.symmetric(horizontal: 0),
+            width: AppSizing.kXl8 * iconsScale,
+            height: AppSizing.kXl8 * iconsScale,
             decoration: BoxDecoration(shape: BoxShape.circle), //  border: shiftY != 0.0 ? Border.all(color: Colors.white) : null),
             alignment: Alignment.center,
             transformAlignment: AlignmentDirectional.center,

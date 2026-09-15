@@ -28,13 +28,13 @@ class _SheetHost extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: () =>
-                  LogPeriodSheet.show(context: context, date: _testDate),
+              onPressed:
+                  () => LogPeriodSheet.show(context: context, date: _testDate),
               child: const Text('open period'),
             ),
             ElevatedButton(
-              onPressed: () =>
-                  LogSymptomSheet.show(context: context, date: _testDate),
+              onPressed:
+                  () => LogSymptomSheet.show(context: context, date: _testDate),
               child: const Text('open symptom'),
             ),
           ],
@@ -53,8 +53,9 @@ void main() {
     addTearDown(tester.view.reset);
 
     SharedPreferences.setMockInitialValues(<String, Object>{});
-    final StorageService storage =
-        StorageService(await SharedPreferences.getInstance());
+    final StorageService storage = StorageService(
+      await SharedPreferences.getInstance(),
+    );
     final AppStateProvider state = AppStateProvider(storage)..load();
     await state.profile.save(
       const UserProfile(
@@ -85,31 +86,34 @@ void main() {
   }
 
   testWidgets(
-      'period sheet lets you pick intensity, symptoms, mood and notes, then '
-      'saves them', (WidgetTester tester) async {
-    final (CycleProvider cycle, _) = await pumpSheets(tester);
+    'period sheet lets you pick intensity, symptoms, mood and notes, then '
+    'saves them',
+    (WidgetTester tester) async {
+      final (CycleProvider cycle, _) = await pumpSheets(tester);
 
-    await tester.tap(find.text('open period'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('open period'));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Medium'));
-    await tester.tap(find.text('Cramps'));
-    await tester.tap(find.text('Happy'));
-    await tester.enterText(find.byType(TextField), 'feeling rough');
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Save log'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Medium'));
+      await tester.tap(find.text('Cramps'));
+      await tester.tap(find.text('Happy'));
+      await tester.enterText(find.byType(TextField), 'feeling rough');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Save log'));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(LogPeriodSheet), findsNothing);
-    final log = cycle.recentPeriodLogs.single;
-    expect(log.intensity!.name, 'medium');
-    expect(log.symptoms, contains('Cramps'));
-    expect(log.mood, 'Happy');
-    expect(log.notes, 'feeling rough');
-  });
+      expect(find.byType(LogPeriodSheet), findsNothing);
+      final log = cycle.recentPeriodLogs.single;
+      expect(log.intensity!.name, 'medium');
+      expect(log.symptoms, contains('Cramps'));
+      expect(log.mood, 'Happy');
+      expect(log.notes, 'feeling rough');
+    },
+  );
 
-  testWidgets('period sheet groups symptoms into categories',
-      (WidgetTester tester) async {
+  testWidgets('period sheet groups symptoms into categories', (
+    WidgetTester tester,
+  ) async {
     await pumpSheets(tester);
 
     await tester.tap(find.text('open period'));
@@ -124,8 +128,42 @@ void main() {
     expect(find.text('Nausea'), findsOneWidget);
   });
 
-  testWidgets('symptom sheet saves symptoms, mood and notes for the day',
-      (WidgetTester tester) async {
+  testWidgets(
+    'period sheet hides the symptoms header, right-aligns the title and '
+    'shows icons on its chips',
+    (WidgetTester tester) async {
+      await pumpSheets(tester);
+
+      await tester.tap(find.text('open period'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Symptoms'), findsNothing);
+
+      final Text title = tester
+          .widgetList<Text>(find.byType(Text))
+          .firstWhere((Text t) => t.data != null && t.data!.contains('Jan'));
+      expect(title.textAlign, TextAlign.right);
+
+      expect(
+        find.descendant(
+          of: find.byType(ChoiceChip),
+          matching: find.byType(Icon),
+        ),
+        findsWidgets,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(FilterChip),
+          matching: find.byType(Icon),
+        ),
+        findsWidgets,
+      );
+    },
+  );
+
+  testWidgets('symptom sheet saves symptoms, mood and notes for the day', (
+    WidgetTester tester,
+  ) async {
     final (_, SymptomProvider symptom) = await pumpSheets(tester);
 
     await tester.tap(find.text('open symptom'));

@@ -42,7 +42,7 @@ class ArticleReaderScreen extends StatelessWidget {
               Text(
                 DateFormat('MMM d, yyyy').format(article.publishedAt!),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
               ),
             ],
@@ -60,7 +60,7 @@ class ArticleReaderScreen extends StatelessWidget {
               child: Text(
                 l10n.contentArticleDisclaimer,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
               ),
             ),

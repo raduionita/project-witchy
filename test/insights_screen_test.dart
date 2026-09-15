@@ -31,7 +31,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Switch to the Insights tab (index 3).
-    await tester.tap(find.byIcon(Icons.insights_outlined));
+    await tester.tap(find.byIcon(Icons.bar_chart_outlined));
     await tester.pumpAndSettle();
 
     expect(find.byType(InsightsScreen), findsOneWidget);
@@ -50,7 +50,7 @@ void main() {
     await tester.pumpWidget(WitchyApp(bootstrap: bootstrap));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.insights_outlined));
+    await tester.tap(find.byIcon(Icons.bar_chart_outlined));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Cycle history'));

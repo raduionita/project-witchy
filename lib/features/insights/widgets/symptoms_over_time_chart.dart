@@ -42,7 +42,7 @@ class SymptomsOverTimeChart extends StatelessWidget {
           child: Text(
             l10n.chartOverTimeEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: scheme.outline,
+                  color: scheme.onSurfaceVariant,
                 ),
           ),
         ),
@@ -85,7 +85,7 @@ class SymptomsOverTimeChart extends StatelessWidget {
                   return Text(
                     DateFormat('MMM').format(buckets[index]),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: scheme.outline,
+                          color: scheme.onSurfaceVariant,
                         ),
                   );
                 },

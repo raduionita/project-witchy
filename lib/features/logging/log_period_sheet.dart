@@ -7,6 +7,7 @@ import '../../models/flow_intensity.dart';
 import '../../providers/cycle_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_button.dart';
+import 'widgets/chip_icons.dart';
 import 'widgets/symptom_chip_group.dart';
 
 /// Common quick moods offered when logging a day, localized via [l10n].
@@ -32,6 +33,7 @@ class LogPeriodSheet extends StatefulWidget {
   }) {
     return showModalBottomSheet<bool>(
       context: context,
+      useSafeArea: true,
       isScrollControlled: true,
       showDragHandle: true,
       builder: (BuildContext context) => LogPeriodSheet(date: date),
@@ -48,12 +50,6 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
   String? _mood;
   final TextEditingController _notes = TextEditingController();
 
-  @override
-  void dispose() {
-    _notes.dispose();
-    super.dispose();
-  }
-
   Future<void> _save() async {
     await context.read<CycleProvider>().logPeriodDay(
       widget.date,
@@ -66,75 +62,12 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
     Navigator.of(context).pop(true);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final AppLocalizations l10n = AppLocalizations.of(context);
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: AppSpacing.kLg,
-          right: AppSpacing.kLg,
-          bottom: AppSpacing.kLg + MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                l10n.logPeriodTitle(
-                  DateFormat('EEE, MMM d').format(widget.date),
-                ),
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: AppSpacing.kMd),
-              _sectionTitle(l10n.logFlowIntensity),
-              const SizedBox(height: AppSpacing.kSm),
-              _intensitySelector(),
-              const SizedBox(height: AppSpacing.kMd),
-              _sectionTitle(l10n.logSymptoms),
-              const SizedBox(height: AppSpacing.kSm),
-              SymptomChipGroup(
-                selected: _symptoms,
-                onToggle:
-                    (String value) => setState(() {
-                      if (!_symptoms.add(value)) _symptoms.remove(value);
-                    }),
-              ),
-              const SizedBox(height: AppSpacing.kMd),
-              _sectionTitle(l10n.logMood),
-              const SizedBox(height: AppSpacing.kSm),
-              _chipSelector(
-                items: kCommonMoods(l10n),
-                selected: _mood == null ? <String>{} : <String>{_mood!},
-                onToggle: (String value) => setState(() => _mood = value),
-              ),
-              const SizedBox(height: AppSpacing.kMd),
-              TextField(
-                controller: _notes,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  labelText: l10n.logNotes,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.kLg),
-              AppButton(label: l10n.logSave, onPressed: _save),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _sectionTitle(String title) {
     return Text(
       title,
-      style: Theme.of(
-        context,
-      ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 
@@ -148,6 +81,8 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kXs),
                 child: ChoiceChip(
+                  avatar: Icon(logFlowIcon(intensity), size: 18),
+                  showCheckmark: false,
                   label: Text(flowIntensityLabel(l10n, intensity)),
                   selected: selected,
                   onSelected: (_) => setState(() => _intensity = intensity),
@@ -170,12 +105,92 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
           items
               .map(
                 (String item) => FilterChip(
+                  avatar: Icon(logMoodIcon(item), size: 18),
+                  showCheckmark: false,
                   label: Text(item),
                   selected: selected.contains(item),
                   onSelected: (_) => onToggle(item),
                 ),
               )
               .toList(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _notes.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: EdgeInsets.only(
+        left: AppSpacing.kLg,
+        right: AppSpacing.kLg,
+        bottom: AppSpacing.kLg + MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Flexible(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: AppSpacing.kMd),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l10n.logPeriodTitle(
+                      DateFormat('EEE, MMM d').format(widget.date),
+                    ),
+                    textAlign: TextAlign.right,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.kMd),
+                  _sectionTitle(l10n.logFlowIntensity),
+                  const SizedBox(height: AppSpacing.kSm),
+                  _intensitySelector(),
+                  const SizedBox(height: AppSpacing.kMd),
+                  SymptomChipGroup(
+                    selected: _symptoms,
+                    onToggle:
+                        (String value) => setState(() {
+                          if (!_symptoms.add(value)) _symptoms.remove(value);
+                        }),
+                  ),
+                  const SizedBox(height: AppSpacing.kMd),
+                  _sectionTitle(l10n.logMood),
+                  const SizedBox(height: AppSpacing.kSm),
+                  _chipSelector(
+                    items: kCommonMoods(l10n),
+                    selected: _mood == null ? <String>{} : <String>{_mood!},
+                    onToggle: (String value) => setState(() => _mood = value),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          TextField(
+            controller: _notes,
+            maxLines: 2,
+            decoration: InputDecoration(
+              labelText: l10n.logNotes,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.kLg),
+          AppButton(
+            label: l10n.logSave,
+            onPressed: _save,
+            icon: Icons.arrow_forward,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -20,10 +20,30 @@ enum CalendarDayState {
   ovulation,
 }
 
+/// A small data marker drawn inside a calendar day cell.
+enum CalendarDayMarker {
+  /// A period day was logged (bleeding).
+  flow,
+
+  /// A basal body temperature reading exists.
+  bbt,
+
+  /// An LH (ovulation) test read peak.
+  lhPeak,
+
+  /// An intimacy / intercourse record exists.
+  intimacy,
+}
+
 /// A single cell in the month grid.
 @immutable
 class CalendarDay {
-  const CalendarDay({required this.date, required this.state, required this.isToday});
+  const CalendarDay({
+    required this.date,
+    required this.state,
+    required this.isToday,
+    this.markers = const <CalendarDayMarker>[],
+  });
 
   /// The date this cell represents (date-only).
   final DateTime date;
@@ -33,6 +53,9 @@ class CalendarDay {
 
   /// Whether this is today's date.
   final bool isToday;
+
+  /// Small data markers drawn inside the cell (flow, BBT, LH peak, intimacy).
+  final List<CalendarDayMarker> markers;
 
   @override
   bool operator ==(Object other) =>

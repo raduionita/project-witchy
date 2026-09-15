@@ -162,7 +162,7 @@ class MonthlyReportScreen extends StatelessWidget {
             Text(
               l10n.reportNoLogs,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             )
           else
@@ -185,7 +185,7 @@ class MonthlyReportScreen extends StatelessWidget {
               Icon(
                 Icons.lock_outline,
                 size: 14,
-                color: Theme.of(context).colorScheme.outline,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: AppSpacing.kXs),
               Flexible(
@@ -193,7 +193,7 @@ class MonthlyReportScreen extends StatelessWidget {
                   l10n.reportLocalOnly,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.outline,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ),

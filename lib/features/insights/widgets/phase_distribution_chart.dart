@@ -5,6 +5,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../models/cycle_phase.dart';
 import '../../../models/symptom_insights.dart';
 
+import '../../../utils/app_theme.dart';
+
 /// Donut chart showing how often a symptom appears in each cycle phase.
 class PhaseDistributionChart extends StatelessWidget {
   const PhaseDistributionChart({super.key, required this.breakdown});
@@ -12,10 +14,10 @@ class PhaseDistributionChart extends StatelessWidget {
   final SymptomPhaseBreakdown breakdown;
 
   static const Map<CyclePhase, Color> kPhaseColors = <CyclePhase, Color>{
-    CyclePhase.menstruation: Color(0xFFE74C3C),
-    CyclePhase.follicular: Color(0xFFF39C12),
-    CyclePhase.ovulatory: Color(0xFF27AE60),
-    CyclePhase.luteal: Color(0xFF8E44AD),
+    CyclePhase.menstruation: AppColors.kCyclePeriod,
+    CyclePhase.follicular: AppColors.kPrimaryLighter,
+    CyclePhase.ovulatory: AppColors.kCycleOvulation,
+    CyclePhase.luteal: AppColors.kPrimaryLight,
   };
 
   @override
@@ -28,7 +30,7 @@ class PhaseDistributionChart extends StatelessWidget {
           child: Text(
             AppLocalizations.of(context).chartPhaseEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
         ),

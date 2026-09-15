@@ -63,7 +63,7 @@ class PerimenopauseScreen extends StatelessWidget {
             Text(
               l10n.perimenopauseEmpty,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             )
           else
@@ -74,7 +74,7 @@ class PerimenopauseScreen extends StatelessWidget {
             TrackerInsightText.disclaimer(l10n),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontStyle: FontStyle.italic,
-                  color: Theme.of(context).colorScheme.outline,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
         ],
@@ -98,7 +98,7 @@ class PerimenopauseScreen extends StatelessWidget {
           Text(
             l10n.perimenopauseLogTodayBody,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
           const SizedBox(height: AppSpacing.kMd),
@@ -186,7 +186,7 @@ class PerimenopauseScreen extends StatelessWidget {
                   Text(
                     log.symptoms.join(' · '),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.outline,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                   ),
               ],

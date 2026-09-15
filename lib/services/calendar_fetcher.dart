@@ -8,22 +8,28 @@ import '../utils/date_utils.dart';
 /// Produces a fixed 42-cell grid (six weeks) so the calendar keeps a stable
 /// height across months. Leading/trailing cells belong to adjacent months.
 class CalendarFetcher {
-  /// Default calendar start-of-week; Monday-based weeks (index 0 = Monday).
-  static const int kWeekStartsOnMonday = 1;
+  /// Default calendar start-of-week, in Dart `DateTime.weekday` terms
+  /// (1 = Monday … 7 = Sunday).
+  static const int kDefaultFirstDayOfWeek = DateTime.monday;
 
   /// Builds a 42-cell grid for the month containing [month].
+  ///
+  /// [firstDayOfWeek] is the `DateTime.weekday` value of the week's first day
+  /// (1 = Monday, 7 = Sunday) and controls the leading offset so the grid
+  /// matches the locale's week start.
   List<CalendarDay> fetchMonth(
     DateTime month, {
     CyclePrediction? prediction,
     Set<DateTime> loggedPeriodDays = const <DateTime>{},
     required UserProfile profile,
     DateTime? today,
+    int firstDayOfWeek = kDefaultFirstDayOfWeek,
   }) {
     final DateTime now = dateOnly(today ?? DateTime.now());
     final DateTime first = DateTime(month.year, month.month, 1);
 
-    // Leading blank cells before day 1.
-    final int leadOffset = (first.weekday - kWeekStartsOnMonday) % 7;
+    // Leading blank cells before day 1, based on the week start.
+    final int leadOffset = (first.weekday - firstDayOfWeek) % 7;
 
     final int periodLength = profile.averagePeriodLength;
     final List<CalendarDay> grid = <CalendarDay>[];

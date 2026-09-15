@@ -41,6 +41,14 @@
     }
   },
   "homeFertileWindow": "Fertile window",
+  "homePeriodIn": "Period in",
+  "homeCycleDayLabel": "Cycle Day",
+  "homePeakToday": "Peak today",
+  "homeTipMenstrual": "Rest up, stay hydrated and use heat for cramps. Log your flow to sharpen predictions.",
+  "homeTipFollicular": "Energy is rising — a good time to plan, move and notice fertile signs.",
+  "homeTipOvulatory": "You are in your fertile window. If you are trying to conceive, this is the best time.",
+  "homeTipLuteal": "PMS may show up — track symptoms, sleep well and be gentle with yourself.",
+  "homeTipTitle": "Tip:",
   "phaseMenstruation": "Menstruation",
   "phaseFollicular": "Follicular phase",
   "phaseOvulation": "Ovulation",
@@ -77,6 +85,8 @@
   "settingsLanguageSubtitle": "Choose how Witchy reads to you.",
   "settingsThemeTitle": "Theme",
   "settingsThemeSubtitle": "Choose how Witchy looks.",
+  "settingsFirstDayTitle": "Start of week",
+  "settingsFirstDaySubtitle": "What day your calendar week starts on.",
   "settingsSignOut": "Sign out",
   "settingsClearData": "Clear all data",
   "settingsClearDataSubtitle": "Erase every cycle, log, reminder and setting from this device.",
@@ -125,6 +135,72 @@
   "logSymptoms": "Symptoms",
   "logMood": "Mood",
   "logNotes": "Notes (optional)",
+  "logBiometricsTitle": "Biometrics · {date}",
+  "@logBiometricsTitle": {
+    "placeholders": {
+      "date": {
+        "type": "Object"
+      }
+    }
+  },
+  "biometricsTitle": "Biometrics",
+  "biometricsSubtitle": "Temperature, cervical mucus, LH and intimacy.",
+  "biometricsLoggedAt": "Logged at {time}",
+  "@biometricsLoggedAt": {
+    "placeholders": {
+      "time": {
+        "type": "Object"
+      }
+    }
+  },
+  "biometricsClear": "Clear day",
+  "biometricsCleared": "Biometrics cleared for this day.",
+  "bbtTitle": "Basal body temperature",
+  "bbtSubtitle": "Taken first thing after waking, before getting up.",
+  "bbtCelsius": "{temp}°C",
+  "@bbtCelsius": {
+    "placeholders": {
+      "temp": {
+        "type": "Object"
+      }
+    }
+  },
+  "bbtAdjust": "Adjust temperature",
+  "mucusTitle": "Cervical mucus",
+  "mucusDry": "Dry",
+  "mucusSticky": "Sticky",
+  "mucusCreamy": "Creamy",
+  "mucusWatery": "Watery",
+  "mucusEggwhite": "Eggwhite",
+  "lhTestTitle": "LH (ovulation) test",
+  "lhNegative": "Negative",
+  "lhHigh": "High",
+  "lhPeak": "Peak",
+  "pregnancyTestTitle": "Pregnancy test",
+  "testNegative": "Negative",
+  "testPositive": "Positive",
+  "intimacyTitle": "Intimacy",
+  "intimacyToggle": "I logged intimacy on this day",
+  "markerFlow": "Period logged",
+  "markerBbt": "Temperature logged",
+  "markerLhPeak": "LH peak",
+  "markerIntimacy": "Intimacy logged",
+  "todayBbt": "BBT {temp}",
+  "@todayBbt": {
+    "placeholders": {
+      "temp": {
+        "type": "Object"
+      }
+    }
+  },
+  "todayLh": "LH {status}",
+  "@todayLh": {
+    "placeholders": {
+      "status": {
+        "type": "Object"
+      }
+    }
+  },
   "logSave": "Save log",
   "logPeriodTitle": "Log {date}",
   "@logPeriodTitle": {
@@ -219,6 +295,13 @@
   "weekdayFri": "Fri",
   "weekdaySat": "Sat",
   "weekdaySun": "Sun",
+  "weekdayFullMon": "Monday",
+  "weekdayFullTue": "Tuesday",
+  "weekdayFullWed": "Wednesday",
+  "weekdayFullThu": "Thursday",
+  "weekdayFullFri": "Friday",
+  "weekdayFullSat": "Saturday",
+  "weekdayFullSun": "Sunday",
   "calendarWeekdayMon": "M",
   "calendarWeekdayTue": "T",
   "calendarWeekdayWed": "W",

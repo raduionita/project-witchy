@@ -156,7 +156,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
           Text(
             l10n.remindersEmptyBody,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
         ],
@@ -185,7 +185,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
             subtitle: Text(
               _subtitle(context, reminder),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
           ),

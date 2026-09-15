@@ -78,7 +78,7 @@ class AuthScreen extends StatelessWidget {
               style: FilledButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusMd),
+                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton),
                 ),
               ),
             ),
@@ -92,7 +92,7 @@ class AuthScreen extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusMd),
+                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton),
                 ),
               ),
             ),
@@ -105,7 +105,7 @@ class AuthScreen extends StatelessWidget {
               style: TextButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusMd),
+                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton),
                 ),
               ),
             ),

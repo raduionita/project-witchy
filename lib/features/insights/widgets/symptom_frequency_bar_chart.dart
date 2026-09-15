@@ -22,7 +22,7 @@ class SymptomFrequencyBarChart extends StatelessWidget {
           child: Text(
             l10n.chartSymptomsEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: scheme.outline,
+                  color: scheme.onSurfaceVariant,
                 ),
           ),
         ),
@@ -73,7 +73,7 @@ class SymptomFrequencyBarChart extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: scheme.outline,
+                            color: scheme.onSurfaceVariant,
                           ),
                     ),
                   );
@@ -122,10 +122,10 @@ class SymptomFrequencyBarChart extends StatelessWidget {
   Color _barColor(ColorScheme scheme, int index) {
     const List<Color> palette = <Color>[
       AppColors.kPrimary,
-      AppColors.kTertiary,
-      AppColors.kSecondary,
-      Color(0xFF27AE60),
-      Color(0xFF2E86C1),
+      AppColors.kPrimaryLight,
+      AppColors.kPrimaryLighter,
+      AppColors.kCycleOvulation,
+      AppColors.kCycleFertile,
     ];
     return index < palette.length
         ? palette[index]

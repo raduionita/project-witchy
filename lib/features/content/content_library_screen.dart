@@ -56,7 +56,7 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
                 hintText: l10n.contentSearch,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusMd),
+                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusInput),
                 ),
               ),
             ),
@@ -176,7 +176,7 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
                       ? l10n.contentArticle
                       : l10n.contentVideo,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: scheme.outline,
+                        color: scheme.onSurfaceVariant,
                       ),
                 ),
               ],
@@ -188,7 +188,7 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
                 : l10n.contentAddFavorite,
             icon: Icon(
               favorite ? Icons.star : Icons.star_border,
-              color: favorite ? scheme.tertiary : scheme.outline,
+              color: favorite ? scheme.primary : scheme.onSurfaceVariant,
             ),
             onPressed: () => provider.toggleFavorite(item.id),
           ),
@@ -208,7 +208,7 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
             Icon(
               Icons.search_off,
               size: 48,
-              color: Theme.of(context).colorScheme.outline,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: AppSpacing.kMd),
             Text(
@@ -219,7 +219,7 @@ class _ContentLibraryScreenState extends State<ContentLibraryScreen> {
             Text(
               l10n.contentEmptyBody,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
           ],

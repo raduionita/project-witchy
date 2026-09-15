@@ -134,7 +134,7 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
               ),
               const SizedBox(height: AppSpacing.kSm),
               ClipRRect(
-                borderRadius: BorderRadius.circular(AppSpacing.kRadiusSm),
+                borderRadius: BorderRadius.circular(AppSpacing.kRadiusS),
                 child: LinearProgressIndicator(
                   value: progress / 100,
                   minHeight: 8,
@@ -145,7 +145,7 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
               Text(
                 l10n.pregnancyProgress(progress.round()),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: scheme.outline,
+                      color: scheme.onSurfaceVariant,
                     ),
               ),
               const SizedBox(height: AppSpacing.kMd),
@@ -212,7 +212,7 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
       TrackerInsightText.disclaimer(AppLocalizations.of(context)),
       style: Theme.of(context).textTheme.bodySmall?.copyWith(
             fontStyle: FontStyle.italic,
-            color: Theme.of(context).colorScheme.outline,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
     );
   }

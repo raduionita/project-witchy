@@ -1,8 +1,9 @@
 # WITCHY: Mobile Design System & UI/UX Specification
-**Document Version:** 2.0.0  
+**Document Version:** 2.1.0  
 **Product Name:** Witchy — Comprehensive Menstrual, Fertility & Reproductive Health Tracker  
 **Target Platforms:** iOS & Android (Cross-Platform Mobile App)  
-**Primary Aesthetic:** Empowered Femtech / Warm Celestial Minimal / Clinical Clarity  
+**Primary Aesthetic:** Deep Purple Femtech / Soft Minimal / Clean Clinical Clarity
+**Reference Mockup:** `resources/gemini-code-1789467553712.html` (authoritative for colors, radii, type)  
 
 ---
 
@@ -21,47 +22,54 @@
 ## 2. Design System Architecture & Foundational Tokens
 
 ### 2.0 COLOR TOKEN VISUAL HARMONY
-`#2D1B4E` |  Deep Plum       | (Hero Cards, Primary Branding, Navigation)
-`#D95368` |  Terracotta Rose | (Menstruation Days, Flow Logs, Cycle Alerts)
-`#4EA685` |  Sage Green      | (Fertile Window, Cervical Mucus Peak, Ovulation)
-`#F4C430` |  Mystical Gold   | (Ovulation Peak, Pregnancy Trimesters, Highlights)
-`#FAF6F8` |  Warm Blush      | (App Canvas Background, Soft Card Separators)
+`#3B0066` |  Deep Purple       | (Hero Cards, Primary Branding, Navigation, Period Days)
+`#5E2A84` |  Primary Light     | (Secondary Buttons, Active Icons, Toggles)
+`#8154A2` |  Primary Lighter   | (Accents, Gradients)
+`#E0D4EA` |  Light Lavender    | (Splash BG, Fertile Window, Selected Pills, Slider Track)
+`#FFB7B2` |  Soft Coral/Pink   | (Ovulation Peak, Fertility Highlights, Best-Value Badge)
+`#F8F6FA` |  Light Gray-Purple | (App Canvas Background)
+`#333333` |  Text Dark          | (Headings, Body)
+`#666666` |  Text Light         | (Subtitles, Captions)
+`#E0E0E0` |  Border Gray        | (Input Borders, Dividers)
 
 ### 2.1 Color Palette & Design Tokens
-Witchy uses a warm, reassuring palette anchored by **Deep Plum** for primary actions and contrast containers, paired with **Terracotta Rose** for menstruation/flow indicators, **Sage Green** for peak fertility/ovulation windows, and **Mystical Gold** for milestones and pregnancy highlights.
+Witchy uses a clean purple-led palette per mockup: **Deep Purple `#3B0066`** for primary actions, period markers, hero cards and charts, paired with **Light Lavender `#E0D4EA`** for fertile-window fills and splash backgrounds, and **Soft Coral/Pink `#FFB7B2`** for ovulation peak and fertility highlights. App canvas is `#F8F6FA`, cards `#FFFFFF`.
 
 | Token Name | Hex Value | RGB / Opacity | Usage & Application | Contrast vs. Surface |
 | :--- | :--- | :--- | :--- | :--- |
-| `color-primary-dark` | `#2D1B4E` | `rgb(45, 27, 78)` | Primary buttons, hero dark cards, navigation headers | 13.8:1 (AAA) |
-| `color-primary-mid` | `#5A3D77` | `rgb(90, 61, 119)` | Secondary buttons, active icons, interactive toggles | 7.6:1 (AAA) |
-| `color-cycle-period` | `#D95368` | `rgb(217, 83, 104)` | Period flow days, menstruation alerts, cycle start markers | 4.8:1 (AA) |
-| `color-cycle-fertile`| `#4EA685` | `rgb(78, 166, 133)` | Fertile window dates, LH surge indicators, ovulation day | 3.5:1 (AA-Large) |
-| `color-accent-gold` | `#F4C430` | `rgb(244, 196, 48)` | Ovulation peak day, pregnancy milestones, streak badges | 1.8:1 (Dark Bg: 9.2:1) |
+| `color-primary` | `#3B0066` | `rgb(59, 0, 102)` | Primary buttons, hero dark cards, period days, active pills, chart bars, toggles ON | 12.9:1 (AAA) |
+| `color-primary-light` | `#5E2A84` | `rgb(94, 42, 132)` | Secondary accents, avatar placeholders, gradient steps | 8.1:1 (AAA) |
+| `color-primary-lighter` | `#8154A2` | `rgb(129, 84, 162)` | Tertiary accents, gradients | 4.9:1 (AA) |
+| `color-primary-lightest` | `#E0D4EA` | `rgb(224, 212, 234)` | Splash BG, fertile-window fills, selected-light pills, slider track, avatar ring | Decorative |
+| `color-secondary-coral` | `#FFB7B2` | `rgb(255, 183, 178)` | Ovulation day, fertility-window active underline, featured accents | 1.6:1 (Dark Bg: 9.5:1) |
+| `color-cycle-period` | `#3B0066` | `rgb(59, 0, 102)` | Period flow days, menstruation markers (solid fill, white text) | 12.9:1 (AAA) |
+| `color-cycle-fertile`| `#E0D4EA` | `rgb(224, 212, 234)` | Fertile window dates (`#3B0066` text on `#E0D4EA` fill) | Decorative |
+| `color-cycle-ovulation` | `#FFB7B2` | `rgb(255, 183, 178)` | Ovulation peak day (white text) | Decorative |
 | `color-surface-base` | `#FFFFFF` | `rgb(255, 255, 255)` | Primary screen backgrounds, standard card containers | Base Ref |
-| `color-surface-tint` | `#FAF6F8` | `rgb(250, 246, 248)` | App background canvas, alternating list sections | Base Ref |
-| `color-text-primary` | `#1E1333` | `rgb(30, 19, 51)` | Primary headings, body copy, card titles | 16.4:1 (AAA) |
-| `color-text-secondary`| `#6B5E82` | `rgb(107, 94, 130)` | Subtitles, captions, unselected tab items | 5.8:1 (AA) |
-| `color-border-subtle` | `#E8DCE4` | `rgb(232, 220, 228)` | Input borders, card dividers, calendar grid lines | Decorative |
+| `color-surface-tint` | `#F8F6FA` | `rgb(248, 246, 250)` | App background canvas, empty-state panels | Base Ref |
+| `color-text-primary` | `#333333` | `rgb(51, 51, 51)` | Primary headings, body copy, card titles | 12.6:1 (AAA) |
+| `color-text-secondary`| `#666666` | `rgb(102, 102, 102)` | Subtitles, captions, unselected tab items | 5.7:1 (AA) |
+| `color-border-subtle` | `#E0E0E0` | `rgb(224, 224, 224)` | Input borders, card dividers, calendar grid lines | Decorative |
 
 
 ### 2.2 Typography System
-The typography hierarchy balances an editorial serif for empowering cycle headers with a clean, high-legibility geometric sans-serif for health data, temperatures, and dates.
+Per mockup: system sans stack `'Segoe UI', Tahoma, Geneva, Verdana, sans-serif` throughout. No serif display. Hierarchy is weight/size led.
 
-* **Primary Display/Heading Font:** `Cinzel` or `Cormorant Garamond` (Empowering, holistic elegance)
-* **UI/Body Sans-Serif Font:** `Plus Jakarta Sans` or `Inter` (High legibility for numeric health data)
+* **Primary Display/Heading Font:** System sans stack (Brand, headers, numeric readouts)
+* **UI/Body Sans-Serif Font:** Same system sans stack
 
 | Style Token | Font Family | Weight | Size (pt/dp) | Line Height | Letter Spacing | Usage Examples |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| `type-display-l` | Cinzel | 700 Bold | `32pt` | `1.20` | `+0.02em` | Splash logo ("Witchy"), Trimester countdown titles |
-| `type-display-m` | Plus Jakarta Sans | 700 Bold | `28pt` | `1.20` | `-0.01em` | Cycle day number ("Day 14"), BBT values ("36.4°C") |
-| `type-h1` | Cinzel | 600 SemiBold | `22pt` | `1.30` | `0.00em` | Screen headers ("Cycle Overview", "Fertility Chart") |
-| `type-h2` | Plus Jakarta Sans | 700 Bold | `18pt` | `1.35` | `-0.01em` | Section titles ("Today's Symptoms", "BBT Trend") |
-| `type-h3` | Plus Jakarta Sans | 600 SemiBold | `16pt` | `1.40` | `0.00em` | Card titles, wellness article titles |
-| `type-body-l` | Plus Jakarta Sans | 400 Regular | `15pt` | `1.50` | `0.00em` | Cycle-synced health insights, educational copy |
-| `type-body-m` | Plus Jakarta Sans | 400 Regular | `14pt` | `1.50` | `0.00em` | Standard list item text, symptom descriptions |
-| `type-button` | Plus Jakarta Sans | 600 SemiBold | `15pt` | `1.00` | `+0.03em` | Primary CTA buttons, logging action buttons |
-| `type-caption` | Plus Jakarta Sans | 500 Medium | `12pt` | `1.40` | `+0.04em` | Timestamps, cycle phase tags, ovulation test logs |
-| `type-overline` | Plus Jakarta Sans | 700 Bold | `11pt` | `1.30` | `+0.08em` | Overlines ("OVULATION WINDOW", "FOLLICULAR PHASE") |
+| `type-display-l` | System sans | 700 Bold | `32pt` | `1.20` | `0.00em` | Splash logo ("Witchy"), brand name |
+| `type-display-m` | System sans | 700 Bold | `42–48pt` | `1.00–1.20` | `0.00em` | Cycle day number ("14"), slider value ("28 Days") |
+| `type-h1` | System sans | 600 SemiBold | `18pt` | `1.30` | `0.00em` | Screen headers ("Today", "Calendar") |
+| `type-h2` | System sans | 700 Bold | `20–24pt` | `1.30` | `0.00em` | Setup headers ("How long is your cycle?"), featured titles |
+| `type-h3` | System sans | 700 Bold | `16pt` | `1.40` | `0.00em` | Section titles ("Flow", "Symptoms", "Mood") |
+| `type-body-l` | System sans | 400 Regular | `15–16pt` | `1.50` | `0.00em` | Form inputs, insights copy |
+| `type-body-m` | System sans | 400 Regular | `14pt` | `1.40` | `0.00em` | List items, banner text, article blurbs |
+| `type-button` | System sans | 600 SemiBold | `16pt` | `1.00` | `0.00em` | Primary/secondary CTA buttons (`15px` padding, `25px` radius) |
+| `type-caption` | System sans | 400 Regular | `12pt` | `1.40` | `0.00em` | Timestamps, legend labels, nav labels (`10px` nav) |
+| `type-overline` | System sans | 400 Regular | `12pt` | `1.30` | `+0.08em` | Uppercase tags ("FEATURED") |
 
 ### 2.3 Spacing, Grid & Layout System
 * **Grid Base:** 8pt base grid for structural spacing; 4pt minor grid for fine-tuning charts, badges, and calendar cells.
@@ -72,38 +80,50 @@ The typography hierarchy balances an editorial serif for empowering cycle header
   * Screen Padding Bottom: `96pt` (to account for floating navigation bar).
 
 ### 2.4 Corner Radii & Elevation
-* **`radius-s` (8pt):** Symptom chips, calendar date indicators, small input controls.
-* **`radius-m` (16pt):** Biometric log cards, chart containers, symptom category boxes.
-* **`radius-l` (24pt):** Hero cycle cards, pregnancy summary banners, bottom sheets.
-* **`radius-pill` (999pt):** Primary action buttons, fertility status badges, filter tabs.
-* **`shadow-card`:** `0 6px 24px -4px rgba(45, 27, 78, 0.08)` (Soft elevation for health cards).
-* **`shadow-floating`:** `0 12px 36px -6px rgba(45, 27, 78, 0.16)` (Used for logging FABs and modals).
+Per mockup (`375x812` screen, `40px` frame radius):
+* **`radius-s` (8pt):** Article thumbnails, small controls.
+* **`radius-m` (12–15pt):** Inputs (`12px`), status/stat cards, info banners, featured article, chart container, settings groups (`15px`).
+* **`radius-l` (24pt):** Reserved for hero sheets/modals (mockup uses `15px` max in-app).
+* **`radius-pill` (20–25pt):** Primary/secondary buttons (`25px`), symptom pills (`20px`), calendar days (full circle `50%`), logo circle (full circle).
+* **Calendar day cell:** `30x30pt` circle; legend dot `10x10pt` circle.
+* **Toggle:** `50x24pt` track, `24px` radius, `20x20pt` thumb.
+* **`shadow-card`:** `0 2px 5px rgba(0,0,0,0.02)` (status/article/stat cards).
+* **`shadow-hero`:** `0 4px 10px rgba(0,0,0,0.05)` (cycle progress circle).
+* **`shadow-frame`:** `0 10px 30px rgba(0,0,0,0.5)` (device frame only, not in-app).
 
 ---
 
 ## 3. Component Library & UI Patterns
 
 ### 3.1 Cycle & Fertility Status Badges
-* **Period Day Badge:** Solid Terracotta `#D95368` background, white text, pill radius.
-* **Fertile Window Badge:** Solid Sage Green `#4EA685` background, white text, pill radius.
-* **Ovulation Peak Badge:** Solid Mystical Gold `#F4C430` background, dark purple `#2D1B4E` text, accompanied by a trailing spark icon.
-* **Luteal / Follicular Phase Badge:** Soft purple fill `#E8DFFF`, dark purple `#2D1B4E` text.
+* **Period Day Badge:** Solid Deep Purple `#3B0066` background, white text, circle.
+* **Fertile Window Badge:** Light Lavender `#E0D4EA` background, Deep Purple `#3B0066` text, circle.
+* **Ovulation Peak Badge:** Soft Coral `#FFB7B2` background, white text, circle.
+* **Status Cards:** White `#FFFFFF`, `15px` radius, `0 2px 5px rgba(0,0,0,0.02)`; active card has `3px` coral `#FFB7B2` bottom border; values in `#3B0066`, highlight values in `#FFB7B2`.
+* **Info Banner:** Solid `#3B0066` background, white text, `15px` radius.
 
 ### 3.2 Biometric Logging Controls
-* **Flow Severity Selector:** 4 rounded cards (Spotting, Light, Medium, Heavy) with liquid droplet iconography.
-* **Symptom Multi-Select Pills:** Interactive chips with subtle borders; active state fills with `#2D1B4E` and white text.
+* **Flow Severity Selector:** Pill chips (`20px` radius, white bg, `#E0E0E0` border); active fills `#3B0066` with white text.
+* **Symptom Multi-Select Pills:** White chips with `#E0E0E0` border; active fills `#3B0066`/white; secondary-selected fills `#E0D4EA` with `#3B0066` text.
+* **Form Inputs:** `12px 15px` padding, `12px` radius, `#E0E0E0` border, `#F8F6FA` fill.
+* **Cycle Slider:** `6px` track in `#E0D4EA` (`3px` radius), `24px` circular thumb in `#3B0066`; value readout `48px` bold `#3B0066`.
+* **Primary Button:** Full-width, `15px` padding, `#3B0066` fill, white text, `25px` radius, `16px`/600.
+* **Secondary Button:** Full-width, transparent fill, `#3B0066` text/border, `25px` radius.
 * **BBT Quick-Entry Keypad:** Large, high-target decimal keyboard modal with custom standard deviation alerts for unexpected temperature spikes.
 * **LH / Ovulation Test Reader Widget:** Photo-upload or toggle control (Negative, High, Peak) with visual line-intensity comparison reference.
 
 ### 3.3 Navigation Patterns
 * **Fixed Bottom Navigation Bar:**
-  * Height: `64pt` (+ safe area padding), background `#FFFFFF`, top border `#E8DCE4`.
+  * Height: `64pt` (+ safe area, `10px 0 25px` padding), background `#FFFFFF`, top border `#E0E0E0`.
+  * Inactive items `#666666`, active item `#3B0066`, labels `10px`.
   * **5 Core Destinations:**
-    1. **Today / Cycle** (Icon: Astrological Sun/Moon Cycle Ring)
-    2. **Calendar** (Icon: Full Month Calendar Grid)
-    3. **Log Health** (Icon: Central Floating `+` Pill Button in `#D95368` or `#2D1B4E`)
-    4. **Analytics & Charts** (Icon: Line Chart / BBT Trend)
-    5. **Holistic & Settings** (Icon: Leaf / Profile Gear)
+    1. **Today / Cycle** (Icon: Home)
+    2. **Calendar** (Icon: Calendar grid)
+    3. **Log Health** (Icon: Central `+` in `#3B0066` circle, white glyph)
+    4. **Analytics & Charts** (Icon: Bar/line chart)
+    5. **Holistic & Settings** (Icon: Profile)
+* **Headers:** White `#FFFFFF` bar, `18px`/600 centered title, `20px` icon buttons in `#333333`.
+* **Content Canvas:** `#F8F6FA` default; form/log screens use white `#FFFFFF` variant.
 
 ---
 
@@ -127,11 +147,11 @@ This section details the layout, functional components, data schemas, and user f
 ### Screen 01: Splash & Welcome (`/welcome`)
 * **Purpose:** Establish brand trust, holistic health authority, and privacy focus.
 * **Layout Structure:**
-  * **Hero Emblem:** Circular emblem (`160x160pt`) with Deep Plum fill `#2D1B4E`, gold border, and a stylized crescent moon enclosing a geometric uterine/ovarian symbol.
+  * **Hero Emblem:** Circular emblem (`120x120pt`, mockup `logo-circle`) with Deep Purple fill `#3B0066`, serif `W` glyph in white, on Light Lavender `#E0D4EA` splash canvas.
   * **Title Section:** Brand name `"Witchy"` (`type-display-l`, bold), centered below emblem, followed by tagline `"Your holistic cycle, fertility, and reproductive health companion"`.
   * **Privacy Trust Badge:** Subtle badge: `"End-to-End Encrypted • Your Health Data Stays Yours"`.
   * **Bottom Actions:**
-    * Primary CTA: `"Begin Health Journey"` (`#2D1B4E` pill button).
+    * Primary CTA: `"Begin Health Journey"` (`#3B0066` pill button).
     * Secondary Link: `"Restore Encrypted Backup — Sign In"`.
 
 ---
@@ -168,14 +188,14 @@ This section details the layout, functional components, data schemas, and user f
   * **Top Bar:** User greeting (`"Good morning, [User]"`) on left; current date and Privacy Shield icon on right.
   * **Dynamic Cycle Clock (Hero Centerpiece):**
     * Large circular dial (`220x220pt`) mapping the entire menstrual cycle.
-    * Outer Ring: Color-coded segments representing Period (`#D95368`), Follicular (`#E8DFFF`), Fertile Window (`#4EA685`), Ovulation Peak (`#F4C430`), and Luteal Phase.
+    * Outer Ring: Color-coded segments representing Period (`#3B0066` solid), Fertile Window (`#E0D4EA` fill with `#3B0066` text), Ovulation Peak (`#FFB7B2`). Cycle circle is `180pt` white card with `10px` lavender ring and purple progress arc.
     * Center Text: Displays `"Day 14"` (`type-display-m`) with subtitle `"Ovulation Day • High Fertility"`.
     * Pregnancy Mode Adaptation: Replaces cycle clock with **Gestational Week Dial** (`"Week 18 • 2nd Trimester"`).
   * **Quick Health Badges (2-Column Grid):**
     * Left Badge: `"Period in 14 Days"` (or `"Peak Fertility Today"`).
     * Right Badge: `"BBT: 36.4°C"` (with up/down trend arrow).
-  * **Daily Hormone & Body Insight Card (Dark Plum Card):**
-    * Background `#2D1B4E` with gold header `"Follicular Phase Energy"`.
+  * **Daily Hormone & Body Insight Card (Dark Purple Card):**
+    * Background `#3B0066` with white body text (`15px` radius, flex row with icon).
     * Explains rising estrogen levels, expected cervical mucus changes, and physical energy shifts.
   * **Bottom Navigation Bar:** Active on **Today / Cycle** tab.
 
@@ -187,7 +207,7 @@ This section details the layout, functional components, data schemas, and user f
   * **Header:** Month/Year selector (`"September 2026"`) with view toggle (`Month` vs `6-Month View`).
   * **Calendar Grid:**
     * 7-column grid (Sun–Sat).
-    * **Visual Legend:** Solid red dots for Period Days, green highlight bars for Fertile Window, gold star for Predicted Ovulation Day.
+    * **Visual Legend:** Solid purple `#3B0066` dots for Period Days, lavender `#E0D4EA` fills for Fertile Window, coral `#FFB7B2` for Predicted Ovulation Day. Day cells are `30x30` circles.
     * Small symbols inside cells indicate logged data: drops for bleeding, hearts for intimacy, thermometers for BBT entry.
   * **Selected Date Summary Panel (Bottom Half):**
     * Shows full breakdown for selected date: Phase name, logged symptoms, BBT reading, and LH test result.
@@ -209,7 +229,7 @@ This section details the layout, functional components, data schemas, and user f
     * Selector: `LH Negative`, `LH High`, `LH Peak`, `Pregnancy Positive/Negative`.
   * **Symptoms & Mood Multi-Select Grid:**
     * Categorized chips: *Cramps*, *Headache*, *Bloating*, *Breast Tenderness*, *High Libido*, *Fatigue*, *Brain Fog*.
-  * **Bottom Sticky Action:** `"Save Daily Biometrics"` (`#2D1B4E`).
+  * **Bottom Sticky Action:** `"Save Daily Biometrics"` (`#3B0066`).
 
 ---
 
@@ -235,8 +255,9 @@ This section details the layout, functional components, data schemas, and user f
   * **Interactive Biphasic BBT Line Graph:**
     * X-Axis: Cycle days (Days 1 to 30).
     * Y-Axis: Temperature range (`36.0°C – 37.2°C` or Fahrenheit equivalent).
-    * **Coverline (Horizontal Gold Line):** Auto-calculated line separating lower follicular temperatures from elevated luteal temperatures.
-    * **Ovulation Marker:** Vertical green dashed line highlighting confirmed ovulation day after three consecutive elevated temperature readings.
+    * **Coverline (Horizontal Coral Line `#FFB7B2`):** Auto-calculated line separating lower follicular temperatures from elevated luteal temperatures.
+    * **Ovulation Marker:** Vertical purple `#3B0066` dashed line highlighting confirmed ovulation day after three consecutive elevated temperature readings.
+    * **Chart Bars:** Solid `#3B0066` bars with `5px` top radius on white `#FFFFFF` card (`15px` radius).
   * **Biometric Legend & Overlays:**
     * Toggles to overlay LH test results and cervical mucus peak days onto the temperature curve.
   * **Clinical Interpretation Box:** `"Ovulation confirmed on Day 14. Your luteal phase temperature shift is strong (+0.38°C average)."`
@@ -294,7 +315,7 @@ This section details the layout, functional components, data schemas, and user f
   * **Article Body:**
     * Clean typography (`type-body-l`, 1.6 line height) breaking down hormonal pathways, common symptoms, and when to consult a physician.
   * **Key Takeaway Box:**
-    * Soft lavender container `#E8DFFF` summarizing bullet points for quick scanning.
+    * Soft lavender container `#E0D4EA` summarizing bullet points for quick scanning.
   * **Related Reading / Source Citations:** Links to peer-reviewed gynecology and reproductive endocrinology studies.
 
 ---
@@ -334,10 +355,10 @@ This section details the layout, functional components, data schemas, and user f
 
 ### 5.1 Cycle Clock Illumination & Phase Transition
 * **Trigger:** Loading the Daily Dashboard screen.
-* **Animation:** Outer segmented cycle ring smoothly animates from Day 1 to the current cycle day (`e.g., Day 14`) over `800ms` using `cubic-bezier(0.4, 0, 0.2, 1)`. When crossing into the Fertile Window, a subtle sage-green inner aura pulses gently (`box-shadow: 0 0 16px rgba(78, 166, 133, 0.35)`).
+* **Animation:** Outer segmented cycle ring smoothly animates from Day 1 to the current cycle day (`e.g., Day 14`) over `800ms` using `cubic-bezier(0.4, 0, 0.2, 1)`. Fertile-window state uses lavender `#E0D4EA` fill with subtle purple glow (`box-shadow: 0 0 16px rgba(59, 0, 102, 0.25)`).
 
 ### 5.2 Accessibility (a11y) & Clinical Readability
-* **Color Contrast & Independence:** Never rely solely on color to distinguish menstrual phases. Menstruation days use dotted fills alongside red `#D95368`, while fertile windows use diagonal striping alongside green `#4EA685`.
+* **Color Contrast & Independence:** Never rely solely on color to distinguish menstrual phases. Menstruation days use dotted fills alongside purple `#3B0066`, while fertile windows use diagonal striping alongside lavender `#E0D4EA` + coral `#FFB7B2` for ovulation.
 * **Screen Reader Descriptive Labels (`aria-label`):**
   * Cycle clock reports full clinical context: `"Current status: Day 14 of 28-day cycle, Ovulation Day, peak fertility probability"`.
   * BBT interactive charts announce temperature shifts explicitly: `"August 14, Day 14: Temperature 36.45 degrees Celsius, 0.38 degree rise from previous day"`.

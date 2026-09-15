@@ -45,11 +45,11 @@ class _LogSymptomSheetState extends State<LogSymptomSheet> {
 
   Future<void> _save() async {
     await context.read<SymptomProvider>().logSymptoms(
-          widget.date,
-          symptoms: _symptoms.toList(),
-          mood: _mood,
-          notes: _notes.text.isEmpty ? null : _notes.text,
-        );
+      widget.date,
+      symptoms: _symptoms.toList(),
+      mood: _mood,
+      notes: _notes.text.isEmpty ? null : _notes.text,
+    );
     if (!mounted) return;
     Navigator.of(context).pop(true);
   }
@@ -69,19 +69,22 @@ class _LogSymptomSheetState extends State<LogSymptomSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              l10n.logSymptomTitle(DateFormat('EEE, MMM d').format(widget.date)),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              l10n.logSymptomTitle(
+                DateFormat('EEE, MMM d').format(widget.date),
+              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: AppSpacing.kMd),
             _label(l10n.logSymptoms),
             const SizedBox(height: AppSpacing.kSm),
             SymptomChipGroup(
               selected: _symptoms,
-              onToggle: (String value) => setState(() {
-                if (!_symptoms.add(value)) _symptoms.remove(value);
-              }),
+              onToggle:
+                  (String value) => setState(() {
+                    if (!_symptoms.add(value)) _symptoms.remove(value);
+                  }),
             ),
             const SizedBox(height: AppSpacing.kMd),
             _label(l10n.logMood),
@@ -89,13 +92,16 @@ class _LogSymptomSheetState extends State<LogSymptomSheet> {
             Wrap(
               spacing: AppSpacing.kSm,
               runSpacing: AppSpacing.kSm,
-              children: kCommonMoods(l10n)
-                  .map((String item) => FilterChip(
-                        label: Text(item),
-                        selected: _mood == item,
-                        onSelected: (_) => setState(() => _mood = item),
-                      ))
-                  .toList(),
+              children:
+                  kCommonMoods(l10n)
+                      .map(
+                        (String item) => FilterChip(
+                          label: Text(item),
+                          selected: _mood == item,
+                          onSelected: (_) => setState(() => _mood = item),
+                        ),
+                      )
+                      .toList(),
             ),
             const SizedBox(height: AppSpacing.kMd),
             TextField(
@@ -117,9 +123,9 @@ class _LogSymptomSheetState extends State<LogSymptomSheet> {
   Widget _label(String text) {
     return Text(
       text,
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
     );
   }
 }

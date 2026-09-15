@@ -257,6 +257,54 @@ abstract class AppLocalizations {
   /// **'Fertile window'**
   String get homeFertileWindow;
 
+  /// No description provided for @homePeriodIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Period in'**
+  String get homePeriodIn;
+
+  /// No description provided for @homeCycleDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle Day'**
+  String get homeCycleDayLabel;
+
+  /// No description provided for @homePeakToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak today'**
+  String get homePeakToday;
+
+  /// No description provided for @homeTipMenstrual.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest up, stay hydrated and use heat for cramps. Log your flow to sharpen predictions.'**
+  String get homeTipMenstrual;
+
+  /// No description provided for @homeTipFollicular.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy is rising — a good time to plan, move and notice fertile signs.'**
+  String get homeTipFollicular;
+
+  /// No description provided for @homeTipOvulatory.
+  ///
+  /// In en, this message translates to:
+  /// **'You are in your fertile window. If you are trying to conceive, this is the best time.'**
+  String get homeTipOvulatory;
+
+  /// No description provided for @homeTipLuteal.
+  ///
+  /// In en, this message translates to:
+  /// **'PMS may show up — track symptoms, sleep well and be gentle with yourself.'**
+  String get homeTipLuteal;
+
+  /// No description provided for @homeTipTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip:'**
+  String get homeTipTitle;
+
   /// No description provided for @phaseMenstruation.
   ///
   /// In en, this message translates to:
@@ -388,6 +436,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose how Witchy looks.'**
   String get settingsThemeSubtitle;
+
+  /// No description provided for @settingsFirstDayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start of week'**
+  String get settingsFirstDayTitle;
+
+  /// No description provided for @settingsFirstDaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What day your calendar week starts on.'**
+  String get settingsFirstDaySubtitle;
 
   /// No description provided for @settingsSignOut.
   ///
@@ -676,6 +736,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notes (optional)'**
   String get logNotes;
+
+  /// No description provided for @logBiometricsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometrics · {date}'**
+  String logBiometricsTitle(Object date);
+
+  /// No description provided for @biometricsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometrics'**
+  String get biometricsTitle;
+
+  /// No description provided for @biometricsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature, cervical mucus, LH and intimacy.'**
+  String get biometricsSubtitle;
+
+  /// No description provided for @biometricsLoggedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged at {time}'**
+  String biometricsLoggedAt(Object time);
+
+  /// No description provided for @biometricsClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear day'**
+  String get biometricsClear;
+
+  /// No description provided for @biometricsCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometrics cleared for this day.'**
+  String get biometricsCleared;
+
+  /// No description provided for @bbtTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Basal body temperature'**
+  String get bbtTitle;
+
+  /// No description provided for @bbtSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken first thing after waking, before getting up.'**
+  String get bbtSubtitle;
+
+  /// No description provided for @bbtCelsius.
+  ///
+  /// In en, this message translates to:
+  /// **'{temp}°C'**
+  String bbtCelsius(Object temp);
+
+  /// No description provided for @bbtAdjust.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust temperature'**
+  String get bbtAdjust;
+
+  /// No description provided for @mucusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cervical mucus'**
+  String get mucusTitle;
+
+  /// No description provided for @mucusDry.
+  ///
+  /// In en, this message translates to:
+  /// **'Dry'**
+  String get mucusDry;
+
+  /// No description provided for @mucusSticky.
+  ///
+  /// In en, this message translates to:
+  /// **'Sticky'**
+  String get mucusSticky;
+
+  /// No description provided for @mucusCreamy.
+  ///
+  /// In en, this message translates to:
+  /// **'Creamy'**
+  String get mucusCreamy;
+
+  /// No description provided for @mucusWatery.
+  ///
+  /// In en, this message translates to:
+  /// **'Watery'**
+  String get mucusWatery;
+
+  /// No description provided for @mucusEggwhite.
+  ///
+  /// In en, this message translates to:
+  /// **'Eggwhite'**
+  String get mucusEggwhite;
+
+  /// No description provided for @lhTestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'LH (ovulation) test'**
+  String get lhTestTitle;
+
+  /// No description provided for @lhNegative.
+  ///
+  /// In en, this message translates to:
+  /// **'Negative'**
+  String get lhNegative;
+
+  /// No description provided for @lhHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get lhHigh;
+
+  /// No description provided for @lhPeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Peak'**
+  String get lhPeak;
+
+  /// No description provided for @pregnancyTestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pregnancy test'**
+  String get pregnancyTestTitle;
+
+  /// No description provided for @testNegative.
+  ///
+  /// In en, this message translates to:
+  /// **'Negative'**
+  String get testNegative;
+
+  /// No description provided for @testPositive.
+  ///
+  /// In en, this message translates to:
+  /// **'Positive'**
+  String get testPositive;
+
+  /// No description provided for @intimacyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Intimacy'**
+  String get intimacyTitle;
+
+  /// No description provided for @intimacyToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'I logged intimacy on this day'**
+  String get intimacyToggle;
+
+  /// No description provided for @markerFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Period logged'**
+  String get markerFlow;
+
+  /// No description provided for @markerBbt.
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature logged'**
+  String get markerBbt;
+
+  /// No description provided for @markerLhPeak.
+  ///
+  /// In en, this message translates to:
+  /// **'LH peak'**
+  String get markerLhPeak;
+
+  /// No description provided for @markerIntimacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Intimacy logged'**
+  String get markerIntimacy;
+
+  /// No description provided for @todayBbt.
+  ///
+  /// In en, this message translates to:
+  /// **'BBT {temp}'**
+  String todayBbt(Object temp);
+
+  /// No description provided for @todayLh.
+  ///
+  /// In en, this message translates to:
+  /// **'LH {status}'**
+  String todayLh(Object status);
 
   /// No description provided for @logSave.
   ///
@@ -1054,6 +1300,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sun'**
   String get weekdaySun;
+
+  /// No description provided for @weekdayFullMon.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get weekdayFullMon;
+
+  /// No description provided for @weekdayFullTue.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get weekdayFullTue;
+
+  /// No description provided for @weekdayFullWed.
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get weekdayFullWed;
+
+  /// No description provided for @weekdayFullThu.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get weekdayFullThu;
+
+  /// No description provided for @weekdayFullFri.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get weekdayFullFri;
+
+  /// No description provided for @weekdayFullSat.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get weekdayFullSat;
+
+  /// No description provided for @weekdayFullSun.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get weekdayFullSun;
 
   /// No description provided for @calendarWeekdayMon.
   ///

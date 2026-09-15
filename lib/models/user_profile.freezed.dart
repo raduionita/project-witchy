@@ -29,6 +29,7 @@ mixin _$UserProfile {
   TrackingMode get mode => throw _privateConstructorUsedError;
   DateTime? get pregnancyLmp => throw _privateConstructorUsedError;
   bool get onboarded => throw _privateConstructorUsedError;
+  int get firstDayOfWeek => throw _privateConstructorUsedError;
 
   /// Serializes this UserProfile to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -56,6 +57,7 @@ abstract class $UserProfileCopyWith<$Res> {
     TrackingMode mode,
     DateTime? pregnancyLmp,
     bool onboarded,
+    int firstDayOfWeek,
   });
 }
 
@@ -82,6 +84,7 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
     Object? mode = null,
     Object? pregnancyLmp = freezed,
     Object? onboarded = null,
+    Object? firstDayOfWeek = null,
   }) {
     return _then(
       _value.copyWith(
@@ -125,6 +128,11 @@ class _$UserProfileCopyWithImpl<$Res, $Val extends UserProfile>
                     ? _value.onboarded
                     : onboarded // ignore: cast_nullable_to_non_nullable
                         as bool,
+            firstDayOfWeek:
+                null == firstDayOfWeek
+                    ? _value.firstDayOfWeek
+                    : firstDayOfWeek // ignore: cast_nullable_to_non_nullable
+                        as int,
           )
           as $Val,
     );
@@ -149,6 +157,7 @@ abstract class _$$UserProfileImplCopyWith<$Res>
     TrackingMode mode,
     DateTime? pregnancyLmp,
     bool onboarded,
+    int firstDayOfWeek,
   });
 }
 
@@ -174,6 +183,7 @@ class __$$UserProfileImplCopyWithImpl<$Res>
     Object? mode = null,
     Object? pregnancyLmp = freezed,
     Object? onboarded = null,
+    Object? firstDayOfWeek = null,
   }) {
     return _then(
       _$UserProfileImpl(
@@ -217,6 +227,11 @@ class __$$UserProfileImplCopyWithImpl<$Res>
                 ? _value.onboarded
                 : onboarded // ignore: cast_nullable_to_non_nullable
                     as bool,
+        firstDayOfWeek:
+            null == firstDayOfWeek
+                ? _value.firstDayOfWeek
+                : firstDayOfWeek // ignore: cast_nullable_to_non_nullable
+                    as int,
       ),
     );
   }
@@ -234,6 +249,7 @@ class _$UserProfileImpl implements _UserProfile {
     this.mode = TrackingMode.cycle,
     this.pregnancyLmp,
     this.onboarded = false,
+    this.firstDayOfWeek = DateTime.monday,
   });
 
   factory _$UserProfileImpl.fromJson(Map<String, dynamic> json) =>
@@ -260,10 +276,13 @@ class _$UserProfileImpl implements _UserProfile {
   @override
   @JsonKey()
   final bool onboarded;
+  @override
+  @JsonKey()
+  final int firstDayOfWeek;
 
   @override
   String toString() {
-    return 'UserProfile(id: $id, averageCycleLength: $averageCycleLength, averagePeriodLength: $averagePeriodLength, lutealPhaseLength: $lutealPhaseLength, firstPeriodDate: $firstPeriodDate, mode: $mode, pregnancyLmp: $pregnancyLmp, onboarded: $onboarded)';
+    return 'UserProfile(id: $id, averageCycleLength: $averageCycleLength, averagePeriodLength: $averagePeriodLength, lutealPhaseLength: $lutealPhaseLength, firstPeriodDate: $firstPeriodDate, mode: $mode, pregnancyLmp: $pregnancyLmp, onboarded: $onboarded, firstDayOfWeek: $firstDayOfWeek)';
   }
 
   @override
@@ -284,7 +303,9 @@ class _$UserProfileImpl implements _UserProfile {
             (identical(other.pregnancyLmp, pregnancyLmp) ||
                 other.pregnancyLmp == pregnancyLmp) &&
             (identical(other.onboarded, onboarded) ||
-                other.onboarded == onboarded));
+                other.onboarded == onboarded) &&
+            (identical(other.firstDayOfWeek, firstDayOfWeek) ||
+                other.firstDayOfWeek == firstDayOfWeek));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -299,6 +320,7 @@ class _$UserProfileImpl implements _UserProfile {
     mode,
     pregnancyLmp,
     onboarded,
+    firstDayOfWeek,
   );
 
   /// Create a copy of UserProfile
@@ -325,6 +347,7 @@ abstract class _UserProfile implements UserProfile {
     final TrackingMode mode,
     final DateTime? pregnancyLmp,
     final bool onboarded,
+    final int firstDayOfWeek,
   }) = _$UserProfileImpl;
 
   factory _UserProfile.fromJson(Map<String, dynamic> json) =
@@ -346,6 +369,8 @@ abstract class _UserProfile implements UserProfile {
   DateTime? get pregnancyLmp;
   @override
   bool get onboarded;
+  @override
+  int get firstDayOfWeek;
 
   /// Create a copy of UserProfile
   /// with the given fields replaced by the non-null parameter values.

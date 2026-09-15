@@ -24,7 +24,7 @@ The project is a fresh Flutter scaffold (only `lib/main.dart`, no dependencies y
 | Analyze | `flutter analyze` | After **every task** — zero errors/warnings |
 | Build | `flutter build apk --debug` | End of **every phase** |
 | Test | `flutter test` | End of **every phase** |
-| Release | `flutter build apk --release` + `flutter build ios --release --no-codesign` | End of phase 11 |
+| Release | `flutter build apk --release` + `flutter build ios --release --no-codesign` | End of the **final** phase (Phase 18) |
 
 > If a gate fails, fix the error and run the gate again before moving to the next task.
 
@@ -54,6 +54,8 @@ lib/
     ├── symptoms/
     ├── pregnancy/
     ├── perimenopause/
+    ├── fertility/                       # BBT, cervical mucus, LH/OPK, intimacy, fertility predictor
+    ├── wellness/                        # cycle-synced wellness content
     ├── reminders/
     ├── auth/
     ├── couples/
@@ -199,23 +201,124 @@ test/
 
 ## Phase 10 — Polish, Icons, Splash & Launch
 
-- [ ] **10.1** `flutter_launcher_icons` config + generate icons (Android + iOS).
-- [ ] **10.2** `flutter_native_splash` config + generate splash screen.
-- [ ] **10.3** Theming pass: refine light/dark, spacing, accessibility (contrast, text scale).
-- [ ] **10.4** Android manifest + `Info.plist` review (permissions minimal: notifications only; no camera/location).
-- [ ] **10.5** Deep-link single-parity review of Navigator 2.0 routes (`AppLinkKind`).
+- [x] **10.1** `flutter_launcher_icons` config + generate icons (Android + iOS).
+- [x] **10.2** `flutter_native_splash` config + generate splash screen.
+- [x] **10.3** Theming pass: refine light/dark, spacing, accessibility (contrast, text scale).
+- [x] **10.4** Android manifest + `Info.plist` review (permissions minimal: notifications only; no camera/location).
+- [x] **10.5** Deep-link single-parity review of Navigator 2.0 routes (`AppLinkKind`).
 
 **Gate:** analyze clean, `flutter test` green.
 
+> **Gate:** ✅ `flutter analyze` clean, ✅ `flutter test` 201 passed, ✅ `flutter build apk --debug`, ✅ `flutter build ios --release --no-codesign` — **passed**. Notes: Brand assets generated in `assets/images/` (Deep Plum `#2D1B4E` + gold crescent-moon emblem per DESIGN.md): `icon/app_icon.png` (launcher), `icon/app_icon_foreground.png` (Android adaptive foreground), `splash/splash_logo.png` (native splash, light + dark). Theming pass rewrote `utils/app_theme.dart` around the DESIGN.md palette (plum primary, gold secondary, rose tertiary, `#FAF6F8` surface, `#1E1333` text), added a proper dark scheme with light-lavender primary for contrast, and component themes (cards, inputs, chips, navigation bar, tooltips, text selection); in-app `SplashScreen` now shows the moon emblem. Manifest review: added `POST_NOTIFICATIONS` (Android 13+ runtime) and corrected the app label to `Witchy`; iOS `Info.plist` stays minimal (no location/camera/photo keys). Deep-link parity codified via new `AppLinkKind` enum in `app_route_path.dart` (single source of truth for `/`, `/onboarding`, `/shell`), consumed by the parser with unknown paths falling back to splash; 6 new router tests added.
+
 ---
 
-## Phase 11 — Release Readiness
+## Phase 11 — Biometric & Fertility Logging (DESIGN Screens 06, 09)
 
-- [ ] **11.1** Remove all TODO placeholders, prints, dead code; `flutter analyze --fatal-infos`.
-- [ ] **11.2** `flutter build apk --release`.
-- [ ] **11.3** `flutter build ios --release --no-codesign`.
-- [ ] **11.4** Full test suite pass: `flutter test`.
-- [ ] **11.5** Final security/privacy audit of persisted keys (no tokens, no PII keys), and README update.
+> Gap: DESIGN.md specs BBT, cervical mucus, LH/OPK reader, pregnancy tests and intimacy logging (Screen 06); none exist today — `PeriodLog`/`SymptomLog` only carry flow/symptoms/mood/notes.
+
+- [x] **11.1** Data model: `CervicalMucusType` (dry/sticky/creamy/watery/eggwhite), `OvulationTestResult` (negative/high/peak), `PregnancyTestResult` (negative/positive), `BbtReading` (date, tempC, takenAt, notes), `IntercourseLog` (date, notes); per-day `BiometricLog` aggregator.
+- [x] **11.2** Storage: `BiometricRepository` (CRUD + persist/load via `PersistedListMixin`), `BiometricProvider` (ChangeNotifier) wired into `AppStateProvider`.
+- [x] **11.3** Logging UI: BBT quick-entry keypad (decimal, logged-at timestamp), mucus chips, LH/pregnancy-test reader toggle, intimacy toggle — surfaced from the existing log sheets + Calendar/Home long-press.
+- [x] **11.4** Calendar day cells show data symbols (droplet = flow, thermometer = BBT, sparkle = LH peak, heart = intimacy) and the day-strip/today panel surfaces today's BBT + peak status.
+- [x] **11.5** i18n strings (en + es) + unit/widget tests (repository round-trip, reader states, symbol mapping).
+
+**Gate:** analyze clean, `flutter build apk --debug`, `flutter test` green.
+
+> **Gate:** ✅ `flutter analyze` clean, ✅ `flutter build apk --debug` OK, ✅ `flutter test` 211 passed — **passed**. Notes: New freezed models `BbtReading`, `IntercourseLog` and the per-day `BiometricLog` aggregator (with enums `CervicalMucusType`, `OvulationTestResult`, `PregnancyTestResult`) live in `lib/models/`; `BiometricRepository` adds the `witchy.biometric_logs` key via `PersistedListMixin` and is loaded/cleared with `AppStateProvider`; `BiometricProvider` (registered in `app.dart`) upserts by date preserving the day id, exposes `bbtOn`/`ovulationTestOn`/`markersFor`, and drives `LogBiometricsSheet` (BBT ±0.05°C stepper + direct entry + logged-at time picker, mucus chips, deselectable LH/pregnancy-test chips, intimacy switch, clear-day). Biometric entry points: new tile on the Logging tab, thermostat button in the calendar header + today panel, both opening the sheet for today. `CalendarDay` gained `CalendarDayMarker` (flow/bbt/lhPeak/intimacy) + a `markers` list rendered as tiny icons (new `DayMarkersRow` widget) in the calendar grid and home day strip; the today panel shows `BBT 36.45°C · LH Peak` badges. 10 new tests (model serialization, provider upsert/remove/markers, repository round-trip, calendar marker rendering, sheet save flow).
+
+---
+
+## Phase 12 — Fertility Analytics: BBT Chart & Fertility Predictor (DESIGN Screens 08, 09)
+
+> Gap: no BBT chart or dedicated fertility predictor exist; insights are cycle-length/symptom focused only.
+
+- [ ] **12.1** `BbtChartService`: per-cycle coverline (follicular/luteal baseline split), biphasic-shift detection, ovulation confirmation (3 consecutive elevated readings), shift magnitude (+°C).
+- [ ] **12.2** BBT chart screen (`/insights/bbt`): `fl_chart` line graph with coverline overlay, vertical ovulation marker, LH/mucus overlay toggles, clinical-interpretation box; cycle selector dropdown.
+- [ ] **12.3** Fertility predictor screen (`/fertility/window`): 7-day conception window with per-day probability estimates, fertility scorecard aligning BBT shift + LH peak + egg-white mucus, intimacy-logger shortcut.
+- [ ] **12.4** Wire both into the Insights tab + deep links; TTC-adjacent insights surfaced on the home dashboard.
+- [ ] **12.5** i18n + tests (coverline/ovulation math, probability model, chart data assembly).
+
+**Gate:** analyze clean, `flutter build apk --debug`, `flutter test` green.
+
+---
+
+## Phase 13 — TTC Mode & Contraceptive Baseline (DESIGN Screens 02, 03, 04)
+
+> Gap: DESIGN defines four lifecycle goals (Cycle, TTC, Pregnancy, Perimenopause) — only three exist; no hormonal/contraceptive method affects predictions; the DESIGN hero cycle clock is not implemented.
+
+- [ ] **13.1** New `TrackingMode.ttc` (Trying to Conceive): labels/descriptions in en + es, home hands off to a fertility-first dashboard, shell + settings integrated.
+- [ ] **13.2** `HormonalMethod` enum (none/combinedPill/progestinOnly/hormonalIud/copperIud/implant/patch/ring) persisted on `UserProfile`; methods that suppress ovulation hide fertile-window predictions with an explanatory note.
+- [ ] **13.3** Cycle clock: circular dial hero on home (outer color-coded phase ring, animated illumination per DESIGN 5.1, center "Day N" + status); pregnancy mode swaps to a gestational-week dial; BBT/fertility quick badges.
+- [ ] **13.4** Onboarding: 4-goal selector (Cycle/TTC/Pregnancy/Perimenopause) + hormonal-method picker in the baseline step; settings gains a method picker.
+- [ ] **13.5** i18n + tests (prediction suppression logic, clock phase mapping, onboarding goal flow).
+
+**Gate:** analyze clean, `flutter build apk --debug`, `flutter test` green.
+
+---
+
+## Phase 14 — Calendar Pro & Cycle-Synced Wellness (DESIGN Screens 05, 11)
+
+> Gap: the Calendar tab is a bare month grid (no view toggle, no date-summary panel); the content library is not cycle-phase aware.
+
+- [ ] **14.1** Calendar: Month vs 6-Month view toggle; selected-date summary panel (phase, logged symptoms, BBT, LH, mucus, intimacy) with an "Edit log" action.
+- [ ] **14.2** Wellness: `Article` gains `cyclePhase` + `wellnessCategory` (nutrition/movement/herbal/self-care); library gets phase filter tabs (Menstrual/Follicular/Ovulatory/Luteal/Pregnancy/Postpartum).
+- [ ] **14.3** Seed phase-tagged wellness content under `assets/content/` (regenerated/registered in pubspec).
+- [ ] **14.4** i18n + tests (filter logic, summary-panel assembly, seeded-content parse).
+
+**Gate:** analyze clean, `flutter build apk --debug`, `flutter test` green.
+
+---
+
+## Phase 15 — Privacy, Security & Data Sovereignty (DESIGN Screen 14)
+
+> Gap: `StorageService` has no schema versioning or per-entry defensive decode; no app lock, no incognito notifications, and no data export exist (only anonymous mode + clear-all).
+
+- [ ] **15.1** Storage hardening: `schemaVersion` key + ordered migration map in `StorageService`; defensive decoding so one corrupt entry never wipes or fails a whole repository load.
+- [ ] **15.2** Biometric app lock: add `local_auth`; opt-in FaceID/TouchID gate over the shell; friendly unavailable fallback; persisted preference.
+- [ ] **15.3** Incognito notifications: `PrivacyProvider` flag that rewrites reminder titles/bodies to neutral text (no "period/fertility" labels).
+- [ ] **15.4** CSV export of the full health record (profile, cycles, period/symptom/biometric logs, reminders) via share/`url_launcher` or file save; JSON import for restore; clear privacy notes.
+- [ ] **15.5** i18n + tests (migration path, defensive decode, incognito rewriting, CSV assembly).
+
+**Gate:** analyze clean, `flutter build apk --debug`, `flutter test` green.
+
+---
+
+## Phase 16 — Health Sync & Wearables, Privacy-First (DESIGN Screen 13, README Wear OS)
+
+> Gap: Screen 13 (HealthKit / Health Connect / wearable temperature) and the README's Wear OS integration are unimplemented. Must stay privacy-first: device-to-device stores only, no cloud.
+
+- [ ] **16.1** `HealthSyncGateway` abstraction (permission scopes, read/write direction, status) so sync is testable and swappable.
+- [ ] **16.2** HealthKit + Health Connect integration: permission-gated toggles syncing periods/BBT/mucus; explicit consent banners; platform channels or documented deferred stubs.
+- [ ] **16.3** Wearable temperature import placeholder (Oura / Apple Watch wrist temp) as status rows with "Connected"/"Not connected" stubs and a sync-preferences screen.
+- [ ] **16.4** Sync preferences screen under Settings; all writes gated on explicit per-data-point consent; privacy warning banner.
+- [ ] **16.5** Tests for the gateway contract + preference persistence.
+
+**Gate:** analyze clean, `flutter build apk --debug`, `flutter test` green.
+
+---
+
+## Phase 17 — Pregnancy Pro, Notification Deep Links & Final Polish
+
+> Gap: pregnancy is trimester-level only (no appointments, no week-by-week size/milestones); notification taps do not deep-link; `AppLinkKind` only covers `/`, `/onboarding`, `/shell`.
+
+- [ ] **17.1** Prenatal appointments: model + CRUD + card on the pregnancy home (due-date countdown, "next appointment"); schedule appointment reminders via `ReminderService`.
+- [ ] **17.2** Week-by-week fetal size/milestones content (curated, localized, non-clinical).
+- [ ] **17.3** Notification-tap handling (`onDidReceiveNotificationResponse`) routing to the relevant screen (reminders → Reminders, appointment → Pregnancy).
+- [ ] **17.4** Expand deep-link parity: `AppLinkKind` covers all main destinations (dashboard, calendar, insights, library, pregnancy, settings, reminders); parser + router tests.
+- [ ] **17.5** i18n + tests.
+
+**Gate:** analyze clean, `flutter build apk --debug`, `flutter test` green.
+
+---
+
+## Phase 18 — Release Readiness (final)
+
+- [ ] **18.1** Remove all TODO placeholders, prints, dead code; `flutter analyze --fatal-infos`.
+- [ ] **18.2** `flutter build apk --release`.
+- [ ] **18.3** `flutter build ios --release --no-codesign`.
+- [ ] **18.4** Full test suite pass: `flutter test`.
+- [ ] **18.5** Final security/privacy audit of persisted keys (no tokens, no PII keys), store metadata (icons/screenshots/descriptions), and README update.
 
 **Gate (release):** `flutter analyze` zero issues, release builds succeed, entire suite green.
 

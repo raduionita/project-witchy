@@ -1,26 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:provider/provider.dart';
 
-import '../features/auth/auth_provider.dart';
-import '../features/auth/auth_screen.dart';
-import '../features/auth/models/auth_session.dart';
 import '../features/calendar/calendar_screen.dart';
-import '../features/content/content_library_screen.dart';
-import '../features/couples/couples_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/insights/insights_screen.dart';
 import '../features/logging/logging_screen.dart';
-import '../features/reminders/reminders_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/app_theme.dart';
+import '../widgets/app_content_column.dart';
 
-/// The primary app shell with a floating pill bottom navigation.
-///
-/// An [IndexedStack] preserves each tab's state across switches. The active
-/// tab's title is shown centered in the app bar. The trailing account button
-/// opens the right-side drawer with account, library and settings actions.
 class MainShellScreen extends StatefulWidget {
   const MainShellScreen({super.key});
 
@@ -29,7 +17,6 @@ class MainShellScreen extends StatefulWidget {
 }
 
 class _MainShellScreenState extends State<MainShellScreen> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _index = 0;
 
   late final List<Widget> _tabs = <Widget>[
@@ -37,283 +24,96 @@ class _MainShellScreenState extends State<MainShellScreen> {
     const CalendarScreen(),
     LoggingScreen(onOpenCalendar: () => setState(() => _index = 1)),
     const InsightsScreen(),
+    const SettingsScreen(),
   ];
 
-  void _openSettings(BuildContext context) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute<void>(builder: (_) => const SettingsScreen()));
+  String _titleFor(AppLocalizations l10n) {
+    return switch (_index) {
+      0 => l10n.homeToday,
+      1 => l10n.navCalendar,
+      2 => l10n.navLogging,
+      3 => l10n.navInsights,
+      _ => l10n.navSettings,
+    };
   }
 
-  void _openContentLibrary(BuildContext context) {
-    final AppLocalizations l10n = AppLocalizations.of(context);
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder:
-            (_) => Scaffold(
-              appBar: AppBar(title: Text(l10n.navMagic)),
-              body: const ContentLibraryScreen(),
-            ),
+  Widget _centerLogButton(AppLocalizations l10n) {
+    final bool selected = _index == 2;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: l10n.navLogging,
+      child: InkWell(
+        onTap: () => setState(() => _index = 2),
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: AppColors.kPrimary,
+            shape: BoxShape.circle,
+            boxShadow: AppShadows.kHero,
+            border: selected ? Border.all(color: AppColors.kCoral, width: 3) : null,
+          ),
+          child: const Icon(Icons.add, color: Colors.white, size: 28),
+        ),
       ),
     );
   }
 
-  String _titleFor(AppLocalizations l10n) {
-    return switch (_index) {
-      0 => l10n.navHome,
-      1 => l10n.navCalendar,
-      2 => l10n.navLogging,
-      _ => l10n.navInsights,
-    };
+  Widget _barItem({required IconData icon, required String label, required bool selected, required VoidCallback onTap}) {
+    final Color color = selected ? AppColors.kPrimary : AppColors.kTextSecondary;
+    return Expanded(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: label,
+        child: InkWell(
+          onTap: onTap,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: AppSizing.kMinTouch),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 24, color: color),
+                const SizedBox(height: 2),
+                Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: AppTypography.kNavLabel, color: color)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _bottomBar(AppLocalizations l10n) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: AppSizing.kNavHeight,
+        padding: const EdgeInsets.only(bottom: 8),
+        decoration: const BoxDecoration(color: AppColors.kSurfaceBase, border: Border(top: BorderSide(color: AppColors.kBorder))),
+        child: Row(
+          children: [
+            _barItem(icon: _index == 0 ? Icons.home : Icons.home_outlined, label: l10n.navHome, selected: _index == 0, onTap: () => setState(() => _index = 0)),
+            _barItem(icon: _index == 1 ? Icons.calendar_month : Icons.calendar_month_outlined, label: l10n.navCalendar, selected: _index == 1, onTap: () => setState(() => _index = 1)),
+            Expanded(child: Center(child: _centerLogButton(l10n))),
+            _barItem(icon: _index == 3 ? Icons.bar_chart : Icons.bar_chart_outlined, label: l10n.navInsights, selected: _index == 3, onTap: () => setState(() => _index = 3)),
+            _barItem(icon: _index == 4 ? Icons.person : Icons.person_outline, label: l10n.navAccount, selected: _index == 4, onTap: () => setState(() => _index = 4)),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     return Scaffold(
-      key: _scaffoldKey,
-      extendBody: true,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        actions: <Widget>[Container()],
-        centerTitle: true,
-        title: Text(_titleFor(l10n)),
-      ),
-      body: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          IndexedStack(index: _index, children: _tabs),
-          _navConainer(l10n),
-        ],
-      ),
-      endDrawer: _endDrawer(context, l10n),
-    );
-  }
-
-  Widget _endDrawer(BuildContext context, AppLocalizations l10n) {
-    final AuthProvider auth = context.watch<AuthProvider>();
-    return Drawer(
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _accountHeader(context, l10n, auth),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.auto_fix_high_outlined),
-              title: Text(l10n.navMagic),
-              onTap: () {
-                Navigator.of(context).pop();
-                _openContentLibrary(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.alarm_add_outlined),
-              title: Text(l10n.settingsRemindersTitle),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const RemindersScreen(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.favorite_outline),
-              title: Text(l10n.settingsCouplesTitle),
-              onTap: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const CouplesScreen(),
-                  ),
-                );
-              },
-            ),
-            const Spacer(),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: Text(l10n.navSettings),
-              onTap: () {
-                Navigator.of(context).pop();
-                _openSettings(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _accountHeader(
-    BuildContext context,
-    AppLocalizations l10n,
-    AuthProvider auth,
-  ) {
-    final AuthSession? session = auth.session;
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-    if (session != null) {
-      return Container(
-        color: scheme.primaryContainer,
-        padding: const EdgeInsets.all(AppSpacing.kMd),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: scheme.primary,
-              foregroundColor: scheme.onPrimary,
-              child: Text(
-                session.displayName.isEmpty
-                    ? '?'
-                    : session.displayName.substring(0, 1).toUpperCase(),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.kMd),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    session.displayName,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  if (session.email case final String email)
-                    Text(email, style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.kMd),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.account_circle_outlined, size: 48, color: scheme.primary),
-          const SizedBox(height: AppSpacing.kSm),
-          Text(
-            l10n.settingsAccountTitle,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: AppSpacing.kXs),
-          Text(
-            l10n.settingsAccountSubtitle,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-          const SizedBox(height: AppSpacing.kSm),
-          FilledButton.tonal(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const AuthScreen()),
-              );
-            },
-            child: Text(l10n.authGoogleSignIn),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _navConainer(AppLocalizations l10n) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(
-        bottom: AppSpacing.kMd,
-        left: AppSpacing.kMd,
-        right: AppSpacing.kMd,
-      ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: scheme.onPrimaryContainer,
-          borderRadius: BorderRadius.circular(AppSpacing.kRadiusXl),
-          boxShadow: [
-            BoxShadow(color: scheme.primary, blurRadius: AppSpacing.kRadiusSm),
-          ],
-          border: Border.all(color: scheme.onPrimary.withAlpha(140), width: 1),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.kXs),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _navButton(
-                index: 0,
-                unselectedIcon: FontAwesomeIcons.moon,
-                selectedIcon: FontAwesomeIcons.moon,
-                tooltip: l10n.navHome,
-              ),
-              _navButton(
-                index: 1,
-                unselectedIcon: Icons.calendar_month_outlined,
-                selectedIcon: Icons.calendar_month,
-                tooltip: l10n.navCalendar,
-              ),
-              _navButton(
-                index: 2,
-                unselectedIcon: Icons.add_outlined,
-                selectedIcon: Icons.add,
-                tooltip: l10n.navLogging,
-                iconsScale: 1.4,
-              ),
-              _navButton(
-                index: 3,
-                unselectedIcon: Icons.insights_outlined,
-                selectedIcon: Icons.insights,
-                tooltip: l10n.navInsights,
-              ),
-              _navButton(
-                index: 4,
-                unselectedIcon: Icons.account_circle_outlined,
-                selectedIcon: Icons.account_circle,
-                tooltip: l10n.navAccount,
-                onTap: () => _scaffoldKey.currentState?.openEndDrawer(),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _navButton({
-    required int index,
-    required IconData unselectedIcon,
-    IconData? selectedIcon,
-    double iconsScale = 1.0,
-    double shiftY = 0.0,
-    required String tooltip,
-    VoidCallback? onTap,
-  }) {
-    final bool selected = onTap == null && _index == index;
-    final ColorScheme scheme = Theme.of(context).colorScheme;
-    return Expanded(
-      child: Tooltip(
-        message: tooltip,
-        child: InkWell(
-          onTap: onTap ?? () => setState(() => _index = index),
-          borderRadius: BorderRadius.circular(32),
-          child: Container(
-            width: AppSizing.kXl8 * iconsScale,
-            height: AppSizing.kXl8 * iconsScale,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-            ), //  border: shiftY != 0.0 ? Border.all(color: Colors.white) : null),
-            alignment: Alignment.center,
-            transformAlignment: AlignmentDirectional.center,
-            transform: Matrix4.translationValues(0, shiftY, 0),
-            child: Icon(
-              selected ? (selectedIcon ?? unselectedIcon) : unselectedIcon,
-              size: selected ? iconsScale * 30 : iconsScale * 22,
-              color: selected ? scheme.secondary : scheme.onPrimary,
-            ),
-          ),
-        ),
-      ),
+      appBar: _index == 4 ? null : AppBar(automaticallyImplyLeading: false, centerTitle: true, title: Text(_titleFor(l10n))),
+      body: AppContentColumn(child: IndexedStack(index: _index, children: _tabs)),
+      bottomNavigationBar: _bottomBar(l10n),
     );
   }
 }

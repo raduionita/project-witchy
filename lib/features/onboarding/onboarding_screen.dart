@@ -13,6 +13,7 @@ import '../../providers/cycle_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/app_content_column.dart';
 import '../auth/auth_provider.dart';
 
 /// First-run onboarding that collects baseline cycle data.
@@ -60,6 +61,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       averagePeriodLength: _periodLength.round(),
       firstPeriodDate: _lastPeriod,
       onboarded: true,
+      firstDayOfWeek:
+          MaterialLocalizations.of(context).firstDayOfWeekIndex == 0
+          ? DateTime.sunday
+          : MaterialLocalizations.of(context).firstDayOfWeekIndex,
     );
 
     await state.profile.save(profile);
@@ -76,8 +81,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
+      body: AppContentColumn(
+        child: SafeArea(
+          child: Padding(
           padding: const EdgeInsets.all(AppSpacing.kLg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -118,7 +124,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 ],
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -184,8 +191,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       icon: Icons.autorenew,
       title: l10n.onboardingCycleLength,
       value: _cycleLength,
-      min: 21,
-      max: 35,
+      min: 20,
+      max: 45,
       suffix: l10n.onboardingDaysSuffix,
       onChanged: (double v) => setState(() => _cycleLength = v.roundToDouble()),
     );

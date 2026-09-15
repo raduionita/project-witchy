@@ -11,12 +11,15 @@ import '../../providers/cycle_provider.dart';
 import '../../providers/symptom_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/app_content_column.dart';
 import '../auth/auth_provider.dart';
 import '../auth/auth_screen.dart';
 import '../auth/models/auth_session.dart';
+import '../content/content_library_screen.dart';
 import '../content/content_provider.dart';
 import '../couples/couples_provider.dart';
 import '../reminders/reminder_provider.dart';
+import '../reminders/reminders_screen.dart';
 import 'legal_content.dart';
 import 'legal_document_screen.dart';
 import 'locale_provider.dart';
@@ -46,6 +49,29 @@ class SettingsScreen extends StatelessWidget {
         ),
       );
     }
+  }
+
+  Future<void> _setFirstDayOfWeek(BuildContext context, int day) async {
+    final AppStateProvider state = context.read<AppStateProvider>();
+    final UserProfile? profile = state.profile.profile;
+    if (profile == null) return;
+
+    await state.profile.save(profile.copyWith(firstDayOfWeek: day));
+    if (!context.mounted) return;
+    context.read<CycleProvider>().recompute();
+  }
+
+  String _dayLabel(AppLocalizations l10n, int day) {
+    return switch (day) {
+      DateTime.monday => l10n.weekdayFullMon,
+      DateTime.tuesday => l10n.weekdayFullTue,
+      DateTime.wednesday => l10n.weekdayFullWed,
+      DateTime.thursday => l10n.weekdayFullThu,
+      DateTime.friday => l10n.weekdayFullFri,
+      DateTime.saturday => l10n.weekdayFullSat,
+      DateTime.sunday => l10n.weekdayFullSun,
+      _ => '',
+    };
   }
 
   void _comingSoon(BuildContext context, String feature) {
@@ -181,200 +207,287 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: AppContentColumn(
+        child: SafeArea(
+          child: ListView(
+          padding: const EdgeInsets.all(AppSpacing.kMd),
           children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(AppSpacing.kMd),
+            _accountCard(context),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: ListTile(
+                leading: const Icon(Icons.auto_fix_high_outlined),
+                title: Text(l10n.navMagic),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => Scaffold(appBar: AppBar(title: Text(l10n.navMagic)), body: const ContentLibraryScreen()),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: ListTile(
+                leading: const Icon(Icons.alarm_add_outlined),
+                title: Text(l10n.settingsRemindersTitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const RemindersScreen())),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _accountCard(context),
-                  const SizedBox(height: AppSpacing.kMd),
-                  AppCard(
-                    child: ListTile(
-                      leading: Icon(Icons.swap_horiz, color: scheme.primary),
-                      title: Text(l10n.settingsTrackingModeTitle),
-                      subtitle: Text(l10n.settingsTrackingModeSubtitle),
-                    ),
+                  ListTile(
+                    leading: Icon(Icons.swap_horiz, color: scheme.primary),
+                    title: Text(l10n.settingsTrackingModeTitle),
+                    subtitle: Text(l10n.settingsTrackingModeSubtitle),
                   ),
-                  const SizedBox(height: AppSpacing.kMd),
-                  AppCard(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.kMd),
-                      child: DropdownButtonFormField<TrackingMode>(
-                        value: mode,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppSpacing.kRadiusMd,
-                            ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.kMd,
+                      0,
+                      AppSpacing.kMd,
+                      AppSpacing.kMd,
+                    ),
+                    child: DropdownButtonFormField<TrackingMode>(
+                      value: mode,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.kRadiusM,
                           ),
                         ),
-                        items: <DropdownMenuItem<TrackingMode>>[
-                          for (final TrackingMode candidate
-                              in TrackingMode.values)
-                            DropdownMenuItem<TrackingMode>(
-                              value: candidate,
-                              child: Text(trackingModeLabel(l10n, candidate)),
-                            ),
-                        ],
-                        onChanged: (TrackingMode? value) {
-                          if (value != null) _setMode(context, value);
-                        },
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.kMd),
-                  AppCard(
-                    child: ListTile(
-                      leading: const Icon(Icons.info_outline),
-                      title: Text(l10n.settingsLogsShared),
-                      subtitle: Text(l10n.settingsLogsSharedSubtitle),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.kMd),
-                  AppCard(
-                    child: ListTile(
-                      leading: const Icon(Icons.privacy_tip_outlined),
-                      title: Text(l10n.privacyPolicy),
-                      subtitle: Text(l10n.settingsPrivacySubtitle),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap:
-                          () => _openLegal(
-                            context,
-                            title: l10n.privacyPolicyTitle,
-                            sections: kPrivacyPolicySections(l10n),
+                      items: <DropdownMenuItem<TrackingMode>>[
+                        for (final TrackingMode candidate
+                            in TrackingMode.values)
+                          DropdownMenuItem<TrackingMode>(
+                            value: candidate,
+                            child: Text(trackingModeLabel(l10n, candidate)),
                           ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.kMd),
-                  AppCard(
-                    child: ListTile(
-                      leading: const Icon(Icons.description_outlined),
-                      title: Text(l10n.termsOfService),
-                      subtitle: Text(l10n.settingsTermsSubtitle),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap:
-                          () => _openLegal(
-                            context,
-                            title: l10n.termsOfServiceTitle,
-                            sections: kTermsOfServiceSections(l10n),
-                          ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.kMd),
-                  AppCard(
-                    child: ListTile(
-                      leading: const Icon(Icons.info_outline),
-                      title: Text(l10n.about),
-                      subtitle: Text(l10n.settingsAboutSubtitle),
-                      onTap: () => _comingSoon(context, l10n.about),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.kMd),
-                  AppCard(
-                    child: ListTile(
-                      leading: Icon(Icons.translate, color: scheme.primary),
-                      title: Text(l10n.language),
-                      subtitle: Text(l10n.settingsLanguageSubtitle),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.kMd),
-                  AppCard(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.kMd),
-                      child: DropdownButtonFormField<AppLocaleOption>(
-                        value: locale.option,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppSpacing.kRadiusMd,
-                            ),
-                          ),
-                        ),
-                        items: <DropdownMenuItem<AppLocaleOption>>[
-                          for (final AppLocaleOption option
-                              in AppLocaleOption.values)
-                            DropdownMenuItem<AppLocaleOption>(
-                              value: option,
-                              child: Text(_localeLabel(option, l10n)),
-                            ),
-                        ],
-                        onChanged: (AppLocaleOption? value) {
-                          if (value != null) {
-                            context.read<LocaleProvider>().setOption(value);
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.kMd),
-                  AppCard(
-                    child: ListTile(
-                      leading: const Icon(Icons.palette_outlined),
-                      title: Text(l10n.settingsThemeTitle),
-                      subtitle: Text(l10n.settingsThemeSubtitle),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.kMd),
-                  AppCard(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.kMd),
-                      child: DropdownButtonFormField<AppThemeOption>(
-                        value: themeProvider.option,
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppSpacing.kRadiusMd,
-                            ),
-                          ),
-                        ),
-                        items: <DropdownMenuItem<AppThemeOption>>[
-                          for (final AppThemeOption option
-                              in AppThemeOption.values)
-                            DropdownMenuItem<AppThemeOption>(
-                              value: option,
-                              child: Text(option.label(l10n)),
-                            ),
-                        ],
-                        onChanged: (AppThemeOption? value) {
-                          if (value != null) {
-                            context.read<ThemeProvider>().setOption(value);
-                          }
-                        },
-                      ),
+                      ],
+                      onChanged: (TrackingMode? value) {
+                        if (value != null) _setMode(context, value);
+                      },
                     ),
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.kMd),
-              child: AppCard(
-                child: ListTile(
-                  leading: Icon(
-                    Icons.delete_forever_outlined,
-                    color: scheme.error,
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.today_outlined),
+                    title: Text(l10n.settingsFirstDayTitle),
+                    subtitle: Text(l10n.settingsFirstDaySubtitle),
                   ),
-                  title: Text(
-                    l10n.settingsClearData,
-                    style: TextStyle(
-                      color: scheme.error,
-                      fontWeight: FontWeight.bold,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.kMd,
+                      0,
+                      AppSpacing.kMd,
+                      AppSpacing.kMd,
+                    ),
+                    child: DropdownButtonFormField<int>(
+                      value: state.profile.profile?.firstDayOfWeek ??
+                          DateTime.monday,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.kRadiusM,
+                          ),
+                        ),
+                      ),
+                      items: <DropdownMenuItem<int>>[
+                        for (final int day in <int>[
+                          DateTime.monday,
+                          DateTime.tuesday,
+                          DateTime.wednesday,
+                          DateTime.thursday,
+                          DateTime.friday,
+                          DateTime.saturday,
+                          DateTime.sunday,
+                        ])
+                          DropdownMenuItem<int>(
+                            value: day,
+                            child: Text(_dayLabel(l10n, day)),
+                          ),
+                      ],
+                      onChanged: (int? value) {
+                        if (value != null) _setFirstDayOfWeek(context, value);
+                      },
                     ),
                   ),
-                  subtitle: Text(l10n.settingsClearDataSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _clearAllData(context),
-                ),
+                ],
               ),
             ),
-          ],
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text(l10n.settingsLogsShared),
+                subtitle: Text(l10n.settingsLogsSharedSubtitle),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: ListTile(
+                leading: const Icon(Icons.privacy_tip_outlined),
+                title: Text(l10n.privacyPolicy),
+                subtitle: Text(l10n.settingsPrivacySubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap:
+                    () => _openLegal(
+                      context,
+                      title: l10n.privacyPolicyTitle,
+                      sections: kPrivacyPolicySections(l10n),
+                    ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: ListTile(
+                leading: const Icon(Icons.description_outlined),
+                title: Text(l10n.termsOfService),
+                subtitle: Text(l10n.settingsTermsSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap:
+                    () => _openLegal(
+                      context,
+                      title: l10n.termsOfServiceTitle,
+                      sections: kTermsOfServiceSections(l10n),
+                    ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text(l10n.about),
+                subtitle: Text(l10n.settingsAboutSubtitle),
+                onTap: () => _comingSoon(context, l10n.about),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ListTile(
+                    leading: Icon(Icons.translate, color: scheme.primary),
+                    title: Text(l10n.language),
+                    subtitle: Text(l10n.settingsLanguageSubtitle),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.kMd,
+                      0,
+                      AppSpacing.kMd,
+                      AppSpacing.kMd,
+                    ),
+                    child: DropdownButtonFormField<AppLocaleOption>(
+                      value: locale.option,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.kRadiusM,
+                          ),
+                        ),
+                      ),
+                      items: <DropdownMenuItem<AppLocaleOption>>[
+                        for (final AppLocaleOption option
+                            in AppLocaleOption.values)
+                          DropdownMenuItem<AppLocaleOption>(
+                            value: option,
+                            child: Text(_localeLabel(option, l10n)),
+                          ),
+                      ],
+                      onChanged: (AppLocaleOption? value) {
+                        if (value != null) {
+                          context.read<LocaleProvider>().setOption(value);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.palette_outlined),
+                    title: Text(l10n.settingsThemeTitle),
+                    subtitle: Text(l10n.settingsThemeSubtitle),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.kMd,
+                      0,
+                      AppSpacing.kMd,
+                      AppSpacing.kMd,
+                    ),
+                    child: DropdownButtonFormField<AppThemeOption>(
+                      value: themeProvider.option,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.kRadiusM,
+                          ),
+                        ),
+                      ),
+                      items: <DropdownMenuItem<AppThemeOption>>[
+                        for (final AppThemeOption option
+                            in AppThemeOption.values)
+                          DropdownMenuItem<AppThemeOption>(
+                            value: option,
+                            child: Text(option.label(l10n)),
+                          ),
+                      ],
+                      onChanged: (AppThemeOption? value) {
+                        if (value != null) {
+                          context.read<ThemeProvider>().setOption(value);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.kMd),
+            AppCard(
+              child: ListTile(
+                leading: Icon(
+                  Icons.delete_forever_outlined,
+                  color: scheme.error,
+                ),
+                title: Text(
+                  l10n.settingsClearData,
+                  style: TextStyle(
+                    color: scheme.error,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Text(l10n.settingsClearDataSubtitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _clearAllData(context),
+              ),
+            ),
+           ],
         ),
+      ),
       ),
     );
   }

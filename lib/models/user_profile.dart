@@ -17,6 +17,7 @@ abstract class UserProfile with _$UserProfile {
     @Default(TrackingMode.cycle) TrackingMode mode,
     DateTime? pregnancyLmp,
     @Default(false) bool onboarded,
+    @Default(DateTime.monday) int firstDayOfWeek,
   }) = _UserProfile;
 
   factory UserProfile.fromJson(Map<String, dynamic> json) =>

@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../l10n/app_localizations.dart';
 import '../../models/calendar_day.dart';
 import '../../models/cycle_prediction.dart';
 import '../../models/user_profile.dart';
+import '../../l10n/app_localizations.dart';
+import '../../providers/biometric_provider.dart';
 import '../../providers/cycle_provider.dart';
 import '../../services/calendar_fetcher.dart';
 import '../../utils/app_theme.dart';
-import '../../utils/date_utils.dart';
+import '../../utils/color_utils.dart';
+import '../../widgets/day_markers.dart';
+import '../logging/log_biometrics_sheet.dart';
 import '../logging/log_period_sheet.dart';
 import '../logging/log_symptom_sheet.dart';
 
@@ -29,14 +32,33 @@ class CycleCalendar extends StatefulWidget {
 }
 
 class _CycleCalendarState extends State<CycleCalendar> {
-  DateTime _visibleMonth = dateOnly(DateTime.now());
-
+  static const int _kInitialPage = 10000;
   static final DateFormat _monthTitle = DateFormat('MMMM yyyy');
 
+  final PageController _pageController = PageController(initialPage: _kInitialPage);
+  final DateTime _anchorMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  int _page = _kInitialPage;
+
+  DateTime _monthForPage(int page) {
+    return DateTime(
+      _anchorMonth.year,
+      _anchorMonth.month + (page - _kInitialPage),
+      1,
+    );
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _changeMonth(int delta) {
-    setState(() {
-      _visibleMonth = DateTime(_visibleMonth.year, _visibleMonth.month + delta, 1);
-    });
+    _pageController.animateToPage(
+      _page + delta,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
   }
 
   Future<void> _onDayTap(CalendarDay day) async {
@@ -55,41 +77,46 @@ class _CycleCalendarState extends State<CycleCalendar> {
   @override
   Widget build(BuildContext context) {
     final CycleProvider provider = context.watch<CycleProvider>();
-    final CyclePrediction? prediction = provider.prediction;
-    final List<CalendarDay> grid = CalendarFetcher().fetchMonth(
-      _visibleMonth,
-      prediction: prediction,
-      loggedPeriodDays: provider.periodDays,
-      profile: provider.profile ?? kDefaultCalendarProfile,
-    );
+    final BiometricProvider biometrics = context.watch<BiometricProvider>();
+    final int firstDayOfWeek = provider.profile?.firstDayOfWeek ?? DateTime.monday;
+    final MaterialLocalizations localizations = MaterialLocalizations.of(context);
 
     return Column(
       children: [
         _buildHeader(),
         const SizedBox(height: AppSpacing.kSm),
-        _buildWeekdayRow(),
+        _buildWeekdayRow(localizations, firstDayOfWeek),
         const SizedBox(height: AppSpacing.kXs),
         Expanded(
-          child: GestureDetector(
-            onHorizontalDragEnd: (DragEndDetails details) {
-              final double velocity = details.primaryVelocity ?? 0;
-              if (velocity > 300) _changeMonth(-1);
-              if (velocity < -300) _changeMonth(1);
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (int page) => setState(() => _page = page),
+            itemBuilder: (BuildContext context, int index) {
+              final CyclePrediction? prediction = provider.prediction;
+              final List<CalendarDay> grid = CalendarFetcher().fetchMonth(
+                _monthForPage(index),
+                prediction: prediction,
+                loggedPeriodDays: provider.periodDays,
+                profile: provider.profile ?? kDefaultCalendarProfile,
+                firstDayOfWeek: firstDayOfWeek,
+              );
+              final List<CalendarDay> marked = <CalendarDay>[
+                for (final CalendarDay day in grid)
+                  CalendarDay(
+                    date: day.date,
+                    state: day.state,
+                    isToday: day.isToday,
+                    markers: biometrics.markersFor(day.date),
+                  ),
+              ];
+              return GridView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, mainAxisSpacing: 4, crossAxisSpacing: 4),
+                itemCount: marked.length,
+                itemBuilder: (BuildContext context, int gridIndex) =>
+                    _DayCell(day: marked[gridIndex], onTap: _onDayTap, onLongPress: _onDayLongPress),
+              );
             },
-            child: GridView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-                mainAxisSpacing: 4,
-                crossAxisSpacing: 4,
-              ),
-              itemCount: grid.length,
-              itemBuilder: (BuildContext context, int index) => _DayCell(
-                day: grid[index],
-                onTap: _onDayTap,
-                onLongPress: _onDayLongPress,
-              ),
-            ),
           ),
         ),
       ],
@@ -97,120 +124,125 @@ class _CycleCalendarState extends State<CycleCalendar> {
   }
 
   Widget _buildHeader() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        IconButton(
-          onPressed: () => _changeMonth(-1),
-          icon: const Icon(Icons.chevron_left),
-        ),
-        Text(
-          _monthTitle.format(_visibleMonth),
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+        IconButton(onPressed: () => _changeMonth(-1), icon: const Icon(Icons.chevron_left)),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(child: Text(_monthTitle.format(_monthForPage(_page)), textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
+              IconButton(
+                tooltip: l10n.biometricsTitle,
+                onPressed: () => LogBiometricsSheet.show(context: context, date: DateTime.now()),
+                icon: const Icon(Icons.thermostat),
               ),
+            ],
+          ),
         ),
-        IconButton(
-          onPressed: () => _changeMonth(1),
-          icon: const Icon(Icons.chevron_right),
-        ),
+        IconButton(onPressed: () => _changeMonth(1), icon: const Icon(Icons.chevron_right)),
       ],
     );
   }
 
-  Widget _buildWeekdayRow() {
-    final AppLocalizations l10n = AppLocalizations.of(context);
+  Widget _buildWeekdayRow(MaterialLocalizations localizations, int firstDayOfWeek) {
+    final int offset = firstDayOfWeek % 7;
     final List<String> weekdays = <String>[
-      l10n.weekdayMon,
-      l10n.weekdayTue,
-      l10n.weekdayWed,
-      l10n.weekdayThu,
-      l10n.weekdayFri,
-      l10n.weekdaySat,
-      l10n.weekdaySun,
+      for (int i = 0; i < 7; i++)
+        localizations.narrowWeekdays[(offset + i) % 7],
     ];
     return Row(
-      children: weekdays
-          .map(
-            (String label) => Expanded(
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ),
-          )
-          .toList(),
+      key: const ValueKey<String>('calendar-weekday-row'),
+      children:
+          weekdays
+              .map(
+                (String label) => Expanded(
+                  child: Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
+                ),
+              )
+              .toList(),
     );
   }
 }
 
 class _DayCell extends StatelessWidget {
-  const _DayCell({
-    required this.day,
-    required this.onTap,
-    required this.onLongPress,
-  });
+  const _DayCell({required this.day, required this.onTap, required this.onLongPress});
 
   final CalendarDay day;
   final Future<void> Function(CalendarDay day) onTap;
   final Future<void> Function(CalendarDay day) onLongPress;
+  static const double _kMinTextContrast = 3.0;
+
+  Color _readableTextColor(ColorScheme scheme, Color background) {
+    return ColorUtils.readableText(background, lightText: Colors.white, darkText: scheme.onSurface);
+  }
+
+  Color? _stateColor(CalendarDayState state, ColorScheme scheme) {
+    return switch (state) {
+      CalendarDayState.period => AppColors.kCyclePeriod,
+      CalendarDayState.predictedPeriod => AppColors.kCyclePeriod,
+      CalendarDayState.fertile => AppColors.kCycleFertile,
+      CalendarDayState.ovulation => AppColors.kCycleOvulation,
+      CalendarDayState.none => null,
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
     final ColorScheme scheme = Theme.of(context).colorScheme;
     final Color? stateColor = _stateColor(day.state, scheme);
     final bool inMonth = day.state != CalendarDayState.none;
-    final bool isPeriodOrFertile =
-        day.state == CalendarDayState.period || day.state == CalendarDayState.ovulation;
+    final bool isPeriodOrFertile = day.state == CalendarDayState.period || day.state == CalendarDayState.ovulation;
 
-    final Color textColor = day.isToday
-        ? scheme.primary
-        : stateColor != null && isPeriodOrFertile
-            ? Colors.white
-            : scheme.onSurface.withValues(alpha: inMonth ? 1.0 : 0.3);
+    final Color background = stateColor == null
+        ? scheme.surface
+        : isPeriodOrFertile
+            ? stateColor
+            : Color.alphaBlend(stateColor.withValues(alpha: 0.25), scheme.surface);
+
+    final Color textColor;
+    if (day.isToday) {
+      textColor = ColorUtils.contrast(scheme.primary, background) >= _kMinTextContrast
+          ? scheme.primary
+          : _readableTextColor(scheme, background);
+    } else if (isPeriodOrFertile) {
+      textColor = _readableTextColor(scheme, background);
+    } else if (inMonth) {
+      textColor = scheme.onSurface;
+    } else {
+      textColor = scheme.onSurface.withValues(alpha: 0.45);
+    }
+
+    final Color ring = scheme.surfaceContainerHighest.withValues(alpha: 0.4);
 
     return InkWell(
-      borderRadius: BorderRadius.circular(AppSpacing.kRadiusLg),
+      borderRadius: BorderRadius.circular(AppSpacing.kRadiusM),
       onTap: () => onTap(day),
       onLongPress: () => onLongPress(day),
       child: Container(
         alignment: Alignment.center,
         decoration: stateColor == null
-            ? (day.isToday
-                ? BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: scheme.primary, width: 2),
-                  )
-                : null)
-            : BoxDecoration(
+            ? BoxDecoration(
                 shape: BoxShape.circle,
-                color: stateColor.withValues(alpha: isPeriodOrFertile ? 1.0 : 0.25),
-                border: day.isToday
-                    ? Border.all(color: scheme.primary, width: 2)
-                    : null,
+                border: Border.all(color: day.isToday ? scheme.primary : ring, width: day.isToday ? 2 : 1),
+              )
+            : BoxDecoration(shape: BoxShape.circle, color: stateColor.withValues(alpha: isPeriodOrFertile ? 1.0 : 0.25), border: day.isToday ? Border.all(color: scheme.primary, width: 2) : null),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('${day.date.day}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: textColor, fontWeight: day.isToday ? FontWeight.bold : FontWeight.normal)),
+            if (day.markers.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 1),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: DayMarkersRow(markers: day.markers, color: textColor),
+                ),
               ),
-        child: Text(
-          '${day.date.day}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: textColor,
-                fontWeight: day.isToday ? FontWeight.bold : FontWeight.normal,
-              ),
+          ],
         ),
       ),
     );
-  }
-
-  Color? _stateColor(CalendarDayState state, ColorScheme scheme) {
-    return switch (state) {
-      CalendarDayState.period => scheme.primary,
-      CalendarDayState.predictedPeriod => scheme.primary,
-      CalendarDayState.fertile => const Color(0xFF66BB6A),
-      CalendarDayState.ovulation => const Color(0xFF2E7D32),
-      CalendarDayState.none => null,
-    };
   }
 }

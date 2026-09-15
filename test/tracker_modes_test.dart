@@ -40,7 +40,7 @@ void main() {
   testWidgets('cycle mode home shows cycle predictions',
       (WidgetTester tester) async {
     await launch(tester, _prefs());
-    expect(find.text('Welcome to Witchy'), findsOneWidget);
+    expect(find.text('${DateTime.now().day}'), findsWidgets);
   });
 
   testWidgets('pregnancy mode home shows the pregnancy screen',
@@ -66,9 +66,9 @@ void main() {
       (WidgetTester tester) async {
     await launch(tester, _prefs());
 
-    await tester.tap(find.byIcon(Icons.account_circle_outlined));
+    await tester.tap(find.byIcon(Icons.person_outline));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Settings'));
+    await tester.scrollUntilVisible(find.byType(DropdownButtonFormField<TrackingMode>), 300);
     await tester.pumpAndSettle();
     await tester.tap(find.byType(DropdownButtonFormField<TrackingMode>));
     await tester.pumpAndSettle();
@@ -81,7 +81,7 @@ void main() {
         jsonDecode(prefs.getString('witchy.profile')!) as Map<String, dynamic>;
     expect(stored['mode'], TrackingMode.pregnancy.name);
 
-    await tester.pageBack();
+    await tester.tap(find.byIcon(Icons.home_outlined));
     await tester.pumpAndSettle();
     expect(find.byType(PregnancyScreen), findsOneWidget);
   });

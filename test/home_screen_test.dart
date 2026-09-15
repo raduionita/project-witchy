@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:witchy/app/app_bootstrap.dart';
@@ -35,9 +36,12 @@ void main() {
     await _launch(tester, _prefs());
 
     expect(find.byType(MainShellScreen), findsOneWidget);
-    expect(find.text('Welcome to Witchy'), findsOneWidget);
-    expect(find.text('Today'), findsOneWidget);
-    expect(find.text('Next period'), findsOneWidget);
+    expect(find.text('${DateTime.now().day}'), findsWidgets);
+    expect(find.text(DateFormat('MMMM').format(DateTime.now())), findsWidgets);
+    expect(find.text(DateFormat('EEEE').format(DateTime.now())), findsWidgets);
+    expect(find.text('Today'), findsNWidgets(2));
+    expect(find.text('Period in'), findsOneWidget);
+    expect(find.text('Cycle Day'), findsOneWidget);
     expect(find.text('Fertile window'), findsOneWidget);
     expect(find.text('Set up your cycle'), findsNothing);
   });
@@ -48,7 +52,7 @@ void main() {
 
     expect(find.byType(MainShellScreen), findsOneWidget);
     expect(find.text('Set up your cycle'), findsOneWidget);
-    expect(find.text('Today'), findsNothing);
+    expect(find.text('Today'), findsNWidgets(2));
 
     await tester.tap(find.text('Set up your cycle'));
     await tester.pumpAndSettle();

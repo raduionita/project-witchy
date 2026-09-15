@@ -16,6 +16,7 @@ import 'features/settings/privacy_provider.dart';
 import 'features/settings/theme_provider.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_state_provider.dart';
+import 'providers/biometric_provider.dart';
 import 'providers/cycle_provider.dart';
 import 'providers/symptom_provider.dart';
 import 'utils/app_theme.dart';
@@ -43,6 +44,7 @@ class _WitchyAppState extends State<WitchyApp> {
   AppStateProvider? _state;
   CycleProvider? _cycleProvider;
   SymptomProvider? _symptomProvider;
+  BiometricProvider? _biometricProvider;
   ReminderProvider? _reminderProvider;
   AuthProvider? _authProvider;
   CouplesProvider? _couplesProvider;
@@ -68,6 +70,7 @@ class _WitchyAppState extends State<WitchyApp> {
       _cycleProvider = CycleProvider(state)..recompute();
       _symptomProvider =
           SymptomProvider(state, _cycleProvider!)..recompute();
+      _biometricProvider = BiometricProvider(state);
       _reminderProvider = ReminderProvider(
         state,
         ReminderScheduler(),
@@ -123,6 +126,9 @@ class _WitchyAppState extends State<WitchyApp> {
         ChangeNotifierProvider<CycleProvider>.value(value: cycleProvider),
         ChangeNotifierProvider<SymptomProvider>.value(
           value: _symptomProvider!,
+        ),
+        ChangeNotifierProvider<BiometricProvider>.value(
+          value: _biometricProvider!,
         ),
         ChangeNotifierProvider<ReminderProvider>.value(
           value: _reminderProvider!,

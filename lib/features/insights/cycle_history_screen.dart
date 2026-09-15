@@ -40,7 +40,7 @@ class CycleHistoryScreen extends StatelessWidget {
                   l10n.cycleHistoryEmpty,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.outline,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ),

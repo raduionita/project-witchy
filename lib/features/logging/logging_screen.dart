@@ -9,6 +9,7 @@ import '../../providers/cycle_provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_section_header.dart';
+import 'log_biometrics_sheet.dart';
 import 'log_period_sheet.dart';
 
 /// The Logging tab: quick entry + history of recent logs.
@@ -34,9 +35,31 @@ class _LoggingScreenState extends State<LoggingScreen> {
       onOpen();
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(AppLocalizations.of(context).loggingUseCalendar),
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context).loggingUseCalendar)));
+  }
+
+  Widget _logTile(BuildContext context, PeriodLog log) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kMd, vertical: AppSpacing.kSm),
+      child: Row(
+        children: [
+          Icon(Icons.water_drop, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: AppSpacing.kMd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(DateFormat('EEE, MMM d, yyyy').format(log.date), style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                if (log.intensity != null || log.symptoms.isNotEmpty)
+                  Text(
+                    [if (log.intensity != null) flowIntensityLabel(l10n, log.intensity!), ...log.symptoms].join(' · '),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -52,71 +75,37 @@ class _LoggingScreenState extends State<LoggingScreen> {
         padding: const EdgeInsets.all(AppSpacing.kMd),
         children: [
           AppCard(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
-                  title: Text(l10n.loggingLogPeriod),
-                  subtitle: Text(l10n.loggingLogPeriodSubtitle),
-                  onTap: _openSheetForToday,
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.edit_calendar),
-                  title: Text(l10n.loggingLogFromCalendar),
-                  subtitle: Text(l10n.loggingLogFromCalendarSubtitle),
-                  onTap: () => _openCalendar(context),
-                ),
-              ],
+            child: ListTile(
+              leading: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
+              title: Text(l10n.loggingLogPeriod),
+              subtitle: Text(l10n.loggingLogPeriodSubtitle),
+              onTap: _openSheetForToday,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.kSm),
+          AppCard(
+            child: ListTile(
+              leading: const Icon(Icons.edit_calendar),
+              title: Text(l10n.loggingLogFromCalendar),
+              subtitle: Text(l10n.loggingLogFromCalendarSubtitle),
+              onTap: () => _openCalendar(context),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.kSm),
+          AppCard(
+            child: ListTile(
+              leading: Icon(Icons.thermostat, color: Theme.of(context).colorScheme.primary),
+              title: Text(l10n.biometricsTitle),
+              subtitle: Text(l10n.biometricsSubtitle),
+              onTap: () => LogBiometricsSheet.show(context: context, date: DateTime.now()),
             ),
           ),
           const SizedBox(height: AppSpacing.kMd),
           AppSectionHeader(title: l10n.loggingRecentLogs),
           if (recent.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.kLg),
-              child: Text(
-                l10n.loggingEmpty,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            )
+            Padding(padding: const EdgeInsets.symmetric(vertical: AppSpacing.kLg), child: Text(l10n.loggingEmpty, style: Theme.of(context).textTheme.bodyMedium))
           else
-            for (final PeriodLog log in recent) _logTile(context, log),
-        ],
-      ),
-    );
-  }
-
-  Widget _logTile(BuildContext context, PeriodLog log) {
-    final AppLocalizations l10n = AppLocalizations.of(context);
-    return AppCard(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kMd, vertical: AppSpacing.kSm),
-      child: Row(
-        children: [
-          Icon(Icons.water_drop, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: AppSpacing.kMd),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  DateFormat('EEE, MMM d, yyyy').format(log.date),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                if (log.intensity != null || log.symptoms.isNotEmpty)
-                  Text(
-                    [
-                      if (log.intensity != null)
-                        flowIntensityLabel(l10n, log.intensity!),
-                      ...log.symptoms,
-                    ].join(' · '),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                  ),
-              ],
-            ),
-          ),
+            for (final PeriodLog log in recent) Padding(padding: const EdgeInsets.only(bottom: AppSpacing.kSm), child: _logTile(context, log)),
         ],
       ),
     );

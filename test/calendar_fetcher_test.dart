@@ -42,6 +42,18 @@ void main() {
     expect(grid.first.date.weekday, DateTime.monday);
   });
 
+  test('grid starts on a Sunday when requested', () {
+    final grid = fetcher.fetchMonth(
+      DateTime(2026, 2),
+      prediction: null,
+      loggedPeriodDays: <DateTime>{},
+      profile: kProfile28,
+      today: DateTime(2026, 2, 10),
+      firstDayOfWeek: DateTime.sunday,
+    );
+    expect(grid.first.date.weekday, DateTime.sunday);
+  });
+
   test('marks days outside the month as none', () {
     final grid = fetcher.fetchMonth(
       DateTime(2026, 2),

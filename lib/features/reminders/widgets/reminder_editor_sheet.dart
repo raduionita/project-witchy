@@ -219,7 +219,7 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
                 child: Text(
                   l10n.reminderEditorFollowsPeriod,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.outline,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ),
@@ -234,7 +234,7 @@ class _ReminderEditorSheetState extends State<ReminderEditorSheet> {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontStyle: FontStyle.italic,
-                    color: Theme.of(context).colorScheme.outline,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             ),
           ],

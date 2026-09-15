@@ -64,7 +64,7 @@ class VideoDetailScreen extends StatelessWidget {
                     Text(
                       DateFormat('MMM d, yyyy').format(video.publishedAt!),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.outline,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                     ),
                   ],

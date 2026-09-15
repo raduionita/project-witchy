@@ -52,7 +52,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                     insights.totalSymptomCount,
                   ),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.outline,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
           ),
           const SizedBox(height: AppSpacing.kMd),
@@ -159,13 +159,13 @@ class _TrendLine extends StatelessWidget {
         Icon(
           icon,
           size: 18,
-          color: Theme.of(context).colorScheme.tertiary,
+          color: Theme.of(context).colorScheme.primary,
         ),
         const SizedBox(width: AppSpacing.kSm),
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.outline,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
         ),
       ],
@@ -199,7 +199,7 @@ class _DayIndexCard extends StatelessWidget {
             Text(
               l10n.insightsNoPattern,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
             )
           else

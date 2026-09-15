@@ -23,7 +23,7 @@ class CycleLengthChart extends StatelessWidget {
           child: Text(
             l10n.chartLengthEmpty,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: scheme.outline,
+                  color: scheme.onSurfaceVariant,
                 ),
           ),
         ),
@@ -71,7 +71,7 @@ class CycleLengthChart extends StatelessWidget {
                   return Text(
                     DateFormat('M/d').format(points[index].startDate),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: scheme.outline,
+                          color: scheme.onSurfaceVariant,
                         ),
                   );
                 },

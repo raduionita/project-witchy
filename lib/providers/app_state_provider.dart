@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../services/repositories/biometric_repository.dart';
 import '../services/repositories/cycle_repository.dart';
 import '../services/repositories/logs_repository.dart';
 import '../services/repositories/profile_repository.dart';
@@ -17,7 +18,8 @@ class AppStateProvider extends ChangeNotifier {
         profile = ProfileRepository(storage),
         cycles = CycleRepository(storage),
         logs = LogsRepository(storage),
-        reminders = ReminderRepository(storage);
+        reminders = ReminderRepository(storage),
+        biometric = BiometricRepository(storage);
 
   final StorageService _storage;
 
@@ -28,6 +30,7 @@ class AppStateProvider extends ChangeNotifier {
   final CycleRepository cycles;
   final LogsRepository logs;
   final ReminderRepository reminders;
+  final BiometricRepository biometric;
 
   /// Loads all repositories into memory.
   void load() {
@@ -35,6 +38,7 @@ class AppStateProvider extends ChangeNotifier {
     cycles.load();
     logs.load();
     reminders.load();
+    biometric.load();
   }
 
   /// Permanently removes every stored value and empties the in-memory caches.
@@ -49,6 +53,7 @@ class AppStateProvider extends ChangeNotifier {
     await logs.periodLogs.clear();
     await logs.symptomLogs.clear();
     await reminders.clear();
+    await biometric.biometricLogs.clear();
     notifyListeners();
   }
 }

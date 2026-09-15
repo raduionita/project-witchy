@@ -23,16 +23,21 @@ List<SymptomCategory> kSymptomCategories(AppLocalizations l10n) =>
         l10n.symptomHeadache,
         l10n.symptomBackPain,
       ]),
-      SymptomCategory(l10n.symptomCategoryDigestive,
-          <String>[l10n.symptomBloating, l10n.symptomNausea]),
-      SymptomCategory(l10n.symptomCategoryBreastSkin,
-          <String>[l10n.symptomTenderBreasts, l10n.symptomAcne]),
-      SymptomCategory(
-          l10n.symptomCategoryEnergyMood, <String>[l10n.symptomFatigue]),
+      SymptomCategory(l10n.symptomCategoryDigestive, <String>[
+        l10n.symptomBloating,
+        l10n.symptomNausea,
+      ]),
+      SymptomCategory(l10n.symptomCategoryBreastSkin, <String>[
+        l10n.symptomTenderBreasts,
+        l10n.symptomAcne,
+      ]),
+      SymptomCategory(l10n.symptomCategoryEnergyMood, <String>[
+        l10n.symptomFatigue,
+      ]),
     ];
 
 /// Flattened list of every suggested symptom in display order and unique.
 List<String> kCommonSymptoms(AppLocalizations l10n) => <String>[
-      for (final SymptomCategory category in kSymptomCategories(l10n))
-        ...category.symptoms,
-    ];
+  for (final SymptomCategory category in kSymptomCategories(l10n))
+    ...category.symptoms,
+];

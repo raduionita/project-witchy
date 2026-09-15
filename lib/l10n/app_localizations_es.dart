@@ -100,6 +100,30 @@ class AppLocalizationsEs extends AppLocalizations {
   String get homeFertileWindow => 'Ventana fértil';
 
   @override
+  String get homePeriodIn => 'Regla en';
+
+  @override
+  String get homeCycleDayLabel => 'Día del ciclo';
+
+  @override
+  String get homePeakToday => 'Pico hoy';
+
+  @override
+  String get homeTipMenstrual => 'Descansa, mantente hidratada y usa calor para los calambres. Registra tu flujo para afinar las predicciones.';
+
+  @override
+  String get homeTipFollicular => 'Tu energía aumenta: un buen momento para planificar, moverte y observar los signos fértiles.';
+
+  @override
+  String get homeTipOvulatory => 'Estás en tu ventana fértil. Si buscas concebir, este es el mejor momento.';
+
+  @override
+  String get homeTipLuteal => 'El síndrome premenstrual puede aparecer: registra tus síntomas, duerme bien y sé amable contigo.';
+
+  @override
+  String get homeTipTitle => 'Consejo:';
+
+  @override
   String get phaseMenstruation => 'Menstruación';
 
   @override
@@ -168,6 +192,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsThemeSubtitle => 'Elige cómo se ve Witchy.';
+
+  @override
+  String get settingsFirstDayTitle => 'Inicio de semana';
+
+  @override
+  String get settingsFirstDaySubtitle => 'Qué día empieza la semana en tu calendario.';
 
   @override
   String get settingsSignOut => 'Cerrar sesión';
@@ -312,6 +342,109 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get logNotes => 'Notas (opcional)';
+
+  @override
+  String logBiometricsTitle(Object date) {
+    return 'Biométricas · $date';
+  }
+
+  @override
+  String get biometricsTitle => 'Biométricas';
+
+  @override
+  String get biometricsSubtitle => 'Temperatura, moco cervical, LH e intimidad.';
+
+  @override
+  String biometricsLoggedAt(Object time) {
+    return 'Registrado a las $time';
+  }
+
+  @override
+  String get biometricsClear => 'Borrar día';
+
+  @override
+  String get biometricsCleared => 'Biométricas borradas para este día.';
+
+  @override
+  String get bbtTitle => 'Temperatura basal';
+
+  @override
+  String get bbtSubtitle => 'Tomada justo al despertar, antes de levantarte.';
+
+  @override
+  String bbtCelsius(Object temp) {
+    return '$temp°C';
+  }
+
+  @override
+  String get bbtAdjust => 'Ajustar temperatura';
+
+  @override
+  String get mucusTitle => 'Moco cervical';
+
+  @override
+  String get mucusDry => 'Seco';
+
+  @override
+  String get mucusSticky => 'Pegajoso';
+
+  @override
+  String get mucusCreamy => 'Cremoso';
+
+  @override
+  String get mucusWatery => 'Acuoso';
+
+  @override
+  String get mucusEggwhite => 'Clara de huevo';
+
+  @override
+  String get lhTestTitle => 'Prueba de LH (ovulación)';
+
+  @override
+  String get lhNegative => 'Negativo';
+
+  @override
+  String get lhHigh => 'Alto';
+
+  @override
+  String get lhPeak => 'Pico';
+
+  @override
+  String get pregnancyTestTitle => 'Test de embarazo';
+
+  @override
+  String get testNegative => 'Negativo';
+
+  @override
+  String get testPositive => 'Positivo';
+
+  @override
+  String get intimacyTitle => 'Intimidad';
+
+  @override
+  String get intimacyToggle => 'Registré intimidad en este día';
+
+  @override
+  String get markerFlow => 'Regla registrada';
+
+  @override
+  String get markerBbt => 'Temperatura registrada';
+
+  @override
+  String get markerLhPeak => 'Pico de LH';
+
+  @override
+  String get markerIntimacy => 'Intimidad registrada';
+
+  @override
+  String todayBbt(Object temp) {
+    return 'BBT $temp';
+  }
+
+  @override
+  String todayLh(Object status) {
+    return 'LH $status';
+  }
 
   @override
   String get logSave => 'Guardar registro';
@@ -509,6 +642,27 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get weekdaySun => 'Dom';
+
+  @override
+  String get weekdayFullMon => 'Lunes';
+
+  @override
+  String get weekdayFullTue => 'Martes';
+
+  @override
+  String get weekdayFullWed => 'Miércoles';
+
+  @override
+  String get weekdayFullThu => 'Jueves';
+
+  @override
+  String get weekdayFullFri => 'Viernes';
+
+  @override
+  String get weekdayFullSat => 'Sábado';
+
+  @override
+  String get weekdayFullSun => 'Domingo';
 
   @override
   String get calendarWeekdayMon => 'L';

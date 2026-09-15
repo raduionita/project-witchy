@@ -3,11 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:witchy/features/logging/log_biometrics_sheet.dart';
 import 'package:witchy/features/logging/log_period_sheet.dart';
 import 'package:witchy/features/logging/logging_screen.dart';
 import 'package:witchy/l10n/app_localizations.dart';
+import 'package:witchy/models/biometric_log.dart';
 import 'package:witchy/models/user_profile.dart';
 import 'package:witchy/providers/app_state_provider.dart';
+import 'package:witchy/providers/biometric_provider.dart';
 import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/services/storage_service.dart';
 import 'package:witchy/utils/date_utils.dart';
@@ -39,6 +42,9 @@ void main() {
         providers: [
           ChangeNotifierProvider<AppStateProvider>.value(value: state),
           ChangeNotifierProvider<CycleProvider>.value(value: cycle),
+          ChangeNotifierProvider<BiometricProvider>.value(
+            value: BiometricProvider(state),
+          ),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -101,5 +107,33 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(called, isTrue);
+  });
+
+  testWidgets(
+      'tapping "Biometrics" opens the sheet and saving records BBT, mucus, LH, '
+      'pregnancy test and intimacy for today', (WidgetTester tester) async {
+    final (AppStateProvider state, _) = await pumpLogging(tester);
+
+    await tester.tap(find.text('Biometrics'));
+    await tester.pumpAndSettle();
+    expect(find.byType(LogBiometricsSheet), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField).first, '36.45');
+    await tester.tap(find.text('Eggwhite'));
+    await tester.tap(find.text('Peak'));
+    await tester.tap(find.text('Positive'));
+    await tester.tap(find.text('I logged intimacy on this day'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save log'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LogBiometricsSheet), findsNothing);
+
+    final BiometricLog log = state.biometric.biometricLogs.items.single;
+    expect(log.bbt!.tempC, 36.45);
+    expect(log.mucus!.name, 'eggwhite');
+    expect(log.ovulationTest!.name, 'peak');
+    expect(log.pregnancyTest!.name, 'positive');
+    expect(log.intercourse, isNotNull);
   });
 }

@@ -26,6 +26,7 @@ import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/models/reminder.dart';
 import 'package:witchy/models/user_profile.dart';
 import 'package:witchy/providers/app_state_provider.dart';
+import 'package:witchy/providers/biometric_provider.dart';
 import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/providers/symptom_provider.dart';
 import 'package:witchy/screens/main_shell.dart';
@@ -53,6 +54,7 @@ void main() {
   Future<void> pumpSettings(
     WidgetTester tester, {
     Map<String, Object> prefs = const <String, Object>{},
+    Widget? probe,
   }) async {
     tester.view.physicalSize = const Size(800, 2400);
     tester.view.devicePixelRatio = 1.0;
@@ -101,7 +103,13 @@ void main() {
               locale: locale.option.locale,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
-              home: const Scaffold(body: SettingsScreen()),
+              home: Scaffold(
+                body: probe == null
+                    ? const SettingsScreen()
+                    : Column(
+                        children: <Widget>[probe, const Expanded(child: SettingsScreen())],
+                      ),
+              ),
             );
           },
         ),
@@ -180,6 +188,69 @@ void main() {
     expect(stored.getString('witchy.appearance.locale'), '"es"');
   });
 
+  testWidgets('changing the start-of-week day persists and defaults to Monday',
+      (WidgetTester tester) async {
+    await pumpSettings(tester);
+
+    await tester.scrollUntilVisible(find.text('Start of week'), 300);
+    expect(find.text('Monday'), findsOneWidget);
+
+    await tester.tap(find.byType(DropdownButtonFormField<int>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sunday').last);
+    await tester.pumpAndSettle();
+
+    final AppStateProvider state = tester
+        .element(find.byType(SettingsScreen))
+        .read<AppStateProvider>();
+    expect(state.profile.profile?.firstDayOfWeek, DateTime.sunday);
+
+    // The calendar builds from CycleProvider's profile; changing the setting
+    // must recompute/notify it so the calendar rebinds its week start.
+    final CycleProvider cycle = tester
+        .element(find.byType(SettingsScreen))
+        .read<CycleProvider>();
+    expect(cycle.profile?.firstDayOfWeek, DateTime.sunday);
+
+    final SharedPreferences stored = await SharedPreferences.getInstance();
+    final dynamic json =
+        jsonDecode(stored.getString('witchy.profile') ?? '{}');
+    expect(json['firstDayOfWeek'], DateTime.sunday);
+  });
+
+  testWidgets('a profile without a saved value defaults the week to Monday',
+      (WidgetTester tester) async {
+    await pumpSettings(tester);
+
+    final AppStateProvider state = tester
+        .element(find.byType(SettingsScreen))
+        .read<AppStateProvider>();
+    expect(state.profile.profile?.firstDayOfWeek, DateTime.monday);
+  });
+
+testWidgets("changing the start of week updates the calendar's data source live",
+      (WidgetTester tester) async {
+    await pumpSettings(
+      tester,
+      probe: Consumer<CycleProvider>(
+        builder: (BuildContext context, CycleProvider cycle, Widget? _) =>
+            Text('firstDay=${cycle.profile?.firstDayOfWeek}'),
+      ),
+    );
+
+    expect(find.textContaining('firstDay'), findsOneWidget);
+    expect(find.text('firstDay=1'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Start of week'), 300);
+    await tester.tap(find.byType(DropdownButtonFormField<int>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sunday').last);
+    await tester.pumpAndSettle();
+
+    // The cycle provider consumed by the calendar reacted to the change.
+    expect(find.text('firstDay=7'), findsOneWidget);
+  });
+
   testWidgets('clearing all data wipes storage and returns to onboarding',
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(800, 2400);
@@ -232,6 +303,9 @@ void main() {
           ChangeNotifierProvider<PrivacyProvider>.value(value: privacy),
           ChangeNotifierProvider<LocaleProvider>.value(value: locale),
           ChangeNotifierProvider<ContentProvider>.value(value: content),
+          ChangeNotifierProvider<BiometricProvider>.value(
+            value: BiometricProvider(state),
+          ),
         ],
         child: MaterialApp.router(
           routerDelegate: delegate,
@@ -245,9 +319,8 @@ void main() {
 
     expect(find.byType(MainShellScreen), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.account_circle_outlined));
+    await tester.tap(find.byIcon(Icons.person_outline));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
     expect(find.byType(SettingsScreen), findsOneWidget);
 

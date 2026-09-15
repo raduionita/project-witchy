@@ -7,6 +7,9 @@ import 'app_route_path.dart';
 /// This is the "configuration -> path" half of Navigator 2.0. Currently the
 /// app is state-driven (paths are pushed by [AppRouterDelegate]), but parsing
 /// lets the OS deep links / browser URLs select a destination.
+///
+/// Deep-link parity lives in [AppLinkKind]: every [AppRouteLocation] has a
+/// matching URI fragment, and unknown paths fall back to the splash route.
 class AppRouteInformationParser extends RouteInformationParser<AppRoutePath> {
   const AppRouteInformationParser();
 
@@ -15,9 +18,10 @@ class AppRouteInformationParser extends RouteInformationParser<AppRoutePath> {
     RouteInformation routeInformation,
   ) async {
     final Uri uri = Uri.parse(routeInformation.uri.toString());
-    return switch (uri.path) {
-      '/onboarding' => const AppOnboardingRoute(),
-      '/shell' => const AppShellRoute(),
+    final String path = uri.path.isEmpty ? '/' : uri.path;
+    return switch (AppLinkKind.fromUri(path)) {
+      AppLinkKind.onboarding => const AppOnboardingRoute(),
+      AppLinkKind.shell => const AppShellRoute(),
       _ => const AppSplashRoute(),
     };
   }
@@ -25,9 +29,9 @@ class AppRouteInformationParser extends RouteInformationParser<AppRoutePath> {
   @override
   RouteInformation restoreRouteInformation(AppRoutePath configuration) {
     final String path = switch (configuration.location) {
-      AppRouteLocation.splash => '/',
-      AppRouteLocation.onboarding => '/onboarding',
-      AppRouteLocation.shell => '/shell',
+      AppRouteLocation.splash => AppLinkKind.splash.uri,
+      AppRouteLocation.onboarding => AppLinkKind.onboarding.uri,
+      AppRouteLocation.shell => AppLinkKind.shell.uri,
     };
     return RouteInformation(uri: Uri.parse(path));
   }

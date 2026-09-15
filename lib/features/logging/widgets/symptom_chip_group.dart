@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../utils/app_theme.dart';
 import '../symptom_categories.dart';
+import 'chip_icons.dart';
 
 /// Multi-select symptom picker grouped by category.
 ///
@@ -34,7 +35,6 @@ class SymptomChipGroup extends StatelessWidget {
   }
 
   Widget _category(BuildContext context, SymptomCategory category) {
-    final ColorScheme scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.kSm),
       child: Column(
@@ -43,23 +43,25 @@ class SymptomChipGroup extends StatelessWidget {
           Text(
             category.name,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: scheme.outline,
-                  fontWeight: FontWeight.w600,
-                ),
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: AppSpacing.kXs),
           Wrap(
             spacing: AppSpacing.kSm,
             runSpacing: AppSpacing.kSm,
-            children: category.symptoms
-                .map(
-                  (String item) => FilterChip(
-                    label: Text(item),
-                    selected: selected.contains(item),
-                    onSelected: (_) => onToggle(item),
-                  ),
-                )
-                .toList(),
+            children:
+                category.symptoms
+                    .map(
+                      (String item) => FilterChip(
+                        avatar: Icon(logSymptomIcon(item), size: 18),
+                        showCheckmark: false,
+                        label: Text(item),
+                        selected: selected.contains(item),
+                        onSelected: (_) => onToggle(item),
+                      ),
+                    )
+                    .toList(),
           ),
         ],
       ),

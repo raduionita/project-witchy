@@ -24,6 +24,8 @@ _$UserProfileImpl _$$UserProfileImplFromJson(Map<String, dynamic> json) =>
               ? null
               : DateTime.parse(json['pregnancyLmp'] as String),
       onboarded: json['onboarded'] as bool? ?? false,
+      firstDayOfWeek:
+          (json['firstDayOfWeek'] as num?)?.toInt() ?? DateTime.monday,
     );
 
 Map<String, dynamic> _$$UserProfileImplToJson(_$UserProfileImpl instance) =>
@@ -36,6 +38,7 @@ Map<String, dynamic> _$$UserProfileImplToJson(_$UserProfileImpl instance) =>
       'mode': _$TrackingModeEnumMap[instance.mode]!,
       'pregnancyLmp': instance.pregnancyLmp?.toIso8601String(),
       'onboarded': instance.onboarded,
+      'firstDayOfWeek': instance.firstDayOfWeek,
     };
 
 const _$TrackingModeEnumMap = {

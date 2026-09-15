@@ -1,6 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:witchy/models/bbt_reading.dart';
+import 'package:witchy/models/biometric_log.dart';
+import 'package:witchy/models/cervical_mucus_type.dart';
 import 'package:witchy/models/cycle.dart';
 import 'package:witchy/models/flow_intensity.dart';
 import 'package:witchy/models/period_log.dart';
@@ -104,6 +107,23 @@ void main() {
       );
 
       expect(state.reminders.enabled.map((e) => e.id), ['r1']);
+    });
+  });
+
+  group('BiometricRepository', () {
+    test('persists and clears biometric logs', () async {
+      final BiometricLog log = BiometricLog(
+        id: 'b1',
+        date: DateTime(2026, 3, 5),
+        bbt: BbtReading(id: 'br1', date: DateTime(2026, 3, 5), tempC: 36.45),
+        mucus: CervicalMucusType.eggwhite,
+      );
+
+      await state.biometric.biometricLogs.add(log);
+      expect(state.biometric.biometricLogs.items.map((e) => e.id), ['b1']);
+
+      await state.biometric.biometricLogs.clear();
+      expect(state.biometric.biometricLogs.items, isEmpty);
     });
   });
 }

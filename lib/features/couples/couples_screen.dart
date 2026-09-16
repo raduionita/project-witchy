@@ -59,10 +59,9 @@ class CouplesScreen extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.kLg),
             if (link == null)
-              FilledButton.icon(
+              FilledButton(
                 onPressed: () => _createLink(context),
-                icon: const Icon(Icons.link),
-                label: Text(l10n.couplesCreateLink),
+                child: Text(l10n.couplesCreateLink),
               )
             else
               AppCard(

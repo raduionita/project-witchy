@@ -114,6 +114,7 @@ class CycleLengthChart extends StatelessWidget {
                   return LineTooltipItem(
                     l10n.chartDays(spot.y.toInt()),
                     TextStyle(
+                      fontFamily: AppTypography.kBodyFont,
                       color: scheme.onInverseSurface,
                       fontWeight: FontWeight.w600,
                     ),

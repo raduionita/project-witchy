@@ -92,6 +92,7 @@ class SymptomFrequencyBarChart extends StatelessWidget {
                       frequencies[groupIndex].symptom,
                     ),
                     TextStyle(
+                      fontFamily: AppTypography.kBodyFont,
                       color: scheme.onInverseSurface,
                       fontWeight: FontWeight.w600,
                     ),

@@ -108,10 +108,9 @@ class _RemindersScreenState extends State<RemindersScreen> {
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: AppSpacing.kMd),
-          FilledButton.icon(
+          FilledButton(
             onPressed: () => provider.requestPermissions(),
-            icon: const Icon(Icons.notifications_active_outlined),
-            label: Text(l10n.remindersEnable),
+            child: Text(l10n.remindersEnable),
           ),
         ],
       ),
@@ -180,7 +179,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
             ),
             title: Text(
               reminder.title,
-              style: const TextStyle(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             subtitle: Text(
               _subtitle(context, reminder),
@@ -199,9 +198,9 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 onPressed: () => provider.remove(reminder.id),
                 child: Text(
                   l10n.remindersDelete,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                 ),
               ),
             ],

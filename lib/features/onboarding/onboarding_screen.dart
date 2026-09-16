@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -14,6 +13,7 @@ import '../../utils/app_theme.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_content_column.dart';
+import '../../widgets/witchy_slider_card.dart';
 import '../auth/auth_provider.dart';
 
 /// First-run onboarding that collects baseline cycle data.
@@ -115,9 +115,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Expanded(
                     flex: 2,
                     child: AppButton(
-                      label: _step == _lastStep
-                          ? l10n.onboardingFinish
-                          : l10n.onboardingNext,
+                      label: _step == _lastStep ? l10n.onboardingFinish : l10n.onboardingNext,
+                      icon: Icons.auto_awesome,
                       isLoading: _saving,
                       onPressed: _next,
                     ),
@@ -151,14 +150,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         children: [
           Text(
             l10n.homeWelcomeTitle,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.displaySmall,
           ),
           const SizedBox(height: AppSpacing.kSm),
           Text(l10n.onboardingWelcomeBody),
           const SizedBox(height: AppSpacing.kMd),
           Text(
             l10n.onboardingDisclaimer,
-            style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
           ),
         ],
       ),
@@ -167,20 +166,58 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _lastPeriodStep() {
     final AppLocalizations l10n = AppLocalizations.of(context);
+    final DateTime base = _lastPeriod.subtract(Duration(days: _lastPeriod.weekday % 7));
     return AppCard(
-      child: ListTile(
-        leading: const Icon(Icons.event),
-        title: Text(l10n.onboardingLastPeriod),
-        subtitle: Text(DateFormat.yMMMd().format(_lastPeriod)),
-        onTap: () async {
-          final DateTime? picked = await showDatePicker(
-            context: context,
-            initialDate: _lastPeriod,
-            firstDate: _today().subtract(const Duration(days: 120)),
-            lastDate: _today(),
-          );
-          if (picked != null) setState(() => _lastPeriod = picked);
-        },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(icon: const Icon(Icons.chevron_left, size: 16), onPressed: () => setState(() => _lastPeriod = _lastPeriod.subtract(const Duration(days: 7)))),
+              Text(DateFormat('MMMM yyyy').format(_lastPeriod), style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 13)),
+              IconButton(icon: const Icon(Icons.chevron_right, size: 16), onPressed: () => setState(() => _lastPeriod = _lastPeriod.add(const Duration(days: 7)))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              for (int i = 0; i < 7; i++)
+                Builder(
+                  builder: (BuildContext context) {
+                    final DateTime day = base.add(Duration(days: i));
+                    final bool selected = day.year == _lastPeriod.year && day.month == _lastPeriod.month && day.day == _lastPeriod.day;
+                    return GestureDetector(
+                      onTap: () => setState(() => _lastPeriod = day),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 30,
+                            height: 30,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(shape: BoxShape.circle, color: selected ? AppColors.kPurple : Colors.transparent),
+                            child: Text('${day.day}', style: TextStyle(fontSize: 11.5, color: selected ? Colors.white : AppColors.kBody, fontWeight: selected ? FontWeight.w600 : FontWeight.w400)),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.event, color: AppColors.kPurple),
+            title: Text(l10n.onboardingLastPeriod),
+            subtitle: Text(DateFormat.yMMMd().format(_lastPeriod)),
+            onTap: () async {
+              final DateTime? picked = await showDatePicker(context: context, initialDate: _lastPeriod, firstDate: _today().subtract(const Duration(days: 120)), lastDate: _today());
+              if (picked != null) setState(() => _lastPeriod = picked);
+            },
+          ),
+        ],
       ),
     );
   }
@@ -241,27 +278,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             l10n.onboardingAccountBody,
           ),
           const SizedBox(height: AppSpacing.kMd),
-          FilledButton.icon(
+          FilledButton(
             onPressed: auth.busy
                 ? null
                 : () => _signInAccount(auth.signInWithGoogle),
-            icon: const Icon(FontAwesomeIcons.google),
-            label: Text(l10n.authGoogleSignIn),
+            child: Text(l10n.authGoogleSignIn),
           ),
           const SizedBox(height: AppSpacing.kSm),
-          OutlinedButton.icon(
+          OutlinedButton(
             onPressed: auth.busy
                 ? null
                 : () => _signInAccount(auth.signInWithApple),
-            icon: const Icon(FontAwesomeIcons.apple),
-            label: Text(l10n.authAppleSignIn),
+            child: Text(l10n.authAppleSignIn),
           ),
-          TextButton.icon(
+          TextButton(
               onPressed: auth.busy
                   ? null
                   : () => _signInAccount(auth.signInAnonymously),
-              icon: const Icon(Icons.person_off_outlined),
-              label: Text(l10n.authAnonymous),
+              child: Text(l10n.authAnonymous),
             ),
           const SizedBox(height: AppSpacing.kSm),
           TextButton(
@@ -282,44 +316,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     required String suffix,
     required ValueChanged<double> onChanged,
   }) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: AppSpacing.kSm),
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.kMd),
-          Center(
-            child: Text(
-              '${value.round()}$suffix',
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ),
-          Slider(
-            value: value,
-            min: min,
-            max: max,
-            divisions: (max - min).round(),
-            label: '${value.round()}',
-            onChanged: onChanged,
-          ),
-        ],
-      ),
-    );
+    return WitchySliderCard(label: title, valueLabel: '${value.round()}$suffix', value: value, min: min, max: max, onChanged: onChanged);
   }
 }

@@ -2,26 +2,52 @@ import 'package:flutter/material.dart';
 
 /// Central design tokens for the Witchy app.
 ///
-/// Palette, type, radii and elevation follow DESIGN.md v2.1 §2 verbatim:
-/// Deep Purple `#3B0066` primary, Light Lavender `#E0D4EA` fertile fills,
-/// Soft Coral `#FFB7B2` ovulation peaks, `#F8F6FA` canvas, `#333333` /
-/// `#666666` text, `#E0E0E0` borders. System sans throughout, no serif.
+/// Palette follows DESIGN.md v2.1 §2 merged with the Qwen screen system
+/// (`resources/Qwen_html_20260916_w13f1uygl.html`): Deep Purple `#3B0066`
+/// primary actions, plum `#3B0A5E`/`#26063F` gradient hero cards, gold
+/// `#D9A036`, pink `#E0517F`, lavender `#F3EAF9` fills, `#FAF7FC` canvas.
 abstract class AppColors {
   static const Color kPrimary = Color(0xFF3B0066);
   static const Color kPrimaryLight = Color(0xFF5E2A84);
   static const Color kPrimaryLighter = Color(0xFF8154A2);
   static const Color kPrimaryLightest = Color(0xFFE0D4EA);
   static const Color kCoral = Color(0xFFFFB7B2);
-  static const Color kCanvas = Color(0xFFF8F6FA);
+  static const Color kCanvas = Color(0xFFFAF7FC);
   static const Color kSurfaceBase = Color(0xFFFFFFFF);
-  static const Color kTextPrimary = Color(0xFF333333);
-  static const Color kTextSecondary = Color(0xFF666666);
-  static const Color kBorder = Color(0xFFE0E0E0);
+  static const Color kTextPrimary = Color(0xFF2A0A3C);
+  static const Color kTextSecondary = Color(0xFF4D3B5E);
+  static const Color kBorder = Color(0xFFECE3F2);
   static const Color kError = Color(0xFFB3261E);
 
   static const Color kCyclePeriod = Color(0xFF3B0066);
-  static const Color kCycleFertile = Color(0xFFE0D4EA);
-  static const Color kCycleOvulation = Color(0xFFFFB7B2);
+  static const Color kCycleFertile = Color(0xFFF3EAF9);
+  static const Color kCycleOvulation = Color(0xFFE0517F);
+
+  // Qwen screen-system accents (hybrid merge, clinical structure kept).
+  static const Color kPlum = Color(0xFF3B0A5E);
+  static const Color kPlumDeep = Color(0xFF26063F);
+  static const Color kPurple = Color(0xFF7B2CBF);
+  static const Color kPurpleDark = Color(0xFF6A1B9A);
+  static const Color kGold = Color(0xFFD9A036);
+  static const Color kPink = Color(0xFFE0517F);
+  static const Color kLav = Color(0xFFF3EAF9);
+  static const Color kLavDeep = Color(0xFFE7D6F4);
+  static const Color kBody = Color(0xFF4D3B5E);
+  static const Color kMuted = Color(0xFF8B7F95);
+  static const Color kLine = Color(0xFFECE3F2);
+}
+
+abstract class AppGradients {
+  static const LinearGradient kPlum = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [AppColors.kPlum, AppColors.kPlumDeep],
+  );
+  static const RadialGradient kOrb = RadialGradient(
+    center: Alignment(0.35, 0.28),
+    radius: 0.9,
+    colors: [Color(0xFF4A1170), Color(0xFF2A0740)],
+  );
 }
 
 abstract class AppSpacing {
@@ -34,12 +60,12 @@ abstract class AppSpacing {
   static const double kSectionGap = 24;
   static const double kBottomPadding = 96;
   static const double kRadiusS = 8;
-  static const double kRadiusM = 15;
+  static const double kRadiusM = 18;
   static const double kRadiusInput = 12;
-  static const double kRadiusButton = 25;
+  static const double kRadiusButton = 14;
   static const double kRadiusPill = 20;
   static const double kRadiusCircle = 999;
-  static const double kDayCell = 30;
+  static const double kDayCell = 34;
   static const double kLegendDot = 10;
 }
 
@@ -64,6 +90,9 @@ abstract class AppSizing {
 }
 
 abstract class AppTypography {
+  static const String kDisplayFont = 'Cinzel';
+  static const String kBodyFont = 'Lato';
+
   static const double kDisplayL = 32;
   static const double kDisplayM = 44;
   static const double kH1 = 18;
@@ -77,8 +106,9 @@ abstract class AppTypography {
 }
 
 abstract class AppShadows {
-  static const List<BoxShadow> kCard = [BoxShadow(color: Color(0x05000000), offset: Offset(0, 2), blurRadius: 5)];
-  static const List<BoxShadow> kHero = [BoxShadow(color: Color(0x0D000000), offset: Offset(0, 4), blurRadius: 10)];
+  static const List<BoxShadow> kCard = [BoxShadow(color: Color(0x0A2B0A3D), offset: Offset(0, 1), blurRadius: 2)];
+  static const List<BoxShadow> kHero = [BoxShadow(color: Color(0x612B0A3D), offset: Offset(0, 30), blurRadius: 60, spreadRadius: -22), BoxShadow(color: Color(0x142B0A3D), offset: Offset(0, 4), blurRadius: 16)];
+  static const List<BoxShadow> kButton = [BoxShadow(color: Color(0x8C3B0A5E), offset: Offset(0, 8), blurRadius: 18, spreadRadius: -8)];
 }
 
 abstract class AppBreakpoints {
@@ -88,21 +118,21 @@ abstract class AppBreakpoints {
 abstract class AppTheme {
   static TextTheme _textTheme(Color color) {
     return TextTheme(
-      displayLarge: TextStyle(fontWeight: FontWeight.w700, fontSize: AppTypography.kDisplayL, height: 1.20, color: color),
-      displayMedium: TextStyle(fontWeight: FontWeight.w700, fontSize: AppTypography.kDisplayM, height: 1.10, color: color),
-      displaySmall: TextStyle(fontWeight: FontWeight.w700, fontSize: AppTypography.kH2, height: 1.30, color: color),
-      headlineLarge: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTypography.kH1, height: 1.30, color: color),
-      headlineMedium: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTypography.kH1, height: 1.30, color: color),
-      headlineSmall: TextStyle(fontWeight: FontWeight.w700, fontSize: AppTypography.kH3, height: 1.40, color: color),
-      titleLarge: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTypography.kBodyL, height: 1.50, color: color),
-      titleMedium: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTypography.kBodyM, height: 1.40, color: color),
-      titleSmall: TextStyle(fontWeight: FontWeight.w500, fontSize: 13, height: 1.45, color: color),
-      bodyLarge: TextStyle(fontWeight: FontWeight.w400, fontSize: AppTypography.kBodyL, height: 1.50, color: color),
-      bodyMedium: TextStyle(fontWeight: FontWeight.w400, fontSize: AppTypography.kBodyM, height: 1.40, color: color),
-      bodySmall: TextStyle(fontWeight: FontWeight.w400, fontSize: AppTypography.kCaption, height: 1.40, color: color),
-      labelLarge: TextStyle(fontWeight: FontWeight.w600, fontSize: AppTypography.kButton, height: 1.00, color: color),
-      labelMedium: TextStyle(fontWeight: FontWeight.w400, fontSize: AppTypography.kCaption, height: 1.40, color: color),
-      labelSmall: TextStyle(fontWeight: FontWeight.w700, fontSize: 11, height: 1.30, letterSpacing: 0.88, color: color),
+      displayLarge: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w700, fontSize: AppTypography.kDisplayL, height: 1.20, color: color),
+      displayMedium: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w700, fontSize: AppTypography.kDisplayM, height: 1.10, color: color),
+      displaySmall: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w700, fontSize: AppTypography.kH2, height: 1.30, color: color),
+      headlineLarge: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w600, fontSize: AppTypography.kH1, height: 1.30, color: color),
+      headlineMedium: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w600, fontSize: AppTypography.kH1, height: 1.30, color: color),
+      headlineSmall: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w700, fontSize: AppTypography.kH3, height: 1.40, color: color),
+      titleLarge: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w600, fontSize: AppTypography.kBodyL, height: 1.50, color: color),
+      titleMedium: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w600, fontSize: AppTypography.kBodyM, height: 1.40, color: color),
+      titleSmall: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w600, fontSize: 13, height: 1.45, color: color),
+      bodyLarge: TextStyle(fontFamily: AppTypography.kBodyFont, fontWeight: FontWeight.w400, fontSize: AppTypography.kBodyL, height: 1.50, color: color),
+      bodyMedium: TextStyle(fontFamily: AppTypography.kBodyFont, fontWeight: FontWeight.w400, fontSize: AppTypography.kBodyM, height: 1.40, color: color),
+      bodySmall: TextStyle(fontFamily: AppTypography.kBodyFont, fontWeight: FontWeight.w400, fontSize: AppTypography.kCaption, height: 1.40, color: color),
+      labelLarge: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w600, fontSize: AppTypography.kButton, height: 1.00, color: color),
+      labelMedium: TextStyle(fontFamily: AppTypography.kBodyFont, fontWeight: FontWeight.w400, fontSize: AppTypography.kCaption, height: 1.40, color: color),
+      labelSmall: TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w700, fontSize: 11, height: 1.30, letterSpacing: 0.88, color: color),
     );
   }
 
@@ -118,7 +148,7 @@ abstract class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        titleTextStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: AppTypography.kH1, color: AppColors.kTextPrimary),
+        titleTextStyle: const TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w600, fontSize: AppTypography.kH1, color: AppColors.kTextPrimary),
         iconTheme: const IconThemeData(size: 20, color: AppColors.kTextPrimary),
         actionsIconTheme: const IconThemeData(size: 20, color: AppColors.kTextPrimary),
       ),
@@ -130,11 +160,12 @@ abstract class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.kCanvas,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusInput), borderSide: const BorderSide(color: AppColors.kBorder)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusInput), borderSide: const BorderSide(color: AppColors.kBorder)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusInput), borderSide: const BorderSide(color: AppColors.kPrimary, width: 1.5)),
+        fillColor: AppColors.kSurfaceBase,
+        hintStyle: const TextStyle(fontFamily: AppTypography.kBodyFont, color: AppColors.kMuted),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusInput), borderSide: const BorderSide(color: AppColors.kLine)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusInput), borderSide: const BorderSide(color: AppColors.kLine)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusInput), borderSide: const BorderSide(color: AppColors.kPurple, width: 1.5)),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -142,7 +173,7 @@ abstract class AppTheme {
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(AppSizing.kMinTouch),
           padding: const EdgeInsets.all(15),
-          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: AppTypography.kButton),
+          textStyle: const TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w600, fontSize: AppTypography.kButton),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton)),
         ),
       ),
@@ -152,7 +183,7 @@ abstract class AppTheme {
           minimumSize: const Size.fromHeight(AppSizing.kMinTouch),
           padding: const EdgeInsets.all(15),
           side: const BorderSide(color: AppColors.kPrimary),
-          textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: AppTypography.kButton),
+          textStyle: const TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w600, fontSize: AppTypography.kButton),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton)),
         ),
       ),
@@ -160,36 +191,36 @@ abstract class AppTheme {
         style: TextButton.styleFrom(foregroundColor: AppColors.kPrimary, minimumSize: const Size(AppSizing.kMinTouch, AppSizing.kMinTouch)),
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((Set<WidgetState> s) => s.contains(WidgetState.selected) ? Colors.white : Colors.white),
-        trackColor: WidgetStateProperty.resolveWith((Set<WidgetState> s) => s.contains(WidgetState.selected) ? AppColors.kPrimary : AppColors.kBorder),
+        thumbColor: WidgetStateProperty.resolveWith((Set<WidgetState> s) => Colors.white),
+        trackColor: WidgetStateProperty.resolveWith((Set<WidgetState> s) => s.contains(WidgetState.selected) ? AppColors.kPurple : const Color(0xFFE4D7EE)),
       ),
       sliderTheme: const SliderThemeData(
-        trackHeight: 6,
-        activeTrackColor: AppColors.kPrimary,
-        inactiveTrackColor: AppColors.kPrimaryLightest,
-        thumbColor: AppColors.kPrimary,
-        overlayColor: Color(0x263B0066),
+        trackHeight: 4,
+        activeTrackColor: AppColors.kPurple,
+        inactiveTrackColor: Color(0xFFE7DBF0),
+        thumbColor: Colors.white,
+        overlayColor: Color(0x267B2CBF),
       ),
       chipTheme: theme.chipTheme.copyWith(
         backgroundColor: AppColors.kSurfaceBase,
-        selectedColor: AppColors.kPrimary,
-        secondarySelectedColor: AppColors.kPrimary,
+        selectedColor: AppColors.kPurple,
+        secondarySelectedColor: AppColors.kPurple,
         checkmarkColor: Colors.white,
-        side: const BorderSide(color: AppColors.kBorder),
-        labelStyle: const TextStyle(fontSize: AppTypography.kBodyM, color: AppColors.kTextPrimary),
-        secondaryLabelStyle: const TextStyle(fontSize: AppTypography.kBodyM, color: Colors.white),
+        side: const BorderSide(color: AppColors.kLine),
+        labelStyle: const TextStyle(fontFamily: AppTypography.kBodyFont, fontSize: AppTypography.kBodyM, color: AppColors.kTextPrimary),
+        secondaryLabelStyle: const TextStyle(fontFamily: AppTypography.kBodyFont, fontSize: AppTypography.kBodyM, color: Colors.white),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusPill)),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.kSurfaceBase,
-        selectedItemColor: AppColors.kPrimary,
-        unselectedItemColor: AppColors.kTextSecondary,
-        selectedLabelStyle: TextStyle(fontSize: AppTypography.kNavLabel),
-        unselectedLabelStyle: TextStyle(fontSize: AppTypography.kNavLabel),
+        selectedItemColor: AppColors.kPurple,
+        unselectedItemColor: Color(0xFFA795B8),
+        selectedLabelStyle: TextStyle(fontFamily: AppTypography.kBodyFont, fontSize: 9.5, fontWeight: FontWeight.w500),
+        unselectedLabelStyle: TextStyle(fontFamily: AppTypography.kBodyFont, fontSize: 9.5, fontWeight: FontWeight.w500),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
-      navigationBarTheme: const NavigationBarThemeData(backgroundColor: AppColors.kSurfaceBase, indicatorColor: AppColors.kPrimaryLightest, height: 68),
+      navigationBarTheme: const NavigationBarThemeData(backgroundColor: AppColors.kSurfaceBase, indicatorColor: AppColors.kLav, height: 78),
       visualDensity: VisualDensity.adaptivePlatformDensity,
       materialTapTargetSize: MaterialTapTargetSize.padded,
     );

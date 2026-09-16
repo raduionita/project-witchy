@@ -40,11 +40,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
   int _page = _kInitialPage;
 
   DateTime _monthForPage(int page) {
-    return DateTime(
-      _anchorMonth.year,
-      _anchorMonth.month + (page - _kInitialPage),
-      1,
-    );
+    return DateTime(_anchorMonth.year, _anchorMonth.month + (page - _kInitialPage), 1);
   }
 
   @override
@@ -54,11 +50,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
   }
 
   void _changeMonth(int delta) {
-    _pageController.animateToPage(
-      _page + delta,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeInOut,
-    );
+    _pageController.animateToPage(_page + delta, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
   }
 
   Future<void> _onDayTap(CalendarDay day) async {
@@ -72,6 +64,45 @@ class _CycleCalendarState extends State<CycleCalendar> {
 
   Future<void> _onDayLongPress(CalendarDay day) async {
     await LogSymptomSheet.show(context: context, date: day.date);
+  }
+
+  Widget _buildHeader() {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(onPressed: () => _changeMonth(-1), icon: const Icon(Icons.chevron_left)),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(child: Text(_monthTitle.format(_monthForPage(_page)), textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
+              IconButton(tooltip: l10n.biometricsTitle, onPressed: () => LogBiometricsSheet.show(context: context, date: DateTime.now()), icon: const Icon(Icons.thermostat)),
+            ],
+          ),
+        ),
+        IconButton(onPressed: () => _changeMonth(1), icon: const Icon(Icons.chevron_right)),
+      ],
+    );
+  }
+
+  Widget _buildWeekdayRow(MaterialLocalizations localizations, int firstDayOfWeek) {
+    final int offset = firstDayOfWeek % 7;
+    final List<String> weekdays = <String>[for (int i = 0; i < 7; i++) localizations.narrowWeekdays[(offset + i) % 7]];
+    return Row(
+      key: const ValueKey<String>('calendar-weekday-row'),
+      children:
+          weekdays
+              .map(
+                (String label) => Expanded(
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              )
+              .toList(),
+    );
   }
 
   @override
@@ -101,67 +132,18 @@ class _CycleCalendarState extends State<CycleCalendar> {
                 firstDayOfWeek: firstDayOfWeek,
               );
               final List<CalendarDay> marked = <CalendarDay>[
-                for (final CalendarDay day in grid)
-                  CalendarDay(
-                    date: day.date,
-                    state: day.state,
-                    isToday: day.isToday,
-                    markers: biometrics.markersFor(day.date),
-                  ),
+                for (final CalendarDay day in grid) CalendarDay(date: day.date, state: day.state, isToday: day.isToday, markers: biometrics.markersFor(day.date)),
               ];
               return GridView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7, mainAxisSpacing: 4, crossAxisSpacing: 4),
                 itemCount: marked.length,
-                itemBuilder: (BuildContext context, int gridIndex) =>
-                    _DayCell(day: marked[gridIndex], onTap: _onDayTap, onLongPress: _onDayLongPress),
+                itemBuilder: (BuildContext context, int gridIndex) => _DayCell(day: marked[gridIndex], onTap: _onDayTap, onLongPress: _onDayLongPress),
               );
             },
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildHeader() {
-    final AppLocalizations l10n = AppLocalizations.of(context);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        IconButton(onPressed: () => _changeMonth(-1), icon: const Icon(Icons.chevron_left)),
-        Expanded(
-          child: Row(
-            children: [
-              Expanded(child: Text(_monthTitle.format(_monthForPage(_page)), textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
-              IconButton(
-                tooltip: l10n.biometricsTitle,
-                onPressed: () => LogBiometricsSheet.show(context: context, date: DateTime.now()),
-                icon: const Icon(Icons.thermostat),
-              ),
-            ],
-          ),
-        ),
-        IconButton(onPressed: () => _changeMonth(1), icon: const Icon(Icons.chevron_right)),
-      ],
-    );
-  }
-
-  Widget _buildWeekdayRow(MaterialLocalizations localizations, int firstDayOfWeek) {
-    final int offset = firstDayOfWeek % 7;
-    final List<String> weekdays = <String>[
-      for (int i = 0; i < 7; i++)
-        localizations.narrowWeekdays[(offset + i) % 7],
-    ];
-    return Row(
-      key: const ValueKey<String>('calendar-weekday-row'),
-      children:
-          weekdays
-              .map(
-                (String label) => Expanded(
-                  child: Text(label, textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600)),
-                ),
-              )
-              .toList(),
     );
   }
 }
@@ -195,17 +177,16 @@ class _DayCell extends StatelessWidget {
     final bool inMonth = day.state != CalendarDayState.none;
     final bool isPeriodOrFertile = day.state == CalendarDayState.period || day.state == CalendarDayState.ovulation;
 
-    final Color background = stateColor == null
-        ? scheme.surface
-        : isPeriodOrFertile
+    final Color background =
+        stateColor == null
+            ? scheme.surface
+            : isPeriodOrFertile
             ? stateColor
             : Color.alphaBlend(stateColor.withValues(alpha: 0.25), scheme.surface);
 
     final Color textColor;
     if (day.isToday) {
-      textColor = ColorUtils.contrast(scheme.primary, background) >= _kMinTextContrast
-          ? scheme.primary
-          : _readableTextColor(scheme, background);
+      textColor = ColorUtils.contrast(scheme.primary, background) >= _kMinTextContrast ? scheme.primary : _readableTextColor(scheme, background);
     } else if (isPeriodOrFertile) {
       textColor = _readableTextColor(scheme, background);
     } else if (inMonth) {
@@ -222,24 +203,15 @@ class _DayCell extends StatelessWidget {
       onLongPress: () => onLongPress(day),
       child: Container(
         alignment: Alignment.center,
-        decoration: stateColor == null
-            ? BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: day.isToday ? scheme.primary : ring, width: day.isToday ? 2 : 1),
-              )
-            : BoxDecoration(shape: BoxShape.circle, color: stateColor.withValues(alpha: isPeriodOrFertile ? 1.0 : 0.25), border: day.isToday ? Border.all(color: scheme.primary, width: 2) : null),
+        decoration:
+            stateColor == null
+                ? BoxDecoration(shape: BoxShape.circle, border: Border.all(color: day.isToday ? scheme.primary : ring, width: day.isToday ? 2 : 1))
+                : BoxDecoration(shape: BoxShape.circle, color: stateColor.withValues(alpha: isPeriodOrFertile ? 1.0 : 0.25), border: day.isToday ? Border.all(color: scheme.primary, width: 2) : null),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('${day.date.day}', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: textColor, fontWeight: day.isToday ? FontWeight.bold : FontWeight.normal)),
-            if (day.markers.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 1),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: DayMarkersRow(markers: day.markers, color: textColor),
-                ),
-              ),
+            if (day.markers.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 1), child: FittedBox(fit: BoxFit.scaleDown, child: DayMarkersRow(markers: day.markers, color: textColor))),
           ],
         ),
       ),

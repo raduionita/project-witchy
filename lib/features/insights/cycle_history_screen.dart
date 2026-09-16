@@ -136,7 +136,7 @@ class CycleHistoryScreen extends StatelessWidget {
           Text(label),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: const TextStyle(fontFamily: AppTypography.kDisplayFont, fontWeight: FontWeight.w600, fontSize: AppTypography.kBodyM),
           ),
         ],
       ),

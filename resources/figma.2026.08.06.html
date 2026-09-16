@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Witchy - Track your cycle with magic</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+  :root {
+    --bg-primary: #0a0a12;
+    --bg-secondary: #12121f;
+    --bg-card: #1a1a2e;
+    --bg-card-hover: #1e1e35;
+    --bg-input: #16162a;
+    --purple-deep: #2d1b69;
+    --purple-mid: #5b3fa0;
+    --purple-light: #8b6fc0;
+    --purple-glow: #a78bfa;
+    --purple-soft: #c4b5fd;
+    --gold: #d4a853;
+    --gold-light: #f0d48a;
+    --gold-dim: #a07830;
+    --text-primary: #f0ece4;
+    --text-secondary: #a0a0b8;
+    --text-muted: #6a6a82;
+    --pink: #e879a8;
+    --pink-light: #f0a0c8;
+    --green: #6ecf8a;
+    --blue: #6ea0cf;
+    --orange: #cf8a4a;
+    --red: #cf4a4a;
+    --border: rgba(139, 111, 192, 0.15);
+    --border-light: rgba(139, 111, 192, 0.08);
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-glow: 0 0 30px rgba(139, 111, 192, 0.15);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 6px;
+    --font-display: 'Cormorant Garamond', serif;
+    --font-body: 'Inter', sans-serif;
+    --font-accent: 'Playfair Display', serif;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--purple-mid); border-radius: 4px; }
+
+  /* Screen container */
+  .app-container {
+    max-width: 420px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    background: var(--bg-primary);
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-primary);
+  }
+  .status-bar .time { font-weight: 700; }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons svg { width: 16px; height: 16px; fill: var(--text-primary); }
+
+  /* ===== SCREEN 1: Welcome ===== */
+  .screen {
+    display: none;
+    padding: 0 20px 100px;
+    animation: fadeIn 0.4s ease;
+  }
+  .screen.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .welcome-screen {
+    text-align: center;
+    padding-top: 60px;
+  }
+
+  .welcome-logo {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, var(--purple-deep), var(--purple-mid));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 60px rgba(91, 63, 160, 0.4), 0 0 120px rgba(91, 63, 160, 0.15);
+    position: relative;
+  }
+  .welcome-logo::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+  }
+  .welcome-logo .moon {
+    font-size: 52px;
+    filter: drop-shadow(0 0 20px rgba(167, 139, 250, 0.6));
+  }
+
+  .welcome-title {
+    font-family: var(--font-display);
+    font-size: 42px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--text-primary), var(--purple-soft));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+
+  .welcome-subtitle {
+    font-family: var(--font-accent);
+    font-style: italic;
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-bottom: 48px;
+  }
+
+  .welcome-illustration {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto 40px;
+    position: relative;
+  }
+  .welcome-illustration .stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  /* Buttons */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 16px 24px;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--purple-mid), var(--purple-deep));
+    color: var(--text-primary);
+    box-shadow: 0 4px 20px rgba(91, 63, 160, 0.4);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 6px 30px rgba(91, 63, 160, 0.6);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover {
+    border-color: var(--purple-light);
+    background: rgba(91, 63, 160, 0.1);
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+    color: #1a1a2e;
+    font-weight: 700;
+    box-shadow: 0 4px 20px rgba(212, 168, 83, 0.3);
+  }
+
+  .btn-social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 14px 24px;
+  }
+  .btn-social:hover {
+    border-color: var(--purple-light);
+  }
+  .btn-social svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--purple-glow);
+    border: 1px solid rgba(167, 139, 250, 0.3);
+  }
+  .btn-ghost:hover {
+    background: rgba(167, 139, 250, 0.1);
+  }
+
+  .btn-sm {
+    padding: 10px 18px;
+    font-size: 13px;
+    width: auto;
+    display: inline-block;
+  }
+
+  /* ===== SCREEN 2: Sign In / Create Account ===== */
+  .auth-screen {
+    padding-top: 30px;
+  }
+
+  .auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .auth-header h2 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .auth-header p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .form-group {
+    margin-bottom: 18px;
+  }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    letter-spacing: 0.3px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+  .form-input:focus {
+    border-color: var(--purple-light);
+    box-shadow: 0 0 0 3px rgba(139, 111, 192, 0.15);
+  }
+  .form-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .input-icon {
+    position: relative;
+  }
+  .input-icon svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    fill: var(--text-muted);
+  }
+  .input-icon .form-input {
+    padding-left: 42px;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .social-buttons {
+    display: flex;
+    gap: 12px;
+  }
+  .social-buttons .btn-social {
+    flex: 1;
+  }
+
+  /* ===== SCREEN 3: Set Your Rhythms ===== */
+  .calendar-widget {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 20px;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  .calendar-month {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+  }
+  .calendar-day-header {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding: 4px 0;
+  }
+  .calendar-day {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0 auto;
+  }
+  .calendar-day:hover {
+    background: rgba(91, 63, 160, 0.2);
+  }
+  .calendar-day.selected {
+    background: linear-gradient(135deg, var(--purple-mid), var(--purple-deep));
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 2px 12px rgba(91, 63, 160, 0.4);
+  }
+  .calendar-day.other-month {
+    color: var(--text-muted);
+    opacity: 0.4;
+  }
+  .calendar-day.empty {
+    pointer-events: none;
+  }
+
+  .slider-group {
+    margin-bottom: 20px;
+  }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .slider-label span:first-child {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .slider-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--purple-glow);
+  }
+
+  .slider {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--bg-input);
+    outline: none;
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple-glow), var(--purple-mid));
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(167, 139, 250, 0.4);
+  }
+
+  /* ===== SCREEN 4: Sanctuary (Dashboard) ===== */
+  .sanctuary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .sanctuary-header h1 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+  }
+
+  .cycle-status-card {
+    background: linear-gradient(135deg, rgba(45, 27, 105, 0.6), rgba(26, 26, 46, 0.8));
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cycle-status-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -30%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(167, 139, 250, 0.1), transparent);
+    border-radius: 50%;
+  }
+
+  .cycle-phase {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .phase-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--purple-mid), var(--purple-deep));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+  }
+  .phase-info h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .phase-info p {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .cycle-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat-box {
+    background: rgba(10, 10, 18, 0.6);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    border: 1px solid var(--border-light);
+  }
+  .stat-box .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .stat-box .stat-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--purple-glow);
+  }
+
+  .insight-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .insight-card h4 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .insight-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* Calendar mini */
+  .mini-calendar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .mini-calendar .cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .mini-calendar .cal-header h4 {
+    font-family: var(--font-display);
+    font-size: 16px;
+  }
+
+  /* Period day indicator */
+  .period-day-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(207, 74, 74, 0.15);
+    border: 1px solid rgba(207, 74, 74, 0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pink-light);
+  }
+
+  /* Flow mood indicators */
+  .flow-indicators {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .flow-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .flow-tag .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  /* ===== SCREEN 5: Apothecary Log ===== */
+  .log-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .log-section h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .option-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .option-card {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .option-card:hover, .option-card.active {
+    border-color: var(--purple-light);
+    background: rgba(91, 63, 160, 0.15);
+  }
+  .option-card .option-icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+  .option-card .option-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .emotion-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  /* ===== SCREEN 6: Sovereign Blood ===== */
+  .sovereign-card {
+    background: linear-gradient(135deg, rgba(207, 74, 74, 0.1), rgba(45, 27, 105, 0.3));
+    border: 1px solid rgba(207, 74, 74, 0.2);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .sovereign-card .blood-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+  .sovereign-card h2 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  .sovereign-card .phase-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+  .sovereign-progress {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-input);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .sovereign-progress .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red), var(--pink));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  /* ===== SCREEN 7: Lunar Records ===== */
+  .trend-chart {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .chart-container {
+    height: 180px;
+    position: relative;
+    margin-top: 16px;
+  }
+  .chart-line {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    height: 120px;
+  }
+
+  .cycle-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .summary-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    text-align: center;
+  }
+  .summary-card .summary-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .summary-card .summary-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--purple-glow);
+    margin-bottom: 4px;
+  }
+  .summary-card .summary-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Bleed chronology */
+  .bleed-list {
+    margin-bottom: 16px;
+  }
+  .bleed-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .bleed-item:last-child { border-bottom: none; }
+  .bleed-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--purple-glow);
+    flex-shrink: 0;
+  }
+  .bleed-item .bleed-date {
+    font-size: 14px;
+    font-weight: 500;
+    flex: 1;
+  }
+  .bleed-item .bleed-duration {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .bleed-item .bleed-status {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  .bleed-status.on-time {
+    background: rgba(110, 207, 138, 0.15);
+    color: var(--green);
+  }
+  .bleed-status.short {
+    background: rgba(207, 138, 74, 0.15);
+    color: var(--orange);
+  }
+
+  /* Spirit comparison */
+  .spirit-comparison {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .spirit-icon {
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+  .spirit-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+  .spirit-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  /* ===== SCREEN 8: Gestation Spells ===== */
+  .gestation-card {
+    background: linear-gradient(135deg, rgba(110, 207, 138, 0.1), rgba(45, 27, 105, 0.3));
+    border: 1px solid rgba(110, 207, 138, 0.2);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .gestation-week {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 4px;
+  }
+  .gestation-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  /* ===== SCREEN 9: Witch Profile ===== */
+  .profile-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple-mid), var(--purple-deep));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 12px;
+    box-shadow: 0 0 30px rgba(91, 63, 160, 0.3);
+  }
+  .profile-name {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .profile-level {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(212, 168, 83, 0.15);
+    border: 1px solid rgba(212, 168, 83, 0.3);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gold);
+    margin-top: 8px;
+  }
+
+  /* Grimoire scribbles */
+  .grimoire-entry {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .grimoire-entry .entry-date {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .grimoire-entry .entry-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* Cycle history chart */
+  .cycle-history {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .cycle-history h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  /* ===== SCREEN 10: High Priestess Selene (Settings) ===== */
+  .settings-section {
+    margin-bottom: 24px;
+  }
+  .settings-section h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 12px;
+  }
+
+  .settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .settings-item:hover {
+    border-color: var(--purple-light);
+  }
+  .settings-item .setting-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .settings-item .setting-icon {
+    font-size: 18px;
+  }
+  .settings-item .setting-label {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .settings-item .setting-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Toggle switch */
+  .toggle {
+    width: 44px;
+    height: 24px;
+    background: var(--bg-input);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border);
+  }
+  .toggle.active {
+    background: var(--purple-mid);
+    border-color: var(--purple-light);
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: var(--text-primary);
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s ease;
+  }
+  .toggle.active::after {
+    left: 22px;
+  }
+
+  /* App footer */
+  .app-footer {
+    text-align: center;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+  }
+  .app-footer p {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .app-footer .version {
+    font-size: 11px;
+    color: var(--text-muted);
+    opacity: 0.6;
+    margin-top: 4px;
+  }
+
+  /* ===== SCREEN 11: Celestial Alerts ===== */
+  .alert-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+    display: flex;
+    gap: 14px;
+    transition: all 0.2s ease;
+  }
+  .alert-card:hover {
+    border-color: var(--purple-light);
+  }
+  .alert-card.unread {
+    border-left: 3px solid var(--purple-glow);
+  }
+  .alert-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .alert-icon.period { background: rgba(207, 74, 74, 0.15); }
+  .alert-icon.fertility { background: rgba(232, 121, 168, 0.15); }
+  .alert-icon.missing { background: rgba(212, 168, 83, 0.15); }
+  .alert-icon.astro { background: rgba(167, 139, 250, 0.15); }
+
+  .alert-content { flex: 1; }
+  .alert-content .alert-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .alert-content .alert-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .alert-content .alert-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* ===== SCREEN 12: Coven Sanctum ===== */
+  .coven-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .coven-tab {
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+  .coven-tab.active {
+    background: linear-gradient(135deg, var(--purple-mid), var(--purple-deep));
+    border-color: var(--purple-light);
+    color: var(--text-primary);
+  }
+
+  .coven-post {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .coven-post-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .coven-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple-mid), var(--purple-deep));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+  .coven-username {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .coven-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: rgba(167, 139, 250, 0.15);
+    color: var(--purple-glow);
+    font-weight: 600;
+  }
+  .coven-post-body {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .coven-post-footer {
+    display: flex;
+    gap: 16px;
+  }
+  .coven-action {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  .coven-action:hover { color: var(--purple-glow); }
+
+  /* ===== SCREEN 13: Apothecary Library ===== */
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+  .search-bar input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    outline: none;
+  }
+  .search-bar input::placeholder { color: var(--text-muted); }
+  .search-bar svg { width: 18px; height: 18px; fill: var(--text-muted); }
+
+  .library-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .library-card:hover {
+    border-color: var(--purple-light);
+    transform: translateY(-1px);
+  }
+  .library-card .lib-category {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--purple-glow);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .library-card .lib-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .library-card .lib-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .library-card .lib-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* ===== SCREEN 14: Amulet Reminders ===== */
+  .reminder-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .reminder-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .reminder-content { flex: 1; }
+  .reminder-content .reminder-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .reminder-content .reminder-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .reminder-time {
+    font-size: 12px;
+    color: var(--purple-glow);
+    font-weight: 600;
+    text-align: right;
+  }
+
+  /* ===== SCREEN 15: Coven Binding ===== */
+  .binding-form {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .binding-form h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .visibility-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .visibility-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .visibility-item:last-child { border-bottom: none; }
+  .visibility-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  /* Bottom Navigation */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 420px;
+    background: rgba(10, 10, 18, 0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 20px;
+    z-index: 1000;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+  }
+  .nav-item:hover { color: var(--text-secondary); }
+  .nav-item.active { color: var(--purple-glow); }
+  .nav-item svg {
+    width: 22px;
+    height: 22px;
+    fill: currentColor;
+  }
+  .nav-item .nav-label {
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  /* Utility */
+  .text-center { text-align: center; }
+  .text-gold { color: var(--gold); }
+  .text-purple { color: var(--purple-glow); }
+  .text-green { color: var(--green); }
+  .text-pink { color: var(--pink); }
+  .text-muted { color: var(--text-muted); }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-24 { margin-bottom: 24px; }
+  .gap-8 { gap: 8px; }
+  .flex { display: flex; }
+  .flex-center { display: flex; align-items: center; justify-content: center; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Decorative elements */
+  .star-field {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: var(--purple-glow);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: twinkle 3s infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.6; }
+  }
+
+  /* Lunar phase visualization */
+  .lunar-phase {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #f0d48a, #d4a853, #a07830);
+    box-shadow: 0 0 20px rgba(212, 168, 83, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    position: relative;
+  }
+
+  /* Responsive */
+  @media (min-width: 421px) {
+    body {
+      background: #050508;
+    }
+    .app-container {
+      box-shadow: 0 0 60px rgba(0,0,0,0.5);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+  }
+
+  /* Loading shimmer */
+  .shimmer {
+    background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Floating action button */
+  .fab {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple-mid), var(--purple-deep));
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    box-shadow: 0 4px 20px rgba(91, 63, 160, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 999;
+    transition: all 0.3s ease;
+    font-size: 24px;
+  }
+  .fab:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 30px rgba(91, 63, 160, 0.6);
+  }
+</style>
+</head>
+<body>
+
+<div class="star-field" id="starField"></div>
+
+<div class="app-container">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <div class="status-icons">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 1: Welcome ==================== -->
+  <div class="screen active" id="screen-welcome">
+    <div class="welcome-screen">
+      <div class="welcome-logo">
+        <span class="moon">🌙</span>
+      </div>
+      <h1 class="welcome-title">Witchy</h1>
+      <p class="welcome-subtitle">Track your cycle with magic</p>
+
+      <div style="margin-bottom: 32px;">
+        <div class="welcome-illustration">
+          <svg viewBox="0 0 300 200" style="width:100%;height:auto;">
+            <!-- Moon -->
+            <circle cx="150" cy="80" r="50" fill="none" stroke="rgba(167,139,250,0.3)" stroke-width="1"/>
+            <circle cx="140" cy="75" r="40" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.4)" stroke-width="1.5"/>
+            <circle cx="130" cy="68" r="35" fill="rgba(240,212,138,0.1)" stroke="rgba(212,168,83,0.3)" stroke-width="1"/>
+            <!-- Stars -->
+            <circle cx="60" cy="40" r="2" fill="rgba(167,139,250,0.6)"/>
+            <circle cx="240" cy="30" r="1.5" fill="rgba(167,139,250,0.5)"/>
+            <circle cx="200" cy="60" r="1" fill="rgba(167,139,250,0.4)"/>
+            <circle cx="80" cy="100" r="1.5" fill="rgba(167,139,250,0.5)"/>
+            <circle cx="220" cy="120" r="1" fill="rgba(167,139,250,0.4)"/>
+            <circle cx="50" cy="150" r="2" fill="rgba(212,168,83,0.4)"/>
+            <circle cx="250" cy="160" r="1.5" fill="rgba(212,168,83,0.3)"/>
+            <!-- Figure -->
+            <g transform="translate(150,155)">
+              <circle cx="0" cy="-15" r="8" fill="rgba(167,139,250,0.3)" stroke="rgba(167,139,250,0.5)" stroke-width="1"/>
+              <path d="M-12,0 Q-15,15 0,20 Q15,15 12,0" fill="rgba(45,27,105,0.5)" stroke="rgba(167,139,250,0.3)" stroke-width="1"/>
+              <line x1="-8" y1="-5" x2="-18" y2="-12" stroke="rgba(167,139,250,0.4)" stroke-width="1"/>
+              <line x1="8" y1="-5" x2="18" y2="-12" stroke="rgba(167,139,250,0.4)" stroke-width="1"/>
+              <!-- Wand -->
+              <line x1="18" y1="-12" x2="25" y2="-20" stroke="rgba(212,168,83,0.6)" stroke-width="1.5"/>
+              <circle cx="26" cy="-22" r="3" fill="rgba(212,168,83,0.4)">
+                <animate attributeName="r" values="2;4;2" dur="2s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+              </circle>
+            </g>
+            <!-- Orbiting elements -->
+            <circle cx="150" cy="80" r="65" fill="none" stroke="rgba(167,139,250,0.1)" stroke-width="0.5" stroke-dasharray="4 8">
+              <animateTransform attributeName="transform" type="rotate" from="0 150 80" to="360 150 80" dur="30s" repeatCount="indefinite"/>
+            </circle>
+          </svg>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="showScreen('screen-auth')">
+        ✨ Awaken Your Power
+      </button>
+      <div style="height: 16px;"></div>
+      <button class="btn btn-secondary" onclick="showScreen('screen-auth')">
+        Already a witch? Sign In
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 2: Auth (Sign In / Create) ==================== -->
+  <div class="screen" id="screen-auth">
+    <div class="auth-screen">
+      <div class="auth-header">
+        <div style="font-size: 36px; margin-bottom: 12px;">🌙</div>
+        <h2>Join the Coven</h2>
+        <p>Create an account to align your inner rhythms with the cosmic tide.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Astral Email</label>
+        <div class="input-icon">
+          <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          <input type="email" class="form-input" placeholder="your.essence@cosmic.com" value="your.essence@cosmic.com">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Mystic Secret Key</label>
+        <div class="input-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          <input type="password" class="form-input" placeholder="••••••••••••">
+        </div>
+      </div>
+
+      <button class="btn btn-gold" style="margin-top: 8px;" onclick="showScreen('screen-rhythms')">
+        📜 Cast Invitation Scroll
+      </button>
+
+      <div class="divider">or align via</div>
+
+      <div class="social-buttons">
+        <button class="btn btn-social">
+          <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.27 2.75 1.026A9.578 9.578 0 0112 6.836c.85.001 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z"/></svg>
+          Apple
+        </button>
+        <button class="btn btn-social">
+          <svg viewBox="0 0 24 24" fill="white"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 9.92 1 11.5s.43 2.95 1.18 4.43l3.57-2.77z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 3: Set Your Rhythms ==================== -->
+  <div class="screen" id="screen-rhythms">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px;">
+        Set Your Rhythms
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">
+        Calibrate your lunar engine. When did your last bleeding phase commence?
+      </p>
+
+      <div class="calendar-widget">
+        <div class="calendar-month">
+          <span>🌑</span> Harvest Moon (Oct)
+        </div>
+        <div class="calendar-grid">
+          <div class="calendar-day-header">S</div>
+          <div class="calendar-day-header">M</div>
+          <div class="calendar-day-header">T</div>
+          <div class="calendar-day-header">W</div>
+          <div class="calendar-day-header">T</div>
+          <div class="calendar-day-header">F</div>
+          <div class="calendar-day-header">S</div>
+
+          <div class="calendar-day other-month">29</div>
+          <div class="calendar-day other-month">30</div>
+          <div class="calendar-day other-month">1</div>
+          <div class="calendar-day other-month">2</div>
+          <div class="calendar-day other-month">3</div>
+          <div class="calendar-day other-month">4</div>
+          <div class="calendar-day">5</div>
+
+          <div class="calendar-day">6</div>
+          <div class="calendar-day">7</div>
+          <div class="calendar-day">8</div>
+          <div class="calendar-day">9</div>
+          <div class="calendar-day">10</div>
+          <div class="calendar-day">11</div>
+          <div class="calendar-day">12</div>
+
+          <div class="calendar-day">13</div>
+          <div class="calendar-day selected">14</div>
+          <div class="calendar-day">15</div>
+          <div class="calendar-day">16</div>
+          <div class="calendar-day">17</div>
+          <div class="calendar-day">18</div>
+          <div class="calendar-day">19</div>
+
+          <div class="calendar-day">20</div>
+          <div class="calendar-day">21</div>
+          <div class="calendar-day">22</div>
+          <div class="calendar-day">23</div>
+          <div class="calendar-day">24</div>
+          <div class="calendar-day">25</div>
+          <div class="calendar-day">26</div>
+
+          <div class="calendar-day">27</div>
+          <div class="calendar-day">28</div>
+          <div class="calendar-day">29</div>
+          <div class="calendar-day">30</div>
+          <div class="calendar-day">31</div>
+          <div class="calendar-day other-month">1</div>
+          <div class="calendar-day other-month">2</div>
+        </div>
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Cycle duration (stardust tides)</span>
+          <span class="slider-value">28 Days</span>
+        </div>
+        <input type="range" class="slider" min="20" max="40" value="28" oninput="this.nextElementSibling.textContent=this.value+' Days'">
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Bleeding phase length</span>
+          <span class="slider-value">5 Days</span>
+        </div>
+        <input type="range" class="slider" min="2" max="8" value="5" oninput="this.nextElementSibling.textContent=this.value+' Days'">
+      </div>
+
+      <button class="btn btn-primary mt-16" onclick="showScreen('screen-sanctuary')">
+        🔮 Bind Magic Link
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 4: Sanctuary (Dashboard) ==================== -->
+  <div class="screen" id="screen-sanctuary">
+    <div class="sanctuary-header">
+      <h1>Sanctuary</h1>
+      <div style="font-size: 20px; cursor: pointer;">⚙️</div>
+    </div>
+
+    <!-- Cycle Status Card -->
+    <div class="cycle-status-card">
+      <div class="cycle-phase">
+        <div class="phase-icon">🩸</div>
+        <div class="phase-info">
+          <h3>Bleeding In</h3>
+          <p>14 Days · Nov 10 · predicted</p>
+        </div>
+      </div>
+
+      <div class="cycle-stats">
+        <div class="stat-box">
+          <div class="stat-label">Cycle Day</div>
+          <div class="stat-value">14</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Full Moon Peak</div>
+          <div class="stat-value text-green">Fertile</div>
+        </div>
+      </div>
+
+      <div class="flow-indicators">
+        <div class="flow-tag">
+          <span class="dot" style="background: var(--green);"></span>
+          Peak Today
+        </div>
+        <div class="flow-tag">
+          <span class="dot" style="background: var(--pink);"></span>
+          High chance
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's Magic Log -->
+    <div class="insight-card">
+      <h4>📝 Log Today's Magic</h4>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+        <span class="period-day-badge">Day 14</span>
+        <span class="period-day-badge" style="border-color: rgba(110,207,138,0.3); background: rgba(110,207,138,0.1); color: var(--green);">
+          Full Moon Peak
+        </span>
+        <span class="period-day-badge" style="border-color: rgba(232,121,168,0.3); background: rgba(232,121,168,0.1); color: var(--pink-light);">
+          Fertility Window
+        </span>
+      </div>
+    </div>
+
+    <!-- Flow Mood -->
+    <div class="log-section">
+      <h3>🌊 Flow Mood</h3>
+      <div class="option-grid">
+        <div class="option-card active">
+          <div class="option-icon">✨</div>
+          <div class="option-label">Enchanted</div>
+        </div>
+        <div class="option-card">
+          <div class="option-icon">🌿</div>
+          <div class="option-label">Grounded</div>
+        </div>
+        <div class="option-card">
+          <div class="option-icon">🌑</div>
+          <div class="option-label">Shadowy</div>
+        </div>
+        <div class="option-card">
+          <div class="option-icon">🌪️</div>
+          <div class="option-label">Restless</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pain & Notes -->
+    <div class="log-section">
+      <h3>🔮 Pain & Notes</h3>
+      <div class="emotion-options">
+        <div class="option-card">
+          <div class="option-icon">🤕</div>
+          <div class="option-label">Headache</div>
+        </div>
+        <div class="option-card">
+          <div class="option-icon">🩸</div>
+          <div class="option-label">Cramps</div>
+        </div>
+        <div class="option-card">
+          <div class="option-icon">🫧</div>
+          <div class="option-label">Bloating</div>
+        </div>
+        <div class="option-card">
+          <div class="option-icon">😴</div>
+          <div class="option-label">Fatigue</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Astral Insight -->
+    <div class="insight-card">
+      <h4>🦉 Daily Astral Insight — Scorpio Moon</h4>
+      <p>As your body summits this cycle peak, intuitive energies run deep. Ground your power with Mugwort tea, and honor your physical fatigue.</p>
+    </div>
+
+    <!-- Lunar Cycle Map -->
+    <div class="mini-calendar">
+      <div class="cal-header">
+        <h4>🌙 Lunar Cycle Map</h4>
+        <span style="font-size: 12px; color: var(--text-muted);">October 2026</span>
+      </div>
+      <div class="calendar-grid">
+        <div class="calendar-day-header">S</div>
+        <div class="calendar-day-header">M</div>
+        <div class="calendar-day-header">T</div>
+        <div class="calendar-day-header">W</div>
+        <div class="calendar-day-header">T</div>
+        <div class="calendar-day-header">F</div>
+        <div class="calendar-day-header">S</div>
+
+        <div class="calendar-day empty"></div>
+        <div class="calendar-day empty"></div>
+        <div class="calendar-day">1</div>
+        <div class="calendar-day">2</div>
+        <div class="calendar-day">3</div>
+        <div class="calendar-day">4</div>
+        <div class="calendar-day">5</div>
+
+        <div class="calendar-day">6</div>
+        <div class="calendar-day">7</div>
+        <div class="calendar-day">8</div>
+        <div class="calendar-day">9</div>
+        <div class="calendar-day">10</div>
+        <div class="calendar-day">11</div>
+        <div class="calendar-day">12</div>
+
+        <div class="calendar-day">13</div>
+        <div class="calendar-day selected">14</div>
+        <div class="calendar-day">15</div>
+        <div class="calendar-day">16</div>
+        <div class="calendar-day">17</div>
+        <div class="calendar-day">18</div>
+        <div class="calendar-day">19</div>
+
+        <div class="calendar-day">20</div>
+        <div class="calendar-day">21</div>
+        <div class="calendar-day">22</div>
+        <div class="calendar-day">23</div>
+        <div class="calendar-day">24</div>
+        <div class="calendar-day">25</div>
+        <div class="calendar-day">26</div>
+
+        <div class="calendar-day">27</div>
+        <div class="calendar-day">28</div>
+        <div class="calendar-day">29</div>
+        <div class="calendar-day">30</div>
+        <div class="calendar-day empty"></div>
+        <div class="calendar-day empty"></div>
+        <div class="calendar-day empty"></div>
+      </div>
+      <div style="margin-top: 12px; padding: 12px; background: rgba(167,139,250,0.08); border-radius: var(--radius-xs); border: 1px solid var(--border-light);">
+        <p style="font-size: 13px; color: var(--text-secondary);">
+          <strong style="color: var(--purple-glow);">October 15, 2026</strong> — Period Day 2 · Medium bleed flow · Intuitive, reflective mood
+        </p>
+      </div>
+    </div>
+
+    <!-- Bottom tabs -->
+    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+      <button class="btn btn-ghost btn-sm" style="flex:1;">Today</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;">Calendar</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;">Log</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;">Insights</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1;">Magic</button>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 5: Apothecary Log ==================== -->
+  <div class="screen" id="screen-apothecary">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px;">
+        Apothecary Log
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">
+        Log Today's Energy — Select physical and mental essences flowing within you.
+      </p>
+
+      <!-- Bleed Intensity -->
+      <div class="log-section">
+        <h3>🩸 Bleed Intensity</h3>
+        <div class="option-grid" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="option-card">
+            <div class="option-icon">⚪</div>
+            <div class="option-label">None</div>
+          </div>
+          <div class="option-card">
+            <div class="option-icon">🔅</div>
+            <div class="option-label">Light</div>
+          </div>
+          <div class="option-card active">
+            <div class="option-icon">🔶</div>
+            <div class="option-label">Medium</div>
+          </div>
+          <div class="option-card">
+            <div class="option-icon">🔴</div>
+            <div class="option-label">Heavy</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Emotional Currents -->
+      <div class="log-section">
+        <h3>🌊 Emotional Currents</h3>
+        <div class="emotion-options">
+          <div class="option-card active">
+            <div class="option-icon">✨</div>
+            <div class="option-label">Enchanted</div>
+          </div>
+          <div class="option-card">
+            <div class="option-icon">🌿</div>
+            <div class="option-label">Grounded</div>
+          </div>
+          <div class="option-card">
+            <div class="option-icon">🌑</div>
+            <div class="option-label">Shadowy</div>
+          </div>
+          <div class="option-card">
+            <div class="option-icon">🌪️</div>
+            <div class="option-label">Restless</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Somatic Echoes -->
+      <div class="log-section">
+        <h3>🔮 Somatic Echoes</h3>
+        <div class="emotion-options">
+          <div class="option-card">
+            <div class="option-icon">🩸</div>
+            <div class="option-label">Uterine Cramps</div>
+          </div>
+          <div class="option-card">
+            <div class="option-icon">🤕</div>
+            <div class="option-label">Headache</div>
+          </div>
+          <div class="option-card">
+            <div class="option-icon">🫧</div>
+            <div class="option-label">Bloating</div>
+          </div>
+          <div class="option-card">
+            <div class="option-icon">😴</div>
+            <div class="option-label">Fatigue</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary mt-16">
+        ✨ Save Today's Energy
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 6: Sovereign Blood ==================== -->
+  <div class="screen" id="screen-sovereign">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px;">
+        Sovereign Blood
+      </h2>
+
+      <div class="sovereign-card">
+        <div class="blood-icon">🩸</div>
+        <h2>Shedding Phase</h2>
+        <p class="phase-subtitle">Day 3 of 5</p>
+        <div class="sovereign-progress">
+          <div class="fill" style="width: 60%;"></div>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); text-align: center;">60% complete</p>
+      </div>
+
+      <!-- Flow details -->
+      <div class="cycle-stats">
+        <div class="stat-box">
+          <div class="stat-label">Flow</div>
+          <div class="stat-value" style="color: var(--pink);">Medium</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Color</div>
+          <div class="stat-value" style="color: var(--red);">Deep Red</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Clots</div>
+          <div class="stat-value" style="font-size: 14px;">Occasional</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Cramps</div>
+          <div class="stat-value" style="font-size: 14px; color: var(--orange);">Mild</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary mt-16" onclick="showScreen('screen-lunar')">
+        View Lunar Records →
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 7: Lunar Records ==================== -->
+  <div class="screen" id="screen-lunar">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px;">
+        Lunar Records
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">
+        Stardust Cycle Trends
+      </p>
+
+      <!-- Cycle Summary -->
+      <div class="cycle-summary">
+        <div class="summary-card">
+          <div class="summary-icon">🌙</div>
+          <div class="summary-value">28.4 d</div>
+          <div class="summary-label">Average Cycle</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">🩸</div>
+          <div class="summary-value">5.2 d</div>
+          <div class="summary-label">Average Bleed</div>
+        </div>
+      </div>
+
+      <!-- Bleed Chronology -->
+      <div class="section-title">📜 Chronology of Bleeds</div>
+      <div class="bleed-list">
+        <div class="bleed-item">
+          <div class="bleed-dot"></div>
+          <div class="bleed-date">Sept 14 - Sept 19</div>
+          <div class="bleed-duration">5 Days</div>
+          <span class="bleed-status on-time">On Time</span>
+        </div>
+        <div class="bleed-item">
+          <div class="bleed-dot"></div>
+          <div class="bleed-date">Aug 16 - Aug 21</div>
+          <div class="bleed-duration">5 Days</div>
+          <span class="bleed-status on-time">On Time</span>
+        </div>
+        <div class="bleed-item">
+          <div class="bleed-dot" style="background: var(--orange);"></div>
+          <div class="bleed-date">July 19 - July 23</div>
+          <div class="bleed-duration">4 Days</div>
+          <span class="bleed-status short">Short</span>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 20px;">
+        <span style="font-size: 13px; color: var(--text-muted);">196 days until arrival portal opens</span>
+      </div>
+
+      <!-- Spirit Comparison -->
+      <div class="spirit-comparison">
+        <div class="spirit-icon">🍋</div>
+        <div class="spirit-name">Lime Size</div>
+        <p class="spirit-desc">Your little spirit matches a ripe Lime. Organs are fully formed and commencing magical function.</p>
+      </div>
+
+      <!-- Astral Gestation Tips -->
+      <div class="insight-card">
+        <h4>🌟 Astral Gestation Tips</h4>
+        <p>First-trimester tiredness is shifting. Elevate your iron levels with organic spinach potions and continue speaking soft, loving mantras to your belly.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 8: Gestation Spells ==================== -->
+  <div class="screen" id="screen-gestation">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px;">
+        Gestation Spells
+      </h2>
+
+      <div class="gestation-card">
+        <div style="font-size: 48px; margin-bottom: 8px;">🌱</div>
+        <div class="gestation-week">Week 12 (Day 4)</div>
+        <p class="gestation-subtitle">Gestation Sanctuary</p>
+        <div class="sovereign-progress">
+          <div class="fill" style="width: 12%; background: linear-gradient(90deg, var(--green), #8ad4a0);"></div>
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); text-align: center;">12% complete</p>
+      </div>
+
+      <div class="spirit-comparison">
+        <div class="spirit-icon">🍋</div>
+        <div class="spirit-name">Lime Size</div>
+        <p class="spirit-desc">Your little spirit matches a ripe Lime. Organs are fully formed and commencing magical function.</p>
+      </div>
+
+      <div class="insight-card">
+        <h4>🌟 Astral Gestation Tips</h4>
+        <p>First-trimester tiredness is shifting. Elevate your iron levels with organic spinach potions and continue speaking soft, loving mantras to your belly.</p>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Today</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Calendar</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Log</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Insights</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Magic</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 9: Witch Profile ==================== -->
+  <div class="screen" id="screen-profile">
+    <div style="padding-top: 10px;">
+      <!-- Profile Header -->
+      <div class="profile-header">
+        <div class="profile-avatar">🧙‍♀️</div>
+        <div class="profile-name">Selene Moonwhisper</div>
+        <div class="profile-level">⚡ Level 6</div>
+      </div>
+
+      <!-- Grimoire Scribbles -->
+      <div class="section-title">📖 Grimoire Scribbles</div>
+      <div class="grimoire-entry">
+        <div class="entry-date">Today</div>
+        <div class="entry-text">Drank chamomile raspberry leaf infusion. Felt waves of emotional clearing in the afternoon.</div>
+      </div>
+
+      <!-- Cycle Stats -->
+      <div class="cycle-summary">
+        <div class="summary-card">
+          <div class="summary-icon">🌙</div>
+          <div class="summary-value">28.4 d</div>
+          <div class="summary-label">Average Cycle</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-icon">🩸</div>
+          <div class="summary-value">5.2 d</div>
+          <div class="summary-label">Average Bleed</div>
+        </div>
+      </div>
+
+      <!-- Bleed Chronology -->
+      <div class="section-title">📜 Chronology of Bleeds</div>
+      <div class="bleed-list">
+        <div class="bleed-item">
+          <div class="bleed-dot"></div>
+          <div class="bleed-date">Sept 14 - Sept 19</div>
+          <div class="bleed-duration">5 Days</div>
+          <span class="bleed-status on-time">On Time</span>
+        </div>
+        <div class="bleed-item">
+          <div class="bleed-dot"></div>
+          <div class="bleed-date">Aug 16 - Aug 21</div>
+          <div class="bleed-duration">5 Days</div>
+          <span class="bleed-status on-time">On Time</span>
+        </div>
+        <div class="bleed-item">
+          <div class="bleed-dot" style="background: var(--orange);"></div>
+          <div class="bleed-date">July 19 - July 23</div>
+          <div class="bleed-duration">4 Days</div>
+          <span class="bleed-status short">Short</span>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 20px;">
+        <span style="font-size: 13px; color: var(--text-muted);">196 days until arrival portal opens</span>
+      </div>
+
+      <!-- Spirit Comparison -->
+      <div class="spirit-comparison">
+        <div class="spirit-icon">🍋</div>
+        <div class="spirit-name">Lime Size</div>
+        <p class="spirit-desc">Your little spirit matches a ripe Lime. Organs are fully formed and commencing magical function.</p>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Today</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Calendar</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Log</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Insights</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Magic</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 10: High Priestess Selene (Settings) ==================== -->
+  <div class="screen" id="screen-settings">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 24px;">
+        High Priestess Selene
+      </h2>
+
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div class="lunar-phase" style="margin: 0 auto 8px;">🌙</div>
+        <p style="font-family: var(--font-display); font-size: 18px; font-weight: 600;">Scorpio Moon • Third Cycle</p>
+      </div>
+
+      <!-- Lunar Alignments -->
+      <div class="settings-section">
+        <h3>🌙 Lunar Alignments</h3>
+        <div class="cycle-summary" style="margin-bottom: 0;">
+          <div class="summary-card">
+            <div class="summary-value">29 Days</div>
+            <div class="summary-label">Average Cycle Length</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-value">5 Days</div>
+            <div class="summary-label">Bleeding Phase Length</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <div class="settings-section">
+        <h3>🔔 Notifications</h3>
+        <div class="settings-item">
+          <div class="setting-left">
+            <span class="setting-icon">🌙</span>
+            <div>
+              <div class="setting-label">Receive Lunar Notifications</div>
+            </div>
+          </div>
+          <div class="toggle active"></div>
+        </div>
+      </div>
+
+      <!-- Apothecary Settings -->
+      <div class="settings-section">
+        <h3>🧪 Apothecary Settings</h3>
+        <div class="settings-item">
+          <div class="setting-left">
+            <span class="setting-icon">🌑</span>
+            <div>
+              <div class="setting-label">Dark Magic Mode</div>
+              <div class="setting-desc">Enhanced night vision for the app</div>
+            </div>
+          </div>
+          <div class="toggle"></div>
+        </div>
+        <div class="settings-item">
+          <div class="setting-left">
+            <span class="setting-icon">💫</span>
+            <div>
+              <div class="setting-label">Cosmic Partner Bond</div>
+              <div class="setting-desc">Sync predictions with your coven</div>
+            </div>
+          </div>
+          <div class="toggle active"></div>
+        </div>
+      </div>
+
+      <!-- App Footer -->
+      <div class="app-footer">
+        <p>🌙 Witchy App</p>
+        <p class="version">Version 1.2.4 • Made with celestial energy</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 11: Celestial Alerts ==================== -->
+  <div class="screen" id="screen-alerts">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px;">
+        Celestial Alerts
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">
+        The cosmos whispers its reminders. Align your biological temple.
+      </p>
+
+      <div class="alert-card unread">
+        <div class="alert-icon period">🩸</div>
+        <div class="alert-content">
+          <div class="alert-title">Period Commencing</div>
+          <div class="alert-desc">Your bleeding phase is predicted to begin in 2 days. Prepare your herbal tea blends.</div>
+          <div class="alert-time">2 hours ago</div>
+        </div>
+      </div>
+
+      <div class="alert-card unread">
+        <div class="alert-icon fertility">🌸</div>
+        <div class="alert-content">
+          <div class="alert-title">Fertility Window Peak</div>
+          <div class="alert-desc">Your cosmic fertility peaks today under the fertile crescent. High chance of ovulation.</div>
+          <div class="alert-time">1 day ago</div>
+        </div>
+      </div>
+
+      <div class="alert-card">
+        <div class="alert-icon missing">📝</div>
+        <div class="alert-content">
+          <div class="alert-title">Magical Log Missing</div>
+          <div class="alert-desc">Remember to log your somatic echoes, cramps and emotional currents for cycle day 14.</div>
+          <div class="alert-time">2 days ago</div>
+        </div>
+      </div>
+
+      <div class="alert-card">
+        <div class="alert-icon astro">🦉</div>
+        <div class="alert-content">
+          <div class="alert-title">Astrological Milestone</div>
+          <div class="alert-desc">Full Moon summits in Scorpio. Perfect alignment for meditative reflection.</div>
+          <div class="alert-time">3 days ago</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 16px;">
+        <span style="font-size: 12px; color: var(--text-muted);">1 Active</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 12: Coven Sanctum ==================== -->
+  <div class="screen" id="screen-coven">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 16px;">
+        Coven Sanctum
+      </h2>
+
+      <div class="coven-tabs">
+        <div class="coven-tab active">Recent Whispers</div>
+        <div class="coven-tab">Ancients' Wisdom</div>
+        <div class="coven-tab">Cosmic Cycle</div>
+      </div>
+
+      <!-- Post 1 -->
+      <div class="coven-post">
+        <div class="coven-post-header">
+          <div class="coven-avatar">🌿</div>
+          <div>
+            <div class="coven-username">MoonChild99</div>
+            <div class="coven-badge">Anonymously Syncing</div>
+          </div>
+        </div>
+        <div class="coven-post-body">
+          <strong>Herbal Remedies</strong><br><br>
+          Logged heavy cramps today. Sipping raspberry leaf infusion. If anyone is in their Luteal stage, please rest up tonight with cozy ritual! ✨
+        </div>
+        <div class="coven-post-footer">
+          <div class="coven-action">✨ 24</div>
+          <div class="coven-action">💬 8</div>
+          <div class="coven-action">🔮 1</div>
+        </div>
+      </div>
+
+      <!-- Post 2 -->
+      <div class="coven-post">
+        <div class="coven-post-header">
+          <div class="coven-avatar">💎</div>
+          <div>
+            <div class="coven-username">CrystalSeer</div>
+            <div class="coven-badge">Dream Work</div>
+          </div>
+        </div>
+        <div class="coven-post-body">
+          <strong>Anonymously Syncing</strong><br><br>
+          Is it just me, or does your dream state become incredibly vivid and almost prophetic during the Full Moon / Ovulation Peak? Truly enchanted.
+        </div>
+        <div class="coven-post-footer">
+          <div class="coven-action">✨ 42</div>
+          <div class="coven-action">💬 15</div>
+          <div class="coven-action">🔮 1</div>
+        </div>
+      </div>
+
+      <!-- Post 3 -->
+      <div class="coven-post">
+        <div class="coven-post-header">
+          <div class="coven-avatar">🌟</div>
+          <div>
+            <div class="coven-username">LunarGlow</div>
+            <div class="coven-badge">Cosmic Cycle</div>
+          </div>
+        </div>
+        <div class="coven-post-body">
+          <strong>Anonymously Syncing</strong><br><br>
+          Started Bleeding Phase 2 days earlier than estimated cycle clock. Must be the recent Scorpio lunar eclipse affecting my patterns.
+        </div>
+        <div class="coven-post-footer">
+          <div class="coven-action">✨ 18</div>
+          <div class="coven-action">💬 3</div>
+          <div class="coven-action">🔮 1</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 13: Apothecary Library ==================== -->
+  <div class="screen" id="screen-library">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 16px;">
+        Apothecary Library
+      </h2>
+
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5.05 5.05c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42L15.5 14z"/></svg>
+        <input type="text" placeholder="Search spells, herbs, anatomy...">
+      </div>
+
+      <div class="library-card">
+        <div class="lib-category">📖 Anatomy</div>
+        <div class="lib-title">Understanding Your Luteal Phase</div>
+        <div class="lib-desc">The autumn of your biology. Why emotional currents run deeper now.</div>
+        <div class="lib-meta">5 min read</div>
+      </div>
+
+      <div class="library-card">
+        <div class="lib-category">🌿 Botanical</div>
+        <div class="lib-title">Herbs for Somatic Cramp Relief</div>
+        <div class="lib-desc">Sip Mugwort, Raspberry Leaf and Ginger to soothe your uterine temples.</div>
+        <div class="lib-meta">8 min read</div>
+      </div>
+
+      <div class="library-card">
+        <div class="lib-category">🧘 Mindfulness</div>
+        <div class="lib-title">Moon Cycle Meditation</div>
+        <div class="lib-desc">Deep meditative practice to align your biological engine with the crescent.</div>
+        <div class="lib-meta">12 min read</div>
+      </div>
+
+      <div class="library-card">
+        <div class="lib-category">🌙 Lunar Cycle</div>
+        <div class="lib-title">Fertility Window Explained</div>
+        <div class="lib-desc">Deciphering the peak hormonal flow and cosmic signs of ovulation.</div>
+        <div class="lib-meta">6 min read</div>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Today</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Calendar</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Log</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Insights</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Magic</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 14: Amulet Reminders ==================== -->
+  <div class="screen" id="screen-reminders">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px;">
+        Amulet Reminders
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">
+        Calibrate mystical bells to warn you of upcoming tides.
+      </p>
+
+      <div class="reminder-card">
+        <div class="reminder-icon" style="background: rgba(207,74,74,0.15);">🩸</div>
+        <div class="reminder-content">
+          <div class="reminder-title">Log Period Commencing</div>
+          <div class="reminder-desc">Magical bell before predicted flow</div>
+        </div>
+        <div class="reminder-time">09:00 AM<br><span style="font-size: 10px; color: var(--text-muted);">Daily during peak</span></div>
+      </div>
+
+      <div class="reminder-card">
+        <div class="reminder-icon" style="background: rgba(212,168,83,0.15);">💊</div>
+        <div class="reminder-content">
+          <div class="reminder-title">Take Cosmic Pill</div>
+          <div class="reminder-desc">Pill/supplements timer</div>
+        </div>
+        <div class="reminder-time">08:30 AM<br><span style="font-size: 10px; color: var(--text-muted);">Every day</span></div>
+      </div>
+
+      <div class="reminder-card">
+        <div class="reminder-icon" style="background: rgba(232,121,168,0.15);">🌸</div>
+        <div class="reminder-content">
+          <div class="reminder-title">Fertility Window Alert</div>
+          <div class="reminder-desc">Remind of peak biological phase</div>
+        </div>
+        <div class="reminder-time">—<br><span style="font-size: 10px; color: var(--text-muted);">—</span></div>
+      </div>
+
+      <div class="reminder-card">
+        <div class="reminder-icon" style="background: rgba(207,138,74,0.15);">🌊</div>
+        <div class="reminder-content">
+          <div class="reminder-title">PMS Warning</div>
+          <div class="reminder-desc">Prepare your temple for mood shifts</div>
+        </div>
+        <div class="reminder-time">06:00 PM<br><span style="font-size: 10px; color: var(--text-muted);">3 days prior</span></div>
+      </div>
+
+      <div class="reminder-card">
+        <div class="reminder-icon" style="background: rgba(110,207,138,0.15);">🌿</div>
+        <div class="reminder-content">
+          <div class="reminder-title">Somatic Hydration</div>
+          <div class="reminder-desc">Sip restorative botanical water</div>
+        </div>
+        <div class="reminder-time">—<br><span style="font-size: 10px; color: var(--text-muted);">—</span></div>
+      </div>
+
+      <button class="btn btn-primary mt-16">
+        + Add New Reminder
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== SCREEN 15: Coven Binding ==================== -->
+  <div class="screen" id="screen-binding">
+    <div style="padding-top: 10px;">
+      <h2 style="font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px;">
+        Coven Binding
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">
+        Bind Cosmic Partners — Invite partners or coven members to sync and visualize predictions on a shared celestial map.
+      </p>
+
+      <div class="binding-form">
+        <h3>🔗 Invite Cosmic Bond</h3>
+        <div class="form-group">
+          <label class="form-label">Partner's Astral Email</label>
+          <div class="input-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            <input type="email" class="form-input" placeholder="partner@cosmic.com" value="partner@cosmic.com">
+          </div>
+        </div>
+        <button class="btn btn-gold">
+          📜 Send Binding Scroll
+        </button>
+      </div>
+
+      <div class="binding-form">
+        <h3>👁️ Scroll Visibility</h3>
+        <div class="visibility-options">
+          <div class="visibility-item">
+            <span class="visibility-label">Share Bleeding Predictions</span>
+            <div class="toggle active"></div>
+          </div>
+          <div class="visibility-item">
+            <span class="visibility-label">Share Fertile Windows</span>
+            <div class="toggle active"></div>
+          </div>
+          <div class="visibility-item">
+            <span class="visibility-label">Share Anonymized Symptom Log</span>
+            <div class="toggle"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Today</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Calendar</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Log</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Insights</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;">Magic</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav" id="bottomNav" style="display: none;">
+    <button class="nav-item active" onclick="showScreen('screen-sanctuary'); setActiveNav(this);">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span class="nav-label">Sanctuary</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('screen-apothecary'); setActiveNav(this);">
+      <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.63 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+      <span class="nav-label">Apothecary</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('screen-alerts'); setActiveNav(this);">
+      <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.33V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.67C5.64 5.36 4 7.93 4 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+      <span class="nav-label">Alerts</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('screen-coven'); setActiveNav(this);">
+      <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      <span class="nav-label">Coven</span>
+    </button>
+    <button class="nav-item" onclick="showScreen('screen-settings'); setActiveNav(this);">
+      <svg viewBox="0 0 24 24"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-.98l2.11-.68a.52.52 0 0 0 .32-.48V10.56a.52.52 0 0 0-.32-.48l-2.11-.68c.04-.32.07-.65.07-.97 0-.32-.03-.65-.07-.97l2.11-.68a.52.52 0 0 0 .32-.48V8.56a.52.52 0 0 0-.32-.48l-2.11-.68c-.04-.32-.07-.64-.07-.97 0-.32.03-.64.07-.96l-2.11-.68a.52.52 0 0 0-.32-.48V6.56a.52.52 0 0 0-.32-.48l-2.11-.68c-.04-.32-.07-.64-.07-.97 0-.32.03-.64.07-.96L14.18 3.3a.52.52 0 0 0 .32-.48V2.28a.52.52 0 0 0-.32-.48l-2.11-.68c-.04-.32-.07-.64-.07-.97 0-.32.03-.64.07-.96l-2.11-.68a.52.52 0 0 0-.32-.48V.28a.52.52 0 0 0-.32-.48C11.05-.28 11.52-.5 12-.5c.48 0 .95.22 1.22.56l2.11.68c.04.32.07.64.07.97 0 .32.03.65.07.97l2.11.68c.04.32.07.65.07.97 0 .32-.03.65-.07.97l2.11.68c.04.32.07.65.07.97 0 .32-.03.65-.07.97l-2.11.68z"/></svg>
+      <span class="nav-label">Selene</span>
+    </button>
+  </div>
+
+  <!-- FAB -->
+  <div class="fab" id="fab" style="display: none;" onclick="showScreen('screen-apothecary')">
+    ✨
+  </div>
+
+</div>
+
+<script>
+  // Generate stars
+  const starField = document.getElementById('starField');
+  for (let i = 0; i < 50; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 3 + 's';
+    star.style.width = (Math.random() * 2 + 1) + 'px';
+    star.style.height = star.style.width;
+    starField.appendChild(star);
+  }
+
+  // Screen navigation
+  function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+
+    const isWelcome = screenId === 'screen-welcome';
+    const isAuth = screenId === 'screen-auth';
+    const isRhythms = screenId === 'screen-rhythms';
+
+    document.getElementById('bottomNav').style.display = (isWelcome || isAuth || isRhythms) ? 'none' : 'flex';
+    document.getElementById('fab').style.display = (isWelcome || isAuth || isRhythms) ? 'none' : 'flex';
+
+    window.scrollTo(0, 0);
+  }
+
+  function setActiveNav(el) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // Toggle switches
+  document.querySelectorAll('.toggle').forEach(t => {
+    t.addEventListener('click', () => t.classList.toggle('active'));
+  });
+
+  // Option cards
+  document.querySelectorAll('.option-card').forEach(card => {
+    card.addEventListener('click', () => {
+      card.classList.toggle('active');
+    });
+  });
+
+  // Coven tabs
+  document.querySelectorAll('.coven-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.coven-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

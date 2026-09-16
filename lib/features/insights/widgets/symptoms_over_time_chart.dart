@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../../models/symptom_log.dart';
+import '../../../utils/app_theme.dart';
 import '../../../utils/date_utils.dart';
 
 /// Line chart of symptom entries per month over the last [months] months.
@@ -105,6 +106,7 @@ class SymptomsOverTimeChart extends StatelessWidget {
                   return LineTooltipItem(
                     l10n.chartEntries(spot.y.toInt()),
                     TextStyle(
+                      fontFamily: AppTypography.kBodyFont,
                       color: scheme.onInverseSurface,
                       fontWeight: FontWeight.w600,
                     ),

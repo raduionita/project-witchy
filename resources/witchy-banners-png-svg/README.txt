@@ -1,0 +1,17 @@
+Witchy banner exports
+
+Each design is supplied as PNG and SVG at its native canvas dimensions.
+The SVG files preserve the complete raster artwork inside an SVG canvas.
+
+Files:
+- 01-witchy-your-cycle-your-magic.png — 1144×672 — 01-witchy-your-cycle-your-magic.svg
+- 02-witchy-move-with-your-rhythm.png — 1584×672 — 02-witchy-move-with-your-rhythm.svg
+- 03-witchy-know-your-flow.png — 1361×512 — 03-witchy-know-your-flow.svg
+- 04-witchy-bloom-in-every-phase.png — 1584×672 — 04-witchy-bloom-in-every-phase.svg
+- 05-witchy-small-signs-big-wisdom.png — 1584×672 — 05-witchy-small-signs-big-wisdom.svg
+- 06-witchy-moon-mark.png — 1200×896 — 06-witchy-moon-mark.svg
+- 07-witchy-every-phase-has-power.png — 1584×672 — 07-witchy-every-phase-has-power.svg
+- 08-witchy-trust-your-inner-tide.png — 1584×672 — 08-witchy-trust-your-inner-tide.svg
+- 09-witchy-body-wise.png — 1152×928 — 09-witchy-body-wise.svg
+- 10-witchy-your-body-speaks.png — 1024×1024 — 10-witchy-your-body-speaks.svg
+- 11-witchy-all-of-you.png — 1024×1024 — 11-witchy-all-of-you.svg

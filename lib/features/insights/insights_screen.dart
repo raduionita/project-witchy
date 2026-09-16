@@ -59,26 +59,24 @@ class _InsightsScreenState extends State<InsightsScreen> {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
+                child: OutlinedButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const CycleHistoryScreen(),
                     ),
                   ),
-                  icon: const Icon(Icons.history),
-                  label: Text(l10n.cycleHistoryTitle),
+                  child: Text(l10n.cycleHistoryTitle),
                 ),
               ),
               const SizedBox(width: AppSpacing.kSm),
               Expanded(
-                child: OutlinedButton.icon(
+                child: OutlinedButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const MonthlyReportScreen(),
                     ),
                   ),
-                  icon: const Icon(Icons.receipt_long),
-                  label: Text(l10n.monthlyReportTitle),
+                  child: Text(l10n.monthlyReportTitle),
                 ),
               ),
             ],

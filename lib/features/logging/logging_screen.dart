@@ -10,7 +10,7 @@ import '../../utils/app_theme.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/app_section_header.dart';
 import 'log_biometrics_sheet.dart';
-import 'log_period_sheet.dart';
+import 'sovereign_blood_screen.dart';
 
 /// The Logging tab: quick entry + history of recent logs.
 class LoggingScreen extends StatefulWidget {
@@ -26,7 +26,8 @@ class LoggingScreen extends StatefulWidget {
 
 class _LoggingScreenState extends State<LoggingScreen> {
   Future<void> _openSheetForToday() async {
-    await LogPeriodSheet.show(context: context, date: DateTime.now());
+    if (!mounted) return;
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SovereignBloodScreen(date: DateTime.now())));
   }
 
   void _openCalendar(BuildContext context) {
@@ -76,7 +77,7 @@ class _LoggingScreenState extends State<LoggingScreen> {
         children: [
           AppCard(
             child: ListTile(
-              leading: Icon(Icons.add_circle, color: Theme.of(context).colorScheme.primary),
+              leading: Container(width: 34, height: 34, decoration: const BoxDecoration(color: AppColors.kLav, shape: BoxShape.circle), alignment: Alignment.center, child: const Icon(Icons.add_circle_outline, size: 14, color: AppColors.kPurple)),
               title: Text(l10n.loggingLogPeriod),
               subtitle: Text(l10n.loggingLogPeriodSubtitle),
               onTap: _openSheetForToday,

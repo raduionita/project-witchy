@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -19,11 +17,12 @@ import '../../utils/app_theme.dart';
 import '../../utils/color_utils.dart';
 import '../../utils/date_utils.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/cycle_orb.dart';
 import '../../widgets/day_markers.dart';
 import '../calendar/cycle_calendar.dart';
-import '../logging/log_biometrics_sheet.dart';
 import '../logging/log_period_sheet.dart';
 import '../logging/log_symptom_sheet.dart';
+import '../logging/sovereign_blood_screen.dart';
 import '../perimenopause/perimenopause_screen.dart';
 import '../pregnancy/pregnancy_screen.dart';
 
@@ -59,23 +58,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final Set<DateTime> wanted = <DateTime>{for (int i = -_DayStripGrid.kDaysBefore; i <= _DayStripGrid.kDaysAfter; i++) addDays(today, i)};
     final List<CalendarDay> days = <CalendarDay>[
-      for (final DateTime date in wanted.toList()..sort())
-        _withMarkers(
-          byDate[date] ?? CalendarDay(date: date, state: CalendarDayState.none, isToday: date == today),
-          biometrics,
-        ),
+      for (final DateTime date in wanted.toList()..sort()) _withMarkers(byDate[date] ?? CalendarDay(date: date, state: CalendarDayState.none, isToday: date == today), biometrics),
     ];
 
     return _DayStripGrid(days: days, today: today, background: background, foreground: foreground, onDayTap: _onDayTap, onDayLongPress: _onDayLongPress);
   }
 
   CalendarDay _withMarkers(CalendarDay day, BiometricProvider biometrics) {
-    return CalendarDay(
-      date: day.date,
-      state: day.state,
-      isToday: day.isToday,
-      markers: biometrics.markersFor(day.date),
-    );
+    return CalendarDay(date: day.date, state: day.state, isToday: day.isToday, markers: biometrics.markersFor(day.date));
   }
 
   Future<void> _onDayTap(CalendarDay day) async {
@@ -113,91 +103,44 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// White card holding the calendar day-strip and today's biometric badges.
   Widget _stripCard(BuildContext context) {
-    final AppLocalizations l10n = AppLocalizations.of(context);
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
     final Color cardBg = isDark ? theme.colorScheme.surfaceContainerLow : AppColors.kSurfaceBase;
     final Color fg = theme.colorScheme.onSurface;
 
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text(l10n.homeToday, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold))),
-              IconButton(
-                tooltip: l10n.biometricsTitle,
-                onPressed: () => LogBiometricsSheet.show(context: context, date: DateTime.now()),
-                icon: const Icon(Icons.thermostat),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.kSm),
-          _dayStrip(cardBg, fg),
-          _todayBiometrics(context, fg),
-        ],
-      ),
-    );
+    return AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const SizedBox(height: AppSpacing.kSm), _dayStrip(cardBg, fg), _todayBiometrics(context, fg)]));
   }
 
-  /// 180px progress dial: lavender track, primary arc by cycle progress.
+  /// Sanctuary orb: conic ring + radial plum orb with cycle day.
   Widget _cycleDial(BuildContext context, CyclePrediction prediction) {
     final AppLocalizations l10n = AppLocalizations.of(context);
-    final ThemeData theme = Theme.of(context);
-    final bool isDark = theme.brightness == Brightness.dark;
     final int cycleDay = daysBetween(prediction.currentCycleStart, DateTime.now()) + 1;
     final int cycleLength = daysBetween(prediction.currentCycleStart, prediction.nextPeriodStart);
     final double progress = cycleLength <= 0 ? 0 : (cycleDay / cycleLength).clamp(0.0, 1.0);
     final CyclePhase phase = prediction.currentCyclePhase;
-
-    return Center(
-      child: Container(
-        width: AppSizing.kCycleCircle,
-        height: AppSizing.kCycleCircle,
-        decoration: BoxDecoration(
-          color: isDark ? theme.colorScheme.surfaceContainerLow : AppColors.kSurfaceBase,
-          shape: BoxShape.circle,
-          boxShadow: AppShadows.kHero,
-        ),
-        child: CustomPaint(
-          painter: _CycleProgressPainter(
-            progress: progress,
-            track: isDark ? theme.colorScheme.surfaceContainerHighest : AppColors.kPrimaryLightest,
-            arc: isDark ? theme.colorScheme.primary : AppColors.kPrimary,
-          ),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(l10n.homeCycleDayLabel, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-                Text('$cycleDay', style: theme.textTheme.displayMedium?.copyWith(color: isDark ? theme.colorScheme.onSurface : AppColors.kPrimary)),
-                const SizedBox(height: AppSpacing.kSm),
-                Text(cyclePhaseLabel(l10n, phase), style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return Semantics(
+      label: 'Current status: Day $cycleDay of $cycleLength-day cycle, ${cyclePhaseLabel(l10n, phase)}',
+      child: CycleOrb(cycleDay: cycleDay, subtitle: cyclePhaseLabel(l10n, phase), progress: progress),
     );
   }
 
-  /// "Period in" and "Fertility window" status cards side by side.
+  /// Qwen duo stat cards: uppercase label, serif value, muted sub.
   Widget _statusCards(BuildContext context, CyclePrediction prediction) {
     final AppLocalizations l10n = AppLocalizations.of(context);
-    final ThemeData theme = Theme.of(context);
     final int days = daysBetween(DateTime.now(), prediction.nextPeriodStart);
     final bool fertileNow = prediction.fertileWindow.contains(DateTime.now());
 
-    Widget card({required String title, required String value, bool highlighted = false}) {
+    Widget stat({required String label, required String value, required String sub, bool peak = false}) {
       return Expanded(
         child: AppCard(
-          highlighted: highlighted,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
-              const SizedBox(height: AppSpacing.kXs),
-              Text(value, textAlign: TextAlign.center, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              Text(label.toUpperCase(), style: const TextStyle(fontSize: 8.5, letterSpacing: 1.02, fontWeight: FontWeight.w700, color: AppColors.kMuted)),
+              const SizedBox(height: 3),
+              Text(value, style: TextStyle(fontFamily: AppTypography.kDisplayFont, fontSize: 19, fontWeight: FontWeight.w700, color: peak ? AppColors.kPink : AppColors.kPurple)),
+              const SizedBox(height: 1),
+              Text(sub, style: const TextStyle(fontSize: 10, color: AppColors.kMuted)),
             ],
           ),
         ),
@@ -206,12 +149,62 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Row(
       children: [
-        card(title: l10n.homePeriodIn, value: l10n.homeInDays(days)),
-        const SizedBox(width: AppSpacing.kMd),
-        card(
-          title: l10n.homeFertileWindow,
-          value: fertileNow ? l10n.homePeakToday : '${DateFormat('MMM d').format(prediction.fertileWindow.start)} – ${DateFormat('MMM d').format(prediction.fertileWindow.end)}',
-          highlighted: fertileNow,
+        stat(label: l10n.homePeriodIn, value: l10n.homeInDays(days), sub: DateFormat('MMM d').format(prediction.nextPeriodStart)),
+        const SizedBox(width: 12),
+        stat(
+          label: l10n.homeFertileWindow,
+          value: fertileNow ? l10n.homePeakToday : DateFormat('MMM d').format(prediction.fertileWindow.start),
+          sub: fertileNow ? l10n.homePeakToday : '${DateFormat('MMM d').format(prediction.fertileWindow.start)} – ${DateFormat('MMM d').format(prediction.fertileWindow.end)}',
+          peak: fertileNow,
+        ),
+      ],
+    );
+  }
+
+  /// Qwen quick-action grid: Flow / Mood / Pain / Notes.
+  Widget _quickActions(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    Widget action({required IconData icon, required String label, required VoidCallback onTap}) {
+      return Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.kLine)),
+            child: Column(
+              children: [
+                Container(width: 34, height: 34, decoration: const BoxDecoration(color: AppColors.kLav, shape: BoxShape.circle), alignment: Alignment.center, child: Icon(icon, size: 14, color: AppColors.kPurple)),
+                const SizedBox(height: 8),
+                Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500, color: Color(0xFF5D4A70))),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    Future<void> openLog() async => LogSymptomSheet.show(context: context, date: DateTime.now());
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l10n.navLogging, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.kTextSecondary)),
+        const SizedBox(height: 10),
+        GridView.count(
+          crossAxisCount: 4,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 0.82,
+          children: [
+            action(icon: Icons.water_drop_outlined, label: 'Flow', onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SovereignBloodScreen(date: DateTime.now())))),
+            action(icon: Icons.favorite_outline, label: 'Mood', onTap: openLog),
+            action(icon: Icons.show_chart, label: 'Pain', onTap: openLog),
+            action(icon: Icons.note_alt_outlined, label: 'Notes', onTap: openLog),
+          ],
         ),
       ],
     );
@@ -228,14 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
     };
     return AppInfoBanner(
       icon: Icons.lightbulb_outline,
-      child: Text.rich(
-        TextSpan(
-          children: [
-            TextSpan(text: '${l10n.homeTipTitle} ', style: const TextStyle(fontWeight: FontWeight.bold)),
-            TextSpan(text: tip),
-          ],
-        ),
-      ),
+      child: Text.rich(TextSpan(children: [TextSpan(text: '${l10n.homeTipTitle} ', style: const TextStyle(fontFamily: AppTypography.kBodyFont, fontWeight: FontWeight.bold)), TextSpan(text: tip)])),
     );
   }
 
@@ -252,12 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Wrap(
         spacing: AppSpacing.kSm,
         runSpacing: AppSpacing.kSm,
-        children: <Widget>[
-          if (bbt != null)
-            _todayBadge(l10n.todayBbt(bbt.toStringAsFixed(2)), onFill),
-          if (lh != null)
-            _todayBadge(l10n.todayLh(ovulationTestLabel(l10n, lh)), onFill),
-        ],
+        children: <Widget>[if (bbt != null) _todayBadge(l10n.todayBbt(bbt.toStringAsFixed(2)), onFill), if (lh != null) _todayBadge(l10n.todayLh(ovulationTestLabel(l10n, lh)), onFill)],
       ),
     );
   }
@@ -265,11 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _todayBadge(String label, Color onFill) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.kSm, vertical: AppSpacing.kXs),
-      decoration: BoxDecoration(
-        color: onFill.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(AppSpacing.kRadiusPill),
-        border: Border.all(color: onFill.withValues(alpha: 0.4)),
-      ),
+      decoration: BoxDecoration(color: onFill.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(AppSpacing.kRadiusPill), border: Border.all(color: onFill.withValues(alpha: 0.4))),
       child: Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: onFill, fontWeight: FontWeight.w600)),
     );
   }
@@ -295,8 +272,10 @@ class _HomeScreenState extends State<HomeScreen> {
           else ...[
             const SizedBox(height: AppSpacing.kSm),
             _cycleDial(context, prediction),
-            const SizedBox(height: AppSpacing.kLg),
+            const SizedBox(height: AppSpacing.kMd),
             _statusCards(context, prediction),
+            const SizedBox(height: AppSpacing.kMd),
+            _quickActions(context),
             const SizedBox(height: AppSpacing.kMd),
             _tipBanner(context, prediction),
           ],
@@ -304,46 +283,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
-
-/// Progress ring for the home cycle dial: lavender track with primary arc.
-class _CycleProgressPainter extends CustomPainter {
-  const _CycleProgressPainter({required this.progress, required this.track, required this.arc});
-
-  final double progress;
-  final Color track;
-  final Color arc;
-
-  static const double _stroke = 10;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final Offset center = size.center(Offset.zero);
-    final double radius = (size.shortestSide - _stroke) / 2;
-    canvas.drawCircle(
-      center,
-      radius,
-      Paint()
-        ..color = track
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = _stroke,
-    );
-    if (progress <= 0) return;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
-      progress * 2 * math.pi,
-      false,
-      Paint()
-        ..color = arc
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = _stroke
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_CycleProgressPainter oldDelegate) => oldDelegate.progress != progress || oldDelegate.track != track || oldDelegate.arc != arc;
 }
 
 /// Horizontally scrollable strip of day cells with edge-arrow buttons.
@@ -548,14 +487,7 @@ class _DayCell extends StatelessWidget {
               '${day.date.day}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: textColor, fontSize: day.isToday ? 16 : 12, fontWeight: day.isToday ? FontWeight.bold : FontWeight.normal),
             ),
-            if (day.markers.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 1),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: DayMarkersRow(markers: day.markers, size: 7, color: textColor),
-                ),
-              ),
+            if (day.markers.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 1), child: FittedBox(fit: BoxFit.scaleDown, child: DayMarkersRow(markers: day.markers, size: 7, color: textColor))),
           ],
         ),
       ),

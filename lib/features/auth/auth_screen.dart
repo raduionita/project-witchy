@@ -1,4 +1,3 @@
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -43,81 +42,62 @@ class AuthScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final AuthProvider auth = context.watch<AuthProvider>();
+    final TextTheme text = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settingsAccountTitle)),
+      backgroundColor: AppColors.kCanvas,
+      appBar: AppBar(title: Text(l10n.settingsAccountTitle), backgroundColor: AppColors.kCanvas),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(AppSpacing.kLg),
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
           children: [
-            Icon(
-              Icons.favorite_outline,
-              size: 56,
-              color: Theme.of(context).colorScheme.primary,
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.nights_stay_outlined, size: 20, color: AppColors.kPurple),
+                SizedBox(width: 16),
+                Icon(Icons.nights_stay_outlined, size: 20, color: AppColors.kPurple),
+                SizedBox(width: 16),
+                Icon(Icons.nights_stay_outlined, size: 20, color: AppColors.kGold),
+                SizedBox(width: 16),
+                Icon(Icons.nights_stay_outlined, size: 20, color: AppColors.kPurple),
+                SizedBox(width: 16),
+                Icon(Icons.nights_stay_outlined, size: 20, color: AppColors.kPurple),
+              ],
             ),
-            const SizedBox(height: AppSpacing.kMd),
-            Text(
-              l10n.authSignInOptional,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+            const SizedBox(height: 12),
+            Text(l10n.authSignInOptional, style: const TextStyle(fontSize: 9, letterSpacing: 1.4, fontWeight: FontWeight.w700, color: AppColors.kGold)),
+            const SizedBox(height: 4),
+            Text('Join the Coven', style: text.displaySmall?.copyWith(fontSize: 21, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 5),
+            Text(l10n.authBody, style: text.bodyMedium?.copyWith(color: AppColors.kMuted, fontSize: 11.5, height: 1.5)),
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: auth.busy ? null : () => _signIn(context, auth.signInWithGoogle),
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton))),
+              child: Text(l10n.authGoogleSignIn),
             ),
-            const SizedBox(height: AppSpacing.kSm),
-            Text(
-              l10n.authBody,
-              textAlign: TextAlign.center,
+            const SizedBox(height: 10),
+            OutlinedButton(
+              onPressed: auth.busy ? null : () => _signIn(context, auth.signInWithApple),
+              style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton))),
+              child: Text(l10n.authAppleSignIn),
             ),
-            const SizedBox(height: AppSpacing.kXl),
-            FilledButton.icon(
-              onPressed: auth.busy
-                  ? null
-                  : () => _signIn(context, auth.signInWithGoogle),
-              icon: const Icon(FontAwesomeIcons.google),
-              label: Text(l10n.authGoogleSignIn),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton),
-                ),
-              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Expanded(child: Divider(color: AppColors.kLine)),
+                const Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Icon(Icons.nights_stay_outlined, size: 10, color: Color(0xFFA795B8))),
+                const Expanded(child: Divider(color: AppColors.kLine)),
+              ],
             ),
-            const SizedBox(height: AppSpacing.kSm),
-            OutlinedButton.icon(
-              onPressed: auth.busy
-                  ? null
-                  : () => _signIn(context, auth.signInWithApple),
-              icon: const Icon(FontAwesomeIcons.apple),
-              label: Text(l10n.authAppleSignIn),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton),
-                ),
-              ),
-            ),
-            TextButton.icon(
-              onPressed: auth.busy
-                  ? null
-                  : () => _signIn(context, auth.signInAnonymously),
-              icon: const Icon(Icons.person_off_outlined),
-              label: Text(l10n.authAnonymous),
-              style: TextButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton),
-                ),
-              ),
+            TextButton(
+              onPressed: auth.busy ? null : () => _signIn(context, auth.signInAnonymously),
+              style: TextButton.styleFrom(minimumSize: const Size.fromHeight(52), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.kRadiusButton))),
+              child: Text(l10n.authAnonymous),
             ),
             if (auth.busy) const SizedBox(height: AppSpacing.kMd),
-            if (auth.busy)
-              const Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
+            if (auth.busy) const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))),
           ],
         ),
       ),

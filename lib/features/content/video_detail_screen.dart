@@ -83,7 +83,6 @@ class VideoDetailScreen extends StatelessWidget {
             ],
             AppButton(
               label: l10n.contentWatch,
-              icon: Icons.play_arrow,
               onPressed: () => _open(context),
             ),
           ],

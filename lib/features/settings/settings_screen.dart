@@ -475,10 +475,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 title: Text(
                   l10n.settingsClearData,
-                  style: TextStyle(
-                    color: scheme.error,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: scheme.error,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 subtitle: Text(l10n.settingsClearDataSubtitle),
                 trailing: const Icon(Icons.chevron_right),

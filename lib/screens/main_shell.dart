@@ -4,6 +4,7 @@ import '../features/calendar/calendar_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/insights/insights_screen.dart';
 import '../features/logging/logging_screen.dart';
+import '../features/reminders/alerts_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/app_theme.dart';
@@ -19,13 +20,7 @@ class MainShellScreen extends StatefulWidget {
 class _MainShellScreenState extends State<MainShellScreen> {
   int _index = 0;
 
-  late final List<Widget> _tabs = <Widget>[
-    const HomeScreen(),
-    const CalendarScreen(),
-    LoggingScreen(onOpenCalendar: () => setState(() => _index = 1)),
-    const InsightsScreen(),
-    const SettingsScreen(),
-  ];
+  late final List<Widget> _tabs = <Widget>[const HomeScreen(), const CalendarScreen(), LoggingScreen(onOpenCalendar: () => setState(() => _index = 1)), const InsightsScreen(), const SettingsScreen()];
 
   String _titleFor(AppLocalizations l10n) {
     return switch (_index) {
@@ -37,32 +32,8 @@ class _MainShellScreenState extends State<MainShellScreen> {
     };
   }
 
-  Widget _centerLogButton(AppLocalizations l10n) {
-    final bool selected = _index == 2;
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: l10n.navLogging,
-      child: InkWell(
-        onTap: () => setState(() => _index = 2),
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: AppColors.kPrimary,
-            shape: BoxShape.circle,
-            boxShadow: AppShadows.kHero,
-            border: selected ? Border.all(color: AppColors.kCoral, width: 3) : null,
-          ),
-          child: const Icon(Icons.add, color: Colors.white, size: 28),
-        ),
-      ),
-    );
-  }
-
-  Widget _barItem({required IconData icon, required String label, required bool selected, required VoidCallback onTap}) {
-    final Color color = selected ? AppColors.kPrimary : AppColors.kTextSecondary;
+  Widget _barItem({required IconData icon, required IconData activeIcon, required String label, required bool selected, required VoidCallback onTap}) {
+    final Color color = selected ? AppColors.kPurple : const Color(0xFFA795B8);
     return Expanded(
       child: Semantics(
         button: true,
@@ -76,9 +47,23 @@ class _MainShellScreenState extends State<MainShellScreen> {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, size: 24, color: color),
-                const SizedBox(height: 2),
-                Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: AppTypography.kNavLabel, color: color)),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(selected ? activeIcon : icon, size: 20, color: color),
+                    if (selected)
+                      Positioned(
+                        bottom: -6,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: Container(width: 18, height: 2.5, decoration: BoxDecoration(color: AppColors.kPurple, borderRadius: BorderRadius.circular(2))),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(label, style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w500, color: color)),
               ],
             ),
           ),
@@ -91,16 +76,16 @@ class _MainShellScreenState extends State<MainShellScreen> {
     return SafeArea(
       top: false,
       child: Container(
-        height: AppSizing.kNavHeight,
-        padding: const EdgeInsets.only(bottom: 8),
-        decoration: const BoxDecoration(color: AppColors.kSurfaceBase, border: Border(top: BorderSide(color: AppColors.kBorder))),
+        height: 78,
+        padding: const EdgeInsets.only(top: 10),
+        decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.kLine))),
         child: Row(
           children: [
-            _barItem(icon: _index == 0 ? Icons.home : Icons.home_outlined, label: l10n.navHome, selected: _index == 0, onTap: () => setState(() => _index = 0)),
-            _barItem(icon: _index == 1 ? Icons.calendar_month : Icons.calendar_month_outlined, label: l10n.navCalendar, selected: _index == 1, onTap: () => setState(() => _index = 1)),
-            Expanded(child: Center(child: _centerLogButton(l10n))),
-            _barItem(icon: _index == 3 ? Icons.bar_chart : Icons.bar_chart_outlined, label: l10n.navInsights, selected: _index == 3, onTap: () => setState(() => _index = 3)),
-            _barItem(icon: _index == 4 ? Icons.person : Icons.person_outline, label: l10n.navAccount, selected: _index == 4, onTap: () => setState(() => _index = 4)),
+            _barItem(icon: Icons.nights_stay_outlined, activeIcon: Icons.nights_stay, label: l10n.navHome, selected: _index == 0, onTap: () => setState(() => _index = 0)),
+            _barItem(icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_month, label: l10n.navCalendar, selected: _index == 1, onTap: () => setState(() => _index = 1)),
+            _barItem(icon: Icons.edit_outlined, activeIcon: Icons.edit, label: l10n.navLogging, selected: _index == 2, onTap: () => setState(() => _index = 2)),
+            _barItem(icon: Icons.bar_chart_outlined, activeIcon: Icons.bar_chart, label: l10n.navInsights, selected: _index == 3, onTap: () => setState(() => _index = 3)),
+            _barItem(icon: Icons.auto_awesome_outlined, activeIcon: Icons.auto_awesome, label: l10n.navAccount, selected: _index == 4, onTap: () => setState(() => _index = 4)),
           ],
         ),
       ),
@@ -111,7 +96,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: _index == 4 ? null : AppBar(automaticallyImplyLeading: false, centerTitle: true, title: Text(_titleFor(l10n))),
+      appBar: _index == 4 ? null : AppBar(automaticallyImplyLeading: false, centerTitle: true, title: Text(_titleFor(l10n)), actions: _index == 0 ? [IconButton(tooltip: 'Alerts', icon: const Icon(Icons.notifications_none_outlined), onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AlertsScreen())))] : null),
       body: AppContentColumn(child: IndexedStack(index: _index, children: _tabs)),
       bottomNavigationBar: _bottomBar(l10n),
     );

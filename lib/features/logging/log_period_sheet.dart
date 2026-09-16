@@ -187,7 +187,6 @@ class _LogPeriodSheetState extends State<LogPeriodSheet> {
           AppButton(
             label: l10n.logSave,
             onPressed: _save,
-            icon: Icons.arrow_forward,
           ),
         ],
       ),

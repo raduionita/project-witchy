@@ -4,8 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:witchy/features/logging/log_biometrics_sheet.dart';
-import 'package:witchy/features/logging/log_period_sheet.dart';
 import 'package:witchy/features/logging/logging_screen.dart';
+import 'package:witchy/features/logging/sovereign_blood_screen.dart';
 import 'package:witchy/l10n/app_localizations.dart';
 import 'package:witchy/models/biometric_log.dart';
 import 'package:witchy/models/user_profile.dart';
@@ -72,15 +72,15 @@ void main() {
     );
   });
 
-  testWidgets('tapping "Log period" opens the period sheet and saving records '
-      'the day', (WidgetTester tester) async {
+  testWidgets('tapping "Log period" opens the Sovereign Blood screen and saving '
+      'records the day', (WidgetTester tester) async {
     final (_, CycleProvider cycle) = await pumpLogging(tester);
 
     await tester.tap(find.text('Log period'));
     await tester.pumpAndSettle();
-    expect(find.byType(LogPeriodSheet), findsOneWidget);
+    expect(find.byType(SovereignBloodScreen), findsOneWidget);
 
-    await tester.tap(find.text('Save log'));
+    await tester.tap(find.text('Save Bleed Log'));
     await tester.pumpAndSettle();
 
     expect(cycle.isPeriodDay(dateOnly(DateTime.now())), isTrue);

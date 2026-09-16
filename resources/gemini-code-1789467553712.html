@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Witchy App UI</title>
+<style>
+/* Global Styles */
+:root {
+  --primary-color: #3b0066; /* Deep Purple */
+  --primary-light: #5e2a84;
+  --primary-lighter: #8154a2;
+  --primary-lightest: #e0d4ea; /* Light purple background */
+  --secondary-color: #ffb7b2; /* Soft Coral/Pink for highlights */
+  --text-dark: #333;
+  --text-light: #666;
+  --white: #fff;
+  --bg-color: #f8f6fa; /* Very light gray/purple background */
+  --border-color: #e0e0e0;
+  --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  background-color: #333; /* Dark background for the wrapper */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: auto; /* Allow scrolling if screens overflow */
+  padding: 20px;
+}
+
+.app-container {
+  display: flex;
+  gap: 20px; /* Space between screens */
+}
+
+/* Base Mobile Screen Style */
+.screen {
+  width: 375px;
+  height: 812px; /* iPhone X dimensions */
+  background-color: var(--bg-color);
+  border-radius: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Status Bar (Mock) */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px 5px;
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-dark);
+  background-color: var(--white);
+  z-index: 10;
+}
+
+.status-bar .icons {
+  display: flex;
+  gap: 5px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: var(--white);
+  z-index: 10;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-align: center;
+  flex-grow: 1;
+}
+
+.header .icon-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-dark);
+  padding: 5px;
+}
+
+/* Content Area */
+.content {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background-color: var(--bg-color);
+}
+.content.white-bg {
+    background-color: var(--white);
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0 25px 0; /* Extra padding for home indicator */
+  background-color: var(--white);
+  border-top: 1px solid var(--border-color);
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 10px;
+  gap: 5px;
+}
+
+.nav-item.active {
+  color: var(--primary-color);
+}
+
+.nav-icon {
+  width: 24px;
+  height: 24px;
+  background-color: currentColor; /* Inherits color from parent */
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+/* Mock Icons (using simple shapes for now) */
+.icon-home { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>'); }
+.icon-calendar { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>'); }
+.icon-add { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>'); }
+.icon-chart { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 3v18h18V3H3zm16 16H5V5h14v14zM7 10h2v7H7v-7zm4-3h2v10h-2V7zm4 6h2v4h-2v-4z"/></svg>'); }
+.icon-profile { -webkit-mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>'); }
+
+/* Home Indicator */
+.home-indicator {
+  width: 134px;
+  height: 5px;
+  background-color: #000;
+  border-radius: 100px;
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Common UI Elements */
+.btn-primary {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background-color: var(--primary-color);
+  color: var(--white);
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.btn-secondary {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.text-center { text-align: center; }
+.mt-10 { margin-top: 10px; }
+.mt-20 { margin-top: 20px; }
+.mb-10 { margin-bottom: 10px; }
+.mb-20 { margin-bottom: 20px; }
+.p-20 { padding: 20px; }
+
+/* Specific Screen Styles */
+
+/* Screen 1: Splash / Welcome */
+.screen-splash {
+  background-color: var(--primary-lightest);
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.logo-circle {
+  width: 120px;
+  height: 120px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: 36px;
+  font-family: serif; /* Stylized W */
+  margin-bottom: 30px;
+}
+.brand-name {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+.tagline {
+  color: var(--text-light);
+  font-size: 14px;
+  margin-bottom: auto; /* Push buttons to bottom */
+}
+.splash-buttons {
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+/* Screen 2: Sign Up / Details */
+.form-group {
+  margin-bottom: 20px;
+}
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+.form-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-size: 16px;
+  box-sizing: border-box;
+  background-color: var(--bg-color);
+}
+.date-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.date-selector span { font-weight: bold; }
+.skip-link {
+  display: block;
+  text-align: center;
+  color: var(--text-light);
+  margin-top: 15px;
+  text-decoration: none;
+}
+
+/* Screen 3: Cycle Length Setup */
+.setup-header {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+.setup-desc {
+  color: var(--text-light);
+  font-size: 14px;
+  margin-bottom: 30px;
+}
+.slider-container {
+  margin-bottom: 40px;
+}
+.slider-value {
+  text-align: center;
+  font-size: 48px;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+.slider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 6px;
+  background: var(--primary-lightest);
+  border-radius: 3px;
+  outline: none;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  cursor: pointer;
+}
+.setup-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  margin-bottom: 20px;
+}
+.setup-actions button { width: 45%; }
+
+/* Screen 4: Home (Main Dashboard) */
+.circle-progress-container {
+  display: flex;
+  justify-content: center;
+  margin: 30px 0;
+  position: relative;
+}
+.circle-progress {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 10px solid var(--primary-lightest);
+  border-top-color: var(--primary-color); /* Indicates progress */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--white);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.circle-day { font-size: 42px; font-weight: bold; color: var(--primary-color); line-height: 1; }
+.circle-label { font-size: 14px; color: var(--text-light); }
+.status-cards {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.status-card {
+  width: 48%;
+  background-color: var(--white);
+  padding: 15px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+.status-card.active { border-bottom: 3px solid var(--secondary-color); }
+.card-title { font-size: 14px; color: var(--text-light); margin-bottom: 5px; }
+.card-value { font-size: 18px; font-weight: bold; color: var(--primary-color); }
+.card-value.highlight { color: var(--secondary-color); }
+.info-banner {
+  background-color: var(--primary-color);
+  color: var(--white);
+  padding: 15px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 80px; /* Space for bottom nav */
+}
+.info-banner p { margin: 0; font-size: 14px; line-height: 1.4; }
+
+/* Screen 5: Calendar View */
+.month-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.day-name { font-size: 12px; color: var(--text-light); }
+.day-number {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  margin: 0 auto;
+  border-radius: 50%;
+  font-size: 14px;
+}
+.day-number.period { background-color: var(--primary-color); color: var(--white); }
+.day-number.fertile { background-color: var(--primary-lightest); color: var(--primary-color); }
+.day-number.ovulation { background-color: var(--secondary-color); color: var(--white); }
+.calendar-legend {
+  display: flex;
+  justify-content: space-around;
+  font-size: 12px;
+  color: var(--text-light);
+  margin-bottom: 20px;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-period { background-color: var(--primary-color); }
+.dot-fertile { background-color: var(--primary-lightest); }
+.dot-ovulation { background-color: var(--secondary-color); }
+
+/* Screen 6: Add Symptoms (Log) */
+.date-header { text-align: center; font-weight: bold; margin-bottom: 20px; color: var(--primary-color); }
+.section-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: var(--text-dark); }
+.pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+.pill {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 14px;
+  color: var(--text-dark);
+  background-color: var(--white);
+}
+.pill.active {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+.pill.selected-light {
+    background-color: var(--primary-lightest);
+    border-color: var(--primary-lightest);
+    color: var(--primary-color);
+}
+
+/* Screen 7: Insights/Articles */
+.featured-article {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.featured-tag { font-size: 12px; text-transform: uppercase; margin-bottom: 10px; display: block; opacity: 0.8;}
+.featured-title { font-size: 20px; font-weight: bold; margin: 0 0 10px 0; }
+.article-list { display: flex; flex-direction: column; gap: 15px; }
+.article-item {
+  display: flex;
+  background-color: var(--white);
+  border-radius: 12px;
+  padding: 10px;
+  gap: 15px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+.article-img { width: 80px; height: 80px; background-color: #ddd; border-radius: 8px; object-fit: cover; }
+.article-info { flex-grow: 1; display: flex; flex-direction: column; justify-content: center;}
+.article-info h4 { margin: 0 0 5px 0; font-size: 14px; color: var(--text-dark); }
+.article-info p { margin: 0; font-size: 12px; color: var(--text-light); }
+
+/* Screen 8: Chart/Analysis */
+.chart-container {
+  height: 200px;
+  background-color: var(--white);
+  border-radius: 15px;
+  padding: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  justify-content: space-around;
+}
+.bar {
+  width: 25px;
+  background-color: var(--primary-color);
+  border-radius: 5px 5px 0 0;
+}
+/* Mock bar heights */
+.bar:nth-child(1) { height: 60%; }
+.bar:nth-child(2) { height: 80%; }
+.bar:nth-child(3) { height: 70%; }
+.bar:nth-child(4) { height: 90%; }
+.bar:nth-child(5) { height: 50%; }
+.bar:nth-child(6) { height: 75%; }
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.stat-box {
+  width: 48%;
+  background-color: var(--white);
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+.stat-box h3 { margin: 0 0 5px 0; font-size: 20px; color: var(--primary-color); }
+.stat-box p { margin: 0; font-size: 12px; color: var(--text-light); }
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.list-item-title { font-weight: 600; color: var(--text-dark); }
+.list-item-desc { font-size: 12px; color: var(--text-light); }
+
+/* Screen 9: Profile */
+.profile-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  background-color: #ddd;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+  border: 3px solid var(--primary-lightest);
+}
+.profile-name { font-size: 20px; font-weight: bold; color: var(--text-dark); margin: 0; }
+.profile-email { font-size: 14px; color: var(--text-light); margin: 5px 0 0 0; }
+.settings-group {
+  background-color: var(--white);
+  border-radius: 15px;
+  padding: 0 15px;
+  margin-bottom: 20px;
+}
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.settings-item:last-child { border-bottom: none; }
+.settings-label { font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 10px;}
+.settings-label i { color: var(--primary-color); font-size: 20px;}
+/* Toggle Switch */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.slider-toggle {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+.slider-toggle:before {
+  position: absolute;
+  content: "";
+  height: 20px; width: 20px;
+  left: 2px; bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider-toggle { background-color: var(--primary-color); }
+input:checked + .slider-toggle:before { transform: translateX(26px); }
+
+
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- Screen 1: Splash -->
+  <div class="screen screen-splash">
+    <div class="status-bar" style="background: transparent;">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="logo-circle">W</div>
+    <div class="brand-name">Witchy</div>
+    <div class="tagline">Your personal health tracker</div>
+    <div class="splash-buttons">
+      <button class="btn-primary mb-20">Create Account</button>
+      <button class="btn-secondary">Log In</button>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- Screen 2: Sign Up Details -->
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="header">
+      <button class="icon-btn">←</button>
+      <h1>About You</h1>
+      <div style="width: 20px;"></div> <!-- Spacer -->
+    </div>
+    <div class="content white-bg">
+      <p class="mb-20 text-light">Tell us a bit about yourself to personalize your experience.</p>
+      
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-input" placeholder="Sarah Jenkins">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Date of Birth</label>
+        <div class="date-selector form-input">
+          <span>04 / 12 / 1995</span>
+          <i>📅</i>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Height</label>
+        <input type="text" class="form-input" placeholder="165 cm">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Weight</label>
+        <input type="text" class="form-input" placeholder="60 kg">
+      </div>
+      
+      <div style="margin-top: 40px;">
+        <button class="btn-primary">Continue</button>
+        <a href="#" class="skip-link">Skip for now</a>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- Screen 3: Cycle Setup -->
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="header">
+      <button class="icon-btn">←</button>
+      <h1>Cycle Length</h1>
+      <div style="width: 20px;"></div>
+    </div>
+    <div class="content white-bg">
+      <div class="text-center mt-20">
+        <h2 class="setup-header">How long is your cycle?</h2>
+        <p class="setup-desc">Usually from the first day of your period to the day before your next period.</p>
+      </div>
+      
+      <div class="slider-container mt-20">
+        <div class="slider-value">28 <span style="font-size: 16px; color: var(--text-light); font-weight: normal;">Days</span></div>
+        <input type="range" min="20" max="40" value="28" class="slider" id="cycleRange">
+      </div>
+      
+      <div class="setup-actions">
+        <button class="btn-secondary">I don't know</button>
+        <button class="btn-primary">Next</button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- Screen 4: Home -->
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="header">
+      <button class="icon-btn">☰</button>
+      <h1>Today</h1>
+      <button class="icon-btn">🔔</button>
+    </div>
+    <div class="content">
+      <div class="circle-progress-container">
+        <div class="circle-progress">
+          <span class="circle-label">Cycle Day</span>
+          <span class="circle-day">14</span>
+          <span class="circle-label mt-10">High Chance</span>
+        </div>
+      </div>
+      
+      <div class="status-cards">
+        <div class="status-card">
+          <div class="card-title">Period in</div>
+          <div class="card-value">12 Days</div>
+        </div>
+        <div class="status-card active">
+          <div class="card-title">Fertility Window</div>
+          <div class="card-value highlight">Peak Today</div>
+        </div>
+      </div>
+      
+      <div class="info-banner">
+        <p>💡 <strong>Tip:</strong> You are in your fertile window. If you are trying to conceive, this is the best time.</p>
+      </div>
+    </div>
+    
+    <div class="bottom-nav">
+      <a href="#" class="nav-item active">
+        <div class="nav-icon icon-home"></div>
+        <span>Home</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-calendar"></div>
+        <span>Calendar</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-add" style="background-color: var(--primary-color); padding: 5px; border-radius: 50%; color: white;"></div>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-chart"></div>
+        <span>Insights</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-profile"></div>
+        <span>Profile</span>
+      </a>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- Screen 5: Calendar -->
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="header">
+      <div style="width: 20px;"></div>
+      <h1>Calendar</h1>
+      <button class="icon-btn">⚙️</button>
+    </div>
+    <div class="content white-bg">
+      <div class="month-selector">
+        <button class="icon-btn">&lt;</button>
+        <span>August 2023</span>
+        <button class="icon-btn">&gt;</button>
+      </div>
+      
+      <div class="calendar-grid">
+        <div class="day-name">M</div><div class="day-name">T</div><div class="day-name">W</div><div class="day-name">T</div><div class="day-name">F</div><div class="day-name">S</div><div class="day-name">S</div>
+        <!-- Row 1 -->
+        <div></div><div></div><div class="day-number">1</div><div class="day-number period">2</div><div class="day-number period">3</div><div class="day-number period">4</div><div class="day-number period">5</div>
+        <!-- Row 2 -->
+        <div class="day-number period">6</div><div class="day-number">7</div><div class="day-number">8</div><div class="day-number">9</div><div class="day-number">10</div><div class="day-number fertile">11</div><div class="day-number fertile">12</div>
+        <!-- Row 3 -->
+        <div class="day-number fertile">13</div><div class="day-number ovulation">14</div><div class="day-number fertile">15</div><div class="day-number fertile">16</div><div class="day-number">17</div><div class="day-number">18</div><div class="day-number">19</div>
+        <!-- Row 4 -->
+        <div class="day-number">20</div><div class="day-number">21</div><div class="day-number">22</div><div class="day-number">23</div><div class="day-number">24</div><div class="day-number">25</div><div class="day-number">26</div>
+        <!-- Row 5 -->
+        <div class="day-number">27</div><div class="day-number">28</div><div class="day-number">29</div><div class="day-number period" style="opacity: 0.5;">30</div><div class="day-number period" style="opacity: 0.5;">31</div><div></div><div></div>
+      </div>
+      
+      <div class="calendar-legend">
+        <div class="legend-item"><div class="legend-dot dot-period"></div>Period</div>
+        <div class="legend-item"><div class="legend-dot dot-fertile"></div>Fertile</div>
+        <div class="legend-item"><div class="legend-dot dot-ovulation"></div>Ovulation</div>
+      </div>
+      
+      <div class="mt-20">
+        <h3 class="section-title">Today's Log</h3>
+        <p class="text-light text-center" style="font-size: 14px; padding: 20px; background: var(--bg-color); border-radius: 10px;">No symptoms logged today.</p>
+        <button class="btn-secondary mt-10">Add Symptoms</button>
+      </div>
+    </div>
+    
+    <div class="bottom-nav">
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-home"></div>
+        <span>Home</span>
+      </a>
+      <a href="#" class="nav-item active">
+        <div class="nav-icon icon-calendar"></div>
+        <span>Calendar</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-add" style="background-color: var(--primary-color); padding: 5px; border-radius: 50%; color: white;"></div>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-chart"></div>
+        <span>Insights</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-profile"></div>
+        <span>Profile</span>
+      </a>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- Screen 6: Add Log -->
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="header">
+      <button class="icon-btn">✕</button>
+      <h1>Log Symptoms</h1>
+      <button class="icon-btn" style="font-size: 14px; color: var(--primary-color); font-weight: bold;">Save</button>
+    </div>
+    <div class="content white-bg">
+      <div class="date-header">14 Aug, Today</div>
+      
+      <h3 class="section-title">Flow</h3>
+      <div class="pill-group">
+        <div class="pill">Light</div>
+        <div class="pill">Medium</div>
+        <div class="pill">Heavy</div>
+        <div class="pill">Spotting</div>
+      </div>
+      
+      <h3 class="section-title">Symptoms</h3>
+      <div class="pill-group">
+        <div class="pill active">Cramps</div>
+        <div class="pill">Headache</div>
+        <div class="pill selected-light">Acne</div>
+        <div class="pill">Bloating</div>
+        <div class="pill">Tender Breasts</div>
+        <div class="pill">Backache</div>
+      </div>
+      
+      <h3 class="section-title">Mood</h3>
+      <div class="pill-group">
+        <div class="pill">Happy</div>
+        <div class="pill active">Mood Swings</div>
+        <div class="pill">Sad</div>
+        <div class="pill">Anxious</div>
+        <div class="pill">Irritable</div>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- Screen 7: Articles/Discover -->
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="header">
+      <div style="width: 20px;"></div>
+      <h1>Discover</h1>
+      <button class="icon-btn">🔍</button>
+    </div>
+    <div class="content">
+      <div class="featured-article">
+        <span class="featured-tag">Featured</span>
+        <h2 class="featured-title">Understanding Your Fertility Window</h2>
+        <p style="font-size: 14px; margin-bottom: 15px;">Learn how to track the signs your body gives you during ovulation.</p>
+        <button style="background: var(--white); color: var(--primary-color); border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer;">Read More</button>
+      </div>
+      
+      <h3 class="section-title">Recommended for you</h3>
+      <div class="article-list">
+        <div class="article-item">
+          <div class="article-img" style="background-image: url('https://via.placeholder.com/80/ffb7b2/fff'); background-size: cover;"></div>
+          <div class="article-info">
+            <h4>Foods for Better Cycles</h4>
+            <p>Nutrition plays a big role in hormonal balance.</p>
+          </div>
+        </div>
+        <div class="article-item">
+          <div class="article-img" style="background-image: url('https://via.placeholder.com/80/e0d4ea/5e2a84'); background-size: cover;"></div>
+          <div class="article-info">
+            <h4>Yoga for Cramps</h4>
+            <p>5 poses to relieve menstrual discomfort.</p>
+          </div>
+        </div>
+        <div class="article-item">
+          <div class="article-img" style="background-image: url('https://via.placeholder.com/80/5e2a84/fff'); background-size: cover;"></div>
+          <div class="article-info">
+            <h4>Sleep & Hormones</h4>
+            <p>Why getting enough rest is crucial.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bottom-nav">
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-home"></div>
+        <span>Home</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-calendar"></div>
+        <span>Calendar</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-add" style="background-color: var(--primary-color); padding: 5px; border-radius: 50%; color: white;"></div>
+      </a>
+      <a href="#" class="nav-item active">
+        <div class="nav-icon icon-chart"></div>
+        <span>Insights</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-profile"></div>
+        <span>Profile</span>
+      </a>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- Screen 8: Insights Chart -->
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="header">
+      <div style="width: 20px;"></div>
+      <h1>Cycle Insights</h1>
+      <button class="icon-btn">⬇️</button>
+    </div>
+    <div class="content">
+      <h3 class="section-title">Cycle History</h3>
+      <div class="chart-container">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+      
+      <div class="stats-row">
+        <div class="stat-box">
+          <h3>28 Days</h3>
+          <p>Avg. Cycle Length</p>
+        </div>
+        <div class="stat-box">
+          <h3>5 Days</h3>
+          <p>Avg. Period Length</p>
+        </div>
+      </div>
+      
+      <div class="settings-group mt-20">
+        <div class="list-item">
+          <div>
+            <div class="list-item-title">Cycle Variations</div>
+            <div class="list-item-desc">Your cycle is mostly regular</div>
+          </div>
+          <span style="color: var(--primary-color);">Regular</span>
+        </div>
+        <div class="list-item">
+          <div>
+            <div class="list-item-title">Most Logged Symptom</div>
+            <div class="list-item-desc">Last 6 months</div>
+          </div>
+          <span>Cramps</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bottom-nav">
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-home"></div>
+        <span>Home</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-calendar"></div>
+        <span>Calendar</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-add" style="background-color: var(--primary-color); padding: 5px; border-radius: 50%; color: white;"></div>
+      </a>
+      <a href="#" class="nav-item active">
+        <div class="nav-icon icon-chart"></div>
+        <span>Insights</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-profile"></div>
+        <span>Profile</span>
+      </a>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- Screen 9: Profile -->
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="header">
+      <div style="width: 20px;"></div>
+      <h1>Profile</h1>
+      <button class="icon-btn">⚙️</button>
+    </div>
+    <div class="content">
+      <div class="profile-header">
+        <div class="profile-avatar" style="background-image: url('https://via.placeholder.com/100/5e2a84/fff?text=SJ'); background-size: cover;"></div>
+        <h2 class="profile-name">Sarah Jenkins</h2>
+        <p class="profile-email">sarah.j@example.com</p>
+      </div>
+      
+      <div class="settings-group">
+        <div class="settings-item">
+          <span class="settings-label">👤 Personal Info</span>
+          <span style="color: var(--text-light);">&gt;</span>
+        </div>
+        <div class="settings-item">
+          <span class="settings-label">🎯 Goal</span>
+          <span style="color: var(--text-light);">Track Cycle &gt;</span>
+        </div>
+      </div>
+      
+      <div class="settings-group">
+        <div class="settings-item">
+          <span class="settings-label">🔔 Push Notifications</span>
+          <label class="toggle">
+            <input type="checkbox" checked>
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <span class="settings-label">🔒 Passcode Lock</span>
+          <label class="toggle">
+            <input type="checkbox">
+            <span class="slider-toggle"></span>
+          </label>
+        </div>
+      </div>
+      
+      <button class="btn-secondary mt-20" style="color: #ff3b30; border-color: #ff3b30;">Log Out</button>
+    </div>
+    
+    <div class="bottom-nav">
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-home"></div>
+        <span>Home</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-calendar"></div>
+        <span>Calendar</span>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-add" style="background-color: var(--primary-color); padding: 5px; border-radius: 50%; color: white;"></div>
+      </a>
+      <a href="#" class="nav-item">
+        <div class="nav-icon icon-chart"></div>
+        <span>Insights</span>
+      </a>
+      <a href="#" class="nav-item active">
+        <div class="nav-icon icon-profile"></div>
+        <span>Profile</span>
+      </a>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+  <!-- Screen 10: Settings / Preferences (Example of deeper menu) -->
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="header">
+      <button class="icon-btn">←</button>
+      <h1>Settings</h1>
+      <div style="width: 20px;"></div>
+    </div>
+    <div class="content white-bg">
+      <h3 class="section-title">App Settings</h3>
+      <div class="settings-group" style="padding:0; border-radius: 0;">
+        <div class="settings-item">
+          <span class="settings-label">Theme</span>
+          <span style="color: var(--text-light);">Light &gt;</span>
+        </div>
+        <div class="settings-item">
+          <span class="settings-label">Units</span>
+          <span style="color: var(--text-light);">Metric &gt;</span>
+        </div>
+        <div class="settings-item">
+          <span class="settings-label">Language</span>
+          <span style="color: var(--text-light);">English &gt;</span>
+        </div>
+      </div>
+      
+      <h3 class="section-title mt-20">Data & Privacy</h3>
+      <div class="settings-group" style="padding:0; border-radius: 0;">
+        <div class="settings-item">
+          <span class="settings-label">Export Data</span>
+          <span style="color: var(--text-light);">&gt;</span>
+        </div>
+        <div class="settings-item">
+          <span class="settings-label">Privacy Policy</span>
+          <span style="color: var(--text-light);">&gt;</span>
+        </div>
+        <div class="settings-item">
+          <span class="settings-label">Delete Account</span>
+          <span style="color: var(--text-light);">&gt;</span>
+        </div>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+  
+  <!-- Screen 11: Subscription / Premium -->
+  <div class="screen">
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="icons">📶 🔋</div>
+    </div>
+    <div class="header">
+      <button class="icon-btn">✕</button>
+      <h1>Witchy Premium</h1>
+      <div style="width: 20px;"></div>
+    </div>
+    <div class="content" style="background-color: var(--primary-lightest); display: flex; flex-direction: column;">
+      
+      <div class="text-center mt-20 mb-20">
+        <div class="logo-circle" style="width: 80px; height: 80px; font-size: 24px; margin: 0 auto 10px;">W+</div>
+        <h2 style="color: var(--primary-color); margin:0;">Unlock All Features</h2>
+        <p style="color: var(--text-dark); font-size: 14px;">Get deeper insights and personalized reports.</p>
+      </div>
+      
+      <div style="background: var(--white); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+        <div class="list-item" style="border:none; padding: 5px 0;">
+          <span style="color: var(--primary-color);">✓ Advanced Cycle Analysis</span>
+        </div>
+        <div class="list-item" style="border:none; padding: 5px 0;">
+          <span style="color: var(--primary-color);">✓ Unlimited Symptom Logs</span>
+        </div>
+        <div class="list-item" style="border:none; padding: 5px 0;">
+          <span style="color: var(--primary-color);">✓ Partner Sharing</span>
+        </div>
+        <div class="list-item" style="border:none; padding: 5px 0;">
+          <span style="color: var(--primary-color);">✓ No Ads</span>
+        </div>
+      </div>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <div style="flex: 1; background: var(--white); border: 2px solid var(--border-color); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer;">
+          <div style="font-weight: bold; margin-bottom: 5px;">Monthly</div>
+          <div style="color: var(--primary-color); font-size: 18px; font-weight: bold;">$4.99</div>
+        </div>
+        <div style="flex: 1; background: var(--primary-color); color: var(--white); border: 2px solid var(--primary-color); border-radius: 10px; padding: 15px; text-align: center; cursor: pointer; position: relative;">
+          <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--secondary-color); color: var(--text-dark); font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: bold; white-space: nowrap;">Best Value</div>
+          <div style="font-weight: bold; margin-bottom: 5px;">Yearly</div>
+          <div style="font-size: 18px; font-weight: bold;">$39.99</div>
+          <div style="font-size: 10px; opacity: 0.8;">$3.33 / mo</div>
+        </div>
+      </div>
+      
+      <button class="btn-primary mt-auto mb-10">Start 7-Day Free Trial</button>
+      <div class="text-center" style="font-size: 12px; color: var(--text-light);">Restore Purchases • Terms & Conditions</div>
+      
+    </div>
+    <div class="home-indicator"></div>
+  </div>
+
+</div>
+
+</body>
+</html>

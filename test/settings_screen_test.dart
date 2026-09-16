@@ -319,7 +319,7 @@ testWidgets("changing the start of week updates the calendar's data source live"
 
     expect(find.byType(MainShellScreen), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.person_outline));
+    await tester.tap(find.byIcon(Icons.auto_awesome_outlined));
     await tester.pumpAndSettle();
     await tester.pumpAndSettle();
     expect(find.byType(SettingsScreen), findsOneWidget);

@@ -16,22 +16,22 @@ class SanctuaryScreen extends StatelessWidget {
         const SizedBox(height: 8),
         const CycleOrb(),
         const SizedBox(height: 12),
-        const Row(children: [
-          Expanded(child: StatCard(label: 'Bleeding In', value: '14 Days', sub: 'Nov 10 · predicted')),
-          SizedBox(width: 12),
-          Expanded(child: StatCard(label: 'Fertility Window', value: 'Peak Today', sub: 'High chance', valueColor: AppColors.pink)),
+        Row(children: [
+          const Expanded(child: StatCard(label: 'Bleeding In', value: '14 Days', sub: 'Nov 10 · predicted')),
+          const SizedBox(width: 12),
+          Expanded(child: _FertilityPeakCard()),
         ]),
         const SizedBox(height: 12),
         Text("Log Today's Magic", style: AppText.sec),
         const SizedBox(height: 8),
         Row(children: [
-          Expanded(child: QuickAction(icon: Icons.water_drop_outlined, label: 'Flow', onTap: () => Navigator.pushNamed(context, '/blood'))),
+          Expanded(child: QuickAction(icon: Icons.water_drop_outlined, label: 'Flow', onTap: () => Navigator.pushNamed(context, '/cycle/blood'))),
           const SizedBox(width: 10),
-          Expanded(child: QuickAction(icon: Icons.favorite_border, label: 'Mood', onTap: () => Navigator.pushNamed(context, '/log'))),
+          Expanded(child: QuickAction(icon: Icons.favorite_border, label: 'Mood', onTap: () => Navigator.pushNamed(context, '/dailies'))),
           const SizedBox(width: 10),
-          Expanded(child: QuickAction(icon: Icons.show_chart, label: 'Pain', onTap: () => Navigator.pushNamed(context, '/log'))),
+          Expanded(child: QuickAction(icon: Icons.show_chart, label: 'Pain', onTap: () => Navigator.pushNamed(context, '/dailies'))),
           const SizedBox(width: 10),
-          Expanded(child: QuickAction(icon: Icons.description_outlined, label: 'Notes', onTap: () => Navigator.pushNamed(context, '/log'))),
+          Expanded(child: QuickAction(icon: Icons.description_outlined, label: 'Notes', onTap: () => Navigator.pushNamed(context, '/dailies'))),
         ]),
         const SizedBox(height: 12),
         WitchyCard(
@@ -53,6 +53,17 @@ class SanctuaryScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _FertilityPeakCard extends StatelessWidget {
+  const _FertilityPeakCard();
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/fertility/window'),
+      child: const StatCard(label: 'Fertility Window', value: 'Peak Today', sub: 'High chance', valueColor: AppColors.pink),
     );
   }
 }
@@ -206,9 +217,23 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = context.watch<SettingsProvider>();
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
-      children: [
+    return Scaffold(
+      appBar: WitchyAppBar(
+        title: 'Witch Profile',
+        leading: Icons.arrow_back,
+        onLeading: () {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          } else {
+            Navigator.pushNamed(context, '/dashboard');
+          }
+        },
+        action: Icons.settings_outlined,
+        onAction: () => Navigator.pushNamed(context, '/profile/settings'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
+        children: [
         Column(children: [
           const WitchyAvatar(initials: 'HS', big: true),
           const SizedBox(height: 6),
@@ -235,12 +260,13 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Text('Apothecary Settings', style: AppText.secIn),
               SettingsRow(label: 'Dark Magic Mode', trailing: Switch(value: s.darkMode, activeColor: AppColors.pur, onChanged: (v) => context.read<SettingsProvider>().setDark(v)), first: true),
-              SettingsRow(label: 'Cosmic Partner Bond', trailing: GestureDetector(onTap: () => Navigator.pushNamed(context, '/binding'), child: Text('1 Active', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur)))),
+              SettingsRow(label: 'Cosmic Partner Bond', trailing: GestureDetector(onTap: () => Navigator.pushNamed(context, '/community/binding'), child: Text('1 Active', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur)))),
             ],
           ),
         ),
         Center(child: Text('Witchy App\nVersion 1.2.4 · Made with celestial energy', textAlign: TextAlign.center, style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6))),
-      ],
+        ],
+      ),
     );
   }
 }

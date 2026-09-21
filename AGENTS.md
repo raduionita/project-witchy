@@ -22,6 +22,7 @@ Provide users with **private, accurate, and empowering reproductive health track
 - NO Firebase
 - `shared_preferences` and `provider` for storage and state management
 - Do NOT bundle multiple widgets, screens, components into a single file
+- `build()` methods stay at the bottom of the class
 
 ---
 

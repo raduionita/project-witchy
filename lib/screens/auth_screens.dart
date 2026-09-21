@@ -32,11 +32,11 @@ class SplashScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
               child: Column(
                 children: [
-                  WitchyButton(label: 'Awaken Your Power', icon: Icons.auto_awesome, busy: auth.busy, onTap: () => Navigator.pushNamed(context, '/rhythms')),
+                  WitchyButton(label: 'Awaken Your Power', icon: Icons.auto_awesome, busy: auth.busy, onTap: () => Navigator.pushNamed(context, '/onboarding')),
                   const SizedBox(height: 12),
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                     Text('Already a witch? ', style: AppText.sans(11, c: AppColors.muted)),
-                    GestureDetector(onTap: () => Navigator.pushNamed(context, '/join'), child: Text('Sign In', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))),
+                    GestureDetector(onTap: () => Navigator.pushNamed(context, '/auth'), child: Text('Sign In', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))),
                   ]),
                 ],
               ),
@@ -100,7 +100,7 @@ class _JoinScreenState extends State<JoinScreen> {
                 busy: auth.busy,
                 onTap: () async {
                   await context.read<MockAuthProvider>().signIn();
-                  if (context.mounted) Navigator.pushNamed(context, '/rhythms');
+                  if (context.mounted) Navigator.pushNamed(context, '/onboarding');
                 }),
             const SizedBox(height: 14),
             Row(children: [const Expanded(child: Divider(color: AppColors.line)), Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Text('Or align via', style: AppText.sans(10, c: AppColors.navInactive))), const Expanded(child: Divider(color: AppColors.line))]),
@@ -193,7 +193,7 @@ class RhythmsScreen extends StatelessWidget {
                   icon: Icons.auto_awesome,
                   onTap: () async {
                     await context.read<OnboardingProvider>().finish();
-                    if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/shell', (_) => false);
+                    if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (_) => false);
                   }),
             ],
           ),

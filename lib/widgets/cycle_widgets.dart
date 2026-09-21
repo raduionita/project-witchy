@@ -15,29 +15,25 @@ class CycleOrb extends StatelessWidget {
         padding: const EdgeInsets.all(9),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: SweepGradient(
-            startAngle: -1.57,
-            endAngle: 4.71,
-            stops: const [0.0, 0.46, 0.46, 1.0],
-            colors: const [AppColors.pur, AppColors.pur, Color(0xFFE9DBF5), Color(0xFFE9DBF5)],
-          ),
+          gradient: SweepGradient(startAngle: -1.57, endAngle: 4.71, stops: const [0.0, 0.46, 0.46, 1.0], colors: const [AppColors.pur, AppColors.pur, Color(0xFFE9DBF5), Color(0xFFE9DBF5)]),
         ),
         child: Container(
           width: 172,
           height: 172,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(center: Alignment(-0.3, -0.4), colors: [AppColors.orbLight, AppColors.orbDark]),
-          ),
+          decoration: const BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(center: Alignment(-0.3, -0.4), colors: [AppColors.orbLight, AppColors.orbDark])),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Row(mainAxisSize: MainAxisSize.min, children: [
-                const Icon(Icons.nightlight_round, size: 12, color: AppColors.gold),
-                const SizedBox(width: 5),
-                Text('CYCLE DAY', style: AppText.sans(8, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.3)),
-              ]),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.nightlight_round, size: 12, color: AppColors.gold),
+                  const SizedBox(width: 5),
+                  Text('CYCLE DAY', style: AppText.sans(8, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.3)),
+                ],
+              ),
               Text(day, style: AppText.serif(46, c: Colors.white, h: 1.0)),
+              const SizedBox(height: 12),
               Text(phase, style: AppText.sans(10.5, c: AppColors.orbSub)),
             ],
           ),
@@ -84,13 +80,7 @@ class QuickAction extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.line)),
-        child: Column(
-          children: [
-            IconBadge(icon: icon),
-            const SizedBox(height: 8),
-            Text(label, style: AppText.sans(10, w: FontWeight.w500, c: AppColors.chipText)),
-          ],
-        ),
+        child: Column(children: [IconBadge(icon: icon), const SizedBox(height: 8), Text(label, style: AppText.sans(10, w: FontWeight.w500, c: AppColors.chipText))]),
       ),
     );
   }
@@ -107,8 +97,7 @@ class CycleCalendar extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        for (final d in ['M', 'T', 'W', 'T', 'F', 'S', 'S'])
-          Center(child: Text(d, style: AppText.sans(9, w: FontWeight.w600, c: AppColors.muted))),
+        for (final d in ['M', 'T', 'W', 'T', 'F', 'S', 'S']) Center(child: Text(d, style: AppText.sans(9, w: FontWeight.w600, c: AppColors.muted))),
         const SizedBox.shrink(),
         const SizedBox.shrink(),
         const SizedBox.shrink(),
@@ -118,12 +107,15 @@ class CycleCalendar extends StatelessWidget {
               width: 34,
               height: 34,
               alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: period.contains(day) ? AppColors.pur : (fertile.contains(day) ? AppColors.fertileBg : null),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: period.contains(day) ? AppColors.pur : (fertile.contains(day) ? AppColors.fertileBg : null)),
+              child: Text(
+                '$day',
+                style: AppText.sans(
+                  11,
+                  c: period.contains(day) ? Colors.white : (fertile.contains(day) ? AppColors.fertileText : AppColors.body),
+                  w: (period.contains(day) || fertile.contains(day)) ? FontWeight.w600 : FontWeight.w400,
+                ),
               ),
-              child: Text('$day',
-                  style: AppText.sans(11, c: period.contains(day) ? Colors.white : (fertile.contains(day) ? AppColors.fertileText : AppColors.body), w: (period.contains(day) || fertile.contains(day)) ? FontWeight.w600 : FontWeight.w400)),
             ),
           ),
         const SizedBox.shrink(),
@@ -153,10 +145,7 @@ class TrendBars extends StatelessWidget {
                       child: FractionallySizedBox(
                         heightFactor: heights[i],
                         widthFactor: 1,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 5),
-                          decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), gradient: AppColors.barGradient),
-                        ),
+                        child: Container(margin: const EdgeInsets.symmetric(horizontal: 5), decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), gradient: AppColors.barGradient)),
                       ),
                     ),
                   ),

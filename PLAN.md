@@ -56,9 +56,8 @@ test/
 - [ ] **0.2** Run `flutter pub get`, then `flutter pub run build_runner build --delete-conflicting-outputs`.
 - [ ] **0.3** Verify the folder skeleton from `Project Structure` above + `assets/` (empty `images/` + `content/`).
 - [ ] **0.4** Design system: `theme/` (color scheme, typography, spacing) and shared widget primitives in `lib/widgets/` (AppButton, AppCard, AppText, AppIcon).
-- [ ] **0.5** Navigator 2.0 setup: `AppRoutePath` (sealed hierarchy: Splash, Shell, Onboarding), `AppRouterDelegate` (Extends `PopNavigatorRouterDelegateMixin<AppRoutePath>`), `AppRouteInformationParser` (`RouteInformationParser<AppRoutePath>`), and K `MaterialApp.router`.
-- [ ] **0.6** Root bootstrap: `app/app.dart` with root `MultiProvider` + `AppBootstrap` (async load placeholder).
-- [ ] **0.7** Replace scaffold `lib/main.dart` pointing at `MaterialApp.router`.
+- [ ] **0.5** Simple navigation: `MaterialApp.routes`.
+- [ ] **0.6** Root bootstrap: `MultiProvider` + `AppBootstrap` (async load placeholder).
 
 **Gate:** `flutter analyze`, `flutter build apk --debug`, `flutter test`,`flutter run`
 

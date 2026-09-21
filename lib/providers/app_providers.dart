@@ -49,7 +49,7 @@ class OnboardingProvider extends ChangeNotifier {
   }
 }
 
-class LogProvider extends ChangeNotifier {
+class LoggingProvider extends ChangeNotifier {
   String flow = 'Medium';
   final Set<String> moods = {};
   final Set<String> symptoms = {'Uterine Cramps'};

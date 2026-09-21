@@ -118,7 +118,7 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 
 ## 4. Screen-by-Screen UI/UX Specifications
 
-### 4.1 App Navigation & Screen Architecture
+### 4.1 Screen Architecture
 
 | User Journey Phase | Core Screen (title frozen) | Route | Connected / Sub-Screens | Dynamic Routing & Behavior |
 | :--- | :--- | :--- | :--- | :--- |

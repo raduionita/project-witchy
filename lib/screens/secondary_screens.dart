@@ -11,7 +11,7 @@ class BloodScreen extends StatelessWidget {
   static const volumes = ['Spotting', 'Light', 'Medium', 'Heavy'];
   @override
   Widget build(BuildContext context) {
-    final log = context.watch<LogProvider>();
+    final log = context.watch<LoggingProvider>();
     return Scaffold(
       appBar: const WitchyAppBar(title: 'Sovereign Blood'),
       body: ListView(
@@ -44,12 +44,19 @@ class BloodScreen extends StatelessWidget {
               children: [
                 Text('Bleeding Volume', style: AppText.secIn),
                 const SizedBox(height: 10),
-                Wrap(spacing: 8, runSpacing: 8, children: [for (final v in volumes) WitchyChip(label: v, selected: log.flow == v, onTap: () => context.read<LogProvider>().setFlow(v))]),
+                Wrap(spacing: 8, runSpacing: 8, children: [for (final v in volumes) WitchyChip(label: v, selected: log.flow == v, onTap: () => context.read<LoggingProvider>().setFlow(v))]),
               ],
             ),
           ),
           WitchyCard(
-            child: WitchySliderRow(label: 'Uterine Contraction Pain', value: 'Level ${log.pain.round()}', min: 0, max: 10, current: log.pain, onChanged: (v) => context.read<LogProvider>().setPain(v)),
+            child: WitchySliderRow(
+              label: 'Uterine Contraction Pain',
+              value: 'Level ${log.pain.round()}',
+              min: 0,
+              max: 10,
+              current: log.pain,
+              onChanged: (v) => context.read<LoggingProvider>().setPain(v),
+            ),
           ),
           WitchyCard(
             child: Column(

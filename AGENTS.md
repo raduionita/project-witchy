@@ -9,7 +9,7 @@ This document provides context, guidelines, and project structure information to
 **Project Name**: Witchy 
 **Description**: A comprehensive period tracker and reproductive health app built with Flutter/Dart, similar to Flo.  
 **Target Users**: Individuals tracking menstrual cycles, fertility, pregnancy, and reproductive health.
-**Platform**: Mobile-first (iOS & Android via Flutter)
+**Platform**: Mobile-first (iOS, Android, Web via Flutter)
 
 ### Core Mission
 Provide users with **private, accurate, and empowering reproductive health tracking** with a focus on user privacy and evidence-based health information.
@@ -18,10 +18,9 @@ Provide users with **private, accurate, and empowering reproductive health track
 
 ## Rules
 
-- If the LLM continously loops back to the same prompt, STOP and ask for clarification.
-- NO Firebase
+- NO Firebase, keep data local
 - `shared_preferences` and `provider` for storage and state management
-- Do NOT bundle multiple widgets, screens, components into a single file
+- Do NOT bundle multiple models, provides, widgets, screens, components into a single file, each in its own file.
 - `build()` methods stay at the bottom of the class
 
 ---

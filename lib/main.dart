@@ -24,7 +24,7 @@ class WitchyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => MockAuthProvider()),
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
-        ChangeNotifierProvider(create: (_) => LogProvider()),
+        ChangeNotifierProvider(create: (_) => LoggingProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => RemindersProvider()),
       ],

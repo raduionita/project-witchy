@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'navigation/main_shell.dart';
+import 'providers/app_providers.dart';
+import 'screens/auth_screens.dart';
+import 'screens/secondary_screens.dart';
+import 'theme/app_theme.dart';
 
 void main() {
   runApp(const WitchyApp());
@@ -7,36 +13,34 @@ void main() {
 class WitchyApp extends StatelessWidget {
   const WitchyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Witchy', theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)), home: const WitchyHomePage(title: 'Witchy Home Page'));
-  }
-}
-
-class WitchyHomePage extends StatefulWidget {
-  const WitchyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<WitchyHomePage> createState() => _WitchyHomePageState();
-}
-
-class _WitchyHomePageState extends State<WitchyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.inversePrimary, title: Text(widget.title)),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Witchy is a comprehensive health tracking application designed to help you understand and monitor your menstrual cycle, fertility window, pregnancy, and overall reproductive health',
-            ),
-          ],
-        ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => MockAuthProvider()),
+        ChangeNotifierProvider(create: (_) => OnboardingProvider()),
+        ChangeNotifierProvider(create: (_) => LogProvider()),
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => RemindersProvider()),
+      ],
+      child: MaterialApp(
+        title: 'Witchy',
+        theme: buildWitchyTheme(),
+        initialRoute: '/',
+        routes: {
+          '/': (_) => const SplashScreen(),
+          '/join': (_) => const JoinScreen(),
+          '/rhythms': (_) => const RhythmsScreen(),
+          '/shell': (_) => const MainShell(),
+          '/blood': (_) => const BloodScreen(),
+          '/log': (_) => const MainShell(),
+          '/gestation': (_) => const GestationScreen(),
+          '/alerts': (_) => const AlertsScreen(),
+          '/coven': (_) => const CovenScreen(),
+          '/library': (_) => const LibraryScreen(),
+          '/reminders': (_) => const RemindersScreen(),
+          '/binding': (_) => const BindingScreen(),
+        },
       ),
     );
   }

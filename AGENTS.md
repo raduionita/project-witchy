@@ -21,6 +21,7 @@ Provide users with **private, accurate, and empowering reproductive health track
 - If the LLM continously loops back to the same prompt, STOP and ask for clarification.
 - NO Firebase
 - `shared_preferences` and `provider` for storage and state management
+- Do NOT bundle multiple widgets, screens, components into a single file
 
 ---
 
@@ -52,7 +53,6 @@ import 'package:flutter/material.dart';
 
 // Package imports
 import 'package:provider/provider.dart';
-import 'package:hive/hive.dart';
 
 // Relative imports
 import '../models/period_cycle.dart';

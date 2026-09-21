@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Witchy",
+      "hasCanvas": false,
+      "bodyTextLen": 181,
+      "bodyTextHash": "2550776396490243f4758722446e5e89fa5121468c84c6648b4953502edad4b1",
+      "bodyTextPrefix": "WITCHY WAXING CRESCENT Know your moon Cycle, fertility, rest, an",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Witchy",
+      "hasCanvas": false,
+      "bodyTextLen": 181,
+      "bodyTextHash": "2550776396490243f4758722446e5e89fa5121468c84c6648b4953502edad4b1",
+      "bodyTextPrefix": "WITCHY WAXING CRESCENT Know your moon Cycle, fertility, rest, an",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

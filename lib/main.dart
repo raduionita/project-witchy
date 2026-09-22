@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'navigation/main_shell.dart';
+import 'models/witchy_models.dart';
 import 'providers/app_providers.dart';
 import 'screens/article_detail_screen.dart';
 import 'screens/auth_screens.dart';
 import 'screens/chart_screen.dart';
 import 'screens/fertility_screen.dart';
+import 'screens/main_screen.dart';
 import 'screens/primary_screens.dart';
+import 'screens/reminders_screen.dart';
 import 'screens/secondary_screens.dart';
 import 'screens/settings_screen.dart';
 import 'theme/app_theme.dart';
@@ -32,40 +34,35 @@ class WitchyApp extends StatelessWidget {
         title: 'Witchy',
         theme: buildWitchyTheme(),
         debugShowCheckedModeBanner: false,
-        initialRoute: '/welcome',
+        initialRoute: '/',
         routes: {
-          // Canonical (DESIGN.md)
-          '/welcome': (_) => const SplashScreen(),
-          '/auth': (_) => const JoinScreen(),
-          '/onboarding': (_) => const RhythmsScreen(),
-          '/dashboard': (_) => const MainShell(initialIndex: 0),
-          '/calendar': (_) => const MainShell(initialIndex: 1),
-          '/dailies': (_) => const MainShell(initialIndex: 2),
-          '/insights/overview': (_) => const MainShell(initialIndex: 3),
-          '/community/coven': (_) => const MainShell(initialIndex: 4),
-          '/profile': (_) => const ProfileScreen(),
-          '/cycle/blood': (_) => const BloodScreen(),
-          '/alerts': (_) => const AlertsScreen(),
-          '/community/binding': (_) => const BindingScreen(),
-          '/wellness/library': (_) => const LibraryScreen(),
-          '/wellness/detail': (_) => const ArticleDetailScreen(),
-          '/insights/chart': (_) => const ChartScreen(),
-          '/fertility/window': (_) => const FertilityScreen(),
-          '/pregnancy/dashboard': (_) => const GestationScreen(),
-          '/profile/settings': (_) => const SettingsScreen(),
-          '/profile/reminders': (_) => const RemindersScreen(),
-          // Legacy aliases (one release)
-          '/': (_) => const SplashScreen(),
-          '/join': (_) => const JoinScreen(),
-          '/rhythms': (_) => const RhythmsScreen(),
-          '/shell': (_) => const MainShell(),
-          '/log': (_) => const MainShell(initialIndex: 2),
-          '/blood': (_) => const BloodScreen(),
-          '/gestation': (_) => const GestationScreen(),
-          '/coven': (_) => const CovenScreen(),
-          '/library': (_) => const LibraryScreen(),
-          '/reminders': (_) => const RemindersScreen(),
-          '/binding': (_) => const BindingScreen(),
+          '/' : (_) => const SplashScreen(), // Reach: app start (initialRoute)
+          '/auth': (_) => const JoinScreen(), // Reach: splash "Sign In"
+          '/onboarding': (_) => const RhythmsScreen(), // Reach: splash CTA, join mock sign-in
+          '/dashboard': (_) => const MainScreen(initialIndex: 0), // Reach: onboarding/login; bottom nav Today; back-fallback
+          '/calendar': (_) => const MainScreen(initialIndex: 1), // Reach: bottom nav Calendar
+          '/insights': (_) => const MainScreen(initialIndex: 2), // Reach: bottom nav Insights
+          '/coven': (_) => const MainScreen(initialIndex: 3), // Reach: bottom nav Magic
+          '/profile': (_) => const ProfileScreen(), // Reach: shell avatar (all tabs)
+          '/settings': (_) => const SettingsScreen(), // Reach: shell → avatar → gear / Manage links
+          '/alerts': (_) => const AlertsScreen(), // Reach: shell bell
+          '/reminders': (_) => const RemindersScreen(), // Reach: shell → avatar → Amulet Bells card button
+          '/cycle': (_) => const BloodScreen(), // Reach: Sanctuary Flow QA
+          '/fertility': (_) => const FertilityScreen(), // Reach: Sanctuary Peak card
+          '/library': (_) => const LibraryScreen(), // Reach: Sanctuary insight card
+          '/pregnancy': (_) => const GestationScreen(), // Reach: shell → avatar → Gestation Spells row
+          '/insights/chart': (_) => const ChartScreen(), // Reach: Records trends card; CycleMap card
+          '/binding': (_) => const BindingScreen(), // Reach: shell → avatar → "1 Active"
+        },
+        onGenerateRoute: (settings) {
+          // Reach: library article tap → /library/<slug>
+          final uri = Uri.parse(settings.name ?? '');
+          if (uri.pathSegments.length == 2 && uri.pathSegments.first == 'library') {
+            final article = MockData.articleById(uri.pathSegments[1]);
+            if (article != null) return MaterialPageRoute(builder: (_) => ArticleDetailScreen(article: article), settings: settings);
+            return MaterialPageRoute(builder: (_) => const LibraryScreen(), settings: settings);
+          }
+          return null;
         },
       ),
     );

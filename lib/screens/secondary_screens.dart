@@ -12,6 +12,7 @@ class BloodScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final log = context.watch<LoggingProvider>();
+    final entry = log.day(DateTime.now());
     return Scaffold(
       appBar: const WitchyAppBar(title: 'Sovereign Blood'),
       body: ListView(
@@ -38,26 +39,29 @@ class BloodScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 12),
           WitchyCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Bleeding Volume', style: AppText.secIn),
                 const SizedBox(height: 10),
-                Wrap(spacing: 8, runSpacing: 8, children: [for (final v in volumes) WitchyChip(label: v, selected: log.flow == v, onTap: () => context.read<LoggingProvider>().setFlow(v))]),
+                Wrap(spacing: 8, runSpacing: 8, children: [for (final v in volumes) WitchyChip(label: v, selected: entry.flow == v, onTap: () => context.read<LoggingProvider>().setFlow(DateTime.now(), v))]),
               ],
             ),
           ),
+          const SizedBox(height: 12),
           WitchyCard(
             child: WitchySliderRow(
               label: 'Uterine Contraction Pain',
-              value: 'Level ${log.pain.round()}',
+              value: 'Level ${entry.pain.round()}',
               min: 0,
               max: 10,
-              current: log.pain,
-              onChanged: (v) => context.read<LoggingProvider>().setPain(v),
+              current: entry.pain,
+              onChanged: (v) => context.read<LoggingProvider>().setPain(DateTime.now(), v),
             ),
           ),
+          const SizedBox(height: 12),
           WitchyCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +72,7 @@ class BloodScreen extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(11),
                   decoration: BoxDecoration(color: AppColors.fieldBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.line)),
-                  child: Text(log.notes, style: AppText.sans(11.5, c: AppColors.chipText, h: 1.55)),
+                  child: Text(entry.notes, style: AppText.sans(11.5, c: AppColors.chipText, h: 1.55)),
                 ),
               ],
             ),
@@ -106,6 +110,7 @@ class GestationScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 12),
           WitchyCard(
             child: Column(
               children: [
@@ -151,6 +156,8 @@ class AlertsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
+          Text('Whispers Received', style: AppText.sec),
+          const SizedBox(height: 8),
           Text('The cosmos whispers its reminders. Align your biological temple.', style: AppText.sub),
           const SizedBox(height: 12),
           for (final a in alerts) ...[
@@ -280,7 +287,7 @@ class LibraryScreen extends StatelessWidget {
           const SizedBox(height: 12),
           for (final a in articles) ...[
             GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/wellness/detail', arguments: a),
+              onTap: () => Navigator.pushNamed(context, '/library/${a.id}'),
               child: WitchyCard(
                 child: Row(
                   children: [
@@ -315,53 +322,6 @@ class LibraryScreen extends StatelessWidget {
   }
 }
 
-class RemindersScreen extends StatelessWidget {
-  const RemindersScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    final rp = context.watch<RemindersProvider>();
-    return Scaffold(
-      appBar: const WitchyAppBar(title: 'Amulet Reminders'),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
-        children: [
-          Text('Calibrate mystical bells to warn you of upcoming tides.', style: AppText.sub),
-          const SizedBox(height: 12),
-          for (var i = 0; i < rp.items.length; i++) ...[
-            WitchyCard(
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      IconBadge(icon: rp.items[i].icon, bg: rp.items[i].badgeBg, fg: rp.items[i].badgeFg),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [Text(rp.items[i].title, style: AppText.serif(12.5)), Text(rp.items[i].subtitle, style: AppText.sans(9.5, c: AppColors.muted))],
-                        ),
-                      ),
-                      Switch(value: rp.items[i].enabled, activeColor: AppColors.pur, onChanged: (v) => context.read<RemindersProvider>().toggle(i, v)),
-                    ],
-                  ),
-                  if (rp.items[i].enabled) ...[
-                    const SizedBox(height: 11),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [InfoPill(icon: Icons.schedule_outlined, label: rp.items[i].time), InfoPill(icon: Icons.auto_awesome, label: rp.items[i].freq)],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
 class BindingScreen extends StatelessWidget {
   const BindingScreen({super.key});
   @override
@@ -386,6 +346,7 @@ class BindingScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 12),
           WitchyCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,6 +359,7 @@ class BindingScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 12),
           WitchyCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

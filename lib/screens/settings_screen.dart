@@ -5,16 +5,8 @@ import '../providers/app_providers.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/witchy_widgets.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  bool healthKit = true;
-  bool googleFit = false;
-  bool tempWearable = false;
 
   @override
   Widget build(BuildContext context) {
@@ -34,17 +26,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
-          WitchyCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Health Integration', style: AppText.secIn),
-                SettingsRow(label: 'Apple HealthKit', trailing: Switch(value: healthKit, activeColor: const Color(0xFF7B2CBF), onChanged: (v) => setState(() => healthKit = v)), first: true),
-                SettingsRow(label: 'Google Fit', trailing: Switch(value: googleFit, activeColor: const Color(0xFF7B2CBF), onChanged: (v) => setState(() => googleFit = v))),
-                SettingsRow(label: 'Smart temperature wearable', trailing: Switch(value: tempWearable, activeColor: const Color(0xFF7B2CBF), onChanged: (v) => setState(() => tempWearable = v))),
-              ],
-            ),
-          ),
           WitchyCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

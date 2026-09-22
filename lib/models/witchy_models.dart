@@ -47,12 +47,13 @@ class CovenPost {
 }
 
 class Article {
+  final String id;
   final String category;
   final String readTime;
   final String title;
   final String excerpt;
   final List<Color> thumb;
-  const Article({required this.category, required this.readTime, required this.title, required this.excerpt, required this.thumb});
+  const Article({required this.id, required this.category, required this.readTime, required this.title, required this.excerpt, required this.thumb});
 }
 
 abstract final class MockData {
@@ -78,9 +79,16 @@ abstract final class MockData {
       ];
 
   static List<Article> articles() => const [
-        Article(category: 'ANATOMY', readTime: '5 min read', title: 'Understanding Your Luteal Phase', excerpt: 'The autumn of your biology. Why emotions dip and energy turns inward.', thumb: [Color(0xFF7FB2E5), Color(0xFFF3B8D8), Color(0xFFA07FE0)]),
-        Article(category: 'BOTANICAL', readTime: '8 min read', title: 'Herbs for Somatic Cramp Relief', excerpt: 'Sip Mugwort, Raspberry Leaf and Ginger through the shedding phase.', thumb: [Color(0xFFC98D4E), Color(0xFF6B3F2A)]),
-        Article(category: 'MINDFULNESS', readTime: '12 min read', title: 'Moon Cycle Meditation', excerpt: 'Deep meditative practice to align your rhythm with the lunar tide.', thumb: [Color(0xFF8FA6F0), Color(0xFF4A3AA0)]),
-        Article(category: 'LUNAR CYCLE', readTime: '6 min read', title: 'Fertility Window Explained', excerpt: 'Deciphering the peak hormonal flow and ovulation signals.', thumb: [Color(0xFFCAA04A), Color(0xFF6B4A1A)]),
+        Article(id: 'luteal-phase', category: 'ANATOMY', readTime: '5 min read', title: 'Understanding Your Luteal Phase', excerpt: 'The autumn of your biology. Why emotions dip and energy turns inward.', thumb: [Color(0xFF7FB2E5), Color(0xFFF3B8D8), Color(0xFFA07FE0)]),
+        Article(id: 'cramp-herbs', category: 'BOTANICAL', readTime: '8 min read', title: 'Herbs for Somatic Cramp Relief', excerpt: 'Sip Mugwort, Raspberry Leaf and Ginger through the shedding phase.', thumb: [Color(0xFFC98D4E), Color(0xFF6B3F2A)]),
+        Article(id: 'moon-meditation', category: 'MINDFULNESS', readTime: '12 min read', title: 'Moon Cycle Meditation', excerpt: 'Deep meditative practice to align your rhythm with the lunar tide.', thumb: [Color(0xFF8FA6F0), Color(0xFF4A3AA0)]),
+        Article(id: 'fertility-window', category: 'LUNAR CYCLE', readTime: '6 min read', title: 'Fertility Window Explained', excerpt: 'Deciphering the peak hormonal flow and ovulation signals.', thumb: [Color(0xFFCAA04A), Color(0xFF6B4A1A)]),
       ];
+
+  static Article? articleById(String id) {
+    for (final a in articles()) {
+      if (a.id == id) return a;
+    }
+    return null;
+  }
 }

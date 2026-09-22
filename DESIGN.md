@@ -105,14 +105,14 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 - **Primary Button:** `WitchyButton` full-width plum gradient, 14dp radius, gold icon, white 13.5/600 label.
 - **Secondary Button:** `.soc` white bordered 12dp radius (Apple/Google).
 - **BBT Quick-Entry Keypad:** deferred — `/insights/chart` v1 uses slider + trend bars reusing `WitchySliderRow`/`TrendBars`; no custom keypad.
-- **LH / Ovulation Test Reader Widget:** deferred — `/fertility/window` v1 uses orb + duo stat cards; no camera reader.
+- **LH / Ovulation Test Reader Widget:** deferred — `/fertility` v1 uses orb + duo stat cards; no camera reader.
 
 ### 3.3 Navigation Patterns
 
-- Bottom nav: 5 tabs `Today/Calendar/Log/Insights/Magic` (`WitchyBottomNav`), pur active + 18×2.5 underline; Log icon `add_circle_outline`, Magic icon `auto_awesome` → `CovenScreen` tab; labels frozen.
-- App bar: `WitchyAppBar` 50px, serif 16.5 centered; shell tabs: **leading `person_outline` → `/profile`**, **action bell `notifications_outlined` → `/alerts`**; all pushed screens default **leading back `arrow_back`** (pop, `/dashboard` fallback); `/profile` leading back → home, action gear → `/profile/settings`; `/profile/settings` leading back → `/profile`.
-- Pushes: Sanctuary QA → `/cycle/blood`, `/dailies`; Peak card → `/fertility/window`; Records filter → `/insights/chart`; Library card → `/wellness/detail`; Profile bond → `/community/binding`, gear → `/profile/settings`.
-- Legacy aliases kept one release: `/`, `/join`, `/rhythms`, `/log`, `/blood`, `/library`, `/gestation`, `/reminders`, `/binding`, `/shell` → canonical.
+- Bottom nav: 4 tabs `Today/Calendar/Insights/Magic` (`WitchyBottomNav`), pur active + 18×2.5 underline; Magic icon `auto_awesome` → `CovenScreen` tab; labels frozen. Log is a bottom drawer (`showLogSheet`), not a tab.
+- App bar: `WitchyAppBar` 50px, serif 16.5 centered; shell tabs: **leading `person_outline` → `/profile`**, **action bell `notifications_outlined` → `/alerts`**; all pushed screens default **leading back `arrow_back`** (pop, `/dashboard` fallback); `/profile` leading back → home, action gear → `/settings`; `/settings` leading back → `/profile`.
+- Pushes: Sanctuary Flow QA → `/cycle`, Mood/Pain/Notes QA → log bottom sheet (today); Peak card → `/fertility`; insight card → `/library`; CycleMap day tap → log bottom sheet (that date); trends + CycleMap cards → `/insights/chart`; Library card → `/library/<slug>` (via `onGenerateRoute`, unknown slug → `/library`); Profile bond → `/binding`, gear/Manage → `/settings`, bells card button → `/reminders`, gestation → `/pregnancy`.
+- No legacy aliases: every route in `main.dart` is canonical and reachable (see §4.2).
 
 ---
 
@@ -122,27 +122,50 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 
 | User Journey Phase | Core Screen (title frozen) | Route | Connected / Sub-Screens | Dynamic Routing & Behavior |
 | :--- | :--- | :--- | :--- | :--- |
-| Entry | Splash, Welcome | `/welcome` (alias `/`) | → `/onboarding`, `/auth` | CTA `Awaken Your Power` → onboarding; `Sign In` → auth |
-| Entry | Join the Coven | `/auth` (alias `/join`) | → `/onboarding` | Mock sign-in (600ms busy) → onboarding |
-| Onboarding | Set Your Rhythms | `/onboarding` (alias `/rhythms`) | → `/dashboard` | Day 17 default, 28d/5d sliders, persist, `pushNamedAndRemoveUntil` shell |
-| Home | Sanctuary | `/dashboard` (shell 0) | → `/cycle/blood`, `/dailies`, `/fertility/window`, `/alerts` | Orb day 14 Full Moon Peak; Bleeding In 14d/Nov 10; Peak Today → fertility |
-| Home | Lunar Cycle Map | `/calendar` (shell 1) | → `/insights/chart` | Oct 2026 grid (10–13 fertile lav, 14–18 period pur); detail card Oct 15 Period Day 2; filter → chart |
-| Home | Apothecary Log | `/dailies` (shell 2, alias `/log`) | — | Flow single + moods/symptoms multi; state in `LogProvider` |
-| Home | Lunar Records | `/insights/overview` (shell 3) | → `/insights/chart` | Bars M1–M7 (58–94%), 28.4d/5.2d, chronology Sept/Aug/July tags |
-| Home | Witch Profile | `/profile` (pushed, not a tab) | → `/profile/settings`, `/profile/reminders`, `/community/binding` | Avatar HS, Scorpio Moon; back top-left → home, gear top-right → settings |
-| Community | Coven Sanctum | `/community/coven` (shell 4, Magic tab) | — | Tabs Recent/Ancients; 3 posts (MC/CS/LG); FAB plum/gold plus |
-| Cycle | Sovereign Blood | `/cycle/blood` (alias `/blood`) | — | Dark `Day 3 of 5` + 3 drops; volume single; pain slider L6; scribbles note |
-| Pregnancy | Gestation Spells | `/pregnancy/dashboard` (alias `/gestation`) | — | Dark Week 12 (Day 4), gold 30% bar, 196 days; Lime Size; tips |
-| Alerts | Celestial Alerts | `/alerts` | — | 4 cards (Period, Fertility, Log Missing, Milestone); entry = bell top-right on all shell tabs |
-| Library | Apothecary Library | `/wellness/library` (alias `/library`) | → `/wellness/detail` | Search + 4 articles (Luteal, Herbs, Meditation, Fertility); tap → detail |
-| Library | Article Detail | `/wellness/detail` (new) | — | Thumb gradient hero, cat/readTime, title, excerpt + body; back to library |
-| Insights | BBT & Ovulation Chart | `/insights/chart` (new) | — | Reuses `TrendBars` + avg duo + note card; entry = Records filter icon |
-| Fertility | Fertility Window | `/fertility/window` (new) | — | Orb variant (Peak Day) + window duo + TTC tips; entry = Sanctuary Peak card |
-| Profile | Wearables Settings | `/profile/settings` (new) | — | Gear top-right of Profile; HealthKit/Google Fit + temp wearable toggles, lunar switch, dark mode; reuses `SettingsRow` |
-| Profile | Amulet Reminders | `/profile/reminders` (alias `/reminders`) | — | 5 bells (09:00 Daily peak, 08:30 Every day, 07:00 Window, 18:00 3d prior, Hourly Daytime); OFF collapses pills |
-| Community | Coven Binding | `/community/binding` (alias `/binding`) | — | HS✦KP header, invite input + send, 3 visibility switches |
+| Entry | Splash, Welcome | `/` | → `/onboarding`, `/auth` | CTA `Awaken Your Power` → onboarding; `Sign In` → auth |
+| Entry | Join the Coven | `/auth` | → `/onboarding` | Mock sign-in (600ms busy) → onboarding |
+| Onboarding | Set Your Rhythms | `/onboarding` | → `/dashboard` | Day 17 default, 28d/5d sliders, persist, `pushNamedAndRemoveUntil` shell |
+| Home | Sanctuary | `/dashboard` (shell 0) | → `/cycle`, `/fertility`, `/library`, log sheet | Orb day 14 Full Moon Peak; Bleeding In 14d/Nov 10; Peak Today → fertility; insight card → library; Mood/Pain/Notes QA → log sheet (today) |
+| Home | Lunar Cycle Map | `/calendar` (shell 1) | → `/insights/chart`, log sheet | Oct 2026 grid (10–13 fertile lav, 14–18 period pur); day tap → log bottom sheet; detail card Oct 15 Period Day 2; month card tap → chart |
+| Log | Apothecary Log sheet | bottom drawer (no route) | — | `showLogSheet(date)`; flow single + moods/symptoms multi; per-date state in `LoggingProvider` (`DayLog` map); entries = calendar day tap, Sanctuary QA |
+| Home | Lunar Records | `/insights` (shell 2) | → `/insights/chart` | Bars M1–M7 (58–94%), 28.4d/5.2d, chronology Sept/Aug/July tags; trends card tap → chart |
+| Home | Witch Profile | `/profile` (pushed, not a tab) | → `/settings`, `/reminders`, `/pregnancy`, `/binding` | Avatar HS, Scorpio Moon; toggles owned by Settings (Manage links); `Amulet Bells` 3rd card (live active count + button → reminders); gestation → pregnancy |
+| Community | Coven Sanctum | `/coven` (shell 3, Magic tab) | — | Tabs Recent/Ancients; 3 posts (MC/CS/LG); FAB plum/gold plus |
+| Cycle | Sovereign Blood | `/cycle` | — | Dark `Day 3 of 5` + 3 drops; volume single; pain slider L6; scribbles note |
+| Pregnancy | Gestation Spells | `/pregnancy` | — | Dark Week 12 (Day 4), gold 30% bar, 196 days; Lime Size; tips |
+| Alerts | Celestial Alerts | `/alerts` | — | `Whispers Received` inbox (sub + 4 alert cards with `IconBadge` tints); entry = bell top-right on all shell tabs |
+| Profile | Amulet Reminders | `/reminders` | — | 5 configurable bells (`RemindersProvider`); header live `X of 5 bells active`; OFF collapses time/freq pills; entry = Profile `Amulet Bells` card button |
+| Library | Apothecary Library | `/library` | → `/library/<slug>` | Search + 4 articles (Luteal, Herbs, Meditation, Fertility); tap → detail via `onGenerateRoute` |
+| Library | Article Detail | `/library/<slug>` (dynamic) | — | Slug lookup (`articleById`, unknown → library); thumb gradient hero, cat/readTime, title, excerpt + body; back to library |
+| Insights | BBT & Ovulation Chart | `/insights/chart` | — | Reuses `TrendBars` + avg duo + note card; entries = Records trends card, CycleMap month card |
+| Fertility | Fertility Window | `/fertility` | — | Orb variant (Peak Day) + window duo + TTC tips; entry = Sanctuary Peak card |
+| Profile | Settings | `/settings` | — | App settings owned here: lunar switch, dark mode; gear/Manage top-right of Profile; reuses `SettingsRow` |
+| Community | Coven Binding | `/binding` | — | HS✦KP header, invite input + send, 3 visibility switches |
 
-### Screen 01: Splash, Welcome (`/welcome`)
+### 4.2 App Navigation
+
+Every route is canonical (no aliases) and reachable. Tree of how screens connect:
+
+```
+/ (Splash, Welcome)
+├── "Awaken Your Power" → /onboarding ──→ /dashboard (stack cleared)
+└── "Sign In" → /auth ──→ /onboarding ──→ /dashboard
+/dashboard (MainScreen shell: Today/Calendar/Insights/Magic tabs)
+├── tab 1 → /calendar ──→ day tap → log bottom sheet (that date); month card tap → /insights/chart
+├── tab 2 → /insights ──→ trends card tap → /insights/chart
+├── tab 3 → /coven
+├── avatar (all tabs) → /profile ──┬── gear/Manage → /settings
+│                                  ├── Amulet Bells card button → /reminders
+│                                  ├── Gestation Spells row → /pregnancy
+│                                  └── "1 Active" → /binding
+├── bell (all tabs) → /alerts
+├── Flow QA → /cycle; Mood/Pain/Notes QA → log bottom sheet (today)
+├── Peak Today card → /fertility
+└── insight card → /library ──→ article tap → /library/<slug>
+Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in place; sheet dismisses down.
+```
+
+### Screen 01: Splash, Welcome (`/`)
 
 - **Purpose:** Establish brand trust, holistic health authority, and privacy focus.
 - Layout: centered emblem (132 outer `#EFE2F8` / 96 radial `#4A1170→#2A0740` / gold moon), `Witchy` 34/800, `Track your cycle with magic` 12 muted, gold star; foot CTA `Awaken Your Power` → `/onboarding`, `Sign In` → `/auth`.
@@ -160,79 +183,79 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 ### Screen 04: Sanctuary (`/dashboard`)
 
 - **Purpose:** The core home screen; provides instant visibility into current cycle day, fertile status, hormone phase, and daily health insights.
-- Layout: orb 14 Full Moon Peak; duo Bleeding In 14d + Peak Today (tap → `/fertility/window`); `Log Today's Magic` QA (Flow → `/cycle/blood`, rest → `/dailies`); dark insight Scorpio Moon.
+- Layout: orb 14 Full Moon Peak; duo Bleeding In 14d + Peak Today (tap → `/fertility`); `Log Today's Magic` QA (Flow → `/cycle`, Mood/Pain/Notes → log bottom sheet for today); dark insight Scorpio Moon (tap → `/library`).
 
 ### Screen 05: Lunar Cycle Map (`/calendar`)
 
 - **Purpose:** Comprehensive monthly view showing predicted periods, ovulation windows, and historical logs.
-- Layout: Oct 2026 calendar (`CycleCalendar`), fertile 10–13 / period 14–18; detail card Oct 15 + mood rows; filter action → `/insights/chart`.
+- Layout: Oct 2026 calendar (`CycleCalendar`), fertile 10–13 / period 14–18; detail card Oct 15 + mood rows; month card tap → `/insights/chart`.
 
-### Screen 06: Apothecary Log (`/dailies`)
+### Screen 06: Apothecary Log (bottom drawer, no route)
 
-- **Purpose:** Efficient, friction-free daily data entry for all reproductive health biometrics.
-- Layout: `Log Today's Energy` + sub; Bleed Intensity single; Emotional Currents + Somatic Echoes multi grids; state in `LogProvider` (Medium, Uterine Cramps default).
+- **Purpose:** Per-day symptom logging without leaving context; opened by tapping a calendar day or Sanctuary QA.
+- Layout: drag handle, `{Month} {day}, {year}` serif title + sub; Bleed Intensity single-select chips; Emotional Currents + Somatic Echoes 2-col multi grids; `showLogSheet(context, date)` (`log_bottom_sheet.dart`); state per-date in `LoggingProvider` (`DayLog` map keyed `yyyy-MM-dd`).
 
-### Screen 07: Lunar Records (`/insights/overview`)
+### Screen 07: Lunar Records (`/insights`)
 
 - **Purpose:** Longitudinal analysis of cycle regularity, period duration variation, and luteal phase stability.
-- Layout: `Stardust Cycle Trends` bars; 28.4d/5.2d duo; `Chronology of Bleeds` 3 rows with On Time/Short tags.
+- Layout: `Stardust Cycle Trends` bars (tap → `/insights/chart`); 28.4d/5.2d duo; `Chronology of Bleeds` 3 rows with On Time/Short tags.
 
 ### Screen 08: BBT & Ovulation Chart (`/insights/chart`)
 
 - **Purpose:** Advanced clinical-grade BBT graphing to visually confirm ovulation via biphasic temperature shifts.
-- v1: reuses trend bars + avg duo + explainer card; full keypad/chart deferred. Entry: Records filter icon.
+- v1: reuses trend bars + avg duo + explainer card; full keypad/chart deferred. Entries: Records trends card, CycleMap month card.
 
-### Screen 09: Fertility Window (`/fertility/window`)
+### Screen 09: Fertility Window (`/fertility`)
 
 - **Purpose:** Dedicated view for users Trying to Conceive (TTC), highlighting peak conception probability days.
 - v1: orb variant `Peak Day`, window duo (Peak/High chance), TTC tips card reusing kit. Entry: Sanctuary Peak Today card.
 
-### Screen 10: Gestation Spells (`/pregnancy/dashboard`)
+### Screen 10: Gestation Spells (`/pregnancy`)
 
 - **Purpose:** Replaces the standard cycle dashboard when Pregnancy Mode is enabled; tracks fetal development and maternal health.
 - Layout: dark Week 12 (Day 4) + 30% gold bar + 196 days; `Spiritual Comparison` Lime Size; `Astral Gestation Tips`.
 
-### Screen 11: Apothecary Library (`/wellness/library`)
+### Screen 11: Apothecary Library (`/library`)
 
 - **Purpose:** Provide medically sound, holistic self-care, nutritional, and herbal guidance tailored to the current menstrual cycle phase.
-- Layout: search `Search spells, herbs, anatomy...`; 4 article cards (thumb gradient, CAT, readTime, title, excerpt); tap → `/wellness/detail`.
+- Layout: search `Search spells, herbs, anatomy...`; 4 article cards (thumb gradient, CAT, readTime, title, excerpt); tap → `/library/<slug>`.
 
-### Screen 12: Article Detail (`/wellness/detail`)
+### Screen 12: Article Detail (`/library/<slug>`)
 
 - **Purpose:** Long-form reading interface for evidence-based reproductive health articles and clinical guides.
 - Layout: 62dp thumb hero large, category + readTime, serif title, excerpt + 2 body paragraphs (mock from `MockData.articles`), back chevron; same card/button kit.
 
 ### Screen 13: Witch Profile (`/profile`)
 
-- **Purpose:** Identity + alignments hub; gateway to settings/reminders/binding.
-- Layout: HS big avatar gold ring, `High Priestess Selene`, `SCORPIO MOON · THIRD CYCLE`; `Lunar Alignments` (29d/5d/notifications); `Apothecary Settings` (dark mode, `1 Active` → `/community/binding`); footer v1.2.4; **back top-left → home, gear top-right → `/profile/settings`** (pushed route, shell avatar entry).
+- **Purpose:** Identity + alignments hub; gateway to settings/reminders/pregnancy/binding.
+- Layout: HS big avatar gold ring, `High Priestess Selene`, `SCORPIO MOON · THIRD CYCLE`; `Lunar Alignments` (29d/5d statics + Notification Preferences → `/settings`); `Apothecary Settings` (Appearance → `/settings`, Gestation Spells → `/pregnancy`, `1 Active` → `/binding`); `Amulet Bells` 3rd card (live `X of 5 bells active` + `Open Amulet Reminders` button → `/reminders`); footer v1.2.4; **back top-left → home, gear top-right → `/settings`** (pushed route, shell avatar entry). Settings owns all toggles — Profile only links out.
 
-### Screen 14: Wearables Settings (`/profile/settings`)
+### Screen 14: Settings (`/settings`)
 
-- **Purpose:** Manage synchronization with external health ecosystems and smart temperature wearables.
-- Layout: `Health Integration` card (HealthKit, Google Fit, Temp wearable switches), `Lunar Alignments` + `Apothecary Settings` rows reused; all `SettingsRow` + pur switches.
+- **Purpose:** App-level preferences (notifications, appearance).
+- Layout: `Lunar Alignments` card (Receive Lunar Notifications + Dark Magic Mode pur switches); all `SettingsRow`.
 
-### Screen 15: Sovereign Blood (`/cycle/blood`)
+### Screen 15: Sovereign Blood (`/cycle`)
 
 - **Purpose:** Bleed-day detail: volume, pain, notes.
 - Layout: dark `Day 3 of 5` + drops; `Bleeding Volume` single (Heavy ON); pain slider L6; `Grimoire Scribbles` note field-bg card.
 
 ### Screen 16: Celestial Alerts (`/alerts`)
 
-- **Purpose:** The cosmos whispers its reminders. Align your biological temple.
-- Layout: sub + 4 alert cards with `IconBadge` tints; global entry = bell top-left.
+- **Purpose:** The cosmos' received whispers, one inbox.
+- Layout: `Whispers Received` header (sub + 4 alert cards with `IconBadge` tints); global entry = bell top-right on all shell tabs.
 
-### Screen 17: Coven Sanctum (`/community/coven`)
+### Screen 17: Amulet Reminders (`/reminders`)
+
+- **Purpose:** Calibrate mystical bells for upcoming tides.
+- Layout: sub + live active-count + 5 reminder cards with switch; OFF collapses time/freq pills (`InfoPill` clock + freq); entry = Profile `Amulet Bells` card button.
+
+### Screen 18: Coven Sanctum (`/coven`)
 
 - **Purpose:** Anonymous community whispers + wisdom tabs.
 - Layout: `Recent Whispers`/`Ancients' Wisdom` tabs; 3 posts with avatar/meta/tag/likes/comments; FAB plum/gold `+`.
 
-### Screen 18: Amulet Reminders (`/profile/reminders`)
-
-- **Purpose:** Calibrate mystical bells for upcoming tides.
-- Layout: sub + 5 reminder cards with switch; OFF collapses time/freq pills (`InfoPill` clock + freq).
-
-### Screen 19: Coven Binding (`/community/binding`)
+### Screen 19: Coven Binding (`/binding`)
 
 - **Purpose:** Invite partners/coven to shared celestial map + visibility scopes.
 - Layout: HS✦KP header + copy; invite input + `Send Binding Scroll`; `Scroll Visibility` 3 switches.

@@ -49,30 +49,44 @@ class OnboardingProvider extends ChangeNotifier {
   }
 }
 
+class DayLog {
+  String flow;
+  final Set<String> moods;
+  final Set<String> symptoms;
+  double pain;
+  String notes;
+  DayLog({this.flow = 'Medium', Set<String>? moods, Set<String>? symptoms, this.pain = 6, String? notes})
+    : moods = moods ?? {},
+      symptoms = symptoms ?? {'Uterine Cramps'},
+      notes = notes ?? 'Drank chamomile raspberry leaf infusion. Felt waves of emotional clearing in the afternoon.';
+}
+
 class LoggingProvider extends ChangeNotifier {
-  String flow = 'Medium';
-  final Set<String> moods = {};
-  final Set<String> symptoms = {'Uterine Cramps'};
-  double pain = 6;
-  String notes = 'Drank chamomile raspberry leaf infusion. Felt waves of emotional clearing in the afternoon.';
+  final Map<String, DayLog> _days = {};
 
-  void setFlow(String v) {
-    flow = v;
+  static String keyFor(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+
+  DayLog day(DateTime d) => _days.putIfAbsent(keyFor(d), () => DayLog());
+
+  void setFlow(DateTime d, String v) {
+    day(d).flow = v;
     notifyListeners();
   }
 
-  void toggleMood(String v) {
-    moods.contains(v) ? moods.remove(v) : moods.add(v);
+  void toggleMood(DateTime d, String v) {
+    final m = day(d).moods;
+    m.contains(v) ? m.remove(v) : m.add(v);
     notifyListeners();
   }
 
-  void toggleSymptom(String v) {
-    symptoms.contains(v) ? symptoms.remove(v) : symptoms.add(v);
+  void toggleSymptom(DateTime d, String v) {
+    final s = day(d).symptoms;
+    s.contains(v) ? s.remove(v) : s.add(v);
     notifyListeners();
   }
 
-  void setPain(double v) {
-    pain = v;
+  void setPain(DateTime d, double v) {
+    day(d).pain = v;
     notifyListeners();
   }
 }

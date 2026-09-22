@@ -5,11 +5,11 @@ import '../theme/app_text_styles.dart';
 import '../widgets/witchy_widgets.dart';
 
 class ArticleDetailScreen extends StatelessWidget {
-  const ArticleDetailScreen({super.key});
+  final Article article;
+  const ArticleDetailScreen({super.key, required this.article});
   @override
   Widget build(BuildContext context) {
-    final arg = ModalRoute.of(context)?.settings.arguments;
-    final Article a = arg is Article ? arg : MockData.articles().first;
+    final a = article;
     return Scaffold(
       appBar: const WitchyAppBar(title: 'Wellness Detail'),
       body: ListView(

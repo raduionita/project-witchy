@@ -5,6 +5,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/witchy_widgets.dart';
 import '../widgets/cycle_widgets.dart';
+import '../widgets/log_bottom_sheet.dart';
 
 class SanctuaryScreen extends StatelessWidget {
   const SanctuaryScreen({super.key});
@@ -22,36 +23,39 @@ class SanctuaryScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Row(
           children: [
-            Expanded(child: QuickAction(icon: Icons.water_drop_outlined, label: 'Flow', onTap: () => Navigator.pushNamed(context, '/cycle/blood'))),
+            Expanded(child: QuickAction(icon: Icons.water_drop_outlined, label: 'Flow', onTap: () => Navigator.pushNamed(context, '/cycle'))),
             const SizedBox(width: 10),
-            Expanded(child: QuickAction(icon: Icons.favorite_border, label: 'Mood', onTap: () => Navigator.pushNamed(context, '/dailies'))),
+            Expanded(child: QuickAction(icon: Icons.favorite_border, label: 'Mood', onTap: () => showLogSheet(context, DateTime.now()))),
             const SizedBox(width: 10),
-            Expanded(child: QuickAction(icon: Icons.show_chart, label: 'Pain', onTap: () => Navigator.pushNamed(context, '/dailies'))),
+            Expanded(child: QuickAction(icon: Icons.show_chart, label: 'Pain', onTap: () => showLogSheet(context, DateTime.now()))),
             const SizedBox(width: 10),
-            Expanded(child: QuickAction(icon: Icons.description_outlined, label: 'Notes', onTap: () => Navigator.pushNamed(context, '/dailies'))),
+            Expanded(child: QuickAction(icon: Icons.description_outlined, label: 'Notes', onTap: () => showLogSheet(context, DateTime.now()))),
           ],
         ),
         const SizedBox(height: 12),
-        WitchyCard(
-          dark: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.auto_awesome, size: 14, color: AppColors.gold),
-                  const SizedBox(width: 7),
-                  Text('Daily Astral Insight', style: AppText.serif(13.5, c: Colors.white)),
-                  const Spacer(),
-                  WitchyTag.gold('Scorpio Moon'),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'As your body summits this cycle peak, intuitive energies run deep. Ground your power with Mugwort tea, and honor your physical fatigue.',
-                style: AppText.sans(11.5, c: AppColors.insightText, h: 1.55),
-              ),
-            ],
+        GestureDetector(
+          onTap: () => Navigator.pushNamed(context, '/library'),
+          child: WitchyCard(
+            dark: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.auto_awesome, size: 14, color: AppColors.gold),
+                    const SizedBox(width: 7),
+                    Text('Daily Astral Insight', style: AppText.serif(13.5, c: Colors.white)),
+                    const Spacer(),
+                    WitchyTag.gold('Scorpio Moon'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'As your body summits this cycle peak, intuitive energies run deep. Ground your power with Mugwort tea, and honor your physical fatigue.',
+                  style: AppText.sans(11.5, c: AppColors.insightText, h: 1.55),
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -64,7 +68,7 @@ class _FertilityPeakCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/fertility/window'),
+      onTap: () => Navigator.pushNamed(context, '/fertility'),
       child: const StatCard(label: 'Fertility Window', value: 'Peak Today', sub: 'High chance', valueColor: AppColors.pink),
     );
   }
@@ -77,22 +81,26 @@ class CycleMapScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
       children: [
-        WitchyCard(
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Icon(Icons.chevron_left, size: 16, color: AppColors.muted),
-                  Text('October 2026', style: AppText.serif(13.5)),
-                  const Icon(Icons.chevron_right, size: 16, color: AppColors.muted),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const CycleCalendar(),
-            ],
+        GestureDetector(
+          onTap: () => Navigator.pushNamed(context, '/insights/chart'),
+          child: WitchyCard(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Icon(Icons.chevron_left, size: 16, color: AppColors.muted),
+                    Text('October 2026', style: AppText.serif(13.5)),
+                    const Icon(Icons.chevron_right, size: 16, color: AppColors.muted),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                CycleCalendar(onDayTap: (day) => showLogSheet(context, DateTime(2026, 10, day))),
+              ],
+            ),
           ),
         ),
+        const SizedBox(height: 12),
         WitchyCard(
           child: Column(
             children: [
@@ -121,66 +129,6 @@ class CycleMapScreen extends StatelessWidget {
   }
 }
 
-class LogScreen extends StatelessWidget {
-  const LogScreen({super.key});
-  static const flows = ['None', 'Light', 'Medium', 'Heavy'];
-  static const moods = [
-    ('Enchanted', Icons.auto_awesome, AppColors.pur),
-    ('Grounded', Icons.eco_outlined, Color(0xFF4C8C4A)),
-    ('Shadowy', Icons.dark_mode_outlined, Color(0xFF5B4A8C)),
-    ('Restless', Icons.bolt_outlined, Color(0xFFC2703B)),
-  ];
-  static const symptoms = [
-    ('Uterine Cramps', Icons.warning_amber_outlined, AppColors.pur),
-    ('Headache', Icons.bolt_outlined, Color(0xFFC2703B)),
-    ('Bloating', Icons.water_drop_outlined, Color(0xFF3E7BC0)),
-    ('Fatigue', Icons.dark_mode_outlined, Color(0xFF5B4A8C)),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final log = context.watch<LoggingProvider>();
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
-      children: [
-        Text("Log Today's Energy", style: AppText.serif(17)),
-        const SizedBox(height: 4),
-        Text('Select physical and mental essences flowing within you.', style: AppText.sub),
-        const SizedBox(height: 12),
-        Text('Bleed Intensity', style: AppText.sec),
-        const SizedBox(height: 8),
-        Wrap(spacing: 8, runSpacing: 8, children: [for (final f in flows) WitchyChip(label: f, selected: log.flow == f, onTap: () => context.read<LoggingProvider>().setFlow(f))]),
-        const SizedBox(height: 12),
-        Text('Emotional Currents', style: AppText.sec),
-        const SizedBox(height: 8),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          childAspectRatio: 3.4,
-          children: [for (final m in moods) WitchyChip(label: m.$1, icon: m.$2, iconColor: m.$3, selected: log.moods.contains(m.$1), onTap: () => context.read<LoggingProvider>().toggleMood(m.$1))],
-        ),
-        const SizedBox(height: 12),
-        Text('Somatic Echoes', style: AppText.sec),
-        const SizedBox(height: 8),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          childAspectRatio: 3.4,
-          children: [
-            for (final s in symptoms) WitchyChip(label: s.$1, icon: s.$2, iconColor: s.$3, selected: log.symptoms.contains(s.$1), onTap: () => context.read<LoggingProvider>().toggleSymptom(s.$1)),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
 class RecordsScreen extends StatelessWidget {
   const RecordsScreen({super.key});
   @override
@@ -188,10 +136,15 @@ class RecordsScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
       children: [
-        WitchyCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Stardust Cycle Trends', style: AppText.secIn), const SizedBox(height: 10), const TrendBars()])),
+        GestureDetector(
+          onTap: () => Navigator.pushNamed(context, '/insights/chart'),
+          child: WitchyCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Stardust Cycle Trends', style: AppText.secIn), const SizedBox(height: 10), const TrendBars()])),
+        ),
+        const SizedBox(height: 12),
         const Row(
           children: [Expanded(child: StatCard(label: '', value: '28.4 d', sub: 'Average Cycle')), SizedBox(width: 12), Expanded(child: StatCard(label: '', value: '5.2 d', sub: 'Average Bleed'))],
         ),
+        const SizedBox(height: 12),
         WitchyCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,7 +190,7 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
   @override
   Widget build(BuildContext context) {
-    final s = context.watch<SettingsProvider>();
+    final bells = context.watch<RemindersProvider>().items.where((r) => r.enabled).length;
     return Scaffold(
       appBar: WitchyAppBar(
         title: 'Witch Profile',
@@ -250,7 +203,7 @@ class ProfileScreen extends StatelessWidget {
           }
         },
         action: Icons.settings_outlined,
-        onAction: () => Navigator.pushNamed(context, '/profile/settings'),
+        onAction: () => Navigator.pushNamed(context, '/settings'),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
@@ -274,25 +227,44 @@ class ProfileScreen extends StatelessWidget {
                 SettingsRow(label: 'Average Cycle Length', trailing: Text('29 Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.pur)), first: true),
                 SettingsRow(label: 'Bleeding Phase Length', trailing: Text('5 Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.pur))),
                 SettingsRow(
-                  label: 'Receive Lunar Notifications',
-                  trailing: Switch(value: s.lunarNotifications, activeColor: AppColors.pur, onChanged: (v) => context.read<SettingsProvider>().setLunar(v)),
+                  label: 'Notification Preferences',
+                  trailing: GestureDetector(onTap: () => Navigator.pushNamed(context, '/settings'), child: Text('Manage', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 12),
           WitchyCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Apothecary Settings', style: AppText.secIn),
-                SettingsRow(label: 'Dark Magic Mode', trailing: Switch(value: s.darkMode, activeColor: AppColors.pur, onChanged: (v) => context.read<SettingsProvider>().setDark(v)), first: true),
+                SettingsRow(label: 'Appearance', trailing: GestureDetector(onTap: () => Navigator.pushNamed(context, '/settings'), child: Text('Manage', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))), first: true),
+                SettingsRow(
+                  label: 'Gestation Spells',
+                  trailing: GestureDetector(onTap: () => Navigator.pushNamed(context, '/pregnancy'), child: Text('View', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))),
+                ),
                 SettingsRow(
                   label: 'Cosmic Partner Bond',
-                  trailing: GestureDetector(onTap: () => Navigator.pushNamed(context, '/community/binding'), child: Text('1 Active', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))),
+                  trailing: GestureDetector(onTap: () => Navigator.pushNamed(context, '/binding'), child: Text('1 Active', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 12),
+          WitchyCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Amulet Bells', style: AppText.secIn),
+                const SizedBox(height: 4),
+                Text('$bells of 5 bells active', style: AppText.sans(11.5, c: AppColors.muted)),
+                const SizedBox(height: 10),
+                WitchyButton(label: 'Open Amulet Reminders', icon: Icons.notifications_outlined, onTap: () => Navigator.pushNamed(context, '/reminders')),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
           Center(child: Text('Witchy App\nVersion 1.2.4 · Made with celestial energy', textAlign: TextAlign.center, style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6))),
         ],
       ),

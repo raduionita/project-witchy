@@ -311,13 +311,7 @@ class WitchyBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const items = [
-      (Icons.dark_mode_outlined, 'Today'),
-      (Icons.calendar_month_outlined, 'Calendar'),
-      (Icons.add_outlined, 'Log'),
-      (Icons.bar_chart_outlined, 'Insights'),
-      (Icons.auto_awesome, 'Magic'),
-    ];
+    const items = [(Icons.dark_mode_outlined, 'Today'), (Icons.calendar_month_outlined, 'Calendar'), (Icons.bar_chart_outlined, 'Insights'), (Icons.auto_awesome, 'Magic')];
     return Container(
       height: 78,
       decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.line))),

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import '../screens/primary_screens.dart';
-import '../screens/secondary_screens.dart';
+import 'primary_screens.dart';
+import 'secondary_screens.dart';
 import '../widgets/witchy_widgets.dart';
 
-class MainShell extends StatefulWidget {
+class MainScreen extends StatefulWidget {
   final int initialIndex;
-  const MainShell({super.key, this.initialIndex = 0});
+  const MainScreen({super.key, this.initialIndex = 0});
   @override
-  State<MainShell> createState() => _MainShellState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainScreenState extends State<MainScreen> {
   late int index = widget.initialIndex;
-  static const titles = ['Sanctuary', 'Lunar Cycle Map', 'Apothecary Log', 'Lunar Records', 'Coven Sanctum'];
+  static const titles = ['Sanctuary', 'Lunar Cycle Map', 'Lunar Records', 'Coven Sanctum'];
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class _MainShellState extends State<MainShell> {
       ),
       body: IndexedStack(
         index: index,
-        children: const [SanctuaryScreen(), CycleMapScreen(), LogScreen(), RecordsScreen(), CovenScreen()],
+        children: const [SanctuaryScreen(), CycleMapScreen(), RecordsScreen(), CovenScreen()],
       ),
       bottomNavigationBar: WitchyBottomNav(index: index, onTap: (i) => setState(() => index = i)),
     );

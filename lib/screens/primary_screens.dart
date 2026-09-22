@@ -82,7 +82,7 @@ class CycleMapScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
       children: [
         GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/insights/chart'),
+          onTap: () => Navigator.pushNamed(context, '/chart'),
           child: WitchyCard(
             child: Column(
               children: [
@@ -137,7 +137,7 @@ class RecordsScreen extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
       children: [
         GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/insights/chart'),
+          onTap: () => Navigator.pushNamed(context, '/chart'),
           child: WitchyCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Stardust Cycle Trends', style: AppText.secIn), const SizedBox(height: 10), const TrendBars()])),
         ),
         const SizedBox(height: 12),

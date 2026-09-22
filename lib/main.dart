@@ -36,26 +36,43 @@ class WitchyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         initialRoute: '/',
         routes: {
-          '/' : (_) => const SplashScreen(), // Reach: app start (initialRoute)
-          '/auth': (_) => const JoinScreen(), // Reach: splash "Sign In"
-          '/onboarding': (_) => const RhythmsScreen(), // Reach: splash CTA, join mock sign-in
-          '/dashboard': (_) => const MainScreen(initialIndex: 0), // Reach: onboarding/login; bottom nav Today; back-fallback
-          '/calendar': (_) => const MainScreen(initialIndex: 1), // Reach: bottom nav Calendar
-          '/insights': (_) => const MainScreen(initialIndex: 2), // Reach: bottom nav Insights
-          '/coven': (_) => const MainScreen(initialIndex: 3), // Reach: bottom nav Magic
-          '/profile': (_) => const ProfileScreen(), // Reach: shell avatar (all tabs)
-          '/settings': (_) => const SettingsScreen(), // Reach: shell → avatar → gear / Manage links
-          '/alerts': (_) => const AlertsScreen(), // Reach: shell bell
-          '/reminders': (_) => const RemindersScreen(), // Reach: shell → avatar → Amulet Bells card button
-          '/cycle': (_) => const BloodScreen(), // Reach: Sanctuary Flow QA
-          '/fertility': (_) => const FertilityScreen(), // Reach: Sanctuary Peak card
-          '/library': (_) => const LibraryScreen(), // Reach: Sanctuary insight card
-          '/pregnancy': (_) => const GestationScreen(), // Reach: shell → avatar → Gestation Spells row
-          '/insights/chart': (_) => const ChartScreen(), // Reach: Records trends card; CycleMap card
-          '/binding': (_) => const BindingScreen(), // Reach: shell → avatar → "1 Active"
+          // app start [initialRoute]
+          '/': (_) => const SplashScreen(),
+          // Splash -> footer row -> [always] -> "Sign In" link
+          '/auth': (_) => const JoinScreen(),
+          // Splash -> foot -> [always] -> "Awaken Your Power" btn; Join -> form -> [mock signIn resolves] -> "Cast Invitation Scroll" btn
+          '/onboarding': (_) => const RhythmsScreen(),
+          // Rhythms -> [prefs saved] -> "Bind Magic Link" btn (stack cleared); shell -> bottom nav -> [always] -> Today tab; pushed screens -> appbar -> [pop impossible] -> back fallback
+          '/dashboard': (_) => const MainScreen(initialIndex: 0),
+          // shell -> bottom nav -> [always] -> Calendar tab
+          '/calendar': (_) => const MainScreen(initialIndex: 1),
+          // shell -> bottom nav -> [always] -> Insights tab
+          '/insights': (_) => const MainScreen(initialIndex: 2),
+          // shell -> bottom nav -> [always] -> Magic tab
+          '/coven': (_) => const MainScreen(initialIndex: 3),
+          // shell (all tabs) -> app bar -> [always] -> avatar btn
+          '/profile': (_) => const ProfileScreen(),
+          // Profile -> app bar -> [always] -> gear btn; Profile -> Lunar Alignments card -> [always] -> "Manage" link; Profile -> Apothecary Settings card -> [always] -> "Manage" link
+          '/settings': (_) => const SettingsScreen(),
+          // shell (all tabs) -> app bar -> [current route != /alerts] -> bell btn
+          '/alerts': (_) => const AlertsScreen(),
+          // Profile -> Amulet Bells card -> [always] -> "Open Amulet Reminders" btn
+          '/reminders': (_) => const RemindersScreen(),
+          // Sanctuary -> Log Today's Magic -> [always] -> Flow tile
+          '/cycle': (_) => const BloodScreen(),
+          // Sanctuary -> stat duo -> [always] -> Peak Today card
+          '/fertility': (_) => const FertilityScreen(),
+          // Sanctuary -> Daily Astral Insight card -> [always] -> card tap
+          '/library': (_) => const LibraryScreen(),
+          // Profile -> Apothecary Settings card -> [always] -> "View" link
+          '/pregnancy': (_) => const GestationScreen(),
+          // Records -> Stardust Cycle Trends card -> [always] -> card tap; CycleMap -> calendar card -> [always] -> month header tap
+          '/chart': (_) => const ChartScreen(),
+          // Profile -> Apothecary Settings card -> [always] -> "1 Active" link
+          '/binding': (_) => const BindingScreen(),
         },
         onGenerateRoute: (settings) {
-          // Reach: library article tap → /library/<slug>
+          // Library -> article card -> [slug matches articleById] -> card tap => /library/<slug>; [unknown slug] -> LibraryScreen fallback
           final uri = Uri.parse(settings.name ?? '');
           if (uri.pathSegments.length == 2 && uri.pathSegments.first == 'library') {
             final article = MockData.articleById(uri.pathSegments[1]);

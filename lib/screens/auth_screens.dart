@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/witchy_icons.dart';
 import '../widgets/witchy_widgets.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -23,8 +25,6 @@ class SplashScreen extends StatelessWidget {
                   Text('Witchy', style: AppText.brand),
                   SizedBox(height: 4),
                   Text('Track your cycle with magic', style: AppText.sans(12, c: AppColors.muted)),
-                  SizedBox(height: 8),
-                  Icon(Icons.star, size: 14, color: AppColors.gold),
                 ],
               ),
             ),
@@ -32,12 +32,15 @@ class SplashScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
               child: Column(
                 children: [
-                  WitchyButton(label: 'Awaken Your Power', icon: Icons.auto_awesome, busy: auth.busy, onTap: () => Navigator.pushNamed(context, '/onboarding')),
+                  WitchyButton(label: 'Awaken Your Power', busy: auth.busy, onTap: () => Navigator.pushNamed(context, '/onboarding')),
                   const SizedBox(height: 12),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text('Already a witch? ', style: AppText.sans(11, c: AppColors.muted)),
-                    GestureDetector(onTap: () => Navigator.pushNamed(context, '/auth'), child: Text('Sign In', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))),
-                  ]),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Already a witch? ', style: AppText.sans(11, c: AppColors.muted)),
+                      GestureDetector(onTap: () => Navigator.pushNamed(context, '/auth'), child: Text('Sign In', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -60,8 +63,9 @@ class _Emblem extends StatelessWidget {
       child: Container(
         width: 96,
         height: 96,
+        alignment: Alignment.center,
         decoration: const BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(center: Alignment(-0.3, -0.4), colors: [AppColors.orbLight, AppColors.orbDark])),
-        child: const Icon(Icons.nightlight_round, size: 42, color: AppColors.gold),
+        child: const FaIcon(WitchyIcons.moon, size: WitchyIconSize.xl, color: AppColors.gold),
       ),
     );
   }
@@ -96,20 +100,29 @@ class _JoinScreenState extends State<JoinScreen> {
             WitchyTextField(label: 'Mystic Secret Key', hint: '••••••••', obscure: obscure, controller: pass, onToggleObscure: () => setState(() => obscure = !obscure)),
             const SizedBox(height: 16),
             WitchyButton(
-                label: 'Cast Invitation Scroll',
-                busy: auth.busy,
-                onTap: () async {
-                  await context.read<MockAuthProvider>().signIn();
-                  if (context.mounted) Navigator.pushNamed(context, '/onboarding');
-                }),
+              label: 'Cast Invitation Scroll',
+              busy: auth.busy,
+              onTap: () async {
+                await context.read<MockAuthProvider>().signIn();
+                if (context.mounted) Navigator.pushNamed(context, '/onboarding');
+              },
+            ),
             const SizedBox(height: 14),
-            Row(children: [const Expanded(child: Divider(color: AppColors.line)), Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Text('Or align via', style: AppText.sans(10, c: AppColors.navInactive))), const Expanded(child: Divider(color: AppColors.line))]),
+            Row(
+              children: [
+                const Expanded(child: Divider(color: AppColors.line)),
+                Padding(padding: const EdgeInsets.symmetric(horizontal: 10), child: Text('Or align via', style: AppText.sans(10, c: AppColors.navInactive))),
+                const Expanded(child: Divider(color: AppColors.line)),
+              ],
+            ),
             const SizedBox(height: 10),
-            Row(children: [
-              Expanded(child: _Soc(label: 'Apple', icon: Icons.apple, onTap: () async {})),
-              const SizedBox(width: 10),
-              Expanded(child: _Soc(label: 'Google', icon: Icons.g_mobiledata, onTap: () async {})),
-            ]),
+            Row(
+              children: [
+                Expanded(child: _Soc(label: 'Apple', icon: WitchyIcons.apple, onTap: () async {})),
+                const SizedBox(width: 10),
+                Expanded(child: _Soc(label: 'Google', icon: WitchyIcons.google, onTap: () async {})),
+              ],
+            ),
           ],
         ),
       ),
@@ -119,7 +132,7 @@ class _JoinScreenState extends State<JoinScreen> {
 
 class _Soc extends StatelessWidget {
   final String label;
-  final IconData icon;
+  final FaIconData icon;
   final VoidCallback onTap;
   const _Soc({required this.label, required this.icon, required this.onTap});
   @override
@@ -129,7 +142,10 @@ class _Soc extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(11),
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.line)),
-        child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 16), const SizedBox(width: 8), Text(label, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink))]),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [FaIcon(icon, size: WitchyIconSize.head), const SizedBox(width: 8), Text(label, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink))],
+        ),
       ),
     );
   }
@@ -154,11 +170,14 @@ class RhythmsScreen extends StatelessWidget {
               WitchyCard(
                 child: Column(
                   children: [
-                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      const Icon(Icons.chevron_left, color: AppColors.muted),
-                      Text('Harvest Moon (Oct)', style: AppText.serif(13)),
-                      const Icon(Icons.chevron_right, color: AppColors.muted),
-                    ]),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const FaIcon(WitchyIcons.back, size: WitchyIconSize.head, color: AppColors.muted),
+                        Text('Harvest Moon (Oct)', style: AppText.serif(13)),
+                        const FaIcon(WitchyIcons.right, size: WitchyIconSize.head, color: AppColors.muted),
+                      ],
+                    ),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -184,17 +203,35 @@ class RhythmsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              WitchyCard(child: WitchySliderRow(label: 'Cycle duration (stardust tides)', value: '${ob.cycleLength} Days', min: 20, max: 40, current: ob.cycleLength.toDouble(), onChanged: (v) => context.read<OnboardingProvider>().setCycle(v.round()))),
+              WitchyCard(
+                child: WitchySliderRow(
+                  label: 'Cycle duration (stardust tides)',
+                  value: '${ob.cycleLength} Days',
+                  min: 20,
+                  max: 40,
+                  current: ob.cycleLength.toDouble(),
+                  onChanged: (v) => context.read<OnboardingProvider>().setCycle(v.round()),
+                ),
+              ),
               const SizedBox(height: 12),
-              WitchyCard(child: WitchySliderRow(label: 'Bleeding phase length', value: '${ob.bleedLength} Days', min: 2, max: 10, current: ob.bleedLength.toDouble(), onChanged: (v) => context.read<OnboardingProvider>().setBleed(v.round()))),
+              WitchyCard(
+                child: WitchySliderRow(
+                  label: 'Bleeding phase length',
+                  value: '${ob.bleedLength} Days',
+                  min: 2,
+                  max: 10,
+                  current: ob.bleedLength.toDouble(),
+                  onChanged: (v) => context.read<OnboardingProvider>().setBleed(v.round()),
+                ),
+              ),
               const Spacer(),
               WitchyButton(
-                  label: 'Bind Magic Link',
-                  icon: Icons.auto_awesome,
-                  onTap: () async {
-                    await context.read<OnboardingProvider>().finish();
-                    if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (_) => false);
-                  }),
+                label: 'Bind Magic Link',
+                onTap: () async {
+                  await context.read<OnboardingProvider>().finish();
+                  if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (_) => false);
+                },
+              ),
             ],
           ),
         ),

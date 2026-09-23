@@ -142,28 +142,27 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 | Profile | Settings | `/settings` | — | App settings owned here: lunar switch, dark mode; gear/Manage top-right of Profile; reuses `SettingsRow` |
 | Community | Coven Binding | `/binding` | — | HS✦KP header, invite input + send, 3 visibility switches |
 
-### 4.2 App Navigation
-
-Every route is canonical (no aliases) and reachable. Tree of how screens connect:
+### 4.2 App Structure
 
 ```
-/ (Splash, Welcome)
-├── "Awaken Your Power" → /onboarding ──→ /dashboard (stack cleared)
-└── "Sign In" → /auth ──→ /onboarding ──→ /dashboard
-/dashboard (MainScreen shell: Today/Calendar/Insights/Magic tabs)
-├── tab 1 → /calendar ──→ day tap → log bottom sheet (that date); month card tap → /chart
-├── tab 2 → /insights ──→ trends card tap → /chart
-├── tab 3 → /coven
-├── avatar (all tabs) → /profile ──┬── gear/Manage → /settings
-│                                  ├── Amulet Bells card button → /reminders
-│                                  ├── Gestation Spells row → /pregnancy
-│                                  └── "1 Active" → /binding
-├── bell (all tabs) → /alerts
-├── Flow QA → /cycle; Mood/Pain/Notes QA → log bottom sheet (today)
-├── Peak Today card → /fertility
-└── insight card → /library ──→ article tap → /library/<slug>
+- / (splash, welcome)
+  - /auth
+  - /onboarding
+- /dashboard (MainScreen shell: Sanctuary / Cycle Map / Records / Coven tabs)
+  - /calendar (Cycle Map tab)
+  - /insights (Records tab)
+  - /coven (Coven tab)
+  - /chart
+  - log bottom sheet (opened from FAB or day/QA taps)
+- /profile → /settings, /reminders, /pregnancy, /binding
+- /alerts
+- /cycle
+- /fertility
+- /library → /library/<slug>
 Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in place; sheet dismisses down.
 ```
+
+---
 
 ### Screen 01: Splash, Welcome (`/`)
 

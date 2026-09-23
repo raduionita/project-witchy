@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/witchy_icons.dart';
 import '../widgets/witchy_widgets.dart';
 
 class RemindersScreen extends StatelessWidget {
@@ -41,7 +42,7 @@ class RemindersScreen extends StatelessWidget {
                     const SizedBox(height: 11),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [InfoPill(icon: Icons.schedule_outlined, label: rp.items[i].time), InfoPill(icon: Icons.auto_awesome, label: rp.items[i].freq)],
+                      children: [InfoPill(icon: WitchyIcons.clock, label: rp.items[i].time), InfoPill(icon: WitchyIcons.spark, label: rp.items[i].freq)],
                     ),
                   ],
                 ],

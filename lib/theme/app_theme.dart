@@ -10,6 +10,7 @@ ThemeData buildWitchyTheme() {
       surface: AppColors.bg,
     ),
     textTheme: GoogleFonts.interTextTheme(base.textTheme),
+    iconTheme: const IconThemeData(size: 20),
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.bg,
       elevation: 0,

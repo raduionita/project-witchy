@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../models/witchy_models.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/witchy_icons.dart';
 import '../widgets/witchy_widgets.dart';
 
 class BloodScreen extends StatelessWidget {
@@ -29,11 +31,11 @@ class BloodScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 const Row(
                   children: [
-                    Icon(Icons.water_drop, size: 18, color: AppColors.gold),
+                    FaIcon(WitchyIcons.drop, size: WitchyIconSize.sm, color: AppColors.gold),
                     SizedBox(width: 5),
-                    Icon(Icons.water_drop, size: 18, color: AppColors.gold),
+                    FaIcon(WitchyIcons.drop, size: WitchyIconSize.sm, color: AppColors.gold),
                     SizedBox(width: 5),
-                    Icon(Icons.water_drop, size: 18, color: AppColors.gold),
+                    FaIcon(WitchyIcons.drop, size: WitchyIconSize.sm, color: AppColors.gold),
                   ],
                 ),
               ],
@@ -46,7 +48,11 @@ class BloodScreen extends StatelessWidget {
               children: [
                 Text('Bleeding Volume', style: AppText.secIn),
                 const SizedBox(height: 10),
-                Wrap(spacing: 8, runSpacing: 8, children: [for (final v in volumes) WitchyChip(label: v, selected: entry.flow == v, onTap: () => context.read<LoggingProvider>().setFlow(DateTime.now(), v))]),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [for (final v in volumes) WitchyChip(label: v, selected: entry.flow == v, onTap: () => context.read<LoggingProvider>().setFlow(DateTime.now(), v))],
+                ),
               ],
             ),
           ),
@@ -88,7 +94,7 @@ class GestationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const WitchyAppBar(title: 'Gestation Spells', action: Icons.favorite_border),
+      appBar: const WitchyAppBar(title: 'Gestation Spells', action: WitchyIcons.heart),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
@@ -119,7 +125,7 @@ class GestationScreen extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const IconBadge(icon: Icons.search),
+                    const IconBadge(icon: WitchyIcons.search),
                     const SizedBox(width: 10),
                     Expanded(child: Text('Your little spirit matches a ripe Lime. Organs are fully formed and commencing magical function.', style: AppText.sans(11.5, h: 1.55))),
                   ],
@@ -200,11 +206,21 @@ class _CovenScreenState extends State<CovenScreen> {
   Widget build(BuildContext context) {
     final posts = MockData.posts();
     return Scaffold(
-      floatingActionButton: Container(
-        width: 50,
-        height: 50,
-        decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.plumGradient, boxShadow: [AppColors.primaryShadow]),
-        child: const Icon(Icons.add, color: AppColors.gold),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: Colors.transparent,
+        hoverColor: AppColors.plum2,
+        hoverElevation: 0,
+        highlightElevation: 0,
+        focusElevation: 0,
+        elevation: 0,
+        child: Container(
+          width: 50,
+          height: 50,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.plumGradient, boxShadow: [AppColors.primaryShadow]),
+          child: const FaIcon(WitchyIcons.plus, size: WitchyIconSize.base, color: AppColors.gold),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
@@ -253,11 +269,11 @@ class _CovenScreenState extends State<CovenScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      Icon(Icons.favorite_border, size: 12, color: AppColors.muted),
+                      FaIcon(WitchyIcons.heart, size: WitchyIconSize.xs, color: AppColors.muted),
                       const SizedBox(width: 5),
                       Text('${p.likes}', style: AppText.sans(10.5, c: AppColors.muted)),
                       const SizedBox(width: 16),
-                      Icon(Icons.chat_bubble_outline, size: 12, color: AppColors.muted),
+                      FaIcon(WitchyIcons.chat, size: WitchyIconSize.xs, color: AppColors.muted),
                       const SizedBox(width: 5),
                       Text('${p.comments}', style: AppText.sans(10.5, c: AppColors.muted)),
                     ],
@@ -283,7 +299,7 @@ class LibraryScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
-          const WitchyTextField(hint: 'Search spells, herbs, anatomy...', lead: Icons.search),
+          const WitchyTextField(hint: 'Search spells, herbs, anatomy...', lead: WitchyIcons.search),
           const SizedBox(height: 12),
           for (final a in articles) ...[
             GestureDetector(
@@ -337,7 +353,13 @@ class BindingScreen extends StatelessWidget {
               children: [
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [WitchyAvatar(initials: 'HS'), SizedBox(width: 12), Icon(Icons.auto_awesome, color: AppColors.gold, size: 26), SizedBox(width: 12), WitchyAvatar(initials: 'KP')],
+                  children: [
+                    WitchyAvatar(initials: 'HS'),
+                    SizedBox(width: 12),
+                    FaIcon(WitchyIcons.spark, color: AppColors.gold, size: WitchyIconSize.lg),
+                    SizedBox(width: 12),
+                    WitchyAvatar(initials: 'KP'),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Text('Bind Cosmic Partners', style: AppText.serif(15)),
@@ -353,9 +375,9 @@ class BindingScreen extends StatelessWidget {
               children: [
                 Text('Invite Cosmic Bond', style: AppText.secIn),
                 const SizedBox(height: 8),
-                const WitchyTextField(hint: 'partner@cosmic.com', lead: Icons.mail_outline),
+                const WitchyTextField(hint: 'partner@cosmic.com', lead: WitchyIcons.mail),
                 const SizedBox(height: 12),
-                WitchyButton(label: 'Send Binding Scroll', icon: Icons.auto_awesome, onTap: () {}),
+                WitchyButton(label: 'Send Binding Scroll', onTap: () {}),
               ],
             ),
           ),

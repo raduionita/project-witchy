@@ -89,6 +89,11 @@ class LoggingProvider extends ChangeNotifier {
     day(d).pain = v;
     notifyListeners();
   }
+
+  void setNotes(DateTime d, String v) {
+    day(d).notes = v;
+    notifyListeners();
+  }
 }
 
 class SettingsProvider extends ChangeNotifier {

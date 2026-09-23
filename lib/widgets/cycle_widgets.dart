@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/witchy_icons.dart';
 import 'witchy_widgets.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CycleOrb extends StatelessWidget {
   final String day;
@@ -27,7 +29,7 @@ class CycleOrb extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.nightlight_round, size: 12, color: AppColors.gold),
+                  const FaIcon(WitchyIcons.moon, size: WitchyIconSize.xs, color: AppColors.gold),
                   const SizedBox(width: 5),
                   Text('CYCLE DAY', style: AppText.sans(8, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.3)),
                 ],
@@ -68,7 +70,7 @@ class StatCard extends StatelessWidget {
 }
 
 class QuickAction extends StatelessWidget {
-  final IconData icon;
+  final FaIconData icon;
   final String label;
   final VoidCallback onTap;
   const QuickAction({super.key, required this.icon, required this.label, required this.onTap});

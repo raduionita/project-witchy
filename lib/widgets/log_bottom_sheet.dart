@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/witchy_icons.dart';
 import 'witchy_widgets.dart';
 
 const _months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -24,16 +25,16 @@ class LogBottomSheet extends StatelessWidget {
 
   static const flows = ['None', 'Light', 'Medium', 'Heavy'];
   static const moods = [
-    ('Enchanted', Icons.auto_awesome, AppColors.pur),
-    ('Grounded', Icons.eco_outlined, Color(0xFF4C8C4A)),
-    ('Shadowy', Icons.dark_mode_outlined, Color(0xFF5B4A8C)),
-    ('Restless', Icons.bolt_outlined, Color(0xFFC2703B)),
+    ('Enchanted', WitchyIcons.spark, AppColors.pur),
+    ('Grounded', WitchyIcons.leaf, Color(0xFF4C8C4A)),
+    ('Shadowy', WitchyIcons.moon, Color(0xFF5B4A8C)),
+    ('Restless', WitchyIcons.zap, Color(0xFFC2703B)),
   ];
   static const symptoms = [
-    ('Uterine Cramps', Icons.warning_amber_outlined, AppColors.pur),
-    ('Headache', Icons.bolt_outlined, Color(0xFFC2703B)),
-    ('Bloating', Icons.water_drop_outlined, Color(0xFF3E7BC0)),
-    ('Fatigue', Icons.dark_mode_outlined, Color(0xFF5B4A8C)),
+    ('Uterine Cramps', WitchyIcons.alert, AppColors.pur),
+    ('Headache', WitchyIcons.zap, Color(0xFFC2703B)),
+    ('Bloating', WitchyIcons.drop, Color(0xFF3E7BC0)),
+    ('Fatigue', WitchyIcons.moon, Color(0xFF5B4A8C)),
   ];
 
   @override
@@ -79,7 +80,49 @@ class LogBottomSheet extends StatelessWidget {
             for (final s in symptoms) WitchyChip(label: s.$1, icon: s.$2, iconColor: s.$3, selected: entry.symptoms.contains(s.$1), onTap: () => context.read<LoggingProvider>().toggleSymptom(date, s.$1)),
           ],
         ),
+        const SizedBox(height: 12),
+        Text('Notes', style: AppText.sec),
+        const SizedBox(height: 8),
+        _NotesField(date: date, initialNotes: entry.notes),
       ],
+    );
+  }
+}
+
+class _NotesField extends StatefulWidget {
+  final DateTime date;
+  final String initialNotes;
+  const _NotesField({required this.date, required this.initialNotes});
+
+  @override
+  State<_NotesField> createState() => _NotesFieldState();
+}
+
+class _NotesFieldState extends State<_NotesField> {
+  late final TextEditingController controller = TextEditingController(text: widget.initialNotes);
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      maxLines: 4,
+      style: AppText.sans(12.5, c: AppColors.ink),
+      onChanged: (v) => context.read<LoggingProvider>().setNotes(widget.date, v),
+      decoration: InputDecoration(
+        hintText: 'Whisper your thoughts, rituals, and reflections…',
+        hintStyle: AppText.sans(12.5, c: AppColors.placeholder),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.all(12),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.line)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.pur)),
+      ),
     );
   }
 }

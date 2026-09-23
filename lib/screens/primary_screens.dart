@@ -3,9 +3,11 @@ import 'package:provider/provider.dart';
 import '../providers/app_providers.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/witchy_icons.dart';
 import '../widgets/witchy_widgets.dart';
 import '../widgets/cycle_widgets.dart';
 import '../widgets/log_bottom_sheet.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SanctuaryScreen extends StatelessWidget {
   const SanctuaryScreen({super.key});
@@ -23,13 +25,13 @@ class SanctuaryScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Row(
           children: [
-            Expanded(child: QuickAction(icon: Icons.water_drop_outlined, label: 'Flow', onTap: () => Navigator.pushNamed(context, '/cycle'))),
+            Expanded(child: QuickAction(icon: WitchyIcons.drop, label: 'Flow', onTap: () => Navigator.pushNamed(context, '/cycle'))),
             const SizedBox(width: 10),
-            Expanded(child: QuickAction(icon: Icons.favorite_border, label: 'Mood', onTap: () => showLogSheet(context, DateTime.now()))),
+            Expanded(child: QuickAction(icon: WitchyIcons.heart, label: 'Mood', onTap: () => showLogSheet(context, DateTime.now()))),
             const SizedBox(width: 10),
-            Expanded(child: QuickAction(icon: Icons.show_chart, label: 'Pain', onTap: () => showLogSheet(context, DateTime.now()))),
+            Expanded(child: QuickAction(icon: WitchyIcons.pulse, label: 'Pain', onTap: () => showLogSheet(context, DateTime.now()))),
             const SizedBox(width: 10),
-            Expanded(child: QuickAction(icon: Icons.description_outlined, label: 'Notes', onTap: () => showLogSheet(context, DateTime.now()))),
+            Expanded(child: QuickAction(icon: WitchyIcons.note, label: 'Notes', onTap: () => showLogSheet(context, DateTime.now()))),
           ],
         ),
         const SizedBox(height: 12),
@@ -40,15 +42,7 @@ class SanctuaryScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.auto_awesome, size: 14, color: AppColors.gold),
-                    const SizedBox(width: 7),
-                    Text('Daily Astral Insight', style: AppText.serif(13.5, c: Colors.white)),
-                    const Spacer(),
-                    WitchyTag.gold('Scorpio Moon'),
-                  ],
-                ),
+                Row(children: [Text('Daily Astral Insight', style: AppText.serif(13.5, c: Colors.white)), const Spacer(), WitchyTag.gold('Scorpio Moon')]),
                 const SizedBox(height: 8),
                 Text(
                   'As your body summits this cycle peak, intuitive energies run deep. Ground your power with Mugwort tea, and honor your physical fatigue.',
@@ -89,9 +83,9 @@ class CycleMapScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Icon(Icons.chevron_left, size: 16, color: AppColors.muted),
+                    const FaIcon(WitchyIcons.left, size: WitchyIconSize.head, color: AppColors.muted),
                     Text('October 2026', style: AppText.serif(13.5)),
-                    const Icon(Icons.chevron_right, size: 16, color: AppColors.muted),
+                    const FaIcon(WitchyIcons.right, size: WitchyIconSize.head, color: AppColors.muted),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -108,7 +102,7 @@ class CycleMapScreen extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.water_drop_outlined, size: 15, color: AppColors.pink),
+                  const FaIcon(WitchyIcons.drop, size: WitchyIconSize.row, color: AppColors.pink),
                   const SizedBox(width: 8),
                   Text('Medium bleed flow intensity', style: AppText.sans(11.5, c: AppColors.chipText)),
                 ],
@@ -116,7 +110,7 @@ class CycleMapScreen extends StatelessWidget {
               const SizedBox(height: 5),
               Row(
                 children: [
-                  const Icon(Icons.favorite_border, size: 15, color: AppColors.pur),
+                  const FaIcon(WitchyIcons.heart, size: WitchyIconSize.row, color: AppColors.pur),
                   const SizedBox(width: 8),
                   Text('Intuitive, reflective mood', style: AppText.sans(11.5, c: AppColors.chipText)),
                 ],
@@ -138,7 +132,7 @@ class RecordsScreen extends StatelessWidget {
       children: [
         GestureDetector(
           onTap: () => Navigator.pushNamed(context, '/chart'),
-          child: WitchyCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Stardust Cycle Trends', style: AppText.secIn), const SizedBox(height: 10), const TrendBars()])),
+          child: WitchyCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Cycle Trends', style: AppText.secIn), const SizedBox(height: 10), const TrendBars()])),
         ),
         const SizedBox(height: 12),
         const Row(
@@ -194,7 +188,7 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: WitchyAppBar(
         title: 'Witch Profile',
-        leading: Icons.arrow_back,
+        leading: WitchyIcons.back,
         onLeading: () {
           if (Navigator.canPop(context)) {
             Navigator.pop(context);
@@ -202,7 +196,7 @@ class ProfileScreen extends StatelessWidget {
             Navigator.pushNamed(context, '/dashboard');
           }
         },
-        action: Icons.settings_outlined,
+        action: WitchyIcons.gear,
         onAction: () => Navigator.pushNamed(context, '/settings'),
       ),
       body: ListView(
@@ -215,7 +209,6 @@ class ProfileScreen extends StatelessWidget {
               Text('High Priestess Selene', style: AppText.serif(18)),
               const SizedBox(height: 2),
               Text('SCORPIO MOON · THIRD CYCLE', style: AppText.sans(9, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.2)),
-              const Icon(Icons.star, size: 12, color: AppColors.gold),
             ],
           ),
           const SizedBox(height: 12),
@@ -239,7 +232,11 @@ class ProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Apothecary Settings', style: AppText.secIn),
-                SettingsRow(label: 'Appearance', trailing: GestureDetector(onTap: () => Navigator.pushNamed(context, '/settings'), child: Text('Manage', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))), first: true),
+                SettingsRow(
+                  label: 'Appearance',
+                  trailing: GestureDetector(onTap: () => Navigator.pushNamed(context, '/settings'), child: Text('Manage', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))),
+                  first: true,
+                ),
                 SettingsRow(
                   label: 'Gestation Spells',
                   trailing: GestureDetector(onTap: () => Navigator.pushNamed(context, '/pregnancy'), child: Text('View', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur))),
@@ -260,7 +257,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text('$bells of 5 bells active', style: AppText.sans(11.5, c: AppColors.muted)),
                 const SizedBox(height: 10),
-                WitchyButton(label: 'Open Amulet Reminders', icon: Icons.notifications_outlined, onTap: () => Navigator.pushNamed(context, '/reminders')),
+                WitchyButton(label: 'Open Amulet Reminders', onTap: () => Navigator.pushNamed(context, '/reminders')),
               ],
             ),
           ),

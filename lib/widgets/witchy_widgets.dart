@@ -1,6 +1,9 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/witchy_icons.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class WitchyCard extends StatelessWidget {
   final Widget child;
@@ -32,10 +35,9 @@ class WitchyCard extends StatelessWidget {
 
 class WitchyButton extends StatelessWidget {
   final String label;
-  final IconData? icon;
   final VoidCallback? onTap;
   final bool busy;
-  const WitchyButton({super.key, required this.label, this.icon, this.onTap, this.busy = false});
+  const WitchyButton({super.key, required this.label, this.onTap, this.busy = false});
 
   @override
   Widget build(BuildContext context) {
@@ -47,15 +49,7 @@ class WitchyButton extends StatelessWidget {
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: AppColors.plumGradient, boxShadow: const [AppColors.primaryShadow]),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (busy)
-              const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold))
-            else if (icon != null) ...[
-              Icon(icon, size: 16, color: AppColors.gold),
-              const SizedBox(width: 8),
-            ],
-            Text(label, style: AppText.btn),
-          ],
+          children: [if (busy) const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.gold)), Text(label, style: AppText.btn)],
         ),
       ),
     );
@@ -64,17 +58,18 @@ class WitchyButton extends StatelessWidget {
 
 class WitchyAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final IconData? action;
+  final FaIconData? action;
   final VoidCallback? onAction;
-  final IconData leading;
+  final FaIconData leading;
   final VoidCallback? onLeading;
-  const WitchyAppBar({super.key, required this.title, this.action, this.onAction, this.leading = Icons.arrow_back, this.onLeading});
+  const WitchyAppBar({super.key, required this.title, this.action, this.onAction, this.leading = WitchyIcons.back, this.onLeading});
 
   @override
   Size get preferredSize => const Size.fromHeight(50);
 
   @override
   Widget build(BuildContext context) {
+    const box = BoxConstraints(minWidth: 34, minHeight: 34, maxWidth: 34, maxHeight: 34);
     return SafeArea(
       bottom: false,
       child: SizedBox(
@@ -82,19 +77,14 @@ class WitchyAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Row(
           children: [
             IconButton(
-              onPressed:
-                  onLeading ??
-                  () {
-                    if (Navigator.canPop(context)) {
-                      Navigator.pop(context);
-                    } else {
-                      Navigator.pushNamed(context, '/dashboard');
-                    }
-                  },
-              icon: Icon(leading, color: AppColors.chipText),
+              onPressed: onLeading ?? () => Navigator.canPop(context) ? Navigator.pop(context) : Navigator.pushNamed(context, '/dashboard'),
+              constraints: box,
+              iconSize: WitchyIconSize.base,
+              icon: FaIcon(leading, size: WitchyIconSize.base, color: AppColors.chipText),
             ),
             Expanded(child: Text(title, textAlign: TextAlign.center, style: AppText.appBar)),
-            IconButton(onPressed: onAction, icon: Icon(action ?? Icons.auto_awesome, color: AppColors.pur)),
+            if (action != null) IconButton(onPressed: onAction, constraints: box, iconSize: WitchyIconSize.base, icon: FaIcon(action, size: WitchyIconSize.base, color: AppColors.pur)),
+            // IconButton(onPressed: onAction, constraints: box, iconSize: WitchyIconSize.base, icon: FaIcon(action ?? WitchyIcons.spark, size: WitchyIconSize.base, color: AppColors.pur)),
           ],
         ),
       ),
@@ -122,7 +112,7 @@ class WitchyTag extends StatelessWidget {
 
 class WitchyChip extends StatelessWidget {
   final String label;
-  final IconData? icon;
+  final FaIconData? icon;
   final Color? iconColor;
   final bool selected;
   final VoidCallback onTap;
@@ -138,7 +128,7 @@ class WitchyChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[Icon(icon, size: 12, color: selected ? Colors.white : (iconColor ?? AppColors.pur)), const SizedBox(width: 6)],
+            if (icon != null) ...[FaIcon(icon, size: WitchyIconSize.xs, color: selected ? Colors.white : (iconColor ?? AppColors.pur)), const SizedBox(width: 6)],
             Flexible(child: Text(label, style: AppText.sans(11.5, w: FontWeight.w500, c: selected ? Colors.white : AppColors.chipText))),
           ],
         ),
@@ -148,7 +138,7 @@ class WitchyChip extends StatelessWidget {
 }
 
 class IconBadge extends StatelessWidget {
-  final IconData icon;
+  final FaIconData icon;
   final Color bg;
   final Color fg;
   final double size;
@@ -156,7 +146,7 @@ class IconBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, color: bg), child: Icon(icon, size: 16, color: fg));
+    return Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, color: bg), alignment: Alignment.center, child: FaIcon(icon, size: WitchyIconSize.sm, color: fg));
   }
 }
 
@@ -185,7 +175,7 @@ class WitchyAvatar extends StatelessWidget {
 }
 
 class InfoPill extends StatelessWidget {
-  final IconData icon;
+  final FaIconData icon;
   final String label;
   const InfoPill({super.key, required this.icon, required this.label});
 
@@ -196,7 +186,7 @@ class InfoPill extends StatelessWidget {
       decoration: BoxDecoration(color: const Color(0xFFF6EEFB), borderRadius: BorderRadius.circular(9), border: Border.all(color: AppColors.line)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [Icon(icon, size: 12, color: AppColors.pur), const SizedBox(width: 6), Text(label, style: AppText.sans(10, w: FontWeight.w500, c: AppColors.chipText))],
+        children: [FaIcon(icon, size: WitchyIconSize.xs, color: AppColors.pur), const SizedBox(width: 6), Text(label, style: AppText.sans(10, w: FontWeight.w500, c: AppColors.chipText))],
       ),
     );
   }
@@ -221,7 +211,7 @@ class SettingsRow extends StatelessWidget {
 class WitchyTextField extends StatelessWidget {
   final String? label;
   final String hint;
-  final IconData? lead;
+  final FaIconData? lead;
   final bool obscure;
   final TextEditingController? controller;
   final VoidCallback? onToggleObscure;
@@ -243,12 +233,10 @@ class WitchyTextField extends StatelessWidget {
             filled: true,
             fillColor: Colors.white,
             contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12).copyWith(left: lead != null ? 36 : 12),
-            prefixIcon: lead != null ? Icon(lead, size: 16, color: AppColors.muted) : null,
+            prefixIcon: lead != null ? FaIcon(lead, size: WitchyIconSize.sm, color: AppColors.muted) : null,
             prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 20),
             suffixIcon:
-                onToggleObscure != null
-                    ? IconButton(onPressed: onToggleObscure, icon: Icon(obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 16, color: AppColors.muted))
-                    : null,
+                onToggleObscure != null ? IconButton(onPressed: onToggleObscure, icon: FaIcon(obscure ? WitchyIcons.eye : WitchyIcons.eyeOpen, size: WitchyIconSize.sm, color: AppColors.muted)) : null,
             enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.line)),
             focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.pur)),
           ),
@@ -287,18 +275,14 @@ class MoonRow extends StatelessWidget {
   const MoonRow({super.key});
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    const moons = [(-40.0, AppColors.pur), (-18.0, AppColors.pur), (0.0, AppColors.gold), (18.0, AppColors.pur), (40.0, AppColors.pur)];
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.dark_mode_outlined, color: AppColors.pur, size: 20),
-        SizedBox(width: 16),
-        Icon(Icons.dark_mode_outlined, color: AppColors.pur, size: 20),
-        SizedBox(width: 16),
-        Icon(Icons.dark_mode_outlined, color: AppColors.gold, size: 20),
-        SizedBox(width: 16),
-        Icon(Icons.dark_mode_outlined, color: AppColors.pur, size: 20),
-        SizedBox(width: 16),
-        Icon(Icons.dark_mode_outlined, color: AppColors.pur, size: 20),
+        for (final (rot, color) in moons) ...[
+          Transform.rotate(angle: rot * math.pi / 180, child: FaIcon(WitchyIcons.moon, color: color, size: WitchyIconSize.base)),
+          if (rot != 40.0) const SizedBox(width: 16),
+        ],
       ],
     );
   }
@@ -311,7 +295,7 @@ class WitchyBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const items = [(Icons.dark_mode_outlined, 'Today'), (Icons.calendar_month_outlined, 'Calendar'), (Icons.bar_chart_outlined, 'Insights'), (Icons.auto_awesome, 'Magic')];
+    const items = [(WitchyIcons.moon, 'Today'), (WitchyIcons.cal, 'Calendar'), (WitchyIcons.chart, 'Insights'), (WitchyIcons.spark, 'Magic')];
     return Container(
       height: 78,
       decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.line))),
@@ -326,8 +310,9 @@ class WitchyBottomNav extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 10),
                 child: Column(
                   children: [
-                    Icon(items[i].$1, size: 20, color: i == index ? AppColors.pur : AppColors.navInactive),
                     const SizedBox(height: 4),
+                    FaIcon(items[i].$1, size: WitchyIconSize.head, color: i == index ? AppColors.pur : AppColors.navInactive),
+                    const SizedBox(height: 8),
                     Text(items[i].$2, style: AppText.sans(9.5, w: FontWeight.w500, c: i == index ? AppColors.pur : AppColors.navInactive)),
                     if (i == index) Container(margin: const EdgeInsets.only(top: 4), width: 18, height: 2.5, decoration: BoxDecoration(color: AppColors.pur, borderRadius: BorderRadius.circular(2))),
                   ],

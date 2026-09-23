@@ -14,7 +14,6 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: WitchyAppBar(
         title: 'Settings',
-        leading: Icons.arrow_back,
         onLeading: () {
           if (Navigator.canPop(context)) {
             Navigator.pop(context);
@@ -31,7 +30,11 @@ class SettingsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Lunar Alignments', style: AppText.secIn),
-                SettingsRow(label: 'Receive Lunar Notifications', trailing: Switch(value: s.lunarNotifications, activeColor: const Color(0xFF7B2CBF), onChanged: (v) => context.read<SettingsProvider>().setLunar(v)), first: true),
+                SettingsRow(
+                  label: 'Receive Lunar Notifications',
+                  trailing: Switch(value: s.lunarNotifications, activeColor: const Color(0xFF7B2CBF), onChanged: (v) => context.read<SettingsProvider>().setLunar(v)),
+                  first: true,
+                ),
                 SettingsRow(label: 'Dark Magic Mode', trailing: Switch(value: s.darkMode, activeColor: const Color(0xFF7B2CBF), onChanged: (v) => context.read<SettingsProvider>().setDark(v))),
               ],
             ),

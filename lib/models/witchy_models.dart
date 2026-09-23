@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../utils/witchy_icons.dart';
 
 class CycleSettings {
   final DateTime lastPeriodStart;
@@ -18,7 +20,7 @@ class ReminderItem {
   final String subtitle;
   final String time;
   final String freq;
-  final IconData icon;
+  final FaIconData icon;
   final Color badgeBg;
   final Color badgeFg;
   bool enabled;
@@ -29,7 +31,7 @@ class AlertItem {
   final String title;
   final String body;
   final String time;
-  final IconData icon;
+  final FaIconData icon;
   final Color badgeBg;
   final Color badgeFg;
   const AlertItem({required this.title, required this.body, required this.time, required this.icon, required this.badgeBg, required this.badgeFg});
@@ -58,18 +60,18 @@ class Article {
 
 abstract final class MockData {
   static List<ReminderItem> reminders() => [
-        ReminderItem(title: 'Log Period Commencing', subtitle: 'Magical bell for predicted first flow', time: '09:00 AM', freq: 'Daily during peak', icon: Icons.water_drop_outlined, badgeBg: const Color(0xFFFCE7EF), badgeFg: const Color(0xFFE0517F), enabled: true),
-        ReminderItem(title: 'Take Cosmic Pill', subtitle: 'Daily supplements timer', time: '08:30 AM', freq: 'Every day', icon: Icons.star_border, badgeBg: const Color(0xFFF3EAF9), badgeFg: const Color(0xFF7B2CBF), enabled: true),
-        ReminderItem(title: 'Fertility Window Alert', subtitle: 'Reminder of peak biological phase', time: '07:00 AM', freq: 'Window start', icon: Icons.dark_mode_outlined, badgeBg: const Color(0xFFF8EED9), badgeFg: const Color(0xFFD9A036), enabled: false),
-        ReminderItem(title: 'PMS Warning', subtitle: 'Prepare your temple for mood shifts', time: '06:00 PM', freq: '3 days prior', icon: Icons.bolt_outlined, badgeBg: const Color(0xFFF3EAF9), badgeFg: const Color(0xFF7B2CBF), enabled: true),
-        ReminderItem(title: 'Somatic Hydration', subtitle: 'Sip restorative botanical water', time: 'Hourly', freq: 'Daytime', icon: Icons.water_drop_outlined, badgeBg: const Color(0xFFE3EEF9), badgeFg: const Color(0xFF3E7BC0), enabled: false),
+        ReminderItem(title: 'Log Period Commencing', subtitle: 'Magical bell for predicted first flow', time: '09:00 AM', freq: 'Daily during peak', icon: WitchyIcons.drop, badgeBg: const Color(0xFFFCE7EF), badgeFg: const Color(0xFFE0517F), enabled: true),
+        ReminderItem(title: 'Take Cosmic Pill', subtitle: 'Daily supplements timer', time: '08:30 AM', freq: 'Every day', icon: WitchyIcons.star, badgeBg: const Color(0xFFF3EAF9), badgeFg: const Color(0xFF7B2CBF), enabled: true),
+        ReminderItem(title: 'Fertility Window Alert', subtitle: 'Reminder of peak biological phase', time: '07:00 AM', freq: 'Window start', icon: WitchyIcons.moon, badgeBg: const Color(0xFFF8EED9), badgeFg: const Color(0xFFD9A036), enabled: false),
+        ReminderItem(title: 'PMS Warning', subtitle: 'Prepare your temple for mood shifts', time: '06:00 PM', freq: '3 days prior', icon: WitchyIcons.zap, badgeBg: const Color(0xFFF3EAF9), badgeFg: const Color(0xFF7B2CBF), enabled: true),
+        ReminderItem(title: 'Somatic Hydration', subtitle: 'Sip restorative botanical water', time: 'Hourly', freq: 'Daytime', icon: WitchyIcons.drop, badgeBg: const Color(0xFFE3EEF9), badgeFg: const Color(0xFF3E7BC0), enabled: false),
       ];
 
   static List<AlertItem> alerts() => const [
-        AlertItem(title: 'Period Commencing', body: 'Your bleeding phase is predicted to begin in 2 days. Prepare your herbal tea blends.', time: '2 hours ago', icon: Icons.water_drop_outlined, badgeBg: Color(0xFFFCE7EF), badgeFg: Color(0xFFE0517F)),
-        AlertItem(title: 'Fertility Window Peak', body: 'Your cosmic fertility peaks today under the fertile crescent. High chance of ovulation.', time: '1 day ago', icon: Icons.dark_mode_outlined, badgeBg: Color(0xFFF8EED9), badgeFg: Color(0xFFD9A036)),
-        AlertItem(title: 'Magical Log Missing', body: 'Remember to log your somatic echoes, cramps and emotional currents for cycle day 14.', time: '2 days ago', icon: Icons.edit_note_outlined, badgeBg: Color(0xFFF3EAF9), badgeFg: Color(0xFF7B2CBF)),
-        AlertItem(title: 'Astrological Milestone', body: 'Full Moon summits in Scorpio. Perfect alignment for meditative reflection.', time: '3 days ago', icon: Icons.star_border, badgeBg: Color(0xFFF3EAF9), badgeFg: Color(0xFF7B2CBF)),
+        AlertItem(title: 'Period Commencing', body: 'Your bleeding phase is predicted to begin in 2 days. Prepare your herbal tea blends.', time: '2 hours ago', icon: WitchyIcons.drop, badgeBg: Color(0xFFFCE7EF), badgeFg: Color(0xFFE0517F)),
+        AlertItem(title: 'Fertility Window Peak', body: 'Your cosmic fertility peaks today under the fertile crescent. High chance of ovulation.', time: '1 day ago', icon: WitchyIcons.moon, badgeBg: Color(0xFFF8EED9), badgeFg: Color(0xFFD9A036)),
+        AlertItem(title: 'Magical Log Missing', body: 'Remember to log your somatic echoes, cramps and emotional currents for cycle day 14.', time: '2 days ago', icon: WitchyIcons.quill, badgeBg: Color(0xFFF3EAF9), badgeFg: Color(0xFF7B2CBF)),
+        AlertItem(title: 'Astrological Milestone', body: 'Full Moon summits in Scorpio. Perfect alignment for meditative reflection.', time: '3 days ago', icon: WitchyIcons.star, badgeBg: Color(0xFFF3EAF9), badgeFg: Color(0xFF7B2CBF)),
       ];
 
   static List<CovenPost> posts() => const [

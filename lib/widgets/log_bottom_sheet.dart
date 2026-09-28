@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/app_providers.dart';
+import '../providers/logging_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/witchy_icons.dart';
-import 'witchy_widgets.dart';
+import '../utils/app_icons.dart';
+import 'app_chip.dart';
 
-const _months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const kMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 Future<void> showLogSheet(BuildContext context, DateTime date) {
   return showModalBottomSheet(
@@ -25,16 +25,16 @@ class LogBottomSheet extends StatelessWidget {
 
   static const flows = ['None', 'Light', 'Medium', 'Heavy'];
   static const moods = [
-    ('Enchanted', WitchyIcons.spark, AppColors.pur),
-    ('Grounded', WitchyIcons.leaf, Color(0xFF4C8C4A)),
-    ('Shadowy', WitchyIcons.moon, Color(0xFF5B4A8C)),
-    ('Restless', WitchyIcons.zap, Color(0xFFC2703B)),
+    ('Enchanted', AppIcons.spark, AppColors.pur),
+    ('Grounded', AppIcons.leaf, Color(0xFF4C8C4A)),
+    ('Shadowy', AppIcons.moon, Color(0xFF5B4A8C)),
+    ('Restless', AppIcons.zap, Color(0xFFC2703B)),
   ];
   static const symptoms = [
-    ('Uterine Cramps', WitchyIcons.alert, AppColors.pur),
-    ('Headache', WitchyIcons.zap, Color(0xFFC2703B)),
-    ('Bloating', WitchyIcons.drop, Color(0xFF3E7BC0)),
-    ('Fatigue', WitchyIcons.moon, Color(0xFF5B4A8C)),
+    ('Uterine Cramps', AppIcons.alert, AppColors.pur),
+    ('Headache', AppIcons.zap, Color(0xFFC2703B)),
+    ('Bloating', AppIcons.drop, Color(0xFF3E7BC0)),
+    ('Fatigue', AppIcons.moon, Color(0xFF5B4A8C)),
   ];
 
   @override
@@ -47,13 +47,13 @@ class LogBottomSheet extends StatelessWidget {
       children: [
         Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.line, borderRadius: BorderRadius.circular(2)))),
         const SizedBox(height: 12),
-        Text('${_months[date.month - 1]} ${date.day}, ${date.year}', style: AppText.serif(17)),
+        Text('${kMonths[date.month - 1]} ${date.day}, ${date.year}', style: AppText.serif(17)),
         const SizedBox(height: 4),
         Text('Select physical and mental essences flowing within you.', style: AppText.sub),
         const SizedBox(height: 12),
         Text('Bleed Intensity', style: AppText.sec),
         const SizedBox(height: 8),
-        Wrap(spacing: 8, runSpacing: 8, children: [for (final f in flows) WitchyChip(label: f, selected: entry.flow == f, onTap: () => context.read<LoggingProvider>().setFlow(date, f))]),
+        Wrap(spacing: 8, runSpacing: 8, children: [for (final f in flows) AppChip(label: f, selected: entry.flow == f, onTap: () => context.read<LoggingProvider>().setFlow(date, f))]),
         const SizedBox(height: 12),
         Text('Emotional Currents', style: AppText.sec),
         const SizedBox(height: 8),
@@ -64,7 +64,7 @@ class LogBottomSheet extends StatelessWidget {
           mainAxisSpacing: 8,
           crossAxisSpacing: 8,
           childAspectRatio: 3.4,
-          children: [for (final m in moods) WitchyChip(label: m.$1, icon: m.$2, iconColor: m.$3, selected: entry.moods.contains(m.$1), onTap: () => context.read<LoggingProvider>().toggleMood(date, m.$1))],
+          children: [for (final m in moods) AppChip(label: m.$1, icon: m.$2, iconColor: m.$3, selected: entry.moods.contains(m.$1), onTap: () => context.read<LoggingProvider>().toggleMood(date, m.$1))],
         ),
         const SizedBox(height: 12),
         Text('Somatic Echoes', style: AppText.sec),
@@ -77,7 +77,7 @@ class LogBottomSheet extends StatelessWidget {
           crossAxisSpacing: 8,
           childAspectRatio: 3.4,
           children: [
-            for (final s in symptoms) WitchyChip(label: s.$1, icon: s.$2, iconColor: s.$3, selected: entry.symptoms.contains(s.$1), onTap: () => context.read<LoggingProvider>().toggleSymptom(date, s.$1)),
+            for (final s in symptoms) AppChip(label: s.$1, icon: s.$2, iconColor: s.$3, selected: entry.symptoms.contains(s.$1), onTap: () => context.read<LoggingProvider>().toggleSymptom(date, s.$1)),
           ],
         ),
         const SizedBox(height: 12),

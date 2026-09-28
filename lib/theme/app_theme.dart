@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-ThemeData buildWitchyTheme() {
+ThemeData buildAppTheme() {
   final base = ThemeData(useMaterial3: true, scaffoldBackgroundColor: AppColors.bg);
   return base.copyWith(
     colorScheme: ColorScheme.fromSeed(seedColor: AppColors.pur).copyWith(

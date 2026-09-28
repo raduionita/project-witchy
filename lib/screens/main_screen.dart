@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'primary_screens.dart';
-import 'secondary_screens.dart';
 import '../theme/app_colors.dart';
-import '../utils/witchy_icons.dart';
+import '../utils/app_icons.dart';
 import '../widgets/log_bottom_sheet.dart';
-import '../widgets/witchy_widgets.dart';
+import '../widgets/app_top_bar.dart';
+import '../widgets/app_bottom_nav.dart';
+import 'coven_screen.dart';
+import 'cycle_map_screen.dart';
+import 'records_screen.dart';
+import 'sanctuary_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final int initialIndex;
@@ -21,11 +24,11 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: WitchyAppBar(
+      appBar: AppTopBar(
         title: titles[index],
-        leading: WitchyIcons.user,
+        leading: AppIcons.user,
         onLeading: () => Navigator.pushNamed(context, '/profile'),
-        action: WitchyIcons.bell,
+        action: AppIcons.bell,
         onAction: () {
           final name = ModalRoute.of(context)?.settings.name;
           if (name != '/alerts') Navigator.pushNamed(context, '/alerts');
@@ -36,6 +39,7 @@ class _MainScreenState extends State<MainScreen> {
           index == 3
               ? null
               : FloatingActionButton(
+                heroTag: 'main_log_fab',
                 onPressed: () => showLogSheet(context, DateTime.now()),
                 backgroundColor: Colors.transparent,
                 hoverColor: AppColors.plum2,
@@ -48,10 +52,10 @@ class _MainScreenState extends State<MainScreen> {
                   height: 50,
                   alignment: Alignment.center,
                   decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.plumGradient, boxShadow: [AppColors.primaryShadow]),
-                  child: const FaIcon(WitchyIcons.quill, size: WitchyIconSize.base, color: AppColors.gold),
+                  child: const FaIcon(AppIcons.quill, size: AppIconSize.base, color: AppColors.gold),
                 ),
               ),
-      bottomNavigationBar: WitchyBottomNav(index: index, onTap: (i) => setState(() => index = i)),
+      bottomNavigationBar: AppBottomNav(index: index, onTap: (i) => setState(() => index = i)),
     );
   }
 }

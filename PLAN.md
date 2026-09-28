@@ -11,7 +11,6 @@ This plan is split into **Phases**. Each phase is a list of tasks that MUST be c
 - **NO Firebase.** Storage uses `shared_preferences`; state uses `provider`.
 - **Files**: `snake_case.dart`. **Classes**: `PascalCase`. **Functions/Variables**: `camelCase`. **Constants**: `kPascalCase`. **Private members**: leading underscore `_`.
 - **Import order**: Dart → Flutter → Packages → Relative.
-- All features live in feature folders: `lib/features/<name>/` containing `models/`, `providers/`, `screens/`, `widgets/`.
 - **Navigation**: Navigator 2.0 (`Router` + custom `RouterDelegate` + `RouteInformationParser`).
 - **Charts**: `fl_chart`.
 - **Couples Mode**: placeholder only (local token, real backend deferred).
@@ -42,6 +41,7 @@ lib/
 ├── theme/
 assets/
 ├── images/
+├── icons/
 └── content/                           # seeded articles (privacy-first)
 test/
 ```
@@ -57,7 +57,7 @@ test/
 - [ ] **0.3** Verify the folder skeleton from `Project Structure` above + `assets/` (empty `images/` + `content/`).
 - [ ] **0.4** Design system: `theme/` (color scheme, typography, spacing) and shared widget primitives in `lib/widgets/` (AppButton, AppCard, AppText, AppIcon).
 - [ ] **0.5** Simple navigation: `MaterialApp.routes`.
-- [ ] **0.6** Root bootstrap: `MultiProvider` + `AppBootstrap` (async load placeholder).
+- [ ] **0.6** Root bootstrap: `MultiProvider` + `MaterialApp`
 
 **Gate:** `flutter analyze`, `flutter build apk --debug`, `flutter test`,`flutter run`
 

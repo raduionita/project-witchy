@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../models/witchy_models.dart';
+import '../models/article.dart';
 import '../theme/app_text_styles.dart';
-import '../widgets/witchy_widgets.dart';
+import '../widgets/app_top_bar.dart';
+import '../widgets/app_card.dart';
+import '../widgets/app_tag.dart';
 
 class ArticleDetailScreen extends StatelessWidget {
   final Article article;
@@ -11,11 +13,11 @@ class ArticleDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final a = article;
     return Scaffold(
-      appBar: const WitchyAppBar(title: 'Wellness Detail'),
+      appBar: const AppTopBar(title: 'Wellness Detail'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
-          WitchyCard(
+          AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -25,7 +27,7 @@ class ArticleDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  WitchyTag(a.category),
+                  AppTag(a.category),
                   Text(a.readTime, style: AppText.sans(9, c: const Color(0xFF8B7F95))),
                 ]),
                 const SizedBox(height: 6),
@@ -35,7 +37,7 @@ class ArticleDetailScreen extends StatelessWidget {
               ],
             ),
           ),
-          WitchyCard(
+          AppCard(
             child: Text(
               'This guide blends evidence-based reproductive health with cycle-syncing ritual. Revisit the key signal from the library card above, then apply one small practice today — tea, rest, or breath — and log how your temple responds.',
               style: AppText.sans(11.5, h: 1.55),

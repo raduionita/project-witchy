@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../widgets/cycle_widgets.dart';
-import '../widgets/witchy_widgets.dart';
+import '../widgets/cycle_orb.dart';
+import '../widgets/stat_card.dart';
+import '../widgets/app_top_bar.dart';
+import '../widgets/app_card.dart';
 
 class FertilityScreen extends StatelessWidget {
   const FertilityScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const WitchyAppBar(title: 'Fertility Window'),
+      appBar: const AppTopBar(title: 'Fertility Window'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
@@ -23,7 +25,7 @@ class FertilityScreen extends StatelessWidget {
             Expanded(child: StatCard(label: 'Window', value: '5 Days', sub: 'Day 12 – Day 16')),
           ]),
           const SizedBox(height: 12),
-          WitchyCard(
+          AppCard(
             dark: true,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -17,8 +17,8 @@ migrate_working_dir/
 *.ipr
 *.iws
 .idea/
+.vscode/
 
-resources/
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
@@ -49,6 +49,7 @@ app.*.map.json
 # Android related
 **/android/**/gradle-wrapper.jar
 **/android/.gradle
+**/android/build
 **/android/app/.cxx/
 **/android/captures/
 **/android/gradlew

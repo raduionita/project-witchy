@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_text_styles.dart';
-import '../widgets/cycle_widgets.dart';
-import '../widgets/witchy_widgets.dart';
+import '../widgets/app_top_bar.dart';
+import '../widgets/app_card.dart';
+import '../widgets/stat_card.dart';
+import '../widgets/trend_bars.dart';
 
 class ChartScreen extends StatelessWidget {
   const ChartScreen({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const WitchyAppBar(title: 'BBT Chart'),
+      appBar: const AppTopBar(title: 'BBT Chart'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
-          WitchyCard(
+          AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [Text('Biphasic Temperature Shift', style: AppText.secIn), const SizedBox(height: 10), const TrendBars()],
@@ -24,7 +26,7 @@ class ChartScreen extends StatelessWidget {
             SizedBox(width: 12),
             Expanded(child: StatCard(label: '', value: '+0.4°', sub: 'Post-shift rise')),
           ]),
-          WitchyCard(
+          AppCard(
             dark: true,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

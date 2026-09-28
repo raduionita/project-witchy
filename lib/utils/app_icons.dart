@@ -1,7 +1,7 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Mock icon scale from `resources/Qwen_html_*.html` (`.ic`, `.ic.s`, …).
-abstract final class WitchyIconSize {
+abstract final class AppIconSize {
   static const double xs = 12; // .ic.xs
   static const double sm = 14; // .ic.s
   static const double row = 15; // .drow .ic
@@ -15,7 +15,7 @@ abstract final class WitchyIconSize {
 /// Maps the HTML SVG symbols to Font Awesome icons.
 /// Prefers Regular (outline) glyphs to match the mock's uniform stroke look;
 /// falls back to Solid only where Font Awesome free has no outline variant.
-abstract final class WitchyIcons {
+abstract final class AppIcons {
   // structure / chrome
   static const menu = FontAwesomeIcons.bars; // i-menu (solid-only)
   static const filter = FontAwesomeIcons.sliders; // i-filter (solid-only)

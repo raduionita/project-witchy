@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/day_log.dart';
 import '../providers/logging_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -40,7 +41,7 @@ class LogBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final log = context.watch<LoggingProvider>();
-    final entry = log.day(date);
+    final entry = log.peekDay(date) ?? DayLog();
     return ListView(
       controller: scroll,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),

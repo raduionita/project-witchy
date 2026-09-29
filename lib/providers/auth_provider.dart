@@ -21,14 +21,6 @@ class AuthProvider extends ChangeNotifier {
     return AuthProvider(prefs, signedIn: true, identity: AuthIdentity.fromMap(session));
   }
 
-  Future<void> signInWithEmail(String email) async {
-    final trimmed = email.trim();
-    return _authenticate(() async {
-      if (!trimmed.contains('@') || !trimmed.contains('.')) throw Exception('Enter a valid email to join the coven');
-      return {'method': 'email', 'email': trimmed, 'name': trimmed.split('@').first};
-    });
-  }
-
   Future<void> signInWithGoogle() async => _authenticate(() async {
     final instance = GoogleSignIn.instance;
     _googleInit ??= instance.initialize();

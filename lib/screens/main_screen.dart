@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../navigation/app_nav.dart';
 import '../theme/app_colors.dart';
 import '../utils/app_icons.dart';
 import '../widgets/log_bottom_sheet.dart';
@@ -27,12 +28,9 @@ class _MainScreenState extends State<MainScreen> {
       appBar: AppTopBar(
         title: titles[index],
         leading: AppIcons.user,
-        onLeading: () => Navigator.pushNamed(context, '/profile'),
+        onLeading: () => context.go('/profile'),
         action: AppIcons.bell,
-        onAction: () {
-          final name = ModalRoute.of(context)?.settings.name;
-          if (name != '/alerts') Navigator.pushNamed(context, '/alerts');
-        },
+        onAction: () => context.go('/alerts'),
       ),
       body: IndexedStack(index: index, children: const [SanctuaryScreen(), CycleMapScreen(), RecordsScreen(), CovenScreen()]),
       floatingActionButton:

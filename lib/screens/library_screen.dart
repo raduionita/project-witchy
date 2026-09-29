@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/mock_data.dart';
+import '../navigation/app_nav.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../utils/app_icons.dart';
@@ -21,7 +22,7 @@ class LibraryScreen extends StatelessWidget {
           const SizedBox(height: 12),
           for (final a in articles) ...[
             GestureDetector(
-              onTap: () => Navigator.pushNamed(context, '/library/${a.id}'),
+              onTap: () => context.go('/library/${a.id}'),
               child: AppCard(
                 child: Row(
                   children: [

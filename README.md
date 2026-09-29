@@ -13,7 +13,7 @@ Witchy is a comprehensive health tracking application designed to help you under
 | **Pregnancy Tracker** | Access important health insights, birth preparation guidance, and postpartum care information throughout your pregnancy journey. |
 | **Perimenopause Tracker** | Specialized tracking for perimenopause symptoms with expert-reviewed content for better understanding of body changes. |
 | **Witchy for Couples** | Share cycle, pregnancy, and health updates with your partner to deepen connection and support. |
-| **Anonymous Mode** | Your health data is not linked to your name, email, or device identifiers. |
+| **Anonymous Mode** | Slip in incognito with "Skip for now" — no account required; health data stays on your device, unlinked to your name, email, or device identifiers. |
 | **Smart Reminders** | Customize notifications for period start/end dates, medication, water intake, sleep, and more. |
 | **Content Library** | Access thousands of articles and videos about women's health, menstruation, and reproductive wellness. |
 | **Symptom Pattern Recognition** | Identify patterns in your symptoms to better understand your body signals. |
@@ -29,6 +29,7 @@ Witchy is a comprehensive health tracking application designed to help you under
 - NO Health and fitness data collected
 - NO Reproductive health information collected
 - NO AI system is being trained data in this app
+- One-time privacy consent: a first-run privacy screen presents our Terms of Service, Privacy Policy, and Child Protection pages (opened in-app) and stores your acceptance locally — nothing is uploaded
 
 ---
 
@@ -53,4 +54,4 @@ Witchy is dedicated to providing evidence-based reproductive health insights wit
 
 ## License & Terms
 
-By using Witchy, you agree to the app's Terms of Service and Privacy Policy. For detailed terms, visit the Witchy Health website or the Google Play Store listing.
+By using Witchy, you agree to the app's Terms of Service and Privacy Policy. For detailed terms, visit the Witchy Health website, the Google Play Store listing, or the in-app privacy screen (Terms of Service, Privacy Policy, and Child Protection pages).

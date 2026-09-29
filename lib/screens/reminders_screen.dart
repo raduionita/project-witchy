@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/reminders_provider.dart';
+import '../services/notification_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../utils/app_icons.dart';
@@ -38,7 +39,14 @@ class RemindersScreen extends StatelessWidget {
                           children: [Text(rp.items[i].title, style: AppText.serif(12.5)), Text(rp.items[i].subtitle, style: AppText.sans(9.5, c: AppColors.muted))],
                         ),
                       ),
-                      Switch(value: rp.items[i].enabled, activeThumbColor: AppColors.pur, onChanged: (v) => context.read<RemindersProvider>().toggle(i, v)),
+                      Switch(
+                        value: rp.items[i].enabled,
+                        activeThumbColor: AppColors.pur,
+                        onChanged: (v) {
+                          context.read<RemindersProvider>().toggle(i, v);
+                          NotificationService.syncReminder(rp.items[i]);
+                        },
+                      ),
                     ],
                   ),
                   if (rp.items[i].enabled) ...[

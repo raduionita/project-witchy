@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../navigation/app_nav.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../utils/app_icons.dart';
@@ -25,7 +26,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
         child: Row(
           children: [
             IconButton(
-              onPressed: onLeading ?? () => Navigator.canPop(context) ? Navigator.pop(context) : Navigator.pushNamed(context, '/dashboard'),
+              onPressed: onLeading ?? () => context.back(),
               constraints: box,
               iconSize: AppIconSize.base,
               icon: FaIcon(leading, size: AppIconSize.base, color: AppColors.chipText),

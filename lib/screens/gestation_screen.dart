@@ -51,6 +51,7 @@ class GestationScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 12),
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

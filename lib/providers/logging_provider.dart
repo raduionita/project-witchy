@@ -13,7 +13,22 @@ class LoggingProvider extends ChangeNotifier {
 
   static String keyFor(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
+  /// Create-or-update entry used only by mutators — views must use [peekDay].
   DayLog day(DateTime d) => _days.putIfAbsent(keyFor(d), () => DayLog());
+
+  /// Read-only lookup: never materializes an entry for an unlogged day.
+  DayLog? peekDay(DateTime d) => _days[keyFor(d)];
+
+  bool hasLog(DateTime d) => _days.containsKey(keyFor(d));
+
+  Map<DateTime, DayLog> snapshot() => {for (final e in _days.entries) DateTime.parse(e.key): e.value};
+
+  void deleteDay(DateTime d) {
+    if (_days.remove(keyFor(d)) != null) {
+      notifyListeners();
+      _save();
+    }
+  }
 
   void setFlow(DateTime d, String v) {
     day(d).flow = v;

@@ -17,6 +17,14 @@ class PrefsService {
   static const _shareSymptoms = 'witchy_share_symptoms';
   static const _reminders = 'witchy_reminders';
   static const _session = 'witchy_session';
+  static const _privacyAccepted = 'witchy_privacy_accepted';
+  static const _birthYear = 'witchy_birth_year';
+
+  Future<bool> isPrivacyAccepted() async => (await SharedPreferences.getInstance()).getBool(_privacyAccepted) ?? false;
+  Future<void> setPrivacyAccepted() async => (await SharedPreferences.getInstance()).setBool(_privacyAccepted, true);
+
+  Future<int?> birthYear() async => (await SharedPreferences.getInstance()).getInt(_birthYear);
+  Future<void> setBirthYear(int year) async => (await SharedPreferences.getInstance()).setInt(_birthYear, year);
 
   Future<bool> isOnboarded() async => (await SharedPreferences.getInstance()).getBool(_onboarded) ?? false;
   Future<void> setOnboarded() async => (await SharedPreferences.getInstance()).setBool(_onboarded, true);

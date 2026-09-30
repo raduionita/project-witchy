@@ -1,5 +1,5 @@
 # WITCHY: Mobile Design System & UI/UX Specification
-**Document Version:** 1.5.0
+**Document Version:** 1.6.0
 **Product Name:** Witchy — Comprehensive Menstrual, Fertility & Reproductive Health Tracker
 **Target Platforms:** iOS, Android, web (Cross-Platform Mobile App)
 **Primary Aesthetic:** Celestial witch / soft mystic — deep plum gradients on lavender-white, gold accents, Playfair Display + Inter
@@ -110,8 +110,8 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 ### 3.3 Navigation Patterns
 
 - Bottom nav: 4 tabs `Today/Calendar/Insights/Magic` (`AppBottomNav`), pur active + 18×2.5 underline; Magic icon `auto_awesome` → `CovenScreen` tab; labels frozen. Log is a bottom drawer (`showLogSheet`), not a tab.
-- App bar: `AppTopBar` 50px, serif 16.5 centered; shell tabs: **leading `person_outline` → `/profile`**, **action bell `notifications_outlined` → `/alerts`**; all pushed screens default **leading back `arrow_back`** (pop, `/dashboard` fallback); `/profile` leading back → home, action gear → `/settings`; `/settings` leading back → `/profile`.
-- Pushes: Sanctuary Flow QA → `/cycle`, Mood/Pain/Notes QA → log bottom sheet (today); Peak card → `/fertility`; insight card → `/library`; CycleMap day tap → log bottom sheet (that date); trends + CycleMap cards → `/chart`; Library card → `/library/<slug>` (via `onGenerateRoute`, unknown slug → `/library`); Profile bond → `/binding`, gear/Manage → `/settings`, bells card button → `/reminders`, gestation → `/pregnancy`.
+- App bar: `AppTopBar` 50px, serif 16.5 centered; shell tabs: **leading `person_outline` → `/profile`**, **action bell `notifications_outlined` → `/alerts`**; all pushed screens default **leading back `arrow_back`** (pop, `/dashboard` fallback); `/profile` leading back → home, action alerts → `/alerts`.
+- Pushes: Sanctuary Flow QA → `/cycle`, Mood/Pain/Notes QA → log bottom sheet (today); Peak card → `/fertility`; insight card → `/library`; CycleMap day tap → log bottom sheet (that date); trends + CycleMap cards → `/chart`; Library card → `/library/<slug>` (via `onGenerateRoute`, unknown slug → `/library`); Profile bond → `/binding`, gestation → `/pregnancy`; Profile top-bar alerts → `/alerts` (settings + reminders now inline in Profile).
 - No legacy aliases: every route in `main.dart` is canonical and reachable (see §4.2).
 
 ---
@@ -130,17 +130,15 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 | Home | Lunar Cycle Map | `/calendar` (shell 1) | → log sheet, month picker | Oct 2026 grid (today ring, dimmed adjacent days, cycle-day micro-labels, legend row); day tap → log bottom sheet; month label → month/year picker sheet; late pill + Today chip when late/off-month; detail card with status tag, tappable rows, clear-day confirm (`/chart` now via Records → Trends) |
 | Log | Apothecary Log sheet | bottom drawer (no route) | — | `showLogSheet(date)`; flow single + moods/symptoms multi; per-date state in `LoggingProvider` (`DayLog` map); entries = calendar day tap, Sanctuary QA |
 | Home | Lunar Records | `/insights` (shell 2) | → `/chart` | Bars M1–M7 (58–94%), 28.4d/5.2d, chronology Sept/Aug/July tags; trends card tap → chart |
-| Home | Witch Profile | `/profile` (pushed, not a tab) | → `/settings`, `/reminders`, `/pregnancy`, `/binding` | Avatar HS, Scorpio Moon; toggles owned by Settings (Manage links); `Amulet Bells` 3rd card (live active count + button → reminders); gestation → pregnancy |
+| Home | Witch Profile | `/profile` (pushed, not a tab) | → `/alerts`, `/pregnancy`, `/binding` | Avatar HS, Scorpio Moon; `App Settings` card (lunar + dark switches), `Amulet Bells` card (5 inline bell rows, live count, pills when ON); gestation → pregnancy |
 | Community | Coven Sanctum | `/coven` (shell 3, Magic tab) | — | Tabs Recent/Ancients; 3 posts (MC/CS/LG); FAB plum/gold plus |
 | Cycle | Sovereign Blood | `/cycle` | — | Dark `Day 3 of 5` + 3 drops; volume single; pain slider L6; scribbles note |
 | Pregnancy | Gestation Spells | `/pregnancy` | — | Dark Week 12 (Day 4), gold 30% bar, 196 days; Lime Size; tips |
 | Alerts | Celestial Alerts | `/alerts` | — | `Whispers Received` inbox (sub + 4 alert cards with `IconBadge` tints); entry = bell top-right on all shell tabs |
-| Profile | Amulet Reminders | `/reminders` | — | 5 configurable bells (`RemindersProvider`); header live `X of 5 bells active`; OFF collapses time/freq pills; entry = Profile `Amulet Bells` card button |
 | Library | Apothecary Library | `/library` | → `/library/<slug>` | Search + 4 articles (Luteal, Herbs, Meditation, Fertility); tap → detail via `onGenerateRoute` |
 | Library | Article Detail | `/library/<slug>` (dynamic) | — | Slug lookup (`articleById`, unknown → library); thumb gradient hero, cat/readTime, title, excerpt + body; back to library |
 | Insights | BBT & Ovulation Chart | `/chart` | — | Reuses `TrendBars` + avg duo + note card; entries = Records trends card |
 | Fertility | Fertility Window | `/fertility` | — | Orb variant (Peak Day) + window duo + TTC tips; entry = Sanctuary Peak card |
-| Profile | Settings | `/settings` | — | App settings owned here: lunar switch, dark mode; gear/Manage top-right of Profile; reuses `SettingsRow` |
 | Community | Coven Binding | `/binding` | — | HS✦KP header, invite input + send, 3 visibility switches |
 
 ### 4.2 App Structure
@@ -156,7 +154,7 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
   - /coven (Coven tab)
   - /chart
   - log bottom sheet (opened from FAB or day/QA taps)
-- /profile → /settings, /reminders, /pregnancy, /binding
+- /profile → /alerts, /pregnancy, /binding
 - /alerts
 - /cycle
 - /fertility
@@ -283,23 +281,18 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 
 ### Screen 14: Witch Profile (`/profile`)
 
-- **Purpose:** Identity + alignments hub; gateway to settings/reminders/pregnancy/binding.
+- **Purpose:** Identity + alignments hub; owns app settings and amulet bells inline (settings/reminders screens removed in Phase 10).
 - **Layout Structure:**
-  - **App Bar:** `"Witch Profile"` — back top-left → home (fallback `/dashboard`), gear top-right → `/settings`.
+  - **App Bar:** `"Witch Profile"` — back top-left → home (fallback `/dashboard`), **alerts top-right** (`AppIcons.alerts`, same as shell) → `/alerts`.
   - **Identity Header:** `AppAvatar` HS `84pt` (white ring + gold halo), serif `"High Priestess Selene"` (18pt), gold caps `"SCORPIO MOON · THIRD CYCLE"`, gold star.
-  - **Lunar Alignments Card:** Statics `29 Days / 5 Days` + `Notification Preferences → Manage` (→ `/settings`).
-  - **Apothecary Settings Card:** `Appearance → Manage` (→ `/settings`), `Gestation Spells → View` (→ `/pregnancy`), `Cosmic Partner Bond → 1 Active` (→ `/binding`).
-  - **Amulet Bells Card:** `"Amulet Bells"` header + live `"X of 5 bells active"` (watches `RemindersProvider`) + full-width `AppButton("Open Amulet Reminders")` → `/reminders`.
-  - **Footer:** Centered `"Witchy App / Version 1.2.4 · Made with celestial energy"` (9.5, placeholder). Settings owns all toggles — Profile only links out.
+  - **Lunar Alignments Card:** Statics `29 Days / 5 Days` (stats only).
+  - **Apothecary Settings Card:** `Gestation Spells → View` (→ `/pregnancy`), `Cosmic Partner Bond → 1 Active` (→ `/binding`).
+  - **App Settings Card (new):** `SettingsRow` switches — `Receive Lunar Notifications` (ON, `setLunar` + `NotificationService.syncPeriodPrediction`) and `Dark Magic Mode` (OFF, `setDark`), owned by `SettingsProvider`.
+  - **Amulet Bells Card:** `"Amulet Bells"` header + live `"X of 5 bells active"` (watches `RemindersProvider`) + **5 inline bell rows** (hairline dividers): `IconBadge` + serif title + muted subtitle + pur `Switch` (`toggle` + `NotificationService.syncReminder`); when ON, `InfoPill` pair (clock time / spark freq) below the row.
+  - **Session Card:** `AppButton("Sign Out")` → clears session, `reset('/')`.
+  - **Footer:** Centered `"Witchy App / Version 1.2.4 · Made with celestial energy"` (9.5, placeholder).
 
-### Screen 15: Settings (`/settings`)
-
-- **Purpose:** App-level preferences (notifications, appearance).
-- **Layout Structure:**
-  - **App Bar:** `"Settings"`, back → `/profile` (pop, fallback `/profile`).
-  - **Alignments Card:** `"Lunar Alignments"` + two `SettingsRow`s with pur switches (`SettingsProvider`) — `Receive Lunar Notifications` (ON), `Dark Magic Mode` (OFF).
-
-### Screen 16: Sovereign Blood (`/cycle`)
+### Screen 15: Sovereign Blood (`/cycle`)
 
 - **Purpose:** Bleed-day detail: volume, pain, notes. Binds today's `DayLog`.
 - **Layout Structure:**
@@ -309,25 +302,16 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Pain Card:** `AppSliderRow` `"Uterine Contraction Pain"` (`0–10`, `"Level 6"`).
   - **Scribbles Card:** `"Grimoire Scribbles"` + field-bg note container (chamomile/raspberry text).
 
-### Screen 17: Celestial Alerts (`/alerts`)
+### Screen 16: Celestial Alerts (`/alerts`)
 
 - **Purpose:** The cosmos' received whispers, one inbox.
 - **Layout Structure:**
   - **App Bar:** `AppTopBar("Celestial Alerts")`, back pops.
   - **Inbox Header:** Serif `"Whispers Received"` + sub `"The cosmos whispers its reminders. Align your biological temple."`.
   - **Alert Cards:** 4 `AppCard` rows — tinted `IconBadge` + serif title + muted timestamp + 11/1.55 body: Period Commencing (pink drop, 2h), Fertility Window Peak (gold moon, 1d), Magical Log Missing (quill, 2d), Astrological Milestone (star, 3d).
-  - **Entry:** Bell top-right on all shell tabs.
+  - **Entry:** Bell top-right on all shell tabs and on the Profile top bar.
 
-### Screen 18: Amulet Reminders (`/reminders`)
-
-- **Purpose:** Calibrate mystical bells for upcoming tides.
-- **Layout Structure:**
-  - **App Bar:** `AppTopBar("Amulet Reminders")`, back pops.
-  - **Header:** Sub `"Calibrate mystical bells to warn you of upcoming tides."` + pur `"X of 5 bells active"` live count.
-  - **Bell Cards:** 5 `AppCard`s — tinted `IconBadge` + serif title + muted subtitle + pur switch; when ON, `InfoPill` pair (clock time + freq): Log Period Commencing (09:00 AM / Daily during peak), Take Cosmic Pill (08:30 AM / Every day), Fertility Window Alert (07:00 AM / Window start), PMS Warning (06:00 PM / 3 days prior), Somatic Hydration (Hourly / Daytime).
-  - **Entry:** Profile `Amulet Bells` card button.
-
-### Screen 19: Coven Sanctum (`/coven`)
+### Screen 17: Coven Sanctum (`/coven`)
 
 - **Purpose:** Anonymous community whispers + wisdom tabs.
 - **Layout Structure:**
@@ -335,7 +319,7 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Post Cards:** 3 `AppCard`s — avatar initials + serif author + muted meta + tag + 11/1.55 body + likes/comments footer (MC 24/8 Herbal Remedies, CS 42/15 Dream Work, LG 18/3 Cosmic Cycle).
   - **FAB:** `50pt` plum-gradient circle, gold `+`.
 
-### Screen 20: Coven Binding (`/binding`)
+### Screen 18: Coven Binding (`/binding`)
 
 - **Purpose:** Invite partners/coven to shared celestial map + visibility scopes.
 - **Layout Structure:**

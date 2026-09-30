@@ -25,13 +25,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppTopBar(
-        title: titles[index],
-        leading: AppIcons.user,
-        onLeading: () => context.go('/profile'),
-        action: AppIcons.bell,
-        onAction: () => context.go('/alerts'),
-      ),
+      appBar: AppTopBar(title: titles[index], leading: AppIcons.user, onLeading: () => context.go('/profile'), action: AppIcons.alerts, onAction: () => context.go('/alerts')),
       body: IndexedStack(index: index, children: const [SanctuaryScreen(), CycleMapScreen(), RecordsScreen(), CovenScreen()]),
       floatingActionButton:
           index == 3

@@ -56,7 +56,7 @@ abstract final class AppIcons {
 
   // chrome not in mock symbols but used by the app shell
   static const user = FontAwesomeIcons.hatWizard; // regular outline
-  static const bell = FontAwesomeIcons.meteor; // regular outline
+  static const alerts = FontAwesomeIcons.meteor; // regular outline
 
   // brands
   static const apple = FontAwesomeIcons.apple;

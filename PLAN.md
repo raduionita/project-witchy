@@ -193,3 +193,18 @@ test/
 **Out of scope (flagged):** year view, week strip, pill/birth-control dots, wearables/BBT, pregnancy mode, locale week-start (Monday-first fixed), per-cell follicular/luteal phase tints.
 
 **Gate:** `flutter analyze` ✅, `flutter test` ✅ (78/78), `flutter build apk --debug` ✅, `flutter build web` ✅
+
+---
+
+## Phase 10 — Profile Consolidation (settings + reminders folded in)
+
+> User request: fold Settings and Reminders into the Profile screen; remove their buttons; add new `AppCard`s; Profile's gear action becomes the alerts button (same as MainScreen). Agreed: delete both screens + routes, dedicated "App Settings" card, one Amulet Bells card with 5 rows.
+
+- [x] **10.1** `ProfileScreen` rework — top-bar action `AppIcons.gear → AppIcons.alerts` (`go('/alerts')`); dropped the `Notification Preferences → Manage` and `Appearance → Manage` links (Lunar Alignments = stats only, Apothecary keeps Gestation + Bond).
+- [x] **10.2** New **App Settings** `AppCard` — `Receive Lunar Notifications` switch (`setLunar` + `NotificationService.syncPeriodPrediction` with `CycleProvider.nextPeriodStart()`) and `Dark Magic Mode` switch (`setDark`), ported from the old SettingsScreen.
+- [x] **10.3** **Amulet Bells** card rebuilt — header + live count kept; `Open Amulet Reminders` button removed; 5 inline bell rows (hairline dividers: `IconBadge` + title/subtitle + pur `Switch` → `toggle` + `NotificationService.syncReminder`; ON rows show clock/freq `InfoPill`s).
+- [x] **10.4** Deletions — `lib/screens/settings_screen.dart`, `lib/screens/reminders_screen.dart` removed; `app_router_delegate.dart` drops both imports and the `/settings` + `/reminders` cases (unknown paths recover via the welcome redirect).
+- [x] **10.5** Tests — suite **80/80** unchanged (sign-out widget test still reaches Sign Out after the taller Profile; no screen tests referenced the deleted routes).
+- [x] **10.6** Docs — DESIGN.md → v1.6.0 (nav/app-bar lines, §4.1 rows, nav tree, Screen 14 rewrite, Settings + Amulet Reminders sections deleted, screens 16–20 renumbered 15–18), PLAN.md (this section).
+
+**Gate:** `flutter analyze` ✅, `flutter test` ✅ (80/80), `flutter build apk --debug` ✅, `flutter build web` ✅

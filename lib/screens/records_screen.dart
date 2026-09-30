@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../models/period_span.dart';
 import '../providers/cycle_provider.dart';
+import '../services/cycle_calculator.dart';
 import '../navigation/app_nav.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -16,12 +17,11 @@ class RecordsScreen extends StatelessWidget {
   const RecordsScreen({super.key});
 
   static (String, bool) _tagFor(CycleProvider cycle, List<PeriodSpan> spans, int index) {
+    // spans are newest-first; index 0 starts the cycle currently in progress.
+    if (index == 0) return ('Current', false);
     final span = spans[index];
-    // spans are newest-first; the next older span in calendar order is index+1.
-    final isMostRecent = index == 0;
-    if (isMostRecent) return ('Current', false);
-    final older = spans[index + 1];
-    final cycleLength = span.start.difference(older.start).inDays;
+    final newer = spans[index - 1];
+    final cycleLength = CycleCalculator.daysBetween(span.start, newer.start);
     final reference = cycle.effectiveCycleLength;
     if (cycleLength < reference - 2) return ('Short', true);
     if (cycleLength > reference + 2) return ('Long', true);

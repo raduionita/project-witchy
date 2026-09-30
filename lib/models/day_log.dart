@@ -10,6 +10,9 @@ class DayLog {
 
   Map<String, dynamic> toJson() => {'flow': flow, 'moods': moods.toList(), 'symptoms': symptoms.toList(), 'pain': pain, 'notes': notes};
 
+  /// Deep copy — mutating the copy never affects the original entry.
+  DayLog copy() => DayLog.fromJson(toJson());
+
   factory DayLog.fromJson(Map<String, dynamic> json) => DayLog(
     flow: json['flow'] as String? ?? 'None',
     moods: (json['moods'] as List?)?.cast<String>().toSet(),

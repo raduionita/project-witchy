@@ -30,6 +30,14 @@ class LoggingProvider extends ChangeNotifier {
     }
   }
 
+  /// Restore an [original] snapshot, or remove the entry when it was null
+  /// (no log existed when editing started) — used by sheet cancel.
+  void restoreDay(DateTime d, DayLog? original) {
+    original == null ? _days.remove(keyFor(d)) : _days[keyFor(d)] = original;
+    notifyListeners();
+    _save();
+  }
+
   void setFlow(DateTime d, String v) {
     day(d).flow = v;
     notifyListeners();

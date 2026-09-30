@@ -20,6 +20,7 @@ class AppChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(color: selected ? AppColors.pur : Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: selected ? AppColors.pur : AppColors.line)),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[FaIcon(icon, size: AppIconSize.xs, color: selected ? Colors.white : (iconColor ?? AppColors.pur)), const SizedBox(width: 6)],

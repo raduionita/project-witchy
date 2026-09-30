@@ -98,4 +98,18 @@ void main() {
       expect(cycle.phase(today: today).label, 'Waxing Glow');
     });
   });
+
+  group('CycleProvider daysLate', () {
+    test('counts days past the due date and resets on a new bleed', () {
+      buildSources(lastStart: DateTime(2026, 9, 1), cycleLength: 28);
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.daysLate(today: DateTime(2026, 9, 28)), 0);
+      expect(cycle.daysLate(today: DateTime(2026, 9, 29)), 0);
+      expect(cycle.daysLate(today: DateTime(2026, 10, 1)), 2);
+      expect(cycle.daysLate(today: DateTime(2026, 10, 2)), 3);
+      logging.setFlow(DateTime(2026, 10, 1), 'Medium');
+      expect(cycle.effectiveLastStart, DateTime(2026, 10, 1));
+      expect(cycle.daysLate(today: DateTime(2026, 10, 3)), 0);
+    });
+  });
 }

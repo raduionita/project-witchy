@@ -55,6 +55,14 @@ class CycleProvider extends ChangeNotifier {
 
   int daysUntilOvulation({DateTime? today}) => CycleCalculator.daysUntilOvulation(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
 
+  /// Days past the projected due date with no new period logged (0 = not late).
+  int daysLate({DateTime? today}) {
+    final t = today ?? DateTime.now();
+    final due = DateTime(effectiveLastStart.year, effectiveLastStart.month, effectiveLastStart.day + effectiveCycleLength);
+    final diff = CycleCalculator.daysBetween(due, t);
+    return diff > 0 ? diff : 0;
+  }
+
   bool isPeriodDay(DateTime date) => CycleCalculator.isPeriodDay(effectiveLastStart, date, effectiveCycleLength, bleedLength);
 
   bool isFertileDay(DateTime date) => CycleCalculator.isFertileDay(effectiveLastStart, date, effectiveCycleLength);

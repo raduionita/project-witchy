@@ -26,6 +26,8 @@ abstract final class AppIcons {
   static const right = FontAwesomeIcons.chevronRight; // i-cr (solid-only)
   static const arrow = FontAwesomeIcons.arrowLeft;
   static const gear = FontAwesomeIcons.gear; // i-gear (solid-only)
+  static const cancel = FontAwesomeIcons.xmark; // sheet cancel (solid-only)
+  static const approve = FontAwesomeIcons.check; // sheet approve (solid-only)
 
   // lunar / brand
   static const moon = FontAwesomeIcons.solidMoon; // i-moon (regular outline)

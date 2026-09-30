@@ -2,6 +2,8 @@ class CalendarDayCell {
   const CalendarDayCell({
     required this.day,
     this.inMonth = true,
+    this.cycleDay = 0,
+    this.isToday = false,
     this.isPredictedPeriod = false,
     this.isLoggedBleed = false,
     this.isFertile = false,
@@ -10,9 +12,13 @@ class CalendarDayCell {
     this.isSelected = false,
   });
 
-  /// Day of month (1–31); 0 marks a leading/trailing padding cell.
+  /// Day of month (1–31).
   final int day;
   final bool inMonth;
+
+  /// Projected cycle day (1+); 0 for adjacent-month cells.
+  final int cycleDay;
+  final bool isToday;
   final bool isPredictedPeriod;
   final bool isLoggedBleed;
   final bool isFertile;

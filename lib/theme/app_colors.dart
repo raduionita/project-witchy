@@ -30,6 +30,8 @@ abstract final class AppColors {
   static const goldBg = Color(0xFFF8EED9);
   static const blueBg = Color(0xFFE3EEF9);
   static const blue = Color(0xFF3E7BC0);
+  static const green = Color(0xFF4C8C4A);
+  static const red = Color(0xFFC0392B);
   static const tabBg = Color(0xFFEFE6F6);
   static const tabText = Color(0xFF6B5B7D);
   static const orbLight = Color(0xFF4A1170);

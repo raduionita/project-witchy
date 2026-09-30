@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../models/calendar_day_cell.dart';
 import '../models/month_cells.dart';
@@ -30,13 +31,45 @@ class _CycleCalendarState extends State<CycleCalendar> {
     }
   }
 
+  String _semanticLabel(CalendarDayCell cell) {
+    final first = widget.cells.month;
+    final leading = first.weekday - 1;
+    final index = widget.cells.cells.indexOf(cell);
+    final date = DateTime(first.year, first.month, 1 + index - leading);
+    final parts = [DateFormat('EEEE, MMMM d').format(date)];
+    if (!cell.inMonth) return '${parts.first}, outside this month';
+    if (cell.isToday) parts.add('today');
+    if (cell.isSelected) parts.add('selected');
+    if (cell.isLoggedBleed) {
+      parts.add('period logged');
+    } else if (cell.isPredictedPeriod) {
+      parts.add('predicted period');
+    }
+    if (cell.isOvulation) {
+      parts.add('ovulation day');
+    } else if (cell.isFertile) {
+      parts.add('fertile window');
+    }
+    if (cell.isLogged && !cell.isLoggedBleed) parts.add('entries logged');
+    parts.add('cycle day ${cell.cycleDay}');
+    return parts.join(', ');
+  }
+
+  Widget _adjacentCell(CalendarDayCell cell) {
+    return Center(
+      child: Semantics(
+        label: _semanticLabel(cell),
+        child: Text('${cell.day}', style: AppText.sans(10.5, c: AppColors.placeholder)),
+      ),
+    );
+  }
+
   Widget _dayCell(CalendarDayCell cell) {
-    if (!cell.inMonth) return const SizedBox.shrink();
     final isLoggedBleed = cell.isLoggedBleed;
     final isPredicted = cell.isPredictedPeriod && !isLoggedBleed;
     final isFertile = cell.isFertile && !isLoggedBleed && !isPredicted;
     final Color? fill;
-    final Color? border;
+    Color? border;
     final Color textColor;
     if (isLoggedBleed) {
       fill = AppColors.pur;
@@ -55,41 +88,55 @@ class _CycleCalendarState extends State<CycleCalendar> {
       border = cell.isSelected ? AppColors.pur : null;
       textColor = AppColors.body;
     }
-    final strong = isLoggedBleed || isPredicted || isFertile;
+    if (cell.isToday && border == null) {
+      border = fill == null ? AppColors.pur : Colors.white;
+    }
+    final strong = isLoggedBleed || isPredicted || isFertile || cell.isToday;
+    final tappable = widget.onDayTap != null;
     return Center(
-      child: MouseRegion(
-        cursor: widget.onDayTap == null ? SystemMouseCursors.basic : SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: widget.onDayTap == null ? null : () => widget.onDayTap!(cell.day),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: fill,
-                  border: border == null ? null : Border.all(color: border, width: 1.4),
+      child: Semantics(
+        label: _semanticLabel(cell),
+        button: tappable,
+        selected: cell.isSelected,
+        child: MouseRegion(
+          cursor: tappable ? SystemMouseCursors.click : SystemMouseCursors.basic,
+          child: GestureDetector(
+            onTap: tappable ? () => widget.onDayTap!(cell.day) : null,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: fill,
+                    border: border == null ? null : Border.all(color: border, width: 1.4),
+                  ),
+                  child: Text(
+                    '${cell.day}',
+                    style: AppText.sans(11, c: textColor, w: strong ? FontWeight.w600 : FontWeight.w400),
+                  ),
                 ),
-                child: Text(
-                  '${cell.day}',
-                  style: AppText.sans(11, c: textColor, w: strong ? FontWeight.w600 : FontWeight.w400),
+                const SizedBox(height: 2),
+                SizedBox(
+                  height: 4,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (cell.isOvulation) ...[
+                        Container(width: 4, height: 4, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.pink)),
+                        if (cell.isLogged) const SizedBox(width: 3),
+                      ],
+                      if (cell.isLogged) Container(width: 4, height: 4, decoration: BoxDecoration(shape: BoxShape.circle, color: isLoggedBleed ? Colors.white : AppColors.gold)),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (cell.isOvulation) ...[
-                    Container(width: 4, height: 4, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.pink)),
-                    if (cell.isLogged) const SizedBox(width: 3),
-                  ],
-                  if (cell.isLogged) Container(width: 4, height: 4, decoration: BoxDecoration(shape: BoxShape.circle, color: isLoggedBleed ? Colors.white : AppColors.gold)),
-                ],
-              ),
-            ],
+                const SizedBox(height: 1),
+                Text('${cell.cycleDay}', style: AppText.sans(8, c: AppColors.muted, w: FontWeight.w500)),
+              ],
+            ),
           ),
         ),
       ),
@@ -111,7 +158,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
             crossAxisCount: 7,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            children: [for (final cell in widget.cells.cells) _dayCell(cell)],
+            children: [for (final cell in widget.cells.cells) cell.inMonth ? _dayCell(cell) : _adjacentCell(cell)],
           ),
         ],
       ),

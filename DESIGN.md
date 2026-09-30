@@ -1,5 +1,5 @@
 # WITCHY: Mobile Design System & UI/UX Specification
-**Document Version:** 1.4.0
+**Document Version:** 1.5.0
 **Product Name:** Witchy — Comprehensive Menstrual, Fertility & Reproductive Health Tracker
 **Target Platforms:** iOS, Android, web (Cross-Platform Mobile App)
 **Primary Aesthetic:** Celestial witch / soft mystic — deep plum gradients on lavender-white, gold accents, Playfair Display + Inter
@@ -127,7 +127,7 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 | Entry | Join the Coven | `/auth` | → `/onboarding` | Bottom stack: Continue with Google / Continue with Apple / Skip for now — all `reset` to `/onboarding` (local session, errors → SnackBar) |
 | Onboarding | Set Your Rhythms | `/onboarding` | → `/dashboard` | Year of Birth dropdown (required), last-bleed date picker, 28d/5d sliders; `Begin the Journey` inert until year chosen → persist + log first day → shell |
 | Home | Sanctuary | `/dashboard` (shell 0) | → `/cycle`, `/fertility`, `/library`, log sheet | Orb day 14 Full Moon Peak; Bleeding In 14d/Nov 10; Peak Today → fertility; insight card → library; Mood/Pain/Notes QA → log sheet (today) |
-| Home | Lunar Cycle Map | `/calendar` (shell 1) | → `/chart`, log sheet | Oct 2026 grid (10–13 fertile lav, 14–18 period pur); day tap → log bottom sheet; detail card Oct 15 Period Day 2; month card tap → chart |
+| Home | Lunar Cycle Map | `/calendar` (shell 1) | → log sheet, month picker | Oct 2026 grid (today ring, dimmed adjacent days, cycle-day micro-labels, legend row); day tap → log bottom sheet; month label → month/year picker sheet; late pill + Today chip when late/off-month; detail card with status tag, tappable rows, clear-day confirm (`/chart` now via Records → Trends) |
 | Log | Apothecary Log sheet | bottom drawer (no route) | — | `showLogSheet(date)`; flow single + moods/symptoms multi; per-date state in `LoggingProvider` (`DayLog` map); entries = calendar day tap, Sanctuary QA |
 | Home | Lunar Records | `/insights` (shell 2) | → `/chart` | Bars M1–M7 (58–94%), 28.4d/5.2d, chronology Sept/Aug/July tags; trends card tap → chart |
 | Home | Witch Profile | `/profile` (pushed, not a tab) | → `/settings`, `/reminders`, `/pregnancy`, `/binding` | Avatar HS, Scorpio Moon; toggles owned by Settings (Manage links); `Amulet Bells` 3rd card (live active count + button → reminders); gestation → pregnancy |
@@ -138,7 +138,7 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 | Profile | Amulet Reminders | `/reminders` | — | 5 configurable bells (`RemindersProvider`); header live `X of 5 bells active`; OFF collapses time/freq pills; entry = Profile `Amulet Bells` card button |
 | Library | Apothecary Library | `/library` | → `/library/<slug>` | Search + 4 articles (Luteal, Herbs, Meditation, Fertility); tap → detail via `onGenerateRoute` |
 | Library | Article Detail | `/library/<slug>` (dynamic) | — | Slug lookup (`articleById`, unknown → library); thumb gradient hero, cat/readTime, title, excerpt + body; back to library |
-| Insights | BBT & Ovulation Chart | `/chart` | — | Reuses `TrendBars` + avg duo + note card; entries = Records trends card, CycleMap month card |
+| Insights | BBT & Ovulation Chart | `/chart` | — | Reuses `TrendBars` + avg duo + note card; entries = Records trends card |
 | Fertility | Fertility Window | `/fertility` | — | Orb variant (Peak Day) + window duo + TTC tips; entry = Sanctuary Peak card |
 | Profile | Settings | `/settings` | — | App settings owned here: lunar switch, dark mode; gear/Manage top-right of Profile; reuses `SettingsRow` |
 | Community | Coven Binding | `/binding` | — | HS✦KP header, invite input + send, 3 visibility switches |
@@ -213,8 +213,8 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 
 - **Purpose:** Comprehensive monthly view showing predicted periods, ovulation windows, and historical logs.
 - **Layout Structure:**
-  - **Calendar Card:** `AppCard` with `"October 2026"` serif header (chevron pair) + `CycleCalendar` 7-col grid (fertile `10–13` lav `#EBDCF7`, period `14–18` pur fill white text); day tap → log bottom sheet for that date; month header tap → `/chart`.
-  - **Detail Card:** `"October 15, 2026"` + `AppTag.pink("Period Day 2")`; rows — pink drop `"Medium bleed flow intensity"`, pur heart `"Intuitive, reflective mood"`.
+  - **Calendar Card:** `AppCard` with month header — chevron pair + `"October 2026"` label; label tap → `showMonthPicker` modal bottom sheet (year stepper chevrons clamped 1900–2200 + 12-month grid, returns first-of-month). Below: `CycleCalendar` 7-col grid — logged solid pur vs predicted outline, fertile `#EBDCF7` fill, pink ovulation dot, **today ring** (pur outline on empty cells, white on filled), **dimmed non-tappable adjacent-month days** (`placeholder` color), **cycle-day micro-label** under every in-month circle, per-cell `Semantics` label (full date + today/selected/period/predicted/ovulation/fertile/logged/cycle day). Then `CalendarLegend` (period / predicted / fertile / ovulation / logged). Status row when days-late > 0 or an adjacent month is shown: `AppTag.gold("N Days Late")` + tappable `AppTag("Today")` → jumps back to the current month. Day tap → selects day + opens log bottom sheet.
+  - **Detail Card:** `"October 15, 2026"` + status tag (`Period Day N` / `Period Logged` / `Fertile Window` / `Cycle Day N`); **tappable rows** (tap → log sheet for that date) — pink drop flow text, pur heart mood text; `"Clear this day's log"` link (pink 11pt w600) → confirm dialog (`Clear this day?` / Cancel / Clear) → `LoggingProvider.deleteDay`.
 
 ### Screen 07: Apothecary Log (bottom drawer, no route)
 
@@ -225,7 +225,8 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Bleed Intensity:** Single-select `Wrap` of `AppChip` (`None/Light/Medium/Heavy`, pur fill when ON).
   - **Emotional Currents:** 2-col grid — Enchanted / Grounded / Shadowy / Restless (icon-tinted, multi-toggle).
   - **Somatic Echoes:** 2-col grid — Uterine Cramps / Headache / Bloating / Fatigue (multi-toggle).
-  - **State:** Per-date `DayLog` map in `LoggingProvider` (key `yyyy-MM-dd`, persisted via `PrefsService`); new days seed `Medium` + Uterine Cramps + pain 6 + default scribble.
+  - **Uterine Contraction Pain:** `AppSliderRow` (0–10, live `Level N` label) → `setPain`, sits between Somatic Echoes and Notes.
+  - **State:** Per-date `DayLog` map in `LoggingProvider` (key `yyyy-MM-dd`, persisted via `PrefsService`); unlogged days read as `DayLog` defaults — flow `None`, empty moods/symptoms, pain 6, empty notes — via non-materializing `peekDay` (views never call `day()`).
 
 ### Screen 08: Lunar Records (`/insights`)
 
@@ -243,7 +244,7 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Shift Card:** `"Biphasic Temperature Shift"` + reused `TrendBars`.
   - **Average Duo:** `36.4° / Pre-shift average` + `+0.4° / Post-shift rise`.
   - **Explainer Card:** Dark card — serif `"How to read this"` + 11.5/1.55 lav body on three-morning sustained rise.
-  - **Entries:** Records trends card, CycleMap month card. Full keypad/chart deferred.
+  - **Entries:** Records trends card (month picker replaced the old CycleMap month-card jump). Full keypad/chart deferred.
 
 ### Screen 10: Fertility Window (`/fertility`)
 

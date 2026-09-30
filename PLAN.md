@@ -174,3 +174,22 @@ test/
 - [x] **8.6** Docs: PLAN.md (this section), DESIGN.md → v1.4.0 (privacy screen + renumbered screens 01–20, join/rhythms/welcome rewrites, nav tree + route table), README.md (consent + anonymous skip + in-app privacy screen).
 
 **Gate:** `flutter analyze` ✅, `flutter test` ✅ (68/68), `flutter build apk --debug` ✅, `flutter build web` ✅
+
+---
+
+## Phase 9 — Calendar Parity (Flo-style fidelity)
+
+> New phase driven by user request: richer calendar cells, legend, month picker, late state, pain in the log sheet, clear-day. Agreed defaults: 1a (tiny cycle-day number under every in-month cell), 2 (keep current palette, no follicular/luteal phase tints), 3 (month label opens month/year picker; `/chart` stays reachable via Records → Trends), 4 (adjacent-month days dimmed & non-tappable).
+
+- [x] **9.1** Cell fidelity: `CalendarDayCell` + `CalendarFetcher` — `isToday` flag (injectable `today:` param, normalized day comparison), per-cell `cycleDay` (0 for adjacent), adjacent-month cells carry real prev/next-month day numbers via normalized `DateTime` arithmetic.
+- [x] **9.2** `CycleCalendar` render — today ring (pur outline on empty cells, white on filled), dimmed non-tappable adjacent cells (`placeholder` color), cycle-day micro-label under every in-month circle, per-cell `Semantics` label (full date + today/selected/period logged/predicted/ovulation/fertile/entries/cycle day; adjacent → "outside this month").
+- [x] **9.3** `CalendarLegend` (`lib/widgets/calendar_legend.dart`) — centered wrap: period (solid) / predicted (outline) / fertile / ovulation / logged dots.
+- [x] **9.4** `MonthPickerSheet` (`lib/widgets/month_picker_sheet.dart`) — `showMonthPicker(context, current)` modal bottom sheet: year chevron stepper (clamped 1900–2200) + 12-month grid; `CycleMapScreen` month label opens it (replaces the direct `/chart` jump).
+- [x] **9.5** `CycleMapScreen` — `CycleProvider.daysLate` gold "N Days Late" pill + tappable "Today" chip when late or off-month; month shift keeps sensible selection (today if in view, else 1st); flow/mood detail rows tappable → `showLogSheet`; "Clear this day's log" link → confirm dialog → `deleteDay`.
+- [x] **9.6** `CycleProvider.daysLate({today})` (floor 0, resets when a new bleed start logs) + `LogBottomSheet` gains the `AppSliderRow` pain slider (Uterine Contraction Pain 0–10) above Notes.
+- [x] **9.7** Tests — fetcher (+isToday, cycleDay, adjacent day numbers), provider (+daysLate group), new `test/widgets/calendar_widgets_test.dart` (day tap, adjacent muted/non-tappable/semantics, legend labels, month-picker result + year stepping, calendar-tab screen wiring) — suite **78/78**.
+- [x] **9.8** Docs — PLAN.md (this section), DESIGN.md → v1.5.0 (Screen 06 legend/picker/today/late/clear-day, Screen 07 pain slider + real `DayLog` defaults, §4.1 `/calendar` + `/chart` entry rows).
+
+**Out of scope (flagged):** year view, week strip, pill/birth-control dots, wearables/BBT, pregnancy mode, locale week-start (Monday-first fixed), per-cell follicular/luteal phase tints.
+
+**Gate:** `flutter analyze` ✅, `flutter test` ✅ (78/78), `flutter build apk --debug` ✅, `flutter build web` ✅

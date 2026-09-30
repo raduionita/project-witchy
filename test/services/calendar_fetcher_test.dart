@@ -61,5 +61,46 @@ void main() {
       expect(cell.isLoggedBleed, isTrue);
       expect(cell.isPeriod, isTrue);
     });
+
+    test('marks isToday only for the supplied today date', () {
+      final cells = CalendarFetcher.forMonth(
+        month: DateTime(2026, 9),
+        lastStart: DateTime(2026, 9, 1),
+        cycleLength: 28,
+        bleedLength: 5,
+        today: DateTime(2026, 9, 10, 15, 30),
+      );
+      expect(cells.cellFor(10)!.isToday, isTrue);
+      expect(cells.cellFor(11)!.isToday, isFalse);
+      expect(cells.cells.first.isToday, isFalse);
+    });
+
+    test('assigns in-month cycle days and leaves adjacent cells at cycleDay 0', () {
+      final cells = CalendarFetcher.forMonth(
+        month: DateTime(2026, 9),
+        lastStart: DateTime(2026, 9, 1),
+        cycleLength: 28,
+        bleedLength: 5,
+      );
+      expect(cells.cellFor(1)!.cycleDay, 1);
+      expect(cells.cellFor(15)!.cycleDay, 15);
+      expect(cells.cellFor(29)!.cycleDay, 1);
+      expect(cells.cellFor(30)!.cycleDay, 2);
+      expect(cells.cells.first.cycleDay, 0);
+      expect(cells.cells.last.cycleDay, 0);
+    });
+
+    test('adjacent cells carry real next/previous month day numbers', () {
+      final cells = CalendarFetcher.forMonth(
+        month: DateTime(2026, 2),
+        lastStart: DateTime(2026, 2, 1),
+        cycleLength: 28,
+        bleedLength: 5,
+      );
+      expect(cells.cells.first.inMonth, isFalse);
+      expect(cells.cells.first.day, 26); // Mon Jan 26.
+      expect(cells.cells[41].inMonth, isFalse);
+      expect(cells.cells[41].day, 8); // Sun Mar 8.
+    });
   });
 }

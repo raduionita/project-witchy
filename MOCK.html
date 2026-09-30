@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Witchy — Screen System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+:root{
+  --bg:#FAF7FC; --card:#FFFFFF; --ink:#2A0A3C; --body:#4D3B5E; --mut:#8B7F95;
+  --line:#ECE3F2; --pur:#7B2CBF; --pur-d:#6A1B9A; --plum:#3B0A5E; --plum2:#26063F;
+  --gold:#D9A036; --pink:#E0517F; --lav:#F3EAF9; --lav2:#E7D6F4;
+  --ser:'Playfair Display',serif; --sans:'Inter',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--sans);background:#F2EBF7;color:var(--ink)}
+button{font-family:inherit;border:0;background:none;cursor:pointer;color:inherit}
+.serif{font-family:var(--ser)}
+.mut{color:var(--mut)} .gold{color:var(--gold)} .pink{color:var(--pink)} .pur{color:var(--pur)}
+.s9{font-size:9px}.s10{font-size:10px}.s11{font-size:11px}.s12{font-size:12px}
+.ic{font-size:20px;line-height:1;display:inline-block;flex:none;text-align:center;-webkit-font-smoothing:antialiased}
+.ic.s{font-size:14px}.ic.xs{font-size:12px}.ic.l{font-size:26px}.ic.xl{font-size:42px}
+
+/* ---------- review shell ---------- */
+.top{position:sticky;top:0;z-index:9;background:rgba(244,238,248,.88);backdrop-filter:blur(12px);border-bottom:1px solid #E3D7EC}
+.topin{display:flex;align-items:center;justify-content:space-between;padding:14px 26px 8px}
+.brandrow{display:flex;align-items:center;gap:12px}
+.mini{width:34px;height:34px;border-radius:50%;background:var(--plum);display:grid;place-items:center;color:var(--gold)}
+.toptxt b{font-family:var(--ser);font-size:17px;display:block}
+.toptxt span{font-size:10.5px;color:var(--mut)}
+.hint{font-size:11px;color:var(--mut)}
+.jump{display:flex;gap:8px;overflow-x:auto;padding:6px 26px 12px;scrollbar-width:none}
+.jump::-webkit-scrollbar{display:none}
+.jump button{flex:none;font-size:10.5px;padding:6px 11px;border-radius:999px;background:#fff;border:1px solid #E3D7EC;color:#5D4A70;font-weight:500}
+.jump button:hover{border-color:var(--pur);color:var(--pur)}
+.gal{display:flex;gap:26px;overflow-x:auto;padding:30px 26px 46px;scroll-snap-type:x proximity}
+.gal::-webkit-scrollbar{height:8px}
+.gal::-webkit-scrollbar-thumb{background:#D6C4E4;border-radius:4px}
+.slot{flex:none;scroll-snap-align:center;display:flex;flex-direction:column;gap:12px}
+.cap{font-size:11px;color:#7A6A8C;text-align:center;letter-spacing:.05em}
+
+/* ---------- phone frame ---------- */
+.frame{width:390px;height:844px;background:var(--bg);border-radius:34px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column;border:1px solid #E8DFF0;
+  box-shadow:0 30px 60px -22px rgba(43,10,61,.38),0 4px 16px rgba(43,10,61,.08)}
+.frame::after{content:'';position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:132px;height:5px;border-radius:3px;background:#1E1E28;opacity:.85;pointer-events:none}
+.st{height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:15px;font-weight:600}
+.sti{display:flex;gap:7px;align-items:center;color:#1E1E28}
+.sti .ic{font-size:13px}
+.appbar{height:50px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 14px}
+.appbar h1{font-family:var(--ser);font-size:16.5px;font-weight:700;letter-spacing:.2px}
+.appbar .ib:last-child{justify-self:end}
+.ib{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#5D4A70}
+.ib.ac{color:var(--pur)}
+.scroll{flex:1;overflow-y:auto;padding:6px 16px 14px;display:flex;flex-direction:column;gap:12px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ---------- components ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 1px 2px rgba(43,10,61,.04)}
+.card.dark{background:linear-gradient(135deg,var(--plum),var(--plum2));border:none;color:#fff}
+.caps{font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.caps.g{color:var(--gold)}
+.sec{font-size:11.5px;font-weight:600;color:#3F2B52}
+.sec-in{font-size:12px;font-weight:600;color:#3F2B52;margin-bottom:10px}
+.btn{width:100%;background:linear-gradient(135deg,var(--plum),var(--plum2));color:#fff;border-radius:14px;padding:14px;
+  font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 18px -8px rgba(59,10,94,.55)}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--plum2);box-shadow:none}
+.btn.op{opacity:.45}
+.obtn{width:100%;background:#fff;border:1px solid var(--line);color:var(--ink);border-radius:14px;padding:14px;font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.lnk{color:var(--pur);font-weight:600;cursor:pointer}
+.chip{border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:11.5px;background:#fff;color:#5D4A70;
+  display:flex;align-items:center;gap:6px;font-weight:500;transition:.15s}
+.chip.on{background:var(--pur);border-color:var(--pur);color:#fff}
+.seg{display:flex;gap:8px}
+.seg .chip{flex:1;justify-content:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid2 .chip{justify-content:flex-start}
+.tag{font-size:9.5px;padding:4px 8px;border-radius:8px;background:var(--lav);color:var(--pur-d);font-weight:600;flex:none}
+.tag.pink{background:#FCE7EF;color:#C2336B}
+.tag.gold{background:rgba(217,160,54,.16);color:var(--gold)}
+.sw{position:relative;width:40px;height:24px;flex:none}
+.sw input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
+.sw i{position:absolute;inset:0;background:#E4D7EE;border-radius:999px;transition:.2s;pointer-events:none}
+.sw i::after{content:'';position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:.2s}
+.sw input:checked+i{background:var(--pur)}
+.sw input:checked+i::after{transform:translateX(16px)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;outline:none;
+  background:linear-gradient(to right,var(--pur) var(--p,50%),#E7DBF0 var(--p,50%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:2.5px solid var(--pur);box-shadow:0 1px 4px rgba(74,17,112,.35);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:2.5px solid var(--pur);cursor:pointer}
+.in{position:relative}
+.in input{width:100%;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:12.5px;color:var(--ink);font-family:inherit;outline:none}
+.in input:focus{border-color:var(--pur)}
+.in input::placeholder{color:#B4A6C2}
+.in .lead{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mut);font-size:14px}
+.in input.pad{padding-left:36px}
+.ta{width:100%;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:12.5px;color:var(--ink);
+  font-family:inherit;outline:none;resize:none;line-height:1.5;min-height:92px}
+.ta:focus{border-color:var(--pur)}
+.ta::placeholder{color:#B4A6C2}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:12px;color:var(--body)}
+.srow:first-of-type{border-top:none;padding-top:2px}
+.srow b{font-weight:500;color:var(--ink)}
+.srow .val{font-size:12px;font-weight:600;color:var(--mut)}
+.srow .mg{font-size:11px;font-weight:600;color:var(--pur);text-decoration:underline}
+.icn{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--lav);color:var(--pur);flex:none}
+.icn.pink{background:#FCE7EF;color:var(--pink)} .icn.gold{background:#F8EED9;color:var(--gold)}
+.pill{display:inline-flex;gap:6px;align-items:center;background:#F6EEFB;border:1px solid var(--line);border-radius:9px;padding:5px 9px;font-size:10px;color:#5D4A70;font-weight:500}
+.pill .ic{color:var(--pur)}
+.ava{width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,#E6D4F2,#C9A6E4);display:grid;place-items:center;font-family:var(--ser);font-weight:700;color:#5B2186;font-size:13px;flex:none}
+
+/* bottom nav — shell screens only, 4 tabs */
+.bn{height:78px;background:rgba(255,255,255,.94);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 8px 0;flex:none}
+.bn button{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;color:#A795B8;width:60px;font-size:9.5px;font-weight:500}
+.bn button .ic{font-size:16px}
+.bn button.on{color:var(--pur)}
+.bn button.on::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:18px;height:2.5px;border-radius:2px;background:var(--pur)}
+
+/* welcome / join / onboarding */
+.splash{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px}
+.emb{width:132px;height:132px;border-radius:50%;background:#EFE2F8;display:grid;place-items:center}
+.emb .inr{width:96px;height:96px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4A1170,#2A0740 72%);display:grid;place-items:center;color:var(--gold)}
+.emb.sm{width:112px;height:112px}
+.emb.sm .inr{width:81px;height:81px}
+.brand{font-size:34px;font-weight:800}
+.foot{padding:0 20px 30px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.h2{font-size:21px;font-weight:700}
+.sub{font-size:11.5px;color:var(--mut);line-height:1.5}
+.centercol{margin:auto 0;width:100%;text-align:center}
+.stack{display:flex;flex-direction:column;gap:10px}
+.cns{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}
+.cns:first-child{border-top:none;padding-top:4px}
+.cbx{width:18px;height:18px;border:2px solid var(--pur);border-radius:4px;flex:none;margin-top:2px;display:grid;place-items:center;color:#fff;background:var(--pur)}
+.cbx.off{background:#fff}
+.cbx.off i{display:none}
+.cns .ct{font-size:12px;font-weight:600;text-align:center;line-height:1.4}
+.cns .cl{font-size:10.5px;color:var(--pur);text-decoration:underline;margin-top:2px;display:inline-block;cursor:pointer}
+.kvrow{display:flex;justify-content:space-between;align-items:center}
+.kvrow .kl{font-size:11px;color:var(--mut)}
+.kvrow .vv{font-family:var(--ser);font-size:14px;color:#B4A6C2;margin-top:3px}
+.kvrow .dd{display:flex;align-items:center;gap:6px;font-size:11px;color:#B4A6C2}
+.sldrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sldrow .rv{font-family:var(--ser);font-size:13.5px;font-weight:700;color:var(--pur)}
+
+/* sanctuary */
+.hero{display:grid;place-items:center;padding:8px 0 2px}
+.ring{padding:9px;border-radius:50%;background:conic-gradient(from -90deg,var(--pur) 0 46%,#E9DBF5 46% 100%)}
+.orb{width:172px;height:172px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#4A1170,#2A0740 74%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#fff}
+.orb .otop{display:flex;align-items:center;gap:5px;color:var(--gold);font-size:8px;letter-spacing:.16em;font-weight:700}
+.orb b{font-family:var(--ser);font-size:46px;font-weight:700;line-height:1}
+.orb .os{font-size:10.5px;color:#D9C2EC}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat .lab{font-size:8.5px;letter-spacing:.12em;font-weight:700;color:var(--mut);text-transform:uppercase}
+.stat .val{font-family:var(--ser);font-size:19px;font-weight:700;color:var(--pur);margin:3px 0 1px}
+.stat .val.pk{color:var(--pink)}
+.stat .sub2{font-size:10px;color:var(--mut)}
+.qa{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.qa button{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:10px;font-weight:500;color:#5D4A70}
+.qa .icn{width:34px;height:34px}
+.inshead{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.inshead b{font-family:var(--ser);font-size:13.5px;color:#fff;flex:1}
+.card.dark p{font-size:11.5px;line-height:1.55;color:#E9D9F5}
+
+/* calendar */
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.calhead .mc{display:flex;align-items:center;gap:6px;cursor:pointer}
+.calhead b{font-family:var(--ser);font-size:13.5px}
+.calhead .ic{font-size:16px;color:var(--mut)}
+.calhead .mc .ic{font-size:12px}
+.dowrow{display:grid;grid-template-columns:repeat(7,1fr);justify-items:center;margin-bottom:4px}
+.dow{font-size:9px;color:var(--mut);font-weight:600}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px 2px;justify-items:center}
+.cell{display:flex;flex-direction:column;align-items:center;gap:2px;width:44px}
+.cell .c{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:11px;color:#4D3B5E}
+.cell.f .c{background:#EBDCF7;color:#6B21A8;font-weight:600}
+.cell.p .c{background:var(--pur);color:#fff;font-weight:600}
+.cell.o .c{background:#fff;box-shadow:inset 0 0 0 1.4px var(--pur);color:var(--pur);font-weight:600}
+.cell.t .c{box-shadow:inset 0 0 0 1.4px #fff}
+.cell.t.plain .c{box-shadow:inset 0 0 0 1.4px var(--pur)}
+.cell .mk{display:flex;gap:3px;align-items:center;justify-content:center;height:4px}
+.cell .mk i{width:4px;height:4px;border-radius:50%;background:var(--gold);display:block}
+.cell .mk i.pk{background:var(--pink)}
+.cell .mk i.wh{background:#fff}
+.cell .cd{font-size:8px;font-weight:500;color:var(--mut);font-style:normal;line-height:1}
+.cell.adj .c{color:#B4A6C2;font-size:10.5px;background:none;box-shadow:none}
+.cell.adj .mk,.cell.adj .cd{visibility:hidden}
+.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 12px;margin-top:12px}
+.legend span{display:flex;align-items:center;gap:5px;font-size:9px;color:var(--mut);font-weight:500}
+.lgd{width:10px;height:10px;border-radius:50%;flex:none;background:var(--pur)}
+.lgd.prd{background:#fff;box-shadow:inset 0 0 0 1.4px var(--pur)}
+.lgd.frt{background:#EBDCF7}
+.lgd.ovl{width:6px;height:6px;background:var(--pink)}
+.lgd.log{width:6px;height:6px;background:var(--gold)}
+.drow{display:flex;gap:8px;align-items:center;font-size:11.5px;color:#5D4A70;padding:5px 0}
+.drow .ic{font-size:15px}
+.clear{font-size:11px;font-weight:600;color:var(--pink);padding-top:6px;cursor:pointer}
+
+/* insights */
+.bars{display:flex;justify-content:space-between;align-items:flex-end;height:112px}
+.bcol{display:flex;flex-direction:column;align-items:center;gap:7px;height:100%;justify-content:flex-end}
+.bcol i{display:block;width:16px;border-radius:6px;background:linear-gradient(180deg,#8B3FC6,var(--pur-d))}
+.bcol span{font-size:8.5px;color:var(--mut)}
+.crow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.crow:first-of-type{border-top:none}
+.crow b{font-size:12px;font-weight:600;display:block}
+.crow span{font-size:9.5px;color:var(--mut)}
+
+/* gestation */
+.prog{height:6px;background:rgba(255,255,255,.22);border-radius:3px;margin:10px 0 8px;overflow:hidden}
+.prog i{display:block;height:100%;width:30%;background:var(--gold);border-radius:3px}
+.grow{display:flex;gap:10px;align-items:flex-start}
+.grow p{font-size:11.5px;line-height:1.55;color:var(--body)}
+
+/* profile */
+.pcenter{display:flex;flex-direction:column;align-items:center;gap:6px;padding:6px 0 2px}
+.ava.big{width:84px;height:84px;font-size:26px;box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--gold)}
+.pcenter h3{font-family:var(--ser);font-size:18px;font-weight:700}
+.pcenter .caps{color:var(--gold)}
+.vfoot{text-align:center;font-size:9.5px;color:#B4A6C2;line-height:1.6;padding:4px 0 8px}
+
+/* alerts / posts / library / reminders */
+.al{display:flex;gap:11px;align-items:flex-start}
+.ab{flex:1;min-width:0}
+.at{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.at b{font-family:var(--ser);font-size:12.5px;font-weight:700}
+.at span{font-size:9px;color:var(--mut);flex:none}
+.al p,.post p{font-size:11px;line-height:1.55;color:var(--body);margin-top:4px}
+.tabs{display:flex;background:#EFE6F6;border-radius:12px;padding:4px}
+.tab{flex:1;text-align:center;font-size:11px;padding:8px;border-radius:9px;color:#6B5B7D;font-weight:500}
+.tab.on{background:var(--plum);color:#fff;font-weight:600}
+.phead{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.phead .ava{width:34px;height:34px;font-size:11px}
+.pt{flex:1;min-width:0}
+.pt b{font-family:var(--ser);font-size:12.5px;display:block}
+.pt span{font-size:9px;color:var(--mut)}
+.pfoot{display:flex;gap:16px;margin-top:10px;color:var(--mut);font-size:10.5px;font-weight:500}
+.pfoot span{display:flex;align-items:center;gap:5px}
+.fab{position:absolute;right:18px;bottom:96px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--plum),var(--plum2));color:var(--gold);display:grid;place-items:center;box-shadow:0 10px 22px -8px rgba(43,10,61,.6);z-index:3}
+.art{display:flex;gap:11px;align-items:center}
+.thumb{width:62px;height:62px;border-radius:12px;flex:none}
+.t1{background:conic-gradient(from 210deg at 60% 40%,#7FB2E5,#F3B8D8,#A07FE0,#7FB2E5)}
+.t2{background:linear-gradient(140deg,#C98D4E,#6B3F2A 70%,#3F2A1E)}
+.t3{background:radial-gradient(circle at 50% 32%,#8FA6F0,#4A3AA0 55%,#221A5C)}
+.t4{background:repeating-conic-gradient(#CAA04A 0 15deg,#6B4A1A 15deg 30deg);border-radius:12px}
+.arow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.cat{font-size:8.5px;letter-spacing:.12em;font-weight:700;color:var(--gold)}
+.art b{font-family:var(--ser);font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.art .ex{font-size:10px;color:var(--mut);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.heroimg{height:140px;border-radius:12px;background:conic-gradient(from 210deg at 60% 40%,#7FB2E5,#F3B8D8,#A07FE0,#7FB2E5)}
+.rhead{display:flex;align-items:center;gap:10px}
+.rt{flex:1;min-width:0}
+.rt b{font-family:var(--ser);font-size:12.5px;display:block}
+.rt span{font-size:9.5px;color:var(--mut)}
+.rpills{display:flex;justify-content:space-between;gap:8px;margin-top:11px}
+.rem.off .rpills{display:none}
+.bindhead{display:flex;align-items:center;justify-content:center;gap:12px;padding:2px 6px 10px}
+
+/* log sheet */
+.dim{position:absolute;inset:0;background:rgba(24,6,38,.45);z-index:3}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:4;background:var(--bg);border-radius:24px 24px 0 0;
+  padding:10px 16px 24px;max-height:85%;overflow-y:auto;box-shadow:0 -12px 30px rgba(43,10,61,.28);scrollbar-width:none}
+.sheet::-webkit-scrollbar{display:none}
+.handle{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 8px}
+.shhead{display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
+.shhead h3{font-family:var(--ser);font-size:17px;font-weight:700}
+.shbtn{width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 1px 4px rgba(43,10,61,.16);font-size:14px}
+.shbtn.x{color:#C0392B;justify-self:start}
+.shbtn.ok{color:#4C8C4A;justify-self:end}
+</style>
+</head>
+<body>
+
+<!-- ============ REVIEW HEADER ============ -->
+<header class="top">
+  <div class="topin">
+    <div class="brandrow">
+      <span class="mini"><i class="ic s fa-solid fa-moon"></i></span>
+      <div class="toptxt"><b>Witchy — Screen System</b><span>Cycle · fertility · pregnancy companion — 20 flows, iOS / Android / web tokens</span></div>
+    </div>
+    <span class="hint">scroll horizontally → · tap bottom-nav / buttons to jump between screens</span>
+  </div>
+  <div class="jump">
+    <button data-go="s-welcome">01 Welcome</button><button data-go="s-privacy">02 Privacy</button><button data-go="s-join">03 Join</button>
+    <button data-go="s-rhythm">04 Rhythms</button><button data-go="s-today">05 Sanctuary</button><button data-go="s-cal">06 Cycle Map</button>
+    <button data-go="s-sheet">07 Log Sheet</button><button data-go="s-ins">08 Records</button><button data-go="s-coven">09 Coven</button>
+    <button data-go="s-blood">10 Blood</button><button data-go="s-fert">11 Fertility</button><button data-go="s-gest">12 Gestation</button>
+    <button data-go="s-chart">13 BBT Chart</button><button data-go="s-lib">14 Library</button><button data-go="s-article">15 Article</button>
+    <button data-go="s-profile">16 Profile</button><button data-go="s-settings">17 Settings</button><button data-go="s-alerts">18 Alerts</button>
+    <button data-go="s-rem">19 Reminders</button><button data-go="s-bind">20 Binding</button>
+  </div>
+</header>
+
+<main class="gal">
+
+<!-- 01 WELCOME -->
+<section class="slot" id="s-welcome"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="splash">
+    <div class="emb"><div class="inr"><i class="ic xl fa-solid fa-moon"></i></div></div>
+    <h1 class="serif brand">Witchy</h1>
+    <p class="mut s12">Track your cycle with magic</p>
+  </div>
+  <div class="foot">
+    <button class="btn" data-go="s-privacy">Awaken Your Power</button>
+  </div>
+</div><p class="cap">01 · Welcome</p></section>
+
+<!-- 02 PRIVACY -->
+<section class="slot" id="s-privacy"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="scroll" style="justify-content:space-between">
+    <div class="centercol">
+      <h2 class="serif h2">Your Privacy Promise</h2>
+      <p class="sub" style="margin-top:5px">Witchy keeps your body&rsquo;s stories where they belong &mdash; on this device. Nothing you log is uploaded, sold, or shared with third parties, and Witchy never replaces professional medical care.</p>
+      <div class="card" style="margin-top:12px;text-align:left">
+        <div class="cns"><span class="cbx"><i class="ic xs fa-solid fa-check"></i></span>
+          <div><div class="ct">I agree to the Terms of Service</div><span class="cl">Read the Terms</span></div></div>
+        <div class="cns"><span class="cbx"><i class="ic xs fa-solid fa-check"></i></span>
+          <div><div class="ct">I agree to the Privacy Policy</div><span class="cl">Read the Privacy Policy</span></div></div>
+        <div class="cns"><span class="cbx off"><i class="ic xs fa-solid fa-check"></i></span>
+          <div><div class="ct">I confirm I am of the required age and accept the Child Protection notice</div><span class="cl">Read the Child Protection Policy</span></div></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <button class="obtn" style="flex:1" data-go="s-welcome">Refuse</button>
+      <button class="btn op" style="flex:1" data-go="s-join">Accept</button>
+    </div>
+  </div>
+</div><p class="cap">02 · Privacy Promise</p></section>
+
+<!-- 03 JOIN -->
+<section class="slot" id="s-join"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="scroll" style="justify-content:space-between">
+    <div class="centercol">
+      <div class="emb sm" style="margin:0 auto"><div class="inr"><i class="ic fa-solid fa-moon" style="font-size:36px"></i></div></div>
+      <h2 class="serif h2" style="margin-top:14px">Join Witchy</h2>
+      <p class="sub" style="margin-top:6px">Your rhythms stay on this device. Sign up to keep your magic in sync, or slip in incognito and begin straight away.</p>
+    </div>
+    <div class="stack">
+      <button class="btn" data-go="s-rhythm"><i class="ic s fa-brands fa-google"></i>Continue with Google</button>
+      <button class="btn" data-go="s-rhythm"><i class="ic s fa-brands fa-apple"></i>Continue with Apple</button>
+      <button class="btn ghost" data-go="s-rhythm"><i class="ic s fa-solid fa-moon"></i>Skip for now</button>
+    </div>
+  </div>
+</div><p class="cap">03 · Join Witchy</p></section>
+
+<!-- 04 RHYTHMS -->
+<section class="slot" id="s-rhythm"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="scroll">
+    <div><h2 class="serif h2">Set Your Rhythms</h2>
+    <p class="sub" style="margin-top:5px">Calibrate your lunar engine. When did your last bleeding phase commence?</p></div>
+    <div class="card">
+      <div class="kvrow">
+        <div><div class="kl">Year of Birth</div><div class="vv">Select year</div></div>
+        <span class="dd">Year <i class="ic fa-solid fa-caret-down"></i></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="kvrow">
+        <div><div class="kl">Last bleeding phase</div><div class="vv">Pick a date</div></div>
+        <i class="ic fa-solid fa-calendar" style="color:var(--mut);font-size:16px"></i>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sldrow"><span class="sec">Cycle duration (stardust tides)</span><span class="rv" data-fmt="days">28 Days</span></div>
+      <input type="range" min="20" max="40" value="28" data-fmt="days">
+    </div>
+    <div class="card">
+      <div class="sldrow"><span class="sec">Bleeding phase length</span><span class="rv" data-fmt="days">5 Days</span></div>
+      <input type="range" min="2" max="10" value="5" data-fmt="days">
+    </div>
+    <button class="btn op" data-go="s-today" style="margin-top:auto">Begin the Journey</button>
+  </div>
+</div><p class="cap">04 · Set Your Rhythms</p></section>
+
+<!-- 05 SANCTUARY -->
+<section class="slot" id="s-today"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-profile"><i class="ic fa-solid fa-hat-wizard"></i></button><h1>Sanctuary</h1><button class="ib ac" data-go="s-alerts"><i class="ic fa-solid fa-meteor"></i></button></div>
+  <div class="scroll">
+    <div class="hero"><div class="ring"><div class="orb">
+      <span class="otop"><i class="ic xs fa-solid fa-moon"></i>CYCLE DAY</span>
+      <b>14</b><span class="os">Full Moon Peak</span>
+    </div></div></div>
+    <div class="duo">
+      <div class="card stat"><span class="lab">Bleeding In</span><div class="val">14 Days</div><span class="sub2">Nov 10 · predicted</span></div>
+      <div class="card stat" data-go="s-fert"><span class="lab">Fertility Window</span><div class="val pk">Peak Today</div><span class="sub2">High chance</span></div>
+    </div>
+    <span class="sec">Log Today's Magic</span>
+    <div class="qa">
+      <button data-go="s-blood"><span class="icn"><i class="ic s fa-solid fa-droplet"></i></span>Flow</button>
+      <button data-go="s-sheet"><span class="icn"><i class="ic s fa-solid fa-heart"></i></span>Mood</button>
+      <button data-go="s-sheet"><span class="icn"><i class="ic s fa-solid fa-face-sad-tear"></i></span>Pain</button>
+      <button data-go="s-sheet"><span class="icn"><i class="ic s fa-solid fa-file-lines"></i></span>Notes</button>
+    </div>
+    <div class="card dark" data-go="s-lib">
+      <div class="inshead"><b>Daily Astral Insight</b><span class="tag gold">Scorpio Moon</span></div>
+      <p>As your body summits this cycle peak, intuitive energies run deep. Ground your power with Mugwort tea, and honor your physical fatigue.</p>
+    </div>
+  </div>
+  <button class="fab" data-go="s-sheet"><i class="ic l fa-solid fa-feather"></i></button>
+  <nav class="bn">
+    <button class="on"><i class="ic fa-solid fa-moon"></i><span>Today</span></button>
+    <button data-go="s-cal"><i class="ic fa-solid fa-calendar"></i><span>Calendar</span></button>
+    <button data-go="s-ins"><i class="ic fa-solid fa-chart-simple"></i><span>Insights</span></button>
+    <button data-go="s-coven"><i class="ic fa-solid fa-wand-sparkles"></i><span>Magic</span></button>
+  </nav>
+</div><p class="cap">05 · Sanctuary (Today)</p></section>
+
+<!-- 06 LUNAR CYCLE MAP -->
+<section class="slot" id="s-cal"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-profile"><i class="ic fa-solid fa-hat-wizard"></i></button><h1>Lunar Cycle Map</h1><button class="ib ac" data-go="s-alerts"><i class="ic fa-solid fa-meteor"></i></button></div>
+  <div class="scroll">
+    <div class="card">
+      <div class="calhead">
+        <i class="ic fa-solid fa-chevron-left"></i>
+        <span class="mc"><b>October 2026</b><i class="ic fa-solid fa-chevron-right"></i></span>
+        <i class="ic fa-solid fa-chevron-right"></i>
+      </div>
+      <div class="dowrow"><span class="dow">M</span><span class="dow">T</span><span class="dow">W</span><span class="dow">T</span><span class="dow">F</span><span class="dow">S</span><span class="dow">S</span></div>
+      <div class="cal">
+        <span class="cell adj"><span class="c">28</span><span class="mk"></span><em class="cd">0</em></span>
+        <span class="cell adj"><span class="c">29</span><span class="mk"></span><em class="cd">0</em></span>
+        <span class="cell adj"><span class="c">30</span><span class="mk"></span><em class="cd">0</em></span>
+        <span class="cell"><span class="c">1</span><span class="mk"></span><em class="cd">28</em></span>
+        <span class="cell p"><span class="c">2</span><span class="mk"><i class="wh"></i></span><em class="cd">1</em></span>
+        <span class="cell p"><span class="c">3</span><span class="mk"><i class="wh"></i></span><em class="cd">2</em></span>
+        <span class="cell p"><span class="c">4</span><span class="mk"><i class="wh"></i></span><em class="cd">3</em></span>
+
+        <span class="cell p"><span class="c">5</span><span class="mk"><i class="wh"></i></span><em class="cd">4</em></span>
+        <span class="cell p"><span class="c">6</span><span class="mk"><i class="wh"></i></span><em class="cd">5</em></span>
+        <span class="cell"><span class="c">7</span><span class="mk"></span><em class="cd">6</em></span>
+        <span class="cell"><span class="c">8</span><span class="mk"></span><em class="cd">7</em></span>
+        <span class="cell"><span class="c">9</span><span class="mk"></span><em class="cd">8</em></span>
+        <span class="cell"><span class="c">10</span><span class="mk"></span><em class="cd">9</em></span>
+        <span class="cell"><span class="c">11</span><span class="mk"></span><em class="cd">10</em></span>
+
+        <span class="cell"><span class="c">12</span><span class="mk"></span><em class="cd">11</em></span>
+        <span class="cell f"><span class="c">13</span><span class="mk"></span><em class="cd">12</em></span>
+        <span class="cell f"><span class="c">14</span><span class="mk"></span><em class="cd">13</em></span>
+        <span class="cell f t"><span class="c">15</span><span class="mk"><i class="pk"></i><i></i></span><em class="cd">14</em></span>
+        <span class="cell f"><span class="c">16</span><span class="mk"></span><em class="cd">15</em></span>
+        <span class="cell f"><span class="c">17</span><span class="mk"></span><em class="cd">16</em></span>
+        <span class="cell"><span class="c">18</span><span class="mk"></span><em class="cd">17</em></span>
+
+        <span class="cell"><span class="c">19</span><span class="mk"></span><em class="cd">18</em></span>
+        <span class="cell"><span class="c">20</span><span class="mk"></span><em class="cd">19</em></span>
+        <span class="cell"><span class="c">21</span><span class="mk"></span><em class="cd">20</em></span>
+        <span class="cell"><span class="c">22</span><span class="mk"></span><em class="cd">21</em></span>
+        <span class="cell"><span class="c">23</span><span class="mk"></span><em class="cd">22</em></span>
+        <span class="cell"><span class="c">24</span><span class="mk"></span><em class="cd">23</em></span>
+        <span class="cell"><span class="c">25</span><span class="mk"></span><em class="cd">24</em></span>
+
+        <span class="cell"><span class="c">26</span><span class="mk"></span><em class="cd">25</em></span>
+        <span class="cell"><span class="c">27</span><span class="mk"></span><em class="cd">26</em></span>
+        <span class="cell"><span class="c">28</span><span class="mk"></span><em class="cd">27</em></span>
+        <span class="cell"><span class="c">29</span><span class="mk"></span><em class="cd">28</em></span>
+        <span class="cell o"><span class="c">30</span><span class="mk"></span><em class="cd">1</em></span>
+        <span class="cell o"><span class="c">31</span><span class="mk"></span><em class="cd">2</em></span>
+        <span class="cell adj"><span class="c">1</span><span class="mk"></span><em class="cd">0</em></span>
+
+        <span class="cell adj"><span class="c">2</span><span class="mk"></span><em class="cd">0</em></span>
+        <span class="cell adj"><span class="c">3</span><span class="mk"></span><em class="cd">0</em></span>
+        <span class="cell adj"><span class="c">4</span><span class="mk"></span><em class="cd">0</em></span>
+        <span class="cell adj"><span class="c">5</span><span class="mk"></span><em class="cd">0</em></span>
+        <span class="cell adj"><span class="c">6</span><span class="mk"></span><em class="cd">0</em></span>
+        <span class="cell adj"><span class="c">7</span><span class="mk"></span><em class="cd">0</em></span>
+        <span class="cell adj"><span class="c">8</span><span class="mk"></span><em class="cd">0</em></span>
+      </div>
+      <div class="legend">
+        <span><i class="lgd"></i>Period</span>
+        <span><i class="lgd prd"></i>Predicted</span>
+        <span><i class="lgd frt"></i>Fertile</span>
+        <span><i class="lgd ovl"></i>Ovulation</span>
+        <span><i class="lgd log"></i>Logged</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="at" style="margin-bottom:8px"><b class="serif" style="font-size:13.5px">October 5, 2026</b><span class="tag pink">Period Day 4</span></div>
+      <div class="drow" data-go="s-sheet"><i class="ic pink fa-solid fa-droplet"></i>Medium bleed flow intensity</div>
+      <div class="drow" data-go="s-sheet"><i class="ic pur fa-solid fa-heart"></i>Enchanted mood</div>
+      <div class="clear">Clear this day's log</div>
+    </div>
+  </div>
+  <button class="fab" data-go="s-sheet"><i class="ic l fa-solid fa-feather"></i></button>
+  <nav class="bn">
+    <button data-go="s-today"><i class="ic fa-solid fa-moon"></i><span>Today</span></button>
+    <button class="on"><i class="ic fa-solid fa-calendar"></i><span>Calendar</span></button>
+    <button data-go="s-ins"><i class="ic fa-solid fa-chart-simple"></i><span>Insights</span></button>
+    <button data-go="s-coven"><i class="ic fa-solid fa-wand-sparkles"></i><span>Magic</span></button>
+  </nav>
+</div><p class="cap">06 · Lunar Cycle Map</p></section>
+
+<!-- 07 LOG SHEET -->
+<section class="slot" id="s-sheet"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-profile"><i class="ic fa-solid fa-hat-wizard"></i></button><h1>Sanctuary</h1><button class="ib ac" data-go="s-alerts"><i class="ic fa-solid fa-meteor"></i></button></div>
+  <div class="scroll">
+    <div class="hero"><div class="ring"><div class="orb">
+      <span class="otop"><i class="ic xs fa-solid fa-moon"></i>CYCLE DAY</span>
+      <b>14</b><span class="os">Full Moon Peak</span>
+    </div></div></div>
+    <div class="duo">
+      <div class="card stat"><span class="lab">Bleeding In</span><div class="val">14 Days</div><span class="sub2">Nov 10 · predicted</span></div>
+      <div class="card stat"><span class="lab">Fertility Window</span><div class="val pk">Peak Today</div><span class="sub2">High chance</span></div>
+    </div>
+    <span class="sec">Log Today's Magic</span>
+    <div class="qa">
+      <button><span class="icn"><i class="ic s fa-solid fa-droplet"></i></span>Flow</button>
+      <button><span class="icn"><i class="ic s fa-solid fa-heart"></i></span>Mood</button>
+      <button><span class="icn"><i class="ic s fa-solid fa-face-sad-tear"></i></span>Pain</button>
+      <button><span class="icn"><i class="ic s fa-solid fa-file-lines"></i></span>Notes</button>
+    </div>
+  </div>
+  <div class="dim"></div>
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="shhead">
+      <button class="shbtn x"><i class="ic fa-solid fa-xmark"></i></button>
+      <h3>October 15, 2026</h3>
+      <button class="shbtn ok"><i class="ic fa-solid fa-check"></i></button>
+    </div>
+    <p class="sub" style="text-align:center;margin-top:4px">Select physical and mental essences flowing within you.</p>
+    <div style="margin-top:12px"><span class="sec">Bleed Intensity</span>
+      <div class="seg" data-single style="margin-top:8px">
+        <button class="chip on">None</button><button class="chip">Light</button><button class="chip">Medium</button><button class="chip">Heavy</button>
+      </div>
+    </div>
+    <div style="margin-top:12px"><span class="sec">Emotional Currents</span>
+      <div class="grid2" style="margin-top:8px">
+        <button class="chip"><i class="ic xs fa-solid fa-wand-sparkles"></i>Enchanted</button>
+        <button class="chip"><i class="ic xs fa-solid fa-leaf" style="color:#4C8C4A"></i>Grounded</button>
+        <button class="chip"><i class="ic xs fa-solid fa-moon" style="color:#5B4A8C"></i>Shadowy</button>
+        <button class="chip"><i class="ic xs fa-solid fa-bolt" style="color:#C2703B"></i>Restless</button>
+      </div>
+    </div>
+    <div style="margin-top:12px"><span class="sec">Somatic Echoes</span>
+      <div class="grid2" style="margin-top:8px">
+        <button class="chip"><i class="ic xs fa-solid fa-triangle-exclamation"></i>Uterine Cramps</button>
+        <button class="chip"><i class="ic xs fa-solid fa-bolt" style="color:#C2703B"></i>Headache</button>
+        <button class="chip"><i class="ic xs fa-solid fa-droplet" style="color:#3E7BC0"></i>Bloating</button>
+        <button class="chip"><i class="ic xs fa-solid fa-moon" style="color:#5B4A8C"></i>Fatigue</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <div class="sldrow"><span class="sec">Uterine Contraction Pain</span><span class="rv" data-fmt="level">Level 6</span></div>
+      <input type="range" min="0" max="10" value="6" data-fmt="level">
+    </div>
+    <div style="margin-top:8px"><span class="sec">Notes</span>
+      <textarea class="ta" style="margin-top:8px" placeholder="Whisper your thoughts, rituals, and reflections…"></textarea>
+    </div>
+  </div>
+  <nav class="bn">
+    <button class="on"><i class="ic fa-solid fa-moon"></i><span>Today</span></button>
+    <button data-go="s-cal"><i class="ic fa-solid fa-calendar"></i><span>Calendar</span></button>
+    <button data-go="s-ins"><i class="ic fa-solid fa-chart-simple"></i><span>Insights</span></button>
+    <button data-go="s-coven"><i class="ic fa-solid fa-wand-sparkles"></i><span>Magic</span></button>
+  </nav>
+</div><p class="cap">07 · Log Sheet (bottom drawer)</p></section>
+
+<!-- 08 LUNAR RECORDS -->
+<section class="slot" id="s-ins"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-profile"><i class="ic fa-solid fa-hat-wizard"></i></button><h1>Lunar Records</h1><button class="ib ac" data-go="s-alerts"><i class="ic fa-solid fa-meteor"></i></button></div>
+  <div class="scroll">
+    <div class="card" data-go="s-chart">
+      <div class="sec-in">Cycle Trends</div>
+      <div class="bars">
+        <div class="bcol"><i style="height:58%"></i><span>M1</span></div>
+        <div class="bcol"><i style="height:72%"></i><span>M2</span></div>
+        <div class="bcol"><i style="height:62%"></i><span>M3</span></div>
+        <div class="bcol"><i style="height:78%"></i><span>M4</span></div>
+        <div class="bcol"><i style="height:94%"></i><span>M5</span></div>
+        <div class="bcol"><i style="height:68%"></i><span>M6</span></div>
+        <div class="bcol"><i style="height:74%"></i><span>M7</span></div>
+      </div>
+    </div>
+    <div class="duo">
+      <div class="card stat" style="text-align:center"><div class="val" style="font-size:21px">28.4 d</div><span class="sub2">Average Cycle</span></div>
+      <div class="card stat" style="text-align:center"><div class="val" style="font-size:21px">5.2 d</div><span class="sub2">Average Bleed</span></div>
+    </div>
+    <div class="card">
+      <div class="sec-in">Chronology of Bleeds</div>
+      <div class="crow"><div><b>Sept 14 – Sept 19</b><span>5 Days</span></div><span class="tag">On Time</span></div>
+      <div class="crow"><div><b>Aug 16 – Aug 21</b><span>5 Days</span></div><span class="tag">On Time</span></div>
+      <div class="crow"><div><b>July 19 – July 23</b><span>4 Days</span></div><span class="tag pink">Short</span></div>
+    </div>
+  </div>
+  <button class="fab" data-go="s-sheet"><i class="ic l fa-solid fa-feather"></i></button>
+  <nav class="bn">
+    <button data-go="s-today"><i class="ic fa-solid fa-moon"></i><span>Today</span></button>
+    <button data-go="s-cal"><i class="ic fa-solid fa-calendar"></i><span>Calendar</span></button>
+    <button class="on"><i class="ic fa-solid fa-chart-simple"></i><span>Insights</span></button>
+    <button data-go="s-coven"><i class="ic fa-solid fa-wand-sparkles"></i><span>Magic</span></button>
+  </nav>
+</div><p class="cap">08 · Lunar Records</p></section>
+
+<!-- 09 COVEN SANCTUM -->
+<section class="slot" id="s-coven"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-profile"><i class="ic fa-solid fa-hat-wizard"></i></button><h1>Coven Sanctum</h1><button class="ib ac" data-go="s-alerts"><i class="ic fa-solid fa-meteor"></i></button></div>
+  <div class="scroll">
+    <div class="tabs"><button class="tab on">Recent Whispers</button><button class="tab">Ancients' Wisdom</button></div>
+    <div class="card post">
+      <div class="phead"><span class="ava">MC</span><div class="pt"><b>MoonChild99</b><span>Anonymously synced · 2h ago</span></div><span class="tag">Herbal Remedies</span></div>
+      <p>Logged heavy cramps today. Sipping raspberry leaf infusion. If anyone is in their luteal stage, please rest up tonight with a cozy ritual! ✨</p>
+      <div class="pfoot"><span><i class="ic xs fa-solid fa-heart"></i>24</span><span><i class="ic xs fa-solid fa-comment"></i>8</span></div>
+    </div>
+    <div class="card post">
+      <div class="phead"><span class="ava">CS</span><div class="pt"><b>CrystalSeer</b><span>Anonymously synced · 6h ago</span></div><span class="tag">Dream Work</span></div>
+      <p>Is it just me, or does your dream state become incredibly vivid and almost prophetic during the Full Moon / Ovulation Peak? Truly enchanted.</p>
+      <div class="pfoot"><span><i class="ic xs fa-solid fa-heart"></i>42</span><span><i class="ic xs fa-solid fa-comment"></i>15</span></div>
+    </div>
+    <div class="card post">
+      <div class="phead"><span class="ava">LG</span><div class="pt"><b>LunarGlow</b><span>Anonymously synced · 1d ago</span></div><span class="tag">Cosmic Cycle</span></div>
+      <p>Started Bleeding Phase 2 days earlier than estimated cycle clock. Must be the recent Scorpio lunar eclipse affecting my patterns.</p>
+      <div class="pfoot"><span><i class="ic xs fa-solid fa-heart"></i>18</span><span><i class="ic xs fa-solid fa-comment"></i>3</span></div>
+    </div>
+  </div>
+  <button class="fab"><i class="ic l fa-solid fa-plus"></i></button>
+  <nav class="bn">
+    <button data-go="s-today"><i class="ic fa-solid fa-moon"></i><span>Today</span></button>
+    <button data-go="s-cal"><i class="ic fa-solid fa-calendar"></i><span>Calendar</span></button>
+    <button data-go="s-ins"><i class="ic fa-solid fa-chart-simple"></i><span>Insights</span></button>
+    <button class="on"><i class="ic fa-solid fa-wand-sparkles"></i><span>Magic</span></button>
+  </nav>
+</div><p class="cap">09 · Coven Sanctum</p></section>
+
+<!-- 10 SOVEREIGN BLOOD -->
+<section class="slot" id="s-blood"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-today"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>Sovereign Blood</h1><span></span></div>
+  <div class="scroll">
+    <div class="card dark">
+      <span class="caps g">Shedding Phase</span>
+      <div class="serif" style="font-size:23px;font-weight:700;margin:6px 0 8px">Day 3 of 5</div>
+      <div style="display:flex;gap:5px;color:var(--gold)"><i class="ic s fa-solid fa-droplet"></i><i class="ic s fa-solid fa-droplet"></i><i class="ic s fa-solid fa-droplet"></i></div>
+    </div>
+    <div class="card">
+      <div class="sec-in">Bleeding Volume</div>
+      <div class="seg" data-single>
+        <button class="chip">Spotting</button><button class="chip">Light</button><button class="chip on">Medium</button><button class="chip">Heavy</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sldrow"><span class="sec">Uterine Contraction Pain</span><span class="rv" data-fmt="level">Level 6</span></div>
+      <input type="range" min="0" max="10" value="6" data-fmt="level">
+    </div>
+    <div class="card">
+      <div class="sec-in">Grimoire Scribbles</div>
+      <div style="background:#FAF6FD;border:1px solid var(--line);border-radius:12px;padding:11px;font-size:11.5px;line-height:1.55;color:#B4A6C2;min-height:76px">The grimoire awaits your first scribble…</div>
+    </div>
+  </div>
+</div><p class="cap">10 · Sovereign Blood</p></section>
+
+<!-- 11 FERTILITY WINDOW -->
+<section class="slot" id="s-fert"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-today"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>Fertility Window</h1><span></span></div>
+  <div class="scroll">
+    <div class="hero"><div class="ring"><div class="orb">
+      <span class="otop"><i class="ic xs fa-solid fa-moon"></i>CYCLE DAY</span>
+      <b>14</b><span class="os">Peak Day</span>
+    </div></div></div>
+    <div class="duo">
+      <div class="card stat"><span class="lab">Conception Chance</span><div class="val pk">Peak Today</div><span class="sub2">Ovulation likely</span></div>
+      <div class="card stat"><span class="lab">Window</span><div class="val">5 Days</div><span class="sub2">Day 12 – Day 16</span></div>
+    </div>
+    <div class="card dark">
+      <div class="inshead"><b>TTC Tips</b></div>
+      <p>The fertile crescent peaks today. Track cervical fluid and LH surge alongside temperature for the clearest conception signal.</p>
+    </div>
+  </div>
+</div><p class="cap">11 · Fertility Window</p></section>
+
+<!-- 12 GESTATION SPELLS -->
+<section class="slot" id="s-gest"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-today"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>Gestation Spells</h1><button class="ib ac"><i class="ic fa-solid fa-heart"></i></button></div>
+  <div class="scroll">
+    <div class="card dark">
+      <span class="caps g">Gestation Sanctuary</span>
+      <div class="serif" style="font-size:21px;font-weight:700;margin-top:6px">Week 12 (Day 4)</div>
+      <div class="prog"><i></i></div>
+      <p style="font-size:10.5px;color:#D9C2EC">196 days until arrival portal opens</p>
+    </div>
+    <div class="card">
+      <div class="at" style="margin-bottom:10px"><b class="serif" style="font-size:12.5px">Spiritual Comparison</b><span class="tag">Lime Size</span></div>
+      <div class="grow"><span class="icn"><i class="ic s fa-solid fa-magnifying-glass"></i></span>
+      <p>Your little spirit matches a ripe Lime. Organs are fully formed and commencing magical function.</p></div>
+    </div>
+    <div class="card">
+      <div class="sec-in">Astral Gestation Tips</div>
+      <p style="font-size:11.5px;line-height:1.55;color:var(--body)">First-trimester tiredness is shifting. Elevate your iron levels with organic spinach potions and continue speaking soft, loving mantras to your belly.</p>
+    </div>
+  </div>
+</div><p class="cap">12 · Gestation Spells</p></section>
+
+<!-- 13 BBT CHART -->
+<section class="slot" id="s-chart"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-ins"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>BBT Chart</h1><span></span></div>
+  <div class="scroll">
+    <div class="card">
+      <div class="sec-in">Biphasic Temperature Shift</div>
+      <div class="bars">
+        <div class="bcol"><i style="height:58%"></i><span>M1</span></div>
+        <div class="bcol"><i style="height:72%"></i><span>M2</span></div>
+        <div class="bcol"><i style="height:62%"></i><span>M3</span></div>
+        <div class="bcol"><i style="height:78%"></i><span>M4</span></div>
+        <div class="bcol"><i style="height:94%"></i><span>M5</span></div>
+        <div class="bcol"><i style="height:68%"></i><span>M6</span></div>
+        <div class="bcol"><i style="height:74%"></i><span>M7</span></div>
+      </div>
+    </div>
+    <div class="duo">
+      <div class="card stat"><span class="lab"></span><div class="val">36.4°</div><span class="sub2">Pre-shift average</span></div>
+      <div class="card stat"><span class="lab"></span><div class="val">+0.4°</div><span class="sub2">Post-shift rise</span></div>
+    </div>
+    <div class="card dark">
+      <div class="inshead"><b>How to read this</b></div>
+      <p>A sustained rise across three mornings confirms ovulation. Log your waking temperature daily for a clear biphasic pattern.</p>
+    </div>
+  </div>
+</div><p class="cap">13 · BBT Chart</p></section>
+
+<!-- 14 APOTHECARY LIBRARY -->
+<section class="slot" id="s-lib"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-today"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>Apothecary Library</h1><span></span></div>
+  <div class="scroll">
+    <div class="in"><i class="ic s lead fa-solid fa-magnifying-glass"></i><input class="pad" placeholder="Search spells, herbs, anatomy..."></div>
+    <div class="card art" data-go="s-article"><span class="thumb t1"></span>
+      <div class="ab" style="flex:1;min-width:0"><div class="arow"><span class="cat">ANATOMY</span><span class="mut s9">5 min read</span></div>
+      <b>Understanding Your Luteal Phase</b><span class="ex">The autumn of your biology. Why emotions dip and energy turns inward.</span></div></div>
+    <div class="card art"><span class="thumb t2"></span>
+      <div class="ab" style="flex:1;min-width:0"><div class="arow"><span class="cat">BOTANICAL</span><span class="mut s9">8 min read</span></div>
+      <b>Herbs for Somatic Cramp Relief</b><span class="ex">Sip Mugwort, Raspberry Leaf and Ginger through the shedding phase.</span></div></div>
+    <div class="card art"><span class="thumb t3"></span>
+      <div class="ab" style="flex:1;min-width:0"><div class="arow"><span class="cat">MINDFULNESS</span><span class="mut s9">12 min read</span></div>
+      <b>Moon Cycle Meditation</b><span class="ex">Deep meditative practice to align your rhythm with the lunar tide.</span></div></div>
+    <div class="card art"><span class="thumb t4"></span>
+      <div class="ab" style="flex:1;min-width:0"><div class="arow"><span class="cat">LUNAR CYCLE</span><span class="mut s9">6 min read</span></div>
+      <b>Fertility Window Explained</b><span class="ex">Deciphering the peak hormonal flow and ovulation signals.</span></div></div>
+  </div>
+</div><p class="cap">14 · Apothecary Library</p></section>
+
+<!-- 15 ARTICLE DETAIL -->
+<section class="slot" id="s-article"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-lib"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>Wellness Detail</h1><span></span></div>
+  <div class="scroll">
+    <div class="card">
+      <div class="heroimg"></div>
+      <div class="at" style="margin-top:12px"><span class="tag">ANATOMY</span><span class="mut s9">5 min read</span></div>
+      <h2 class="serif" style="font-size:18px;font-weight:700;margin-top:6px">Understanding Your Luteal Phase</h2>
+      <p class="sub" style="margin-top:6px">The autumn of your biology. Why emotions dip and energy turns inward.</p>
+    </div>
+    <div class="card">
+      <p style="font-size:11.5px;line-height:1.55;color:var(--body)">This guide blends evidence-based reproductive health with cycle-syncing ritual. Revisit the key signal from the library card above, then apply one small practice today — tea, rest, or breath — and log how your temple responds.</p>
+    </div>
+  </div>
+</div><p class="cap">15 · Wellness Detail</p></section>
+
+<!-- 16 WITCH PROFILE -->
+<section class="slot" id="s-profile"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-today"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>Witch Profile</h1><button class="ib ac" data-go="s-settings"><i class="ic fa-solid fa-gear"></i></button></div>
+  <div class="scroll">
+    <div class="pcenter">
+      <span class="ava big">HS</span>
+      <h3>High Priestess Selene</h3>
+      <span class="caps">Scorpio Moon · Third Cycle</span>
+    </div>
+    <div class="card">
+      <div class="sec-in">Lunar Alignments</div>
+      <div class="srow"><b>Average Cycle Length</b><span class="val">29 Days</span></div>
+      <div class="srow"><b>Bleeding Phase Length</b><span class="val">5 Days</span></div>
+      <div class="srow"><b>Notification Preferences</b><a class="mg" data-go="s-settings">Manage</a></div>
+    </div>
+    <div class="card">
+      <div class="sec-in">Apothecary Settings</div>
+      <div class="srow"><b>Appearance</b><a class="mg">Manage</a></div>
+      <div class="srow"><b>Gestation Spells</b><a class="mg" data-go="s-gest">View</a></div>
+      <div class="srow"><b>Cosmic Partner Bond</b><span class="val">1 Active</span></div>
+    </div>
+    <div class="card">
+      <div class="sec-in" style="margin-bottom:4px">Amulet Bells</div>
+      <p style="font-size:11.5px;color:var(--mut)">3 of 5 bells active</p>
+      <button class="btn" style="margin-top:10px" data-go="s-rem">Open Amulet Reminders</button>
+    </div>
+    <div class="card">
+      <div class="sec-in">Session</div>
+      <button class="btn" data-go="s-welcome">Sign Out</button>
+    </div>
+    <p class="vfoot">Witchy App<br>Version 1.2.4 · Made with celestial energy</p>
+  </div>
+</div><p class="cap">16 · Witch Profile</p></section>
+
+<!-- 17 SETTINGS -->
+<section class="slot" id="s-settings"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-profile"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>Settings</h1><span></span></div>
+  <div class="scroll">
+    <div class="card">
+      <div class="sec-in">Lunar Alignments</div>
+      <div class="srow"><b>Receive Lunar Notifications</b><label class="sw"><input type="checkbox" checked><i></i></label></div>
+      <div class="srow"><b>Dark Magic Mode</b><label class="sw"><input type="checkbox"><i></i></label></div>
+    </div>
+  </div>
+</div><p class="cap">17 · Settings</p></section>
+
+<!-- 18 CELESTIAL ALERTS -->
+<section class="slot" id="s-alerts"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-today"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>Celestial Alerts</h1><span></span></div>
+  <div class="scroll">
+    <div><div class="sec">Whispers Received</div>
+    <p class="sub" style="margin-top:8px">The cosmos whispers its reminders. Align your biological temple.</p></div>
+    <div class="card al"><span class="icn pink"><i class="ic s fa-solid fa-droplet"></i></span>
+      <div class="ab"><div class="at"><b>Period Commencing</b><span>2 hours ago</span></div>
+      <p>Your bleeding phase is predicted to begin in 2 days. Prepare your herbal tea blends.</p></div></div>
+    <div class="card al"><span class="icn gold"><i class="ic s fa-solid fa-moon"></i></span>
+      <div class="ab"><div class="at"><b>Fertility Window Peak</b><span>1 day ago</span></div>
+      <p>Your cosmic fertility peaks today under the fertile crescent. High chance of ovulation.</p></div></div>
+    <div class="card al"><span class="icn"><i class="ic s fa-solid fa-feather"></i></span>
+      <div class="ab"><div class="at"><b>Magical Log Missing</b><span>2 days ago</span></div>
+      <p>Remember to log your somatic echoes, cramps and emotional currents for cycle day 14.</p></div></div>
+    <div class="card al"><span class="icn"><i class="ic s fa-solid fa-star"></i></span>
+      <div class="ab"><div class="at"><b>Astrological Milestone</b><span>3 days ago</span></div>
+      <p>Full Moon summits in Scorpio. Perfect alignment for meditative reflection.</p></div></div>
+  </div>
+</div><p class="cap">18 · Celestial Alerts</p></section>
+
+<!-- 19 AMULET REMINDERS -->
+<section class="slot" id="s-rem"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-profile"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>Amulet Reminders</h1><span></span></div>
+  <div class="scroll">
+    <div><p class="sub">Calibrate mystical bells to warn you of upcoming tides.</p>
+    <div style="font-size:11px;font-weight:600;color:var(--pur);margin-top:4px">3 of 5 bells active</div></div>
+    <div class="card rem">
+      <div class="rhead"><span class="icn pink"><i class="ic s fa-solid fa-droplet"></i></span>
+        <div class="rt"><b>Log Period Commencing</b><span>Magical bell for predicted first flow</span></div>
+        <label class="sw"><input type="checkbox" checked><i></i></label></div>
+      <div class="rpills"><span class="pill"><i class="ic xs fa-solid fa-clock"></i>09:00 AM</span><span class="pill"><i class="ic xs fa-solid fa-wand-sparkles"></i>Daily during peak</span></div>
+    </div>
+    <div class="card rem">
+      <div class="rhead"><span class="icn"><i class="ic s fa-solid fa-star"></i></span>
+        <div class="rt"><b>Take Cosmic Pill</b><span>Daily supplements timer</span></div>
+        <label class="sw"><input type="checkbox" checked><i></i></label></div>
+      <div class="rpills"><span class="pill"><i class="ic xs fa-solid fa-clock"></i>08:30 AM</span><span class="pill"><i class="ic xs fa-solid fa-wand-sparkles"></i>Every day</span></div>
+    </div>
+    <div class="card rem off">
+      <div class="rhead"><span class="icn gold"><i class="ic s fa-solid fa-moon"></i></span>
+        <div class="rt"><b>Fertility Window Alert</b><span>Reminder of peak biological phase</span></div>
+        <label class="sw"><input type="checkbox"><i></i></label></div>
+      <div class="rpills"><span class="pill"><i class="ic xs fa-solid fa-clock"></i>07:00 AM</span><span class="pill"><i class="ic xs fa-solid fa-wand-sparkles"></i>Window start</span></div>
+    </div>
+    <div class="card rem">
+      <div class="rhead"><span class="icn"><i class="ic s fa-solid fa-bolt"></i></span>
+        <div class="rt"><b>PMS Warning</b><span>Prepare your temple for mood shifts</span></div>
+        <label class="sw"><input type="checkbox" checked><i></i></label></div>
+      <div class="rpills"><span class="pill"><i class="ic xs fa-solid fa-clock"></i>06:00 PM</span><span class="pill"><i class="ic xs fa-solid fa-wand-sparkles"></i>3 days prior</span></div>
+    </div>
+    <div class="card rem off">
+      <div class="rhead"><span class="icn" style="background:#E3EEF9;color:#3E7BC0"><i class="ic s fa-solid fa-droplet"></i></span>
+        <div class="rt"><b>Somatic Hydration</b><span>Sip restorative botanical water</span></div>
+        <label class="sw"><input type="checkbox"><i></i></label></div>
+      <div class="rpills"><span class="pill"><i class="ic xs fa-solid fa-clock"></i>Hourly</span><span class="pill"><i class="ic xs fa-solid fa-wand-sparkles"></i>Daytime</span></div>
+    </div>
+  </div>
+</div><p class="cap">19 · Amulet Reminders</p></section>
+
+<!-- 20 COVEN BINDING -->
+<section class="slot" id="s-bind"><div class="frame">
+  <div class="st"><span>9:41</span><span class="sti"><i class="ic fa-solid fa-signal"></i><i class="ic fa-solid fa-wifi"></i><i class="ic fa-solid fa-battery-full"></i></span></div>
+  <div class="appbar"><button class="ib" data-go="s-profile"><i class="ic fa-solid fa-hand-point-left"></i></button><h1>Coven Binding</h1><span></span></div>
+  <div class="scroll">
+    <div class="card" style="text-align:center">
+      <div class="bindhead"><span class="ava">HS</span><i class="ic l gold fa-solid fa-wand-sparkles"></i><span class="ava">KP</span></div>
+      <h3 class="serif" style="font-size:15px;font-weight:700">Bind Cosmic Partners</h3>
+      <p class="sub" style="margin-top:6px">Invite partners or coven members to sync and visualize predictions on a shared celestial map.</p>
+    </div>
+    <div class="card">
+      <div class="sec-in">Invite Cosmic Bond</div>
+      <div class="in"><i class="ic s lead fa-solid fa-envelope"></i><input class="pad" placeholder="partner@cosmic.com"></div>
+      <button class="btn" style="margin-top:12px">Send Binding Scroll</button>
+    </div>
+    <div class="card">
+      <div class="sec-in">Scroll Visibility</div>
+      <div class="srow"><b>Share Bleeding Predictions</b><label class="sw"><input type="checkbox" checked><i></i></label></div>
+      <div class="srow"><b>Share Fertile Windows</b><label class="sw"><input type="checkbox" checked><i></i></label></div>
+      <div class="srow"><b>Share Anonymized Symptom Log</b><label class="sw"><input type="checkbox"><i></i></label></div>
+    </div>
+  </div>
+</div><p class="cap">20 · Coven Binding</p></section>
+
+</main>
+
+<script>
+const $=s=>document.querySelectorAll(s);
+const go=id=>{const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'})};
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){go(g.dataset.go)}});
+
+/* sliders: paint fill + live label */
+const paint=r=>{const p=(r.value-r.min)/(r.max-r.min)*100;r.style.setProperty('--p',p+'%');
+  const lab=r.parentElement.querySelector('.rv');if(lab){const f=r.dataset.fmt;
+  lab.textContent=f==='days'?r.value+' Days':f==='level'?'Level '+r.value:r.value}};
+$('input[type=range]').forEach(r=>{paint(r);r.addEventListener('input',()=>paint(r))});
+
+/* chips: single-select segments, multi-select grids */
+document.addEventListener('click',e=>{const c=e.target.closest('.chip');if(!c)return;
+  const wrap=c.parentElement;
+  if(wrap.hasAttribute('data-single')){wrap.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on')}
+  else c.classList.toggle('on')});
+
+/* tabs */
+document.addEventListener('click',e=>{const t=e.target.closest('.tab');if(!t)return;
+  t.parentElement.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));t.classList.add('on')});
+
+/* reminder cards collapse pills when off */
+$('.rem .sw input').forEach(i=>i.addEventListener('change',()=>i.closest('.rem').classList.toggle('off',!i.checked)));
+</script>
+</body>
+</html>

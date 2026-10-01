@@ -7,7 +7,7 @@ import '../providers/cycle_provider.dart';
 import '../models/cycle_phase.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/app_icons.dart';
+import '../theme/app_icons.dart';
 import '../widgets/log_bottom_sheet.dart';
 import '../widgets/quick_action.dart';
 import '../widgets/stat_card.dart';

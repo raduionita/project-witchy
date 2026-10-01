@@ -6,7 +6,7 @@ import '../navigation/app_nav.dart';
 import '../providers/auth_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/app_icons.dart';
+import '../theme/app_icons.dart';
 import '../widgets/app_emblem.dart';
 
 class JoinScreen extends StatefulWidget {

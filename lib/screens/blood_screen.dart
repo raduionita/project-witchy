@@ -6,7 +6,7 @@ import '../providers/logging_provider.dart';
 import '../services/cycle_calculator.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/app_icons.dart';
+import '../theme/app_icons.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_chip.dart';

@@ -5,7 +5,7 @@ import '../models/day_log.dart';
 import '../providers/logging_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/app_icons.dart';
+import '../theme/app_icons.dart';
 import 'app_chip.dart';
 import 'app_slider_row.dart';
 

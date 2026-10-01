@@ -7,7 +7,7 @@ import '../providers/logging_provider.dart';
 import '../providers/onboarding_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/app_icons.dart';
+import '../theme/app_icons.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_slider_row.dart';

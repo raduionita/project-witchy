@@ -208,3 +208,54 @@ test/
 - [x] **10.6** Docs — DESIGN.md → v1.6.0 (nav/app-bar lines, §4.1 rows, nav tree, Screen 14 rewrite, Settings + Amulet Reminders sections deleted, screens 16–20 renumbered 15–18), PLAN.md (this section).
 
 **Gate:** `flutter analyze` ✅, `flutter test` ✅ (80/80), `flutter build apk --debug` ✅, `flutter build web` ✅
+
+---
+
+## Phase 11 — Native Splash + Gold Cat-Moon Emblem
+
+> User request: native splash via `flutter_native_splash` (plum background + gold `cat-moon-gold.png` logo), and swap `AppIcons.moon` for the gold cat-moon image in `AppEmblem` with identical size/placement. Agreed scope: AppEmblem only.
+
+- [x] **11.1** `pubspec.yaml` — added `- assets/images/` to `flutter.assets`; splash config fixed (old `#0x…` color strings were invalid for the package) → `color: "#3B0A5E"`, `image: assets/images/cat-moon-gold.png`, `fullscreen: true`, `android_12` plum color/icon-background + gold image (was gold bg + black logo).
+- [x] **11.2** `dart run flutter_native_splash:create` — generated Android (drawables + `windowSplashScreen*` styles incl. night/v31), iOS (LaunchImage assets + LaunchScreen storyboard + Info.plist), and web splash (images, CSS, `index.html` hook); first-time generation (was default white).
+- [x] **11.3** `AppEmblem` — `FaIcon(AppIcons.moon, size: size * 0.32, color: gold)` → `Image.asset('assets/images/cat-moon-gold.png', width/height: size * 0.32, fit: BoxFit.contain)`; dropped unused `font_awesome_flutter` + `app_icons` imports; other `AppIcons.moon` sites (nav Today tab, cycle orb, moods, mocks) unchanged per agreed scope.
+- [x] **11.4** Docs — PLAN.md (this section), DESIGN.md → v1.7.0 (Screen 01 emblem PNG + Native Launch Splash note).
+- [x] **11.5** Logo size doubled on request — `cat-moon-gold.png` resampled 128 → 256×256 (`sips -z 256 256`) + `flutter_native_splash:create` regenerated all platforms; the package sizes every splash asset ∝ source pixels, so the logo doubled uniformly: Android <12 32dp → 64dp, Android 12 icon 32dp → 64dp, iOS 32pt → 64pt, web 32 → 64 CSS px. `AppEmblem` unaffected (explicit `size * 0.32` box, now sharper).
+- [x] **11.6** Doubled again (user request) — source 256 → **512×512** + splash regenerated: Android <12 64dp → 128dp, Android 12 icon 64dp → 128dp, iOS 64pt → 128pt, web 64 → 128 CSS px.
+
+**Gate:** `flutter analyze` ✅, `flutter test` ✅ (80/80), `flutter build apk --debug` ✅, `flutter build web` ✅
+
+- [x] **11.7** Sized asset variants adopted (user added `cat-moon-{black,plum,plum2,gold}-{128,256,512}.png`; un-suffixed `cat-moon-gold.png` removed) — pubspec `image` + `android_12.image` → `cat-moon-gold-512.png`, `AppEmblem` → `cat-moon-gold-128.png` (both previous refs were dangling); emblem keeps user's `size * 0.36`.
+- [x] **11.8** Logo = **60% of the smaller viewport axis** (user: "60% of width or 60% of height, whichever is smaller"; Android answer: fixed 216dp) — the package exposes no size option, so post-`create` hand-edits:
+  - **iOS** `LaunchScreen.storyboard`: logo imageView un-pinned from screen edges → centered, square box `width = 0.6 × min(superview.w, superview.h)` (two required `≤` + two `@750` `==` constraints vs width/height — Auto Layout can't express min directly), `contentMode="scaleAspectFit"`.
+  - **Web** `index.html`: splash `<img>` → `style="width: min(60vw, 60vh); height: auto"`.
+  - **Android**: all 15 generated bitmaps (`splash.png` + `android12splash.png` × 5 densities + 5 night) `sips`-resized to square `216dp × density` (216/324/432/648/864px, upscaled from the 512 source); exact 60% on 360dp phones, ~52–55% on 393–412dp, under Android 12's 288dp cap.
+
+**Flagged (splash hand-edits are fragile):** `dart run flutter_native_splash:create` **overwrites** the storyboard, `index.html` and the Android bitmaps — after any pubspec splash-config change, re-run `create` **and re-apply 11.8** (iOS constraints, web `style`, Android 15-file resize). Splash verified by pixel math + builds only (no emulator/device here).
+
+**Gate:** `flutter analyze` ✅, `flutter test` ✅ (80/80), `flutter build apk --debug` ✅, `flutter build web` ✅
+
+---
+
+## Phase 12 — In-App SplashScreen (`/splash`, direct route only)
+
+> User request: "create a SplashScreen similar to the native splash / no reachable from the app (link or button), only by direct route / it will be integrated in the app later".
+
+- [x] **12.1** `lib/screens/splash_screen.dart` — `SplashScreen` (StatelessWidget): full-bleed plum `Scaffold`, `LayoutBuilder` emblem at `min(w,h) * 0.25`, `Image.asset('assets/images/cat-moon-gold-512.png')` `BoxFit.contain`, centered; no text/buttons/SafeArea, no redirect logic.
+- [x] **12.2** Router — import + `case '/splash': return const SplashScreen();` (after `/binding`, before `default`); no in-app links/buttons added, default back stack behavior kept (no PopScope).
+- [x] **12.3** Test — `test/widgets/splash_screen_test.dart` (plum background + single `Image`, no text) — suite **81/81**.
+- [x] **12.4** Docs — PLAN.md (this section), DESIGN.md → v1.8.0 (new Screen 19: App Splash Preview, §4.1 route-table row, nav-tree `/splash` line).
+
+- [x] **12.5** Emblem scaled to **25%** (user hand-set in-app `* 0.25`); native splash hand-edits re-applied to match: web `min(60vw,60vh)` → `min(25vw,25vh)`, iOS storyboard 4 constraint multipliers `0.6` → `0.25`, Android 15 bitmaps re-`sips`-resized from the 512 source to `90dp × density` (90/135/180/270/360px, night included).
+
+**Gate:** `flutter analyze` ✅, `flutter test` ✅ (81/81), `flutter build apk --debug` ✅, `flutter build web` ✅
+
+---
+
+## Phase 13 — Asset Consolidation: one mask + color from code
+
+- [x] **13.1** Pixel audit — all 12 `cat-moon-{black,gold,plum,plum2}-{128,256,512}.png` are flat **single-color + alpha** stencils (extra colors = antialias edges only).
+- [x] **13.2** `assets/images/cat-moon-mask-512.png` created (black+alpha, from `cat-moon-black-512.png`); `AppEmblem` + in-app `SplashScreen` → `Image.asset(mask, color: AppColors.gold, colorBlendMode: BlendMode.srcIn)` (emblem `cacheWidth: 256`); tint `#D9A036` = `AppColors.gold`, identical pixels to the old gold PNGs.
+- [x] **13.3** Pruned 11 files → kept 2: `cat-moon-mask-512.png` (all in-app use) + `cat-moon-gold-512.png` (only for `flutter_native_splash`, which bakes static PNGs and cannot tint).
+- [x] **13.4** Docs — DESIGN.md → v1.8.2 (Screen 01 + Screen 19 use mask+tint), PLAN.md (this section).
+
+**Gate:** `flutter analyze` ✅, `flutter test` ✅ (81/81), `flutter build apk --debug` ✅, `flutter build web` ✅

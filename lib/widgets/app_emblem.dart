@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../theme/app_colors.dart';
-import '../utils/app_icons.dart';
 
 class AppEmblem extends StatelessWidget {
   final double size;
@@ -20,7 +18,7 @@ class AppEmblem extends StatelessWidget {
         height: size * 0.727,
         alignment: Alignment.center,
         decoration: const BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(center: Alignment(-0.3, -0.4), colors: [AppColors.orbLight, AppColors.orbDark])),
-        child: FaIcon(AppIcons.moon, size: size * 0.32, color: AppColors.gold),
+        child: Image.asset('assets/images/cat-moon-mask-512.png', width: size * 0.36, height: size * 0.36, cacheWidth: 256, fit: BoxFit.contain, color: AppColors.gold, colorBlendMode: BlendMode.srcIn),
       ),
     );
   }

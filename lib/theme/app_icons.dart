@@ -34,7 +34,7 @@ abstract final class AppIcons {
   static const logo = FontAwesomeIcons.moon; // i-ms emblem
   static const spark = FontAwesomeIcons.wandSparkles; // i-spark (solid-only)
   static const star = FontAwesomeIcons.solidStar; // i-star (regular outline)
-  static const cal = FontAwesomeIcons.solidCalendar; // i-cal (regular outline)
+  static const cal = FontAwesomeIcons.solidCalendarDays; // i-cal (regular outline)
 
   // actions / content
   static const quill = FontAwesomeIcons.feather; // i-quill (solid-only); FAB uses assets/icons/quill.svg; FAB uses assets/icons/quill.svg

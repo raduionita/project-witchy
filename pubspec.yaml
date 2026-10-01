@@ -26,6 +26,7 @@ dependencies:
   timezone: ^0.11.1
   flutter_timezone: ^5.1.0
   webview_flutter: ^4.10.0
+  flutter_native_splash: ^2.4.8
 
 dev_dependencies:
   flutter_test:
@@ -39,3 +40,12 @@ flutter:
 
   assets:
     - assets/icons/
+    - assets/images/
+flutter_native_splash:
+  color: "#3B0A5E"
+  image: assets/images/cat-moon-gold-512.png
+  fullscreen: true
+  android_12:
+    color: "#3B0A5E"
+    image: assets/images/cat-moon-gold-512.png
+    icon_background_color: "#3B0A5E"

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/app_icons.dart';
+import '../theme/app_icons.dart';
 import '../widgets/settings_row.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/app_avatar.dart';

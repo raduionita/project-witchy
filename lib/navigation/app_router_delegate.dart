@@ -14,6 +14,7 @@ import '../screens/main_screen.dart';
 import '../screens/privacy_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/rhythms_screen.dart';
+import '../screens/splash_screen.dart';
 import '../screens/welcome_screen.dart';
 import '../screens/webview_screen.dart';
 
@@ -140,6 +141,8 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
         return const ChartScreen();
       case '/binding':
         return const BindingScreen();
+      case '/splash':
+        return const SplashScreen();
       default:
         // '/' start route and any unknown path recover through the welcome redirect.
         return const WelcomeScreen();

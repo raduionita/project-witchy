@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../theme/app_colors.dart';
-import '../utils/app_icons.dart';
+import '../theme/app_icons.dart';
 
 class IconBadge extends StatelessWidget {
   final FaIconData icon;

@@ -1,5 +1,5 @@
 # WITCHY: Mobile Design System & UI/UX Specification
-**Document Version:** 1.6.0
+**Document Version:** 1.8.2
 **Product Name:** Witchy — Comprehensive Menstrual, Fertility & Reproductive Health Tracker
 **Target Platforms:** iOS, Android, web (Cross-Platform Mobile App)
 **Primary Aesthetic:** Celestial witch / soft mystic — deep plum gradients on lavender-white, gold accents, Playfair Display + Inter
@@ -140,6 +140,7 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 | Insights | BBT & Ovulation Chart | `/chart` | — | Reuses `TrendBars` + avg duo + note card; entries = Records trends card |
 | Fertility | Fertility Window | `/fertility` | — | Orb variant (Peak Day) + window duo + TTC tips; entry = Sanctuary Peak card |
 | Community | Coven Binding | `/binding` | — | HS✦KP header, invite input + send, 3 visibility switches |
+| App | App Splash Preview | `/splash` (direct only) | — | In-app preview of the native launch splash: full plum screen, gold cat-moon at 25% of the smaller axis; no in-app entry (link/button), no redirect |
 
 ### 4.2 App Structure
 
@@ -159,6 +160,7 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 - /cycle
 - /fertility
 - /library → /library/<slug>
+- /splash (direct only; no in-app link)
 Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in place; sheet dismisses down.
 ```
 
@@ -168,10 +170,11 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 
 - **Purpose:** Establish brand trust, holistic health authority, and privacy focus; route newcomers through the consent gate.
 - **Layout Structure:**
-  - **Hero Emblem:** `AppEmblem` circular emblem (`132x132pt`) — `#EFE2F8` outer disc, radial core (`#4A1170 → #2A0740`) with gold moon glyph, centered in expanded upper half.
+  - **Hero Emblem:** `AppEmblem` circular emblem (`132x132pt`) — `#EFE2F8` outer disc, radial core (`#4A1170 → #2A0740`) with gold cat-moon (stencil `assets/images/cat-moon-mask-512.png` tinted `color: AppColors.gold` + `BlendMode.srcIn`, `cacheWidth: 256`, sized `0.36 * size`), centered in expanded upper half.
   - **Title Section:** Brand name `"Witchy"` (`type-display-l`, 34/800), tagline `"Track your cycle with magic"` (12, muted).
   - **Bottom Action:** Single CTA `"Awaken Your Power"` (`AppButton`); reads `PrefsService.isPrivacyAccepted()` → unconsented goes `/privacy`, consented goes `/auth`. Foot padding `20/30`. No Sign In link (auth lives on Join).
   - **Returning Users:** If `OnboardingProvider.onboarded`, auto-redirect to `/dashboard` (post-frame).
+  - **Native Launch Splash:** `flutter_native_splash` — plum `#3B0A5E` full-screen + gold `assets/images/cat-moon-gold-512.png`; logo = **25% of the smaller viewport axis**. Android is static dp: logo bitmaps hand-sized to `90dp × density` (25% on 360dp phones; Android 12 `windowSplashScreen*` cap 288dp); iOS `LaunchScreen.storyboard` logo box = `0.25 × min(width, height)` (priority-encoded min constraints, `scaleAspectFit`); web `<img>` uses `width: min(25vw, 25vh)`. ⚠ These hand-edits are **overwritten by `dart run flutter_native_splash:create`** — re-apply after any config change.
 
 ### Screen 02: Your Privacy Promise (`/privacy`)
 
@@ -327,3 +330,11 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Invite Header Card:** Centered HS ✦(gold spark) KP avatars + serif `"Bind Cosmic Partners"` (15pt) + share-map sub copy.
   - **Invite Card:** `"Invite Cosmic Bond"` + `AppTextField` (`partner@cosmic.com`, mail lead) + `AppButton("Send Binding Scroll")`.
   - **Visibility Card:** `"Scroll Visibility"` + 3 pur-switch `SettingsRow`s (`SettingsProvider`) — Share Bleeding Predictions (ON), Share Fertile Windows (ON), Share Anonymized Symptom Log (OFF).
+
+### Screen 19: App Splash Preview (`/splash`)
+
+- **Purpose:** In-app preview of the native launch splash (identical look), held until later integration; not reachable from any link/button — typed/direct route only, no redirect logic.
+- **Layout Structure:**
+  - **Canvas:** Full-bleed `Scaffold`, `AppColors.plum` (`#3B0A5E`), no SafeArea, no app bar.
+  - **Emblem:** `LayoutBuilder` → `side = min(width, height) * 0.25`; centered stencil `assets/images/cat-moon-mask-512.png` tinted `AppColors.gold` (`BlendMode.srcIn`) at `side × side`, `BoxFit.contain` (same 25%-of-smaller-axis rule as the native splash); gold-512 PNG is kept only for `flutter_native_splash`, which cannot tint at runtime.
+  - **Entry:** Direct route only (`/splash`); back uses default stack behavior.

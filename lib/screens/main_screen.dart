@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../navigation/app_nav.dart';
 import '../theme/app_colors.dart';
-import '../utils/app_icons.dart';
+import '../theme/app_icons.dart';
 import '../widgets/log_bottom_sheet.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/app_bottom_nav.dart';

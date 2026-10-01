@@ -9,7 +9,7 @@ import '../services/calendar_fetcher.dart';
 import '../services/cycle_calculator.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/app_icons.dart';
+import '../theme/app_icons.dart';
 import '../widgets/log_bottom_sheet.dart';
 import '../widgets/calendar_legend.dart';
 import '../widgets/cycle_calendar.dart';

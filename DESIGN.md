@@ -284,7 +284,7 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 
 ### Screen 14: Witch Profile (`/profile`)
 
-- **Purpose:** Identity + alignments hub; owns app settings and amulet bells inline (settings/reminders screens removed in Phase 10).
+- **Purpose:** Identity + alignments hub; owns app settings and amulet bells inline (settings/reminders screens removed in Phase 4).
 - **Layout Structure:**
   - **App Bar:** `"Witch Profile"` — back top-left → home (fallback `/dashboard`), **alerts top-right** (`AppIcons.alerts`, same as shell) → `/alerts`.
   - **Identity Header:** `AppAvatar` HS `84pt` (white ring + gold halo), serif `"High Priestess Selene"` (18pt), gold caps `"SCORPIO MOON · THIRD CYCLE"`, gold star.

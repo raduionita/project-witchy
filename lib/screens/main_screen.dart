@@ -7,7 +7,7 @@ import '../widgets/log_bottom_sheet.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/app_bottom_nav.dart';
 import 'coven_screen.dart';
-import 'cycle_map_screen.dart';
+import 'cycle_screen.dart';
 import 'records_screen.dart';
 import 'sanctuary_screen.dart';
 
@@ -26,7 +26,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppTopBar(title: titles[index], leading: AppIcons.user, onLeading: () => context.go('/profile'), action: AppIcons.alerts, onAction: () => context.go('/alerts')),
-      body: IndexedStack(index: index, children: const [SanctuaryScreen(), CycleMapScreen(), RecordsScreen(), CovenScreen()]),
+      body: IndexedStack(index: index, children: const [SanctuaryScreen(), CycleScreen(), RecordsScreen(), CovenScreen()]),
       floatingActionButton:
           index == 3
               ? null

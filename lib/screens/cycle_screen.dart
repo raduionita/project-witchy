@@ -17,13 +17,13 @@ import '../widgets/month_picker_sheet.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
 
-class CycleMapScreen extends StatefulWidget {
-  const CycleMapScreen({super.key});
+class CycleScreen extends StatefulWidget {
+  const CycleScreen({super.key});
   @override
-  State<CycleMapScreen> createState() => _CycleMapScreenState();
+  State<CycleScreen> createState() => _CycleScreenState();
 }
 
-class _CycleMapScreenState extends State<CycleMapScreen> {
+class _CycleScreenState extends State<CycleScreen> {
   late DateTime _month = DateTime(DateTime.now().year, DateTime.now().month, 1);
   late int _selectedDay = DateTime.now().day;
 
@@ -57,13 +57,7 @@ class _CycleMapScreenState extends State<CycleMapScreen> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () => showLogSheet(context, date),
-        child: Row(
-          children: [
-            FaIcon(icon, size: AppIconSize.row, color: color),
-            const SizedBox(width: 8),
-            Text(text, style: AppText.sans(11.5, c: AppColors.chipText)),
-          ],
-        ),
+        child: Row(children: [FaIcon(icon, size: AppIconSize.row, color: color), const SizedBox(width: 8), Text(text, style: AppText.sans(11.5, c: AppColors.chipText))]),
       ),
     );
   }
@@ -71,14 +65,15 @@ class _CycleMapScreenState extends State<CycleMapScreen> {
   Future<void> _confirmClear(DateTime date) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Clear this day?'),
-        content: const Text('Removes flow, moods, symptoms, pain, and notes for this day.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text('Clear', style: TextStyle(color: AppColors.pink))),
-        ],
-      ),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Clear this day?'),
+            content: const Text('Removes flow, moods, symptoms, pain, and notes for this day.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
+              TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text('Clear', style: TextStyle(color: AppColors.pink))),
+            ],
+          ),
     );
     if (ok == true && mounted) context.read<LoggingProvider>().deleteDay(date);
   }
@@ -114,29 +109,26 @@ class _CycleMapScreenState extends State<CycleMapScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  GestureDetector(
-                    onTap: () => _shiftMonth(-1),
-                    child: const FaIcon(AppIcons.left, size: AppIconSize.head, color: AppColors.muted),
-                  ),
+                  GestureDetector(onTap: () => _shiftMonth(-1), child: const FaIcon(AppIcons.left, size: AppIconSize.head, color: AppColors.muted)),
                   MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
                       onTap: _pickMonth,
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Text(DateFormat('MMMM yyyy').format(_month), style: AppText.serif(13.5)),
-                        const SizedBox(width: 6),
-                        const FaIcon(AppIcons.right, size: AppIconSize.xs, color: AppColors.muted),
-                      ]),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(DateFormat('MMMM yyyy').format(_month), style: AppText.serif(13.5)),
+                          const SizedBox(width: 6),
+                          const FaIcon(AppIcons.right, size: AppIconSize.xs, color: AppColors.muted),
+                        ],
+                      ),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => _shiftMonth(1),
-                    child: const FaIcon(AppIcons.right, size: AppIconSize.head, color: AppColors.muted),
-                  ),
+                  GestureDetector(onTap: () => _shiftMonth(1), child: const FaIcon(AppIcons.right, size: AppIconSize.head, color: AppColors.muted)),
                 ],
               ),
               const SizedBox(height: 12),
-              CycleCalendar(cells: cells, onDayTap: _selectDay, onSwipe: _shiftMonth),
+              CycleCalendar(cells: cells, onDayTap: _selectDay),
               const SizedBox(height: 12),
               const CalendarLegend(),
               if (showStatusRow) ...[
@@ -146,11 +138,7 @@ class _CycleMapScreenState extends State<CycleMapScreen> {
                   children: [
                     if (daysLate > 0) AppTag.gold(daysLate == 1 ? '1 Day Late' : '$daysLate Days Late'),
                     if (daysLate > 0 && !_isCurrentMonth) const SizedBox(width: 8),
-                    if (!_isCurrentMonth)
-                      MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(onTap: () => _setMonth(DateTime.now()), child: const AppTag('Today')),
-                      ),
+                    if (!_isCurrentMonth) MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: () => _setMonth(DateTime.now()), child: const AppTag('Today'))),
                   ],
                 ),
               ],
@@ -176,27 +164,14 @@ class _CycleMapScreenState extends State<CycleMapScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              _entryRow(
-                AppIcons.drop,
-                AppColors.pink,
-                entry == null ? 'No flow logged yet' : '${entry.flow} bleed flow intensity',
-                selectedDate,
-              ),
+              _entryRow(AppIcons.drop, AppColors.pink, entry == null ? 'No flow logged yet' : '${entry.flow} bleed flow intensity', selectedDate),
               const SizedBox(height: 6),
-              _entryRow(
-                AppIcons.heart,
-                AppColors.pur,
-                entry == null || entry.moods.isEmpty ? 'No mood logged yet' : '${entry.moods.first} mood',
-                selectedDate,
-              ),
+              _entryRow(AppIcons.heart, AppColors.pur, entry == null || entry.moods.isEmpty ? 'No mood logged yet' : '${entry.moods.first} mood', selectedDate),
               if (entry != null) ...[
                 const SizedBox(height: 8),
                 MouseRegion(
                   cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: () => _confirmClear(selectedDate),
-                    child: Text("Clear this day's log", style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pink)),
-                  ),
+                  child: GestureDetector(onTap: () => _confirmClear(selectedDate), child: Text("Clear this day's log", style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pink))),
                 ),
               ],
             ],

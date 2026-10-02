@@ -9,28 +9,14 @@ import '../theme/app_text_styles.dart';
 class CycleCalendar extends StatefulWidget {
   final MonthCells cells;
   final ValueChanged<int>? onDayTap;
-  final ValueChanged<int>? onSwipe;
 
-  const CycleCalendar({super.key, required this.cells, this.onDayTap, this.onSwipe});
+  const CycleCalendar({super.key, required this.cells, this.onDayTap});
 
   @override
   State<CycleCalendar> createState() => _CycleCalendarState();
 }
 
 class _CycleCalendarState extends State<CycleCalendar> {
-  static const _swipeThreshold = 48.0;
-  double _dx = 0;
-
-  void _onDragUpdate(DragUpdateDetails details) {
-    if (widget.onSwipe == null) return;
-    _dx += details.delta.dx;
-    if (_dx.abs() >= _swipeThreshold) {
-      final direction = _dx > 0 ? -1 : 1;
-      _dx = 0;
-      widget.onSwipe!(direction);
-    }
-  }
-
   String _semanticLabel(CalendarDayCell cell) {
     final first = widget.cells.month;
     final leading = first.weekday - 1;
@@ -56,12 +42,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
   }
 
   Widget _adjacentCell(CalendarDayCell cell) {
-    return Center(
-      child: Semantics(
-        label: _semanticLabel(cell),
-        child: Text('${cell.day}', style: AppText.sans(10.5, c: AppColors.placeholder)),
-      ),
-    );
+    return Center(child: Semantics(label: _semanticLabel(cell), child: Text('${cell.day}', style: AppText.sans(10.5, c: AppColors.placeholder))));
   }
 
   Widget _dayCell(CalendarDayCell cell) {
@@ -91,7 +72,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
     if (cell.isToday && border == null) {
       border = fill == null ? AppColors.pur : Colors.white;
     }
-    final strong = isLoggedBleed || isPredicted || isFertile || cell.isToday;
+    //final strong = isLoggedBleed || isPredicted || isFertile || cell.isToday;
     final tappable = widget.onDayTap != null;
     return Center(
       child: Semantics(
@@ -105,35 +86,23 @@ class _CycleCalendarState extends State<CycleCalendar> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: fill,
-                    border: border == null ? null : Border.all(color: border, width: 1.4),
-                  ),
-                  child: Text(
-                    '${cell.day}',
-                    style: AppText.sans(11, c: textColor, w: strong ? FontWeight.w600 : FontWeight.w400),
-                  ),
-                ),
-                const SizedBox(height: 2),
                 SizedBox(
                   height: 4,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (cell.isOvulation) ...[
-                        Container(width: 4, height: 4, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.pink)),
-                        if (cell.isLogged) const SizedBox(width: 3),
-                      ],
-                      if (cell.isLogged) Container(width: 4, height: 4, decoration: BoxDecoration(shape: BoxShape.circle, color: isLoggedBleed ? Colors.white : AppColors.gold)),
+                      if (cell.isOvulation) Container(width: 4, height: 4, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.pink)),
+                      if (cell.isLogged) Container(width: 4, height: 4, decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.blue)),
                     ],
                   ),
                 ),
-                const SizedBox(height: 1),
+                Container(
+                  width: 34,
+                  height: 34,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: fill, border: border == null ? null : Border.all(color: border, width: 1.4)),
+                  child: Text('${cell.day}', style: AppText.sans(12, c: textColor, w: FontWeight.w600)),
+                ),
                 Text('${cell.cycleDay}', style: AppText.sans(8, c: AppColors.muted, w: FontWeight.w500)),
               ],
             ),
@@ -145,23 +114,21 @@ class _CycleCalendarState extends State<CycleCalendar> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onHorizontalDragUpdate: widget.onSwipe == null ? null : _onDragUpdate,
-      onHorizontalDragEnd: widget.onSwipe == null ? null : (_) => _dx = 0,
-      child: Column(
-        children: [
-          Row(
-            children: [for (final d in ['M', 'T', 'W', 'T', 'F', 'S', 'S']) Expanded(child: Center(child: Text(d, style: AppText.sans(9, w: FontWeight.w600, c: AppColors.muted))))],
-          ),
-          const SizedBox(height: 4),
-          GridView.count(
-            crossAxisCount: 7,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [for (final cell in widget.cells.cells) cell.inMonth ? _dayCell(cell) : _adjacentCell(cell)],
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        Row(
+          children: [
+            for (final d in ['M', 'T', 'W', 'T', 'F', 'S', 'S']) Expanded(child: Center(child: Text(d, style: AppText.sans(9, w: FontWeight.w600, c: AppColors.muted)))),
+          ],
+        ),
+        const SizedBox(height: 4),
+        GridView.count(
+          crossAxisCount: 7,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [for (final cell in widget.cells.cells) cell.inMonth ? _dayCell(cell) : _adjacentCell(cell)],
+        ),
+      ],
     );
   }
 }

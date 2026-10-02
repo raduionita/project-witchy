@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lunar Cycle Map</title>
+<style>
+  :root {
+    --bg: #FAF7FF;
+    --card: #FFFFFF;
+    --line: #E6DCF5;
+    --ink: #2A1448;
+    --muted: #5A4577;
+    --faint: #8F7BB0;
+    --violet: #6B2FB5;
+    --period: #F6C9D8;
+    --period-ring: #C23B6E;
+    --fertile: #D9C8F2;
+    --ovu: #CDB6EE;
+    --gold: #C9A04A;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #E9E1F6; font-family: var(--sans); color: var(--ink);
+    display: flex; justify-content: center;
+  }
+  .app {
+    position: relative; width: 100%; max-width: 420px; min-height: 100vh;
+    background: var(--bg); padding-bottom: 96px;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .icon-btn {
+    width: 44px; height: 44px; border: none; background: none; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px 0; }
+  h1 { margin: 0; font-family: var(--serif); font-size: 26px; font-weight: 700; }
+
+  .card {
+    margin: 14px 16px 0; background: var(--card); border: 1px solid var(--line);
+    border-radius: 28px; padding: 10px 10px 14px;
+  }
+  .month-bar { display: flex; align-items: center; justify-content: space-between; height: 44px; }
+  .month-title { font-family: var(--serif); font-size: 20px; font-weight: 600; }
+  .dow, .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .dow { text-align: center; font-size: 12px; font-weight: 500; color: var(--muted); padding: 4px 0 2px; }
+  .grid { row-gap: 4px; }
+
+  .day {
+    position: relative; height: 54px; border: none; background: none; padding: 0;
+    display: flex; justify-content: center; color: var(--ink);
+  }
+  .day svg { position: absolute; left: 50%; top: 3px; margin-left: -22px; }
+  .day .ring {
+    position: absolute; left: 50%; top: 3px; margin-left: -22px;
+    width: 44px; height: 44px; border-radius: 50%;
+  }
+  .day.today .ring { box-shadow: 0 0 0 1px var(--violet); }
+  .day.selected .ring { box-shadow: 0 0 0 2px var(--ink); }
+  .day:focus-visible .ring { box-shadow: 0 0 0 3px var(--violet); }
+  .day .num {
+    position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 9px;
+  }
+  .day .date { font-size: 15px; line-height: 18px; font-weight: 500; }
+  .day.today .date { font-weight: 700; }
+  .day .cd { font-size: 11px; line-height: 12px; color: var(--muted); }
+  .day.out { cursor: default; }
+  .day.out .date { color: var(--faint); font-weight: 400; }
+  .day .ovu-dot {
+    position: absolute; left: 50%; bottom: 0; margin-left: -3px;
+    width: 6px; height: 6px; border-radius: 50%; background: var(--period-ring);
+  }
+
+  .legend {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px;
+    margin-top: 12px; font-size: 12px; color: var(--muted);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+
+  .detail { position: relative; padding: 16px 18px 22px; margin-top: 12px; }
+  .detail-head { display: flex; align-items: center; gap: 14px; }
+  .detail-head svg { flex-shrink: 0; }
+  .detail-title { font-family: var(--serif); font-size: 21px; font-weight: 700; line-height: 26px; }
+  .detail-phase { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .detail-note { font-size: 13px; font-weight: 700; color: #9B2452; margin-top: 2px; }
+  .badge {
+    margin-left: auto; font-size: 13px; font-weight: 700; padding: 7px 12px;
+    border-radius: 14px; white-space: nowrap; background: #EDE4FA; color: #4B1F8A;
+  }
+  .badge.period { background: #FBE3EC; color: #9B2452; }
+  .row { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 16px; }
+  .row + .row { margin-top: 10px; }
+  .fab {
+    position: absolute; right: 14px; bottom: -10px; width: 64px; height: 64px;
+    border-radius: 50%; border: none; background: #2A0F55;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+    box-shadow: 0 8px 18px rgba(42, 15, 85, .35);
+  }
+
+  nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 420px; height: 76px; background: var(--card);
+    border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, 1fr); padding-top: 8px;
+  }
+  nav button {
+    border: none; background: none; display: flex; flex-direction: column;
+    align-items: center; gap: 4px; font-size: 13px; color: var(--muted);
+  }
+  nav button.active { color: var(--violet); font-weight: 700; }
+  nav button.active::after { content: ""; width: 36px; height: 3px; border-radius: 2px; background: var(--violet); }
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="card" aria-label="Calendar">
+    <div class="month-bar">
+      <button class="icon-btn" id="prev" aria-label="Previous month">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5A4577" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="month-title" id="monthTitle" aria-live="polite"></div>
+      <button class="icon-btn" id="next" aria-label="Next month">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5A4577" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <div class="dow"><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div></div>
+    <div class="grid" id="grid"></div>
+    <div class="legend">
+      <span><svg width="18" height="18" viewBox="0 0 44 44" aria-hidden="true"><path d="M22 2A20 20 0 0 0 22 42Z" fill="#F6C9D8"/><circle cx="22" cy="22" r="20" fill="none" stroke="#C23B6E" stroke-width="3" stroke-dasharray="4 6"/></svg>period</span>
+      <span><svg width="18" height="18" viewBox="0 0 44 44" aria-hidden="true"><path d="M22 2A20 20 0 0 1 22 42Z" fill="#D9C8F2"/><circle cx="22" cy="22" r="20" fill="none" stroke="#D9C8F2" stroke-width="2"/></svg>fertile</span>
+      <span><svg width="18" height="18" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="#CDB6EE" stroke="#C9A04A" stroke-width="3"/></svg>ovulation</span>
+      <span><i class="dot"></i>logged</span>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  // ---- Cycle settings (edit these) ----
+  var TODAY        = new Date(2026, 9, 2);   // Oct 2, 2026
+  var CYCLE_START  = new Date(2026, 9, 3);   // first day of the next period
+  var CYCLE_LENGTH = 27;
+  var PERIOD_LEN   = 5;
+  var OVULATION_CD = 13;                     // cycle day of ovulation
+  var FERTILE_SPAN = 2;                      // days either side of ovulation
+
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var DAY_MS = 86400000;
+
+  var view = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+  var selected = stripTime(TODAY);
+
+  function stripTime(d) { return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+  function same(a, b) { return a.getTime() === b.getTime(); }
+
+  function cycleDay(d) {
+    var diff = Math.round((stripTime(d) - stripTime(CYCLE_START)) / DAY_MS);
+    return ((diff % CYCLE_LENGTH) + CYCLE_LENGTH) % CYCLE_LENGTH + 1;
+  }
+
+  function info(d) {
+    var cd = cycleDay(d);
+    var kind = "plain";
+    if (cd <= PERIOD_LEN) kind = "period";
+    else if (cd === OVULATION_CD) kind = "ovu";
+    else if (Math.abs(cd - OVULATION_CD) <= FERTILE_SPAN) kind = "fertile";
+    return { cd: cd, kind: kind };
+  }
+
+  // ---- Moon glyphs ----
+  var NS = "http://www.w3.org/2000/svg";
+  function moonSvg(kind, predicted) {
+    var s = "";
+    if (kind === "period") {
+      s += '<path d="M22 2A20 20 0 0 0 22 42Z" fill="#F6C9D8"/>';
+      s += '<circle cx="22" cy="22" r="20" fill="none" stroke="#C23B6E" stroke-width="1.5"' +
+           (predicted ? ' stroke-dasharray="2 3.5" stroke-linecap="round"' : '') + '/>';
+    } else if (kind === "fertile") {
+      s += '<path d="M22 2A20 20 0 0 1 22 42Z" fill="#D9C8F2"/><circle cx="22" cy="22" r="20" fill="none" stroke="#D9C8F2"/>';
+    } else if (kind === "ovu") {
+      s += '<circle cx="22" cy="22" r="20" fill="#CDB6EE" stroke="#C9A04A" stroke-width="1.5"/>';
+    } else if (kind === "wax") {
+      s += '<path d="M22 2A20 20 0 0 1 22 42Z" fill="#D9C8F2"/><circle cx="22" cy="22" r="20" fill="none" stroke="#D9C8F2"/>';
+    } else if (kind === "wane") {
+      s += '<path d="M22 2A20 20 0 0 0 22 42Z" fill="#E4D9F5"/><circle cx="22" cy="22" r="20" fill="none" stroke="#D9C8F2"/>';
+    }
+    return s;
+  }
+
+  // ---- Render calendar ----
+  var grid = document.getElementById("grid");
+  function render() {
+    document.getElementById("monthTitle").textContent = MONTHS[view.getMonth()] + " " + view.getFullYear();
+    grid.innerHTML = "";
+
+    var first = new Date(view.getFullYear(), view.getMonth(), 1);
+    var offset = (first.getDay() + 6) % 7;                // Monday-first
+    var daysInMonth = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+    var cells = Math.ceil((offset + daysInMonth) / 7) * 7;
+
+    for (var i = 0; i < cells; i++) {
+      var d = new Date(view.getFullYear(), view.getMonth(), i - offset + 1);
+      var inMonth = d.getMonth() === view.getMonth();
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "day";
+
+      if (!inMonth) {
+        btn.className += " out";
+        btn.tabIndex = -1;
+        btn.setAttribute("aria-hidden", "true");
+        btn.innerHTML = '<span class="num"><span class="date">' + d.getDate() + '</span></span>';
+        grid.appendChild(btn);
+        continue;
+      }
+
+      var f = info(d);
+      if (same(d, stripTime(TODAY))) btn.className += " today";
+      if (same(d, selected)) btn.className += " selected";
+      btn.setAttribute("aria-label", MONTHS[d.getMonth()] + " " + d.getDate() + ", cycle day " + f.cd);
+
+      var predicted = d > stripTime(TODAY);
+      var html = "";
+      if (f.kind !== "plain") {
+        html += '<svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">' + moonSvg(f.kind, predicted) + '</svg>';
+      }
+      html += '<span class="ring"></span>';
+      html += '<span class="num"><span class="date">' + d.getDate() + '</span><span class="cd">' + f.cd + '</span></span>';
+      if (f.kind === "ovu") html += '<span class="ovu-dot"></span>';
+      btn.innerHTML = html;
+
+      (function (date) {
+        btn.addEventListener("click", function () {
+          selected = date;
+          render();
+          renderDetail();
+        });
+      })(d);
+      grid.appendChild(btn);
+    }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

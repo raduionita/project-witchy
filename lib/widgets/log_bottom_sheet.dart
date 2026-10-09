@@ -158,6 +158,7 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
           onTap: (o) => context.read<LoggingProvider>().toggleSleep(date, o.name),
         ),
         _LogCycleSlider(date: date, pain: entry.pain),
+        _TemperatureRow(date: date, temperature: entry.temperature),
         const SizedBox(height: 8),
         Text('Notes', style: AppText.sec),
         const SizedBox(height: 8),
@@ -213,6 +214,72 @@ class _LogCycleSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppSliderRow(label: 'Uterine Contraction Pain', value: 'Level ${pain.round()}', min: 0, max: 10, current: pain, onChanged: (v) => context.read<LoggingProvider>().setPain(date, v));
+  }
+}
+
+/// Basal body temperature entry: null = unlogged, otherwise 35.0-38.0 °C.
+class _TemperatureRow extends StatelessWidget {
+  final DateTime date;
+  final double? temperature;
+  const _TemperatureRow({required this.date, required this.temperature});
+
+  static const double _min = 35.0;
+  static const double _max = 38.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.read<LoggingProvider>();
+    final label = 'Basal Body Temperature';
+    if (temperature == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label, style: AppText.sec), Text('Not logged', style: AppText.serif(13.5, c: AppColors.muted))]),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: AppChip(label: 'Add reading', icon: AppIcons.thermometer, selected: false, onTap: () => provider.setTemperature(date, 36.5)),
+          ),
+        ],
+      );
+    }
+    final t = temperature!;
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: AppText.sec),
+            Row(
+              children: [
+                Text('${t.toStringAsFixed(1)} °C', style: AppText.serif(13.5, c: AppColors.pur)),
+                const SizedBox(width: 4),
+                IconButton(
+                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24, maxWidth: 24, maxHeight: 24),
+                  padding: EdgeInsets.zero,
+                  iconSize: 14,
+                  tooltip: 'Clear reading',
+                  onPressed: () => provider.setTemperature(date, null),
+                  icon: FaIcon(AppIcons.cancel, size: 14, color: AppColors.muted),
+                ),
+              ],
+            ),
+          ],
+        ),
+        SliderTheme(
+          data: SliderTheme.of(
+            context,
+          ).copyWith(activeTrackColor: AppColors.pur, inactiveTrackColor: AppColors.sliderTrack, thumbColor: Colors.white, overlayShape: SliderComponentShape.noOverlay, trackHeight: 4),
+          child: Slider(
+            min: _min,
+            max: _max,
+            divisions: 30,
+            value: t.clamp(_min, _max),
+            onChanged: (v) => provider.setTemperature(date, double.parse(v.toStringAsFixed(1))),
+          ),
+        ),
+      ],
+    );
   }
 }
 

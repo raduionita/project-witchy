@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../navigation/app_nav.dart';
+import '../models/tracking_mode.dart';
+import '../providers/alert_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/cycle_provider.dart';
+import '../providers/onboarding_provider.dart';
 import '../providers/reminders_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/notification_service.dart';
@@ -16,15 +19,44 @@ import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/icon_badge.dart';
 import '../widgets/info_pill.dart';
+import '../widgets/tracking_mode_chip.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  void _openTrackingSheet(BuildContext context, TrackingMode current) {
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('What shall we track?', style: AppText.secIn),
+              const SizedBox(height: 12),
+              TrackingModeChips(
+                value: current,
+                onChanged: (mode) {
+                  context.read<OnboardingProvider>().setTrackingMode(mode);
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bells = context.watch<RemindersProvider>();
     final activeBells = bells.items.where((r) => r.enabled).length;
     final settings = context.watch<SettingsProvider>();
     final auth = context.watch<AuthProvider>();
+    final onboarding = context.watch<OnboardingProvider>();
     final name = auth.identity?.name?.trim();
     final displayName = (name == null || name.isEmpty) ? 'High Priestess Selene' : name;
     final email = auth.identity?.email?.trim();
@@ -45,6 +77,7 @@ class ProfileScreen extends StatelessWidget {
         onLeading: () => context.back(),
         action: AppIcons.alerts,
         onAction: () => context.go('/alerts'),
+        badge: context.watch<AlertProvider>().unreadCount > 0,
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
@@ -72,28 +105,36 @@ class ProfileScreen extends StatelessWidget {
                 Text('Lunar Alignments', style: AppText.secIn),
                 SettingsRow(label: 'Average Cycle Length', trailing: Text('29 Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted)), first: true),
                 SettingsRow(label: 'Bleeding Phase Length', trailing: Text('5 Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted))),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Apothecary Settings', style: AppText.secIn),
                 SettingsRow(
-                  label: 'Gestation Spells',
-                  trailing: MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: () => context.go('/pregnancy'), child: Text('View', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)))),
-                  first: true,
-                ),
-                SettingsRow(
-                  label: 'Cosmic Partner Bond',
-                  trailing: MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: () => context.go('/binding'), child: Text('1 Active', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)))),
+                  label: 'Tracking Mode',
+                  trailing: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: () => _openTrackingSheet(context, onboarding.trackingMode),
+                      child: Text(onboarding.trackingMode.label, style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
+          if (onboarding.trackingMode == TrackingMode.pregnancy) ...[
+            AppCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Apothecary Settings', style: AppText.secIn),
+                  SettingsRow(
+                    label: 'Gestation Spells',
+                    trailing: MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: () => context.go('/pregnancy'), child: Text('View', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)))),
+                    first: true,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
           AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

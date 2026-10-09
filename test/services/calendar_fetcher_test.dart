@@ -62,6 +62,39 @@ void main() {
       expect(cell.isPeriod, isTrue);
     });
 
+    test('showFertility false clears fertile and ovulation marks', () {
+      final cells = CalendarFetcher.forMonth(
+        month: DateTime(2026, 9),
+        lastStart: DateTime(2026, 9, 1),
+        cycleLength: 28,
+        bleedLength: 5,
+        showFertility: false,
+      );
+      expect(cells.cellFor(14)!.isOvulation, isFalse);
+      expect(cells.cellFor(13)!.isFertile, isFalse);
+      // Predicted periods remain.
+      expect(cells.cellFor(1)!.isPredictedPeriod, isTrue);
+    });
+
+    test('predicted window replaces arithmetic with the whole possible bleed range', () {
+      final cells = CalendarFetcher.forMonth(
+        month: DateTime(2026, 9),
+        lastStart: DateTime(2026, 9, 1),
+        cycleLength: 28,
+        bleedLength: 5,
+        predictedStart: DateTime(2026, 9, 10),
+        predictedEnd: DateTime(2026, 9, 13),
+      );
+      // Regular day-1 arithmetic is replaced by the window.
+      expect(cells.cellFor(1)!.isPredictedPeriod, isFalse);
+      expect(cells.cellFor(9)!.isPredictedPeriod, isFalse);
+      // Window: earliest start Sep 10 through latest start Sep 13 + 4 more bleed days.
+      for (var d = 10; d <= 17; d++) {
+        expect(cells.cellFor(d)!.isPredictedPeriod, isTrue, reason: 'day $d should be in the window');
+      }
+      expect(cells.cellFor(18)!.isPredictedPeriod, isFalse);
+    });
+
     test('marks isToday only for the supplied today date', () {
       final cells = CalendarFetcher.forMonth(
         month: DateTime(2026, 9),

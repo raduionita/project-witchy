@@ -47,6 +47,7 @@ class SanctuaryScreen extends StatelessWidget {
   }
 
   /// Bleeding-countdown + fertility-window stat duo.
+  /// Perimenopause swaps the single-day countdown for an earliest/latest window.
   Widget _buildStatsRow(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final now = DateTime.now();
@@ -67,11 +68,23 @@ class SanctuaryScreen extends StatelessWidget {
             : fertileNow
             ? 'Ovulation nears'
             : '${DateFormat('MMM d').format(cycle.ovulationDay(today: now))} · predicted';
+    String bleedValue = '$daysUntil Days';
+    String bleedSub = '${DateFormat('MMM d').format(nextStart)} · predicted';
+    if (cycle.isPerimenopause) {
+      final range = cycle.predictedRange(today: now);
+      final todayDate = DateTime(now.year, now.month, now.day);
+      final dMin = CycleCalculator.daysBetween(todayDate, range.earliest);
+      final dMax = CycleCalculator.daysBetween(todayDate, range.latest);
+      bleedValue = dMin == dMax ? '$dMin Days' : '$dMin–$dMax Days';
+      bleedSub = '${DateFormat('MMM d').format(range.earliest)} – ${DateFormat('MMM d').format(range.latest)} · range';
+    }
     return Row(
       children: [
-        Expanded(child: StatCard(label: 'Bleeding In', value: '$daysUntil Days', sub: '${DateFormat('MMM d').format(nextStart)} · predicted')),
-        const SizedBox(width: 12),
-        Expanded(child: GestureDetector(onTap: () => context.go('/fertility'), child: StatCard(label: 'Fertility Window', value: value, sub: sub, valueColor: AppColors.pink))),
+        Expanded(child: StatCard(label: 'Bleeding In', value: bleedValue, sub: bleedSub)),
+        if (cycle.showFertilityPredictions) ...[
+          const SizedBox(width: 12),
+          Expanded(child: GestureDetector(onTap: () => context.go('/fertility'), child: StatCard(label: 'Fertility Window', value: value, sub: sub, valueColor: AppColors.pink))),
+        ],
       ],
     );
   }
@@ -136,7 +149,10 @@ class SanctuaryScreen extends StatelessWidget {
     final moods = entry?.moods ?? const <String>{};
     final logged = flow.isNotEmpty;
     final bleedDay = periodDay ? CycleCalculator.bleedDay(cycle.effectiveLastStart, today, cycle.effectiveCycleLength, cycle.bleedLength) : 0;
-    final tomorrowNote = cycle.daysUntilPeriod(today: now) == 1;
+    final daysUntil = cycle.daysUntilPeriod(today: now);
+    // Softened wording in perimenopause where timing is less predictable.
+    final soonNote = cycle.isPerimenopause ? (daysUntil == 1 || daysUntil == 2) : daysUntil == 1;
+    final soonText = cycle.isPerimenopause ? 'Period may start any day now' : 'Period may start tomorrow';
     return AppCard(
       dark: true,
       child: MouseRegion(
@@ -157,7 +173,7 @@ class SanctuaryScreen extends StatelessWidget {
                         Text(DateFormat('MMMM d, yyyy').format(today), style: AppText.serif(13.5, c: Colors.white)),
                         const SizedBox(height: 2),
                         Text(phase.phaseName, style: AppText.sans(12, c: Colors.white70)),
-                        if (tomorrowNote) ...[const SizedBox(height: 2), Text('Period may start tomorrow', style: AppText.sans(12, w: FontWeight.w700, c: AppColors.pinkDark))],
+                        if (soonNote) ...[const SizedBox(height: 2), Text(soonText, style: AppText.sans(12, w: FontWeight.w700, c: AppColors.pinkDark))],
                       ],
                     ),
                   ),

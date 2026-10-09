@@ -77,6 +77,12 @@ class LoggingProvider extends ChangeNotifier {
     _save();
   }
 
+  void setTemperature(DateTime d, double? v) {
+    day(d).temperature = v;
+    notifyListeners();
+    _save();
+  }
+
   void setNotes(DateTime d, String v) {
     day(d).notes = v;
     notifyListeners();

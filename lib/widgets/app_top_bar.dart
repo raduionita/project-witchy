@@ -11,7 +11,8 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onAction;
   final FaIconData leading;
   final VoidCallback? onLeading;
-  const AppTopBar({super.key, required this.title, this.action, this.onAction, this.leading = AppIcons.back, this.onLeading});
+  final bool badge;
+  const AppTopBar({super.key, required this.title, this.action, this.onAction, this.leading = AppIcons.back, this.onLeading, this.badge = false});
 
   @override
   Size get preferredSize => const Size.fromHeight(50);
@@ -32,7 +33,28 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
               icon: FaIcon(leading, size: AppIconSize.base, color: AppColors.chipText),
             ),
             Expanded(child: Text(title, textAlign: TextAlign.center, style: AppText.appBar)),
-            if (action != null) IconButton(onPressed: onAction, constraints: box, iconSize: AppIconSize.base, icon: FaIcon(action, size: AppIconSize.base, color: AppColors.pur)),
+            if (action != null)
+              IconButton(
+                onPressed: onAction,
+                constraints: box,
+                iconSize: AppIconSize.base,
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    FaIcon(action, size: AppIconSize.base, color: AppColors.pur),
+                    if (badge)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(color: AppColors.pink, shape: BoxShape.circle),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             // IconButton(onPressed: onAction, constraints: box, iconSize: AppIconSize.base, icon: FaIcon(action ?? AppIcons.spark, size: AppIconSize.base, color: AppColors.pur)),
           ],
         ),

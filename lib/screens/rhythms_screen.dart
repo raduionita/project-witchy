@@ -3,6 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../navigation/app_nav.dart';
+import '../models/tracking_mode.dart';
+import '../providers/gestation_provider.dart';
 import '../providers/logging_provider.dart';
 import '../providers/onboarding_provider.dart';
 import '../theme/app_colors.dart';
@@ -11,6 +13,7 @@ import '../theme/app_icons.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_slider_row.dart';
+import '../widgets/tracking_mode_chip.dart';
 
 class RhythmsScreen extends StatefulWidget {
   const RhythmsScreen({super.key});
@@ -36,6 +39,11 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
     await onboarding.finish();
     if (!mounted) return;
     context.read<LoggingProvider>().setFlow(onboarding.lastPeriodStart, 'Medium');
+    if (onboarding.trackingMode == TrackingMode.pregnancy) {
+      final gestation = context.read<GestationProvider>();
+      await gestation.setLmp(onboarding.lastPeriodStart);
+      if (!mounted) return;
+    }
     context.reset('/dashboard');
   }
 
@@ -52,6 +60,8 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const _Header(),
+              const SizedBox(height: 12),
+              const _TrackingModeCard(),
               const SizedBox(height: 12),
               const _YearOfBirthCard(),
               const SizedBox(height: 12),
@@ -81,6 +91,25 @@ class _Header extends StatelessWidget {
         const SizedBox(height: 5),
         Text('Calibrate your lunar engine. When did your last bleeding phase commence?', style: AppText.sub),
       ],
+    );
+  }
+}
+
+/// Single-select tracking mode picker; defaults to Cycle.
+class _TrackingModeCard extends StatelessWidget {
+  const _TrackingModeCard();
+  @override
+  Widget build(BuildContext context) {
+    final ob = context.watch<OnboardingProvider>();
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('What shall we track?', style: AppText.secIn),
+          const SizedBox(height: 10),
+          TrackingModeChips(value: ob.trackingMode, onChanged: (mode) => context.read<OnboardingProvider>().setTrackingMode(mode)),
+        ],
+      ),
     );
   }
 }

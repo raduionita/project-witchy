@@ -2,7 +2,10 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../models/alert_item.dart';
+import '../models/article.dart';
 import '../models/day_log.dart';
+import '../models/tracking_mode.dart';
 
 class PrefsService {
   static const _onboarded = 'witchy_onboarded';
@@ -12,19 +15,23 @@ class PrefsService {
   static const _dayLogs = 'witchy_day_logs';
   static const _lunarNotifications = 'witchy_lunar_notifications';
   static const _darkMode = 'witchy_dark_mode';
-  static const _shareBleed = 'witchy_share_bleed';
-  static const _shareFertile = 'witchy_share_fertile';
-  static const _shareSymptoms = 'witchy_share_symptoms';
   static const _reminders = 'witchy_reminders';
   static const _session = 'witchy_session';
   static const _privacyAccepted = 'witchy_privacy_accepted';
   static const _birthYear = 'witchy_birth_year';
+  static const _feedCache = 'witchy_feed_cache';
+  static const _trackingMode = 'witchy_tracking_mode';
+  static const _alerts = 'witchy_alerts';
+  static const _pregnancyLmp = 'witchy_pregnancy_lmp';
 
   Future<bool> isPrivacyAccepted() async => (await SharedPreferences.getInstance()).getBool(_privacyAccepted) ?? false;
   Future<void> setPrivacyAccepted() async => (await SharedPreferences.getInstance()).setBool(_privacyAccepted, true);
 
   Future<int?> birthYear() async => (await SharedPreferences.getInstance()).getInt(_birthYear);
   Future<void> setBirthYear(int year) async => (await SharedPreferences.getInstance()).setInt(_birthYear, year);
+
+  Future<TrackingMode> trackingMode() async => TrackingMode.fromJson((await SharedPreferences.getInstance()).getString(_trackingMode));
+  Future<void> setTrackingMode(TrackingMode mode) async => (await SharedPreferences.getInstance()).setString(_trackingMode, mode.name);
 
   Future<bool> isOnboarded() async => (await SharedPreferences.getInstance()).getBool(_onboarded) ?? false;
   Future<void> setOnboarded() async => (await SharedPreferences.getInstance()).setBool(_onboarded, true);
@@ -61,14 +68,41 @@ class PrefsService {
   Future<bool> darkMode() async => (await SharedPreferences.getInstance()).getBool(_darkMode) ?? false;
   Future<void> setDarkMode(bool v) async => (await SharedPreferences.getInstance()).setBool(_darkMode, v);
 
-  Future<bool> shareBleed() async => (await SharedPreferences.getInstance()).getBool(_shareBleed) ?? true;
-  Future<void> setShareBleed(bool v) async => (await SharedPreferences.getInstance()).setBool(_shareBleed, v);
+  Future<List<Article>?> feedCache() async {
+    final raw = (await SharedPreferences.getInstance()).getString(_feedCache);
+    if (raw == null) return null;
+    return (jsonDecode(raw) as List<dynamic>).map((e) => Article.fromJson(e as Map<String, dynamic>)).toList();
+  }
 
-  Future<bool> shareFertile() async => (await SharedPreferences.getInstance()).getBool(_shareFertile) ?? true;
-  Future<void> setShareFertile(bool v) async => (await SharedPreferences.getInstance()).setBool(_shareFertile, v);
+  Future<void> saveFeedCache(List<Article> articles) async {
+    final encoded = jsonEncode(articles.map((a) => a.toJson()).toList());
+    await (await SharedPreferences.getInstance()).setString(_feedCache, encoded);
+  }
 
-  Future<bool> shareSymptoms() async => (await SharedPreferences.getInstance()).getBool(_shareSymptoms) ?? false;
-  Future<void> setShareSymptoms(bool v) async => (await SharedPreferences.getInstance()).setBool(_shareSymptoms, v);
+  Future<List<AlertItem>> alertItems() async {
+    final raw = (await SharedPreferences.getInstance()).getString(_alerts);
+    if (raw == null) return [];
+    return (jsonDecode(raw) as List<dynamic>).map((e) => AlertItem.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> saveAlertItems(List<AlertItem> items) async {
+    final encoded = jsonEncode(items.map((a) => a.toJson()).toList());
+    await (await SharedPreferences.getInstance()).setString(_alerts, encoded);
+  }
+
+  Future<DateTime?> lmpDate() async {
+    final raw = (await SharedPreferences.getInstance()).getString(_pregnancyLmp);
+    return raw == null ? null : DateTime.tryParse(raw);
+  }
+
+  Future<void> setLmpDate(DateTime date) async => (await SharedPreferences.getInstance()).setString(_pregnancyLmp, date.toIso8601String());
+
+  Future<void> clearLegacyBindingFlags() async {
+    final p = await SharedPreferences.getInstance();
+    await p.remove('witchy_share_bleed');
+    await p.remove('witchy_share_fertile');
+    await p.remove('witchy_share_symptoms');
+  }
 
   Future<Map<String, bool>?> reminderStates() async {
     final raw = (await SharedPreferences.getInstance()).getString(_reminders);

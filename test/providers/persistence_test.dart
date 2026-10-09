@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/models/day_log.dart';
+import 'package:witchy/models/tracking_mode.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/providers/reminders_provider.dart';
@@ -77,21 +78,29 @@ void main() {
     final settings = await SettingsProvider.load(prefs);
     expect(settings.lunarNotifications, isTrue);
     expect(settings.darkMode, isFalse);
-    expect(settings.shareSymptoms, isFalse);
 
     settings.setLunar(false);
     settings.setDark(true);
-    settings.setShareBleed(false);
-    settings.setShareFertile(false);
-    settings.setShareSymptoms(true);
     await pumpEventQueue();
 
     final reloaded = await SettingsProvider.load(prefs);
     expect(reloaded.lunarNotifications, isFalse);
     expect(reloaded.darkMode, isTrue);
-    expect(reloaded.shareBleed, isFalse);
-    expect(reloaded.shareFertile, isFalse);
-    expect(reloaded.shareSymptoms, isTrue);
+  });
+
+  test('SettingsProvider.load clears legacy binding share keys', () async {
+    SharedPreferences.setMockInitialValues({
+      'witchy_share_bleed': true,
+      'witchy_share_fertile': true,
+      'witchy_share_symptoms': true,
+    });
+    final localPrefs = PrefsService();
+    await SettingsProvider.load(localPrefs);
+
+    final stored = await SharedPreferences.getInstance();
+    expect(stored.getBool('witchy_share_bleed'), isNull);
+    expect(stored.getBool('witchy_share_fertile'), isNull);
+    expect(stored.getBool('witchy_share_symptoms'), isNull);
   });
 
   test('LoggingProvider mutations survive reload per date key', () async {
@@ -101,6 +110,7 @@ void main() {
     logging.setPain(day, 9.5);
     logging.toggleMood(day, 'Enchanted');
     logging.setNotes(day, 'Ritual notes.');
+    logging.setTemperature(day, 36.6);
     await pumpEventQueue();
 
     final reloaded = await LoggingProvider.load(prefs);
@@ -109,6 +119,7 @@ void main() {
     expect(restored.pain, 9.5);
     expect(restored.moods, contains('Enchanted'));
     expect(restored.notes, 'Ritual notes.');
+    expect(restored.temperature, 36.6);
     expect(LoggingProvider.keyFor(day), '2026-09-28');
   });
 
@@ -144,5 +155,30 @@ void main() {
 
     await prefs.clearSession();
     expect(await prefs.session(), isNull);
+  });
+
+  test('tracking mode defaults to cycle and persists across reload', () async {
+    final defaults = await OnboardingProvider.load(prefs);
+    expect(defaults.trackingMode, TrackingMode.cycle);
+
+    var notifications = 0;
+    defaults.addListener(() => notifications++);
+    defaults.setTrackingMode(TrackingMode.perimenopause);
+    await pumpEventQueue();
+
+    expect(notifications, 1);
+    final reloaded = await OnboardingProvider.load(prefs);
+    expect(reloaded.trackingMode, TrackingMode.perimenopause);
+  });
+
+  test('OnboardingProvider.finish saves the chosen tracking mode', () async {
+    final onboarding = OnboardingProvider(prefs, cycleLength: 28, bleedLength: 5);
+    onboarding.setTrackingMode(TrackingMode.pregnancy);
+    await onboarding.finish();
+    await pumpEventQueue();
+
+    expect(await prefs.trackingMode(), TrackingMode.pregnancy);
+    final reloaded = await OnboardingProvider.load(prefs);
+    expect(reloaded.trackingMode, TrackingMode.pregnancy);
   });
 }

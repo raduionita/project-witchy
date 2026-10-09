@@ -43,6 +43,7 @@ abstract final class AppIcons {
   static const magic = FontAwesomeIcons.wandMagic; // i-magic (solid-only)
   static const heart = FontAwesomeIcons.solidHeart; // i-heart (regular outline)
   static const drop = FontAwesomeIcons.droplet; // i-drop (solid-only)
+  static const thermometer = FontAwesomeIcons.thermometer; // BBT reading
   static const note = FontAwesomeIcons.solidFileLines; // i-note (regular outline)
   static const leaf = FontAwesomeIcons.leaf; // i-leaf (solid-only)
   static const zap = FontAwesomeIcons.bolt; // i-zap (solid-only)

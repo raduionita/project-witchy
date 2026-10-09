@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:magic="https://example.com/ns/magic">
+  <channel>
+    <title>Magic: Articles</title>
+    <link>https://example.com/magic</link>
+    <atom:link href="https://example.com/magic/articles.xml" rel="self" type="application/rss+xml"/>
+    <description>Plain-language articles on the menstrual cycle, fertility, ovulation and period symptoms, blended with folklore and gentle rituals for the Magic tab of a whimsical cycle tracking app.</description>
+    <language>en</language>
+    <lastBuildDate>Wed, 07 Oct 2026 23:00:00 +0300</lastBuildDate>
+    <!--
+      Custom fields (namespace "magic"):
+        magic:shelf    the shelf the article lives on in the tab
+        magic:evidence "research" = backed by research, "folklore" = inspired by / playful, "mixed" = both
+        magic:phase    menstrual | follicular | ovulatory | luteal | any
+        magic:launch   true = part of the suggested v1 set of six
+        magic:reference a source used to check the facts in the article (url, publisher, title). Items with none need an expert reviewer.
+        magic:question the question the article answers (AEO). Use it as the H1 subtitle or first H2, and answer it in the first sentence of the body.
+      Titles are 60 characters or fewer and lead with the main keyword. Descriptions run about 230 to 310 characters. The first 155 characters stand alone as the search snippet and open with a direct answer. They are summaries to brief writers. Full bodies still need to be written and medically reviewed.
+      Links are relative slugs built from the article title (slug-from-title.html). pubDates are placeholders.
+    -->
+
+    <!-- Shelf: Know your phases -->
+    <item>
+      <title>The 4 Phases of Your Menstrual Cycle, Explained as Seasons</title>
+      <link>the-4-phases-of-your-menstrual-cycle-explained-as-seasons.html</link>
+      <guid isPermaLink="false">magic-001</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Wed, 07 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Know your phases</category>
+      <description>The menstrual cycle has four phases: menstrual, follicular, ovulatory and luteal. Here's what each one does, framed as winter, spring, summer and autumn. Meet the Seed, Sprout, Bloom and Moth, and get one gentle idea for each season of your cycle, plus how phase length varies from person to person.</description>
+      <magic:question>What are the four phases of the menstrual cycle?</magic:question>
+      <magic:shelf>Know your phases</magic:shelf>
+      <magic:evidence>mixed</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>true</magic:launch>
+      <magic:reference url="https://my.clevelandclinic.org/health/articles/10132-menstrual-cycle" publisher="Cleveland Clinic">The Menstrual Cycle: Phases and Hormones</magic:reference>
+    </item>
+
+    <item>
+      <title>Why Do You Crave Carbs Before Your Period?</title>
+      <link>why-do-you-crave-carbs-before-your-period.html</link>
+      <guid isPermaLink="false">magic-002</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Thu, 08 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Know your phases</category>
+      <description>Appetite and cravings can rise in the luteal phase, the week or two before a period, especially with PMS. Learn what's behind pre-period carb cravings, which foods can help you feel steady, and why eating the pasta is nothing to feel guilty about. Includes when strong cravings are worth mentioning to a doctor.</description>
+      <magic:question>Why do I crave carbs before my period?</magic:question>
+      <magic:shelf>Know your phases</magic:shelf>
+      <magic:evidence>research</magic:evidence>
+      <magic:phase>luteal</magic:phase>
+      <magic:launch>true</magic:launch>
+      <magic:reference url="https://pmc.ncbi.nlm.nih.gov/articles/PMC12451237" publisher="PubMed Central">The role of premenstrual syndrome in hedonic hunger and food craving during the menstrual cycle (Candan et al., Journal of Nutritional Science, 2025)</magic:reference>
+      <magic:reference url="https://www.nhs.uk/conditions/pre-menstrual-syndrome/" publisher="NHS">Premenstrual syndrome (PMS)</magic:reference>
+    </item>
+    
+    <item>
+      <title>What Is the Ovulation Phase? Energy, Mood and Symptoms</title>
+      <link>what-is-the-ovulation-phase-energy-mood-and-symptoms.html</link>
+      <guid isPermaLink="false">magic-003</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Fri, 09 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Know your phases</category>
+      <description>The ovulation phase is when an egg is released, around the middle of a typical cycle. Learn how mood, energy and focus can change around this time, which signs people notice, and why plenty of people feel nothing special at all. Includes how ovulation fits into your fertile window.</description>
+      <magic:question>What happens during the ovulation phase?</magic:question>
+      <magic:shelf>Know your phases</magic:shelf>
+      <magic:evidence>mixed</magic:evidence>
+      <magic:phase>ovulatory</magic:phase>
+      <magic:launch>true</magic:launch>
+      <magic:reference url="https://my.clevelandclinic.org/health/body/23953-follicular-phase" publisher="Cleveland Clinic">Follicular Phase</magic:reference>
+      <magic:reference url="https://my.clevelandclinic.org/health/articles/10132-menstrual-cycle" publisher="Cleveland Clinic">The Menstrual Cycle: Phases and Hormones</magic:reference>
+    </item>
+    
+    <item>
+      <title>Luteal Phase Brain Fog: Causes and What Helps</title>
+      <link>luteal-phase-brain-fog-causes-and-what-helps.html</link>
+      <guid isPermaLink="false">magic-004</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Sat, 10 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Know your phases</category>
+      <description>The luteal phase runs from ovulation to your next period, often 12 to 14 days. Learn why sleep, energy and mood can dip, what small habits help, and how to tell normal premenstrual changes from symptoms that are worth raising with a doctor.</description>
+      <magic:question>Why does my brain feel foggy before my period?</magic:question>
+      <magic:shelf>Know your phases</magic:shelf>
+      <magic:evidence>research</magic:evidence>
+      <magic:phase>luteal</magic:phase>
+      <magic:launch>true</magic:launch>
+      <magic:reference url="https://my.clevelandclinic.org/health/body/24417-luteal-phase" publisher="Cleveland Clinic">Luteal Phase of the Menstrual Cycle</magic:reference>
+      <magic:reference url="https://www.nhs.uk/conditions/pre-menstrual-syndrome/" publisher="NHS">Premenstrual syndrome (PMS)</magic:reference>
+    </item>
+
+    <!-- Shelf: Body mysteries, decoded -->
+    <item>
+      <title>Cervical Mucus Chart: What Each Type Means</title>
+      <link>cervical-mucus-chart-what-each-type-means.html</link>
+      <guid isPermaLink="false">magic-005</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Sun, 11 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Body mysteries, decoded</category>
+      <description>Cervical mucus changes through your cycle, from dry and sticky to creamy and egg-white. See what each type looks like, what it can tell you about fertility, how to check it, and why your pattern may differ from someone else's. Includes when unusual discharge needs a doctor's attention.</description>
+      <magic:question>What does cervical mucus look like during ovulation?</magic:question>
+      <magic:shelf>Body mysteries, decoded</magic:shelf>
+      <magic:evidence>research</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>true</magic:launch>
+      <magic:reference url="https://my.clevelandclinic.org/health/body/21957-cervical-mucus" publisher="Cleveland Clinic">Cervical Mucus</magic:reference>
+    </item>
+    
+    <item>
+      <title>12 Unusual Period and Cycle Symptoms That Are Common</title>
+      <link>12-unusual-period-and-cycle-symptoms-that-are-common.html</link>
+      <guid isPermaLink="false">magic-006</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Mon, 12 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Body mysteries, decoded</category>
+      <description>Sore ribs, vivid dreams, skin breakouts, hair changes and more: 12 surprising cycle symptoms many people report. Learn which phase each tends to show up in, simple ways to ease them, and how to tell what's common from what's worth a doctor's visit.</description>
+      <magic:question>What are unusual symptoms of your menstrual cycle?</magic:question>
+      <magic:shelf>Body mysteries, decoded</magic:shelf>
+      <magic:evidence>research</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://www.nhs.uk/conditions/periods/" publisher="NHS">Periods</magic:reference>
+      <magic:reference url="https://www.nhs.uk/conditions/pre-menstrual-syndrome/" publisher="NHS">Premenstrual syndrome (PMS)</magic:reference>
+    </item>
+    
+    <item>
+      <title>Is Spotting Normal? Irregular Cycles and Missed Periods</title>
+      <link>is-spotting-normal-irregular-cycles-and-missed-periods.html</link>
+      <guid isPermaLink="false">magic-007</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Tue, 13 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Body mysteries, decoded</category>
+      <description>Is spotting, a long cycle or a skipped period normal? Get quick answers to the most common cycle surprises, what usually causes them, which patterns are worth tracking in your app, and clear signs that it's time to talk to a doctor.</description>
+      <magic:question>Is it normal to spot between periods?</magic:question>
+      <magic:shelf>Body mysteries, decoded</magic:shelf>
+      <magic:evidence>research</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://www.nhs.uk/conditions/periods/" publisher="NHS">Periods</magic:reference>
+      <magic:reference url="https://my.clevelandclinic.org/health/body/21957-cervical-mucus" publisher="Cleveland Clinic">Cervical Mucus</magic:reference>
+    </item>
+
+    <!-- Shelf: Trying to conceive -->
+    <item>
+      <title>What Is the Fertile Window? How Long It Lasts</title>
+      <link>what-is-the-fertile-window-how-long-it-lasts.html</link>
+      <guid isPermaLink="false">magic-008</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Wed, 14 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Trying to conceive</category>
+      <description>The fertile window is about six days: the five days before ovulation plus ovulation day. Learn how it works, why sperm and egg lifespans matter, why app predictions are estimates, and how tracking signs like cervical mucus and ovulation tests can sharpen your timing.</description>
+      <magic:question>How long is the fertile window?</magic:question>
+      <magic:shelf>Trying to conceive</magic:shelf>
+      <magic:evidence>research</magic:evidence>
+      <magic:phase>ovulatory</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://my.clevelandclinic.org/health/body/23953-follicular-phase" publisher="Cleveland Clinic">Follicular Phase</magic:reference>
+      <magic:reference url="https://www.nhs.uk/conditions/periods/" publisher="NHS">Periods</magic:reference>
+      <magic:reference url="https://my.clevelandclinic.org/health/body/21957-cervical-mucus" publisher="Cleveland Clinic">Cervical Mucus</magic:reference>
+    </item>
+    
+    <item>
+      <title>The Two-Week Wait: How to Cope While Trying to Conceive</title>
+      <link>the-two-week-wait-how-to-cope-while-trying-to-conceive.html</link>
+      <guid isPermaLink="false">magic-009</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Thu, 15 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Trying to conceive</category>
+      <description>The two-week wait is the 10 to 14 days between ovulation and a pregnancy test. Find gentle ways to cope, learn why early symptoms are unreliable, get tips on when to test, and give yourself permission to step away from the forums and symptom-spotting.</description>
+      <magic:question>What is the two-week wait and how do I cope?</magic:question>
+      <magic:shelf>Trying to conceive</magic:shelf>
+      <magic:evidence>mixed</magic:evidence>
+      <magic:phase>luteal</magic:phase>
+      <magic:launch>true</magic:launch>
+      <magic:reference url="https://health.clevelandclinic.org/how-early-can-you-tell-if-you-are-pregnant" publisher="Cleveland Clinic">How Early Can You Tell If You Are Pregnant?</magic:reference>
+    </item>
+    
+    <item>
+      <title>What to Say to a Friend Trying to Get Pregnant</title>
+      <link>what-to-say-to-a-friend-trying-to-get-pregnant.html</link>
+      <guid isPermaLink="false">magic-010</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Fri, 16 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Trying to conceive</category>
+      <description>Not sure what to say to a friend who is trying to conceive? Find simple, supportive phrases, learn what to avoid saying, like "just relax", and see how to follow their lead, check in without pressure, and be there whatever the outcome.</description>
+      <magic:question>What should you say to someone trying to conceive?</magic:question>
+      <magic:shelf>Trying to conceive</magic:shelf>
+      <magic:evidence>mixed</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <!-- no external source: advice and communication content, needs an editor or expert reviewer -->
+    </item>
+    
+    <item>
+      <title>How Partners Can Support Cycle Tracking and Conception</title>
+      <link>how-partners-can-support-cycle-tracking-and-conception.html</link>
+      <guid isPermaLink="false">magic-011</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Sat, 17 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Trying to conceive</category>
+      <description>A partner's guide to the menstrual cycle: what the phases mean, what a fertility app is actually predicting, and practical ways to support someone who is trying to conceive. Learn how to be a good teammate, from tracking days to handling the emotional ups and downs.</description>
+      <magic:question>How can a partner support someone trying to conceive?</magic:question>
+      <magic:shelf>Trying to conceive</magic:shelf>
+      <magic:evidence>mixed</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://my.clevelandclinic.org/health/articles/10132-menstrual-cycle" publisher="Cleveland Clinic">The Menstrual Cycle: Phases and Hormones</magic:reference>
+    </item>
+    
+    <item>
+      <title>When to See a Doctor About Trying to Conceive</title>
+      <link>when-to-see-a-doctor-about-trying-to-conceive.html</link>
+      <guid isPermaLink="false">magic-012</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Sun, 18 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Trying to conceive</category>
+      <description>Many doctors suggest seeking help after 12 months of trying, or 6 months if you're 35 or older. See what a first fertility visit involves, which tests are common, what to bring from your cycle tracking, and why asking for help early is perfectly fine.</description>
+      <magic:question>When should I see a doctor about trying to get pregnant?</magic:question>
+      <magic:shelf>Trying to conceive</magic:shelf>
+      <magic:evidence>research</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://reproductivefacts.org/link/8d338df1f533491ea74d717765e226e2.aspx" publisher="American Society for Reproductive Medicine">Defining Infertility (patient fact sheet)</magic:reference>
+    </item>
+
+    <!-- Shelf: Folklore and history -->
+    <item>
+      <title>Period Myths Across Cultures: What History Got Right</title>
+      <link>period-myths-across-cultures-what-history-got-right.html</link>
+      <guid isPermaLink="false">magic-013</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Mon, 19 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Folklore and history</category>
+      <description>From taboos to celebrations, see how cultures have explained menstruation through history. Discover which beliefs were myths, which were surprisingly accurate, and how old ideas still shape the way we talk about periods today. A fascinating tour of period folklore.</description>
+      <magic:question>What did different cultures believe about periods?</magic:question>
+      <magic:shelf>Folklore and history</magic:shelf>
+      <magic:evidence>folklore</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://aeon.co/essays/throughout-history-and-still-today-women-are-shamed-for-menstruating" publisher="Aeon">Throughout history, and still today, women are shamed for menstruating (Janie Hampton, 2017)</magic:reference>
+    </item>
+    
+    <item>
+      <title>Does the Moon Affect Your Period? What Research Says</title>
+      <link>does-the-moon-affect-your-period-what-research-says.html</link>
+      <guid isPermaLink="false">magic-014</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Tue, 20 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Folklore and history</category>
+      <description>Folklore links the moon to the menstrual cycle because both last about a month. Studies haven't found a consistent link, and cycle lengths vary widely. Here's what the research does and doesn't show, and how to enjoy moon symbolism as a fun ritual without treating it as science.</description>
+      <magic:question>Does the moon affect your menstrual cycle?</magic:question>
+      <magic:shelf>Folklore and history</magic:shelf>
+      <magic:evidence>mixed</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://www.livescience.com/does-the-moon-affect-menstrual-cycles" publisher="Live Science">Does the moon affect menstrual cycles?</magic:reference>
+    </item>
+    
+    <item>
+      <title>Period Goddesses and Menstrual Rituals Around the World</title>
+      <link>period-goddesses-and-menstrual-rituals-around-the-world.html</link>
+      <guid isPermaLink="false">magic-015</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Wed, 21 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Folklore and history</category>
+      <description>Explore goddesses, stories and coming-of-age rituals tied to menstruation across cultures, from ancient myths to modern celebrations. Written respectfully and clearly labelled as folklore, not medical fact, with ideas for creating your own gentle cycle rituals.</description>
+      <magic:question>What are some menstrual rituals around the world?</magic:question>
+      <magic:shelf>Folklore and history</magic:shelf>
+      <magic:evidence>folklore</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://aeon.co/essays/throughout-history-and-still-today-women-are-shamed-for-menstruating" publisher="Aeon">Throughout history, and still today, women are shamed for menstruating (Janie Hampton, 2017)</magic:reference>
+    </item>
+
+    <!-- Shelf: Rest and care -->
+    <item>
+      <title>Cycle Syncing: Does Eating and Training by Phase Work?</title>
+      <link>cycle-syncing-does-eating-and-training-by-phase-work.html</link>
+      <guid isPermaLink="false">magic-016</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Thu, 22 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Rest and care</category>
+      <description>Cycle syncing means adjusting food, exercise and work to your cycle phase. Evidence for strict plans is limited, but some people find it a useful way to listen to their body. See what's known, what's hype, and how to try it as a flexible invitation, not a rulebook.</description>
+      <magic:question>Does cycle syncing work?</magic:question>
+      <magic:shelf>Rest and care</magic:shelf>
+      <magic:evidence>mixed</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://www.medicalnewstoday.com/articles/cycle-syncing" publisher="Medical News Today">Cycle syncing: What it is and does it work?</magic:reference>
+    </item>
+    
+    <item>
+      <title>Self-Compassion for Hard Period Days: Kinder Self-Talk</title>
+      <link>self-compassion-for-hard-period-days-kinder-self-talk.html</link>
+      <guid isPermaLink="false">magic-017</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Fri, 23 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Rest and care</category>
+      <description>Low-energy or low-mood days around your period are common. Try simple reframes and journal prompts for kinder self-talk, learn small ways to rest and recover, and find out when ongoing low mood or severe symptoms are a sign to reach out for professional support.</description>
+      <magic:question>How can I be kinder to myself on hard period days?</magic:question>
+      <magic:shelf>Rest and care</magic:shelf>
+      <magic:evidence>mixed</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://www.nhs.uk/conditions/pre-menstrual-syndrome/" publisher="NHS">Premenstrual syndrome (PMS)</magic:reference>
+    </item>
+    
+    <item>
+      <title>How to Explain Your Menstrual Cycle to Anyone</title>
+      <link>how-to-explain-your-menstrual-cycle-to-anyone.html</link>
+      <guid isPermaLink="false">magic-018</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Sat, 24 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Rest and care</category>
+      <description>Explain the menstrual cycle in plain language using simple analogies and conversation starters for partners, colleagues, friends and kids. Includes a shareable one-page summary of the four phases, what changes in the body, and how to talk about periods without awkwardness.</description>
+      <magic:question>How do you explain the menstrual cycle simply?</magic:question>
+      <magic:shelf>Rest and care</magic:shelf>
+      <magic:evidence>research</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>false</magic:launch>
+      <magic:reference url="https://my.clevelandclinic.org/health/articles/10132-menstrual-cycle" publisher="Cleveland Clinic">The Menstrual Cycle: Phases and Hormones</magic:reference>
+    </item>
+  </channel>
+</rss>

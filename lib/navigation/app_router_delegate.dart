@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../models/mock_data.dart';
 import '../screens/alerts_screen.dart';
-import '../screens/article_detail_screen.dart';
-import '../screens/binding_screen.dart';
 import '../screens/chart_screen.dart';
 import '../screens/fertility_screen.dart';
 import '../screens/gestation_screen.dart';
 import '../screens/join_screen.dart';
-import '../screens/library_screen.dart';
 import '../screens/main_screen.dart';
 import '../screens/privacy_screen.dart';
 import '../screens/profile_screen.dart';
@@ -98,13 +94,7 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
 
   Widget _childFor(String path) {
     final segments = Uri.parse(path).pathSegments;
-    // /library/<slug> dynamic segment; unknown slug falls back to the library list.
-    if (segments.length == 2 && segments.first == 'library') {
-      final article = MockData.articleById(segments[1]);
-      if (article != null) return ArticleDetailScreen(article: article);
-      return const LibraryScreen();
-    }
-    // /webview?url=…&title=… in-app legal pages (query carries the target).
+    // /webview?url=…&title=… in-app pages (query carries the target).
     if (segments.isNotEmpty && segments.first == 'webview') {
       final uri = Uri.parse(path);
       return WebViewScreen(title: uri.queryParameters['title'] ?? 'Privacy', url: uri.queryParameters['url'] ?? '');
@@ -130,14 +120,10 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
         return const AlertsScreen();
       case '/fertility':
         return const FertilityScreen();
-      case '/library':
-        return const LibraryScreen();
       case '/pregnancy':
         return const GestationScreen();
       case '/chart':
         return const ChartScreen();
-      case '/binding':
-        return const BindingScreen();
       case '/splash':
         return const SplashScreen();
       default:

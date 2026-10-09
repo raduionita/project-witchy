@@ -15,6 +15,7 @@ void main() {
       sleep: {'Insomnia'},
       discharge: {'Creamy'},
       pain: 8.5,
+      temperature: 36.7,
       notes: 'Full moon entry.',
     );
 
@@ -31,6 +32,7 @@ void main() {
     expect(restored.sleep, original.sleep);
     expect(restored.discharge, original.discharge);
     expect(restored.pain, original.pain);
+    expect(restored.temperature, 36.7);
     expect(restored.notes, original.notes);
   });
 
@@ -48,6 +50,7 @@ void main() {
     expect(log.sleep, isEmpty);
     expect(log.discharge, isEmpty);
     expect(log.pain, 6);
+    expect(log.temperature, isNull);
     expect(log.notes, isEmpty);
   });
 
@@ -59,6 +62,7 @@ void main() {
     expect(log.sleep, isEmpty);
     expect(log.discharge, isEmpty);
     expect(log.pain, 3);
+    expect(log.temperature, isNull);
     expect(log.notes, 'old');
   });
 

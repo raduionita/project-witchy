@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 import '../navigation/app_nav.dart';
+import '../providers/alert_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../widgets/log_bottom_sheet.dart';
@@ -24,8 +26,9 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final unread = context.watch<AlertProvider>().unreadCount > 0;
     return Scaffold(
-      appBar: AppTopBar(title: titles[index], leading: AppIcons.user, onLeading: () => context.go('/profile'), action: AppIcons.alerts, onAction: () => context.go('/alerts')),
+      appBar: AppTopBar(title: titles[index], leading: AppIcons.user, onLeading: () => context.go('/profile'), action: AppIcons.alerts, onAction: () => context.go('/alerts'), badge: unread),
       body: IndexedStack(index: index, children: const [SanctuaryScreen(), CycleScreen(), RecordsScreen(), CovenScreen()]),
       floatingActionButton:
           index == 3

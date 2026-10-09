@@ -10,6 +10,7 @@ class DayLog {
   final Set<String> sleep;
   final Set<String> discharge;
   double pain;
+  double? temperature;
   String notes;
   DayLog({
     Set<String>? flow,
@@ -23,6 +24,7 @@ class DayLog {
     Set<String>? sleep,
     Set<String>? discharge,
     this.pain = 6,
+    this.temperature,
     this.notes = '',
   }) : flow = flow ?? {},
        collection = collection ?? {},
@@ -47,6 +49,7 @@ class DayLog {
     'sleep': sleep.toList(),
     'discharge': discharge.toList(),
     'pain': pain,
+    'temperature': temperature,
     'notes': notes,
   };
 
@@ -74,6 +77,7 @@ class DayLog {
     sleep: _set(json['sleep']),
     discharge: _legacySet(json['discharge']),
     pain: (json['pain'] as num?)?.toDouble() ?? 6,
+    temperature: (json['temperature'] as num?)?.toDouble(),
     notes: json['notes'] as String? ?? '',
   );
 }

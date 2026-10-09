@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+     xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:magic="https://example.com/ns/magic">
+  <channel>
+    <title>Magic: Articles</title>
+    <link>https://example.com/magic</link>
+    <atom:link href="https://example.com/magic/articles.xml" rel="self" type="application/rss+xml"/>
+    <description>Plain-language articles on the menstrual cycle, fertility, ovulation and period symptoms, blended with folklore and gentle rituals for the Magic tab of a whimsical cycle tracking app.</description>
+    <language>en</language>
+    <lastBuildDate>Wed, 07 Oct 2026 23:00:00 +0300</lastBuildDate>
+    <!--
+      Custom fields (namespace "magic"):
+        magic:shelf    the shelf the article lives on in the tab
+        magic:evidence "research" = backed by research, "folklore" = inspired by / playful, "mixed" = both
+        magic:phase    menstrual | follicular | ovulatory | luteal | any
+        magic:launch   true = part of the suggested v1 set of six
+        magic:reference a source used to check the facts in the article (url, publisher, title). Items with none need an expert reviewer.
+        magic:question the question the article answers (AEO). Use it as the H1 subtitle or first H2, and answer it in the first sentence of the body.
+      Titles are 60 characters or fewer and lead with the main keyword. Descriptions run about 230 to 310 characters. The first 155 characters stand alone as the search snippet and open with a direct answer. They are summaries to brief writers. Full bodies still need to be written and medically reviewed.
+      Links are relative slugs built from the article title (slug-from-title.html). pubDates are placeholders.
+    -->
+
+    <!-- Shelf: Know your phases -->
+    <item>
+      <title>The 4 Phases of Your Menstrual Cycle, Explained as Seasons</title>
+      <link>the-4-phases-of-your-menstrual-cycle-explained-as-seasons.html</link>
+      <guid isPermaLink="false">magic-001</guid>
+      <source url="https://example.com/magic/articles.xml">Magic: Articles</source>
+      <pubDate>Wed, 07 Oct 2026 09:00:00 +0300</pubDate>
+      <category>Know your phases</category>
+      <description>The menstrual cycle has four phases: menstrual, follicular, ovulatory and luteal. Here's what each one does, framed as winter, spring, summer and autumn. Meet the Seed, Sprout, Bloom and Moth, and get one gentle idea for each season of your cycle, plus how phase length varies from person to person.</description>
+      <magic:question>What are the four phases of the menstrual cycle?</magic:question>
+      <magic:shelf>Know your phases</magic:shelf>
+      <magic:evidence>mixed</magic:evidence>
+      <magic:phase>any</magic:phase>
+      <magic:launch>true</magic:launch>
+      <magic:reference url="https://my.clevelandclinic.org/health/articles/10132-menstrual-cycle" publisher="Cleveland Clinic">The Menstrual Cycle: Phases and Hormones</magic:reference>
+    </item>
+  </channel>
+</rss>

@@ -87,6 +87,7 @@ class _CycleScreenState extends State<CycleScreen> {
   Widget _buildCalendarCard() {
     final cycle = context.watch<CycleProvider>();
     final logging = context.watch<LoggingProvider>();
+    final range = cycle.isPerimenopause ? cycle.predictedRange() : null;
     final cells = CalendarFetcher.forMonth(
       month: _month,
       lastStart: cycle.effectiveLastStart,
@@ -94,6 +95,9 @@ class _CycleScreenState extends State<CycleScreen> {
       bleedLength: cycle.bleedLength,
       logs: logging.snapshot(),
       selectedDay: _selectedDay,
+      showFertility: cycle.showFertilityPredictions,
+      predictedStart: range?.earliest,
+      predictedEnd: range?.latest,
     );
     final daysLate = cycle.daysLate();
     final showStatusRow = daysLate > 0 || !_isCurrentMonth;

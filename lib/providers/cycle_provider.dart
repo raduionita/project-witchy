@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/cycle_phase.dart';
 import '../models/period_span.dart';
+import '../models/tracking_mode.dart';
 import '../services/cycle_calculator.dart';
 import '../services/period_history.dart';
 import 'logging_provider.dart';
@@ -41,6 +42,28 @@ class CycleProvider extends ChangeNotifier {
 
   int get bleedLength => _onboarding.bleedLength;
 
+  /// Fertility predictions only surface in the default Cycle mode.
+  bool get showFertilityPredictions => _onboarding.trackingMode == TrackingMode.cycle;
+
+  bool get isPerimenopause => _onboarding.trackingMode == TrackingMode.perimenopause;
+
+  /// Shortest observed cycle length; falls back to the effective length.
+  int get shortestCycleLength => observedCycleLengths.isEmpty ? effectiveCycleLength : observedCycleLengths.reduce((a, b) => a < b ? a : b);
+
+  /// Longest observed cycle length; falls back to the effective length.
+  int get longestCycleLength => observedCycleLengths.isEmpty ? effectiveCycleLength : observedCycleLengths.reduce((a, b) => a > b ? a : b);
+
+  /// Variation between longest and shortest observed cycles (needs 2+ cycles).
+  int? get cycleSpread => observedCycleLengths.length >= 2 ? longestCycleLength - shortestCycleLength : null;
+
+  /// Earliest/latest predicted next start from shortest/longest cycle lengths.
+  ({DateTime earliest, DateTime latest}) predictedRange({DateTime? today}) {
+    final t = today ?? DateTime.now();
+    final a = CycleCalculator.nextPeriodStart(effectiveLastStart, t, shortestCycleLength);
+    final b = CycleCalculator.nextPeriodStart(effectiveLastStart, t, longestCycleLength);
+    return a.isBefore(b) ? (earliest: a, latest: b) : (earliest: b, latest: a);
+  }
+
   int cycleDay({DateTime? today}) => CycleCalculator.cycleDay(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
 
   CyclePhase phaseAt(DateTime date) => CycleCalculator.phaseAt(effectiveLastStart, date, effectiveCycleLength, bleedLength);
@@ -65,9 +88,9 @@ class CycleProvider extends ChangeNotifier {
 
   bool isPeriodDay(DateTime date) => CycleCalculator.isPeriodDay(effectiveLastStart, date, effectiveCycleLength, bleedLength);
 
-  bool isFertileDay(DateTime date) => CycleCalculator.isFertileDay(effectiveLastStart, date, effectiveCycleLength);
+  bool isFertileDay(DateTime date) => showFertilityPredictions && CycleCalculator.isFertileDay(effectiveLastStart, date, effectiveCycleLength);
 
-  bool isOvulationDay(DateTime date) => CycleCalculator.isOvulationDay(effectiveLastStart, date, effectiveCycleLength);
+  bool isOvulationDay(DateTime date) => showFertilityPredictions && CycleCalculator.isOvulationDay(effectiveLastStart, date, effectiveCycleLength);
 
   bool get fertileToday => isFertileDay(DateTime.now());
 

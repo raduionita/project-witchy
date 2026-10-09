@@ -5,8 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/main.dart';
 import 'package:witchy/models/calendar_day_cell.dart';
 import 'package:witchy/models/month_cells.dart';
+import 'package:witchy/providers/alert_provider.dart';
 import 'package:witchy/providers/auth_provider.dart';
 import 'package:witchy/providers/cycle_provider.dart';
+import 'package:witchy/providers/gestation_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/providers/reminders_provider.dart';
@@ -135,6 +137,8 @@ void main() {
         settings: await SettingsProvider.load(prefs),
         reminders: await RemindersProvider.load(prefs),
         cycle: CycleProvider(onboarding, logging),
+        alerts: await AlertProvider.load(prefs),
+        gestation: await GestationProvider.load(prefs),
       ),
     );
     await tester.pumpAndSettle();

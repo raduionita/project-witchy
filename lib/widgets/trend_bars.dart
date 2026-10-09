@@ -4,25 +4,42 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
+/// Bar chart of observed cycle lengths. Renders an empty-state hint until
+/// at least two completed cycles are logged.
 class TrendBars extends StatelessWidget {
-  const TrendBars({super.key});
-
-  static const List<double> _heights = [0.58, 0.72, 0.62, 0.78, 0.94, 0.68, 0.74];
+  final List<double> values;
+  final List<String> labels;
+  const TrendBars({super.key, required this.values, required this.labels});
 
   @override
   Widget build(BuildContext context) {
+    if (values.length < 2) {
+      return SizedBox(
+        height: 112,
+        child: Center(
+          child: Text('Log two completed cycles to grow your trends.', style: AppText.sans(11.5, c: AppColors.muted), textAlign: TextAlign.center),
+        ),
+      );
+    }
+    final lo = values.reduce((a, b) => a < b ? a : b);
+    final hi = values.reduce((a, b) => a > b ? a : b);
+    final span = hi - lo;
+    // Pad the range so differing lengths stay visually distinguishable.
+    final pad = span < 2 ? 1.0 : span * 0.2;
+    final minY = span < 2 ? lo - 1 : lo - pad;
+    final maxY = span < 2 ? hi + 1 : hi + pad;
     return SizedBox(
       height: 112,
       child: BarChart(
         BarChartData(
-          minY: 0,
-          maxY: 1,
+          minY: minY,
+          maxY: maxY,
           barGroups: [
-            for (var i = 0; i < _heights.length; i++)
+            for (var i = 0; i < values.length; i++)
               BarChartGroupData(
                 x: i,
                 barRods: [
-                  BarChartRodData(toY: _heights[i], width: 16, gradient: AppColors.barGradient, borderRadius: BorderRadius.circular(6)),
+                  BarChartRodData(toY: values[i], width: 16, gradient: AppColors.barGradient, borderRadius: BorderRadius.circular(6)),
                 ],
               ),
           ],
@@ -37,10 +54,11 @@ class TrendBars extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 18,
-                getTitlesWidget: (value, meta) => Padding(
-                  padding: const EdgeInsets.only(top: 7),
-                  child: Text('M${value.toInt() + 1}', style: AppText.sans(8.5, c: AppColors.muted)),
-                ),
+                getTitlesWidget: (value, meta) {
+                  final i = value.toInt();
+                  if (i < 0 || i >= labels.length) return const SizedBox.shrink();
+                  return Padding(padding: const EdgeInsets.only(top: 7), child: Text(labels[i], style: AppText.sans(8.5, c: AppColors.muted)));
+                },
               ),
             ),
           ),

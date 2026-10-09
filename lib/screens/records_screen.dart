@@ -28,18 +28,53 @@ class RecordsScreen extends StatelessWidget {
     return ('On Time', false);
   }
 
+  /// Cycle-length spread card: shortest vs longest observed cycles.
+  Widget _buildIrregularityCard(CycleProvider cycle) {
+    final spread = cycle.cycleSpread;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Irregularity', style: AppText.secIn),
+          const SizedBox(height: 8),
+          if (spread == null)
+            Text('Log two completed cycles to see your spread.', style: AppText.sans(11.5, c: AppColors.muted))
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${cycle.shortestCycleLength}–${cycle.longestCycleLength} Days', style: AppText.serif(16)),
+                      const SizedBox(height: 2),
+                      Text('Shortest to longest cycle', style: AppText.sans(10.5, c: AppColors.muted)),
+                    ],
+                  ),
+                ),
+                AppTag('$spread ${spread == 1 ? 'Day' : 'Days'} variation'),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final spans = [...cycle.bleeds].reversed.toList();
     final avgCycle = cycle.meanCycleLength;
     final avgBleed = cycle.meanBleedLength;
+    final observed = cycle.observedCycleLengths;
+    final trendValues = [for (final len in observed.skip(observed.length > 7 ? observed.length - 7 : 0)) len.toDouble()];
+    final trendLabels = [for (var i = 0; i < trendValues.length; i++) 'C${observed.length - trendValues.length + i + 1}'];
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
       children: [
         GestureDetector(
           onTap: () => context.go('/chart'),
-          child: AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Cycle Trends', style: AppText.secIn), const SizedBox(height: 10), const TrendBars()])),
+          child: AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Cycle Trends', style: AppText.secIn), const SizedBox(height: 10), TrendBars(values: trendValues, labels: trendLabels)])),
         ),
         const SizedBox(height: 12),
         Row(
@@ -49,6 +84,8 @@ class RecordsScreen extends StatelessWidget {
             Expanded(child: StatCard(label: '', value: avgBleed == null ? '—' : '${avgBleed.toStringAsFixed(1)} d', sub: 'Average Bleed')),
           ],
         ),
+        const SizedBox(height: 12),
+        _buildIrregularityCard(cycle),
         const SizedBox(height: 12),
         AppCard(
           child: Column(

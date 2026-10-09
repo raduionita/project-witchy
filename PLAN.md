@@ -6,7 +6,7 @@ This plan is split into **Phases**. Each phase is a list of tasks that MUST be c
 
 **Status legend:** `[x]` done · `[~]` done differently (details noted) · `[-]` obsolete (superseded) · `[ ]` open
 
-> Phases were compacted (old 0–13 → new 0–5); obsolete `[-]` tasks were pruned and deviations kept as `[~]` or footnotes. Final test suite: **81/81**.
+> Phases were compacted (old 0–13 → new 0–5); obsolete `[-]` tasks were pruned and deviations kept as `[~]` or footnotes. Final test suite: **81/81**. Production-readiness work is planned as open **Phases 6–13** (bottom of Milestone 1) — scope decisions locked: Coven = remote article feed (Library removed), Binding removed, auth hidden as-is, tracking chips (Cycle/Pregnancy/Perimenopause), real BBT, real alerts, dark theme, release hardening.
 
 ---
 
@@ -17,7 +17,7 @@ This plan is split into **Phases**. Each phase is a list of tasks that MUST be c
 - **Import order**: Dart → Flutter → Packages → Relative.
 - **Navigation**: Navigator 2.0 (`Router` + custom `RouterDelegate` + `RouteInformationParser`). *Mandated rule — implemented in Phase 2; until then the app uses named routes.*
 - **Charts**: `fl_chart`. *Mandated rule — implemented in Phase 2; `CycleOrb` ring gauge stays custom-painted (fl_chart has no radial gauge).*
-- **Couples Mode**: placeholder only (local token, real backend deferred).
+- **Couples Mode / Binding**: removed in Phase 6 (no backend allowed; feature was a no-op placeholder).
 - Health data is **privacy-first**: no location, no personal info beyond local storage, no third-party sharing, not a diagnostic tool.
 
 ## Completion Gates (MUST pass)
@@ -169,6 +169,131 @@ test/
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (81/81 final suite) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
+### Phases 6-13 - Production Readiness (open)
+
+> Audit-driven finishing work: replace every mocked surface with real data (or remove it), add the tracking modes, then harden for store release. Scope decisions locked with the product owner: Coven becomes a remote article feed (Library removed), Binding removed, auth stays hidden as-is, onboarding gains Cycle / Pregnancy / Perimenopause tracking chips, BBT gets real temperature capture, alerts become locally generated, dark mode gets a real theme.
+
+### Phase 6 - Article Feed & Feature Removal (done)
+
+> Coven becomes a web-sourced reading feed; Library and Binding are deleted.
+
+- [x] **6.1** Add `http` + `xml` to `pubspec.yaml`; run `flutter pub get`.
+- [x] **6.2** `lib/services/feed_service.dart` - fetch `https://qvonyx.com/witchy/articles.xml`, parse `<item>` entries (title, link, description, pubDate, category) into a rebuilt `Article` model (`link` + `pubDate` replace `thumb`/`readTime`); cache payload in `PrefsService` for offline; expose `load({bool refresh})`. RFC-822 `pubDate` parsed via `DateFormat('EEE, dd MMM yyyy HH:mm:ss Z', 'en_US')`; fetch failure falls back to cache, rethrows only when no cache.
+- [x] **6.3** Rewrite `lib/screens/coven_screen.dart` - no `AppTopBar` title, no segment tabs, no FAB, no `MockData.posts`; scrollable article cards (serif title, muted meta, excerpt, category tag) with pull-to-refresh + loading/error/empty states; tap -> `context.go('/webview?title=...&url=...')` (privacy-screen mechanism). Optional `feed` constructor param for tests.
+- [x] **6.4** Delete `lib/screens/library_screen.dart` + `lib/screens/article_detail_screen.dart`; remove `/library` and `/library/<slug>` from `app_router_delegate.dart` (slug fallback + `MockData` import); remove all library entry points.
+- [x] **6.5** Delete `lib/screens/binding_screen.dart`; remove `/binding` route, Profile "Cosmic Partner Bond" row, and the 3 share flags from `SettingsProvider` + their `PrefsService` keys (`clearLegacyBindingFlags()` runs on `SettingsProvider.load`).
+- [x] **6.6** Prune dead code: `MockData.posts()`, `MockData.articles()`, `MockData.articleById()`, `lib/models/coven_post.dart`; keep `MockData.reminders()` + `alerts()` (replaced in Phase 9).
+- [x] **6.7** Docs - `DESIGN.md` v1.9.0 (nav tree, Screen 12/13/18 tombstoned, Screen 17 rewritten as article feed, welcome/privacy rows now hand off to `/onboarding`), `PLAN.md` (this section).
+- [x] **6.8** Tests - `test/services/feed_service_test.dart` (parse fixture, HTML strip, defaults, dropped incomplete items, cache round-trip, cache-first load, unreachable-feed rethrow) + `test/screens/coven_screen_test.dart` (renders cached items, no tabs/FAB, tap -> `/webview` route with encoded params, empty state) + `test/providers/persistence_test.dart` (share-flag removal).
+
+**Gate:** `flutter analyze` ✅ · `flutter test` ✅ (93/93) · `flutter build apk --debug` ✅ · `flutter build web` ✅
+
+### Phase 7 - Tracking Mode Selection (done)
+
+> Onboarding gains Cycle / Pregnancy / Perimenopause choice; the mode gates Phases 10-11.
+
+- [x] **7.1** `lib/models/tracking_mode.dart` - enum `TrackingMode { cycle, pregnancy, perimenopause }` with themed labels (`Cycle` / `Pregnancy` / `Perimenopause`) + `toJson`/`fromJson` (unknown/missing -> `cycle`).
+- [x] **7.2** Persist - `PrefsService` key `witchy_tracking_mode` (default `cycle`) + `OnboardingProvider.trackingMode`/`setTrackingMode` (setter persists immediately so Profile edits stick without `finish()`; `finish()` also saves).
+- [x] **7.3** `lib/widgets/tracking_mode_chip.dart` - `TrackingModeChips` single-select `Wrap` of `AppChip`s (icons: droplet / personPregnant / moon, selected = pur fill); wired into `rhythms_screen.dart` as a "What shall we track?" `AppCard` directly under the header; saved in `finish()`.
+- [x] **7.4** Gating hooks - `OnboardingProvider.trackingMode` exposed; this phase only surfaces the label (Profile row); real screen differences land in Phases 10/11.
+- [x] **7.5** Profile Lunar Alignments gains a "Tracking Mode" row (pur underline = current label) opening a modal bottom sheet with the same 3 chips (persist + notify + pop).
+- [x] **7.6** Docs - `DESIGN.md` v1.9.1 (Screen 04 tracking card, Screen 14 row, §4.1 onboarding row); `/auth` stays hidden (sign-in kept as-is, deferred) - noted in v1.9.0 pass.
+- [x] **7.7** Tests - `test/models/tracking_mode_test.dart` (round-trip, default, labels) + `persistence_test` (default cycle, setTrackingMode reactive + persists, finish saves) + `widget_test` (select Pregnancy -> begin -> Profile shows it, prefs key = 'pregnancy').
+
+**Gate:** `flutter analyze` ✅ · `flutter test` ✅ (99/99) · `flutter build apk --debug` ✅ · `flutter build web` ✅
+
+### Phase 8 - BBT Temperature Logging & Real Charts (done)
+
+> Real data replaces `TrendBars` fake heights and the fake `36.4°` / `+0.4°`.
+
+- [x] **8.1** `DayLog` gains `temperature` (`double?`, °C, null = unlogged) with `fromJson` missing-key tolerance; extend `day_log_test`.
+- [x] **8.2** Log sheet - new "Basal Body Temperature" section between pain slider and notes (35.0-38.0 °C, step 0.1, live serif value); `LoggingProvider.setTemperature(date, value)`; `peekDay` defaults unaffected.
+- [x] **8.3** `lib/widgets/trend_bars.dart` - accept `values` + `labels` params (drop the `_heights` constant); Records passes real observed cycle lengths from `PeriodHistory`, empty state under 2 cycles.
+- [x] **8.4** `lib/screens/chart_screen.dart` rebuild - fl_chart `LineChart` of the last ~30 logged temperatures (gaps for null), ovulation marker at `CycleCalculator` peak day, computed pre-shift average + post-shift rise; empty state with "Log your temperature" prompt -> log sheet.
+- [x] **8.5** Docs - `DESIGN.md` Screen 09 rewrite + Screen 07 temperature row.
+- [x] **8.6** Tests - `DayLog` temperature round-trip, `setTemperature` persistence, trend-bars real inputs, chart screen widget test (empty + data), averages math.
+
+**Gate:** `flutter analyze` ✅ · `flutter test` ✅ (104/104) · `flutter build apk --debug` ✅ · `flutter build web` ✅
+
+### Phase 9 - Real Local Alerts Inbox (done)
+
+> `MockData.alerts()` dies; alerts are generated from real cycle events.
+
+- [x] **9.1** `AlertItem` gains `id`, `type` (periodPredicted / fertileWindow / logMissing / lunarMilestone), `createdAt`, `read` with `toJson`/`fromJson` (+ extra `eventDate` used for expiry pruning; icon/tint derive from `AlertType`).
+- [x] **9.2** `lib/services/alert_generator.dart` - pure functions from `CycleProvider` + `LoggingProvider`: period predicted in 2 days / 1 day, fertile peak today, log missing after 18:00, lunar milestone (computed new/full moon); deduped by stable id.
+- [x] **9.3** `AlertProvider` (ChangeNotifier) - persisted list (`witchy_alerts`, cap 30), `bind()` generates on startup + listens to `CycleProvider`, `markRead`/`markAllRead`, unread count, expired `eventDate`s pruned.
+- [x] **9.4** `lib/screens/alerts_screen.dart` - reads `AlertProvider`, real relative timestamps (`intl`), read/unread styling, tap marks read, empty state; shell/profile bells show unread dot (`AppTopBar.badge`).
+- [x] **9.5** Retire `MockData.alerts()`.
+- [x] **9.6** Docs - `DESIGN.md` Screen 16 (v1.9.3); `PLAN.md`.
+- [x] **9.7** Tests - generator cases (2-day, 1-day, peak, missing log, lunar, dedupe determinism), persistence, markRead, alerts screen widget test.
+
+**Gate:** `flutter analyze` ✅ · `flutter test` ✅ (118/118) · `flutter build apk --debug` ✅ · `flutter build web` ✅
+
+### Phase 10 - Pregnancy Mode (done)
+
+> Gestation becomes computed; reachable only when `TrackingMode.pregnancy`.
+
+- [x] **10.1** `lib/providers/gestation_provider.dart` - `lmpDate` input persisted (`witchy_pregnancy_lmp`); computes gestational days, week/day, `progress = days/280`, days remaining, trimester, due date (past-due counter + future-LMP clamp included).
+- [x] **10.2** Date entry - gestation screen empty state `AppButton` opens a past-only date picker; the LMP row card reopens it; onboarding seeds `lmpDate = lastPeriodStart` when the Pregnancy chip is chosen (`rhythms_screen._complete`).
+- [x] **10.3** `lib/models/gestation_week.dart` + `lib/common/gestation_content.dart` - 10 week-range buckets covering weeks 0-40 (size tag, development, tip) + past-term fallback for >40; negative clamps to first.
+- [x] **10.4** Rebuild `lib/screens/gestation_screen.dart` - computed `Week N (Day D)`, real progress bar, countdown/past-due copy, due date + trimester line, content lookup per week; profile Apothecary row hidden unless mode = pregnancy.
+- [x] **10.5** Engine respect - `CycleProvider.showFertilityPredictions` (true only in Cycle mode; shared gate for Phase 11) suppresses `isFertileDay`/`isOvulationDay` (→ sanctuary card, fertile alerts), calendar glyphs (`CalendarFetcher.showFertility`), BBT ovulation marker; logged bleeds + period predictions stay visible.
+- [x] **10.6** Docs - `DESIGN.md` Screen 11 (v1.9.4); `PLAN.md`.
+- [x] **10.7** Tests - gestation math (today/84/280/past-due/future/due date/trimester boundaries), persistence, content lookup + fallback + gap-free coverage, screen widget tests (empty + seeded + week-1), fertility gate (provider + fetcher + widget).
+
+**Gate:** `flutter analyze` ✅ · `flutter test` ✅ (137/137) · `flutter build apk --debug` ✅ · `flutter build web` ✅
+
+### Phase 11 - Perimenopause Mode (done)
+
+> Cycle tracking continues with irregularity-aware predictions.
+
+- [x] **11.1** `CycleProvider` adaptation when `trackingMode == perimenopause` - expose `predictedRange` (earliest/latest next start from min/max observed cycle lengths), median fallback. -> `isPerimenopause`, `shortestCycleLength`/`longestCycleLength` (fallback = effective length), `cycleSpread` (null under 2 cycles), `predictedRange({today})` via `CycleCalculator.nextPeriodStart` on both extremes (results ordered earliest<=latest).
+- [x] **11.2** Sanctuary - stat duo shows a date window instead of a single day; fertility/peak card suppressed (ovulation unreliable); softened phase copy. -> `Bleeding In` renders `dMin–dMax Days` + `d MMM – d MMM · range` (collapses to `N Days` on a single-day window); day card note becomes `Period may start any day now` on d-1/d-2; fertility card already hidden by `showFertilityPredictions`.
+- [x] **11.3** Calendar - fertile/ovulation glyphs hidden; predicted period rendered as a range (whole window marked). -> `CalendarFetcher.forMonth` gains `predictedStart`/`predictedEnd`; marks the union of possible bleed days (earliest start through latest start + bleedLength) replacing arithmetic; `cycle_screen` passes `predictedRange()` only when `isPerimenopause`; fertile/ovulation glyphs already hidden via `showFertility: false`.
+- [x] **11.4** Records gains an "Irregularity" row (cycle-length spread, longest vs shortest) from `PeriodHistory`. -> `_buildIrregularityCard`: `shortest–longest Days` + `N Days variation` tag from `cycle.cycleSpread`; empty state under 2 cycles; always visible (most meaningful in Perimenopause).
+- [x] **11.5** Alerts generator - fertile alerts become "window opens as early as..." in this mode. -> `else if (cycle.isPerimenopause && cycle.ovulationDay(today: now) == today)` fires the hedged `Fertility Window` alert ("may open as early as today..."), same `fertile-<date>` id; peak alert unchanged for Cycle mode.
+- [x] **11.6** Docs - `DESIGN.md` Screen 05/06 mode variants + §4.1 (v1.9.5); `PLAN.md`.
+- [x] **11.7** Tests - range math + spread fallback (`cycle_provider_test`), window glyph marking (`calendar_fetcher_test`), hedged + quiet alert cases (`alert_generator_test`), Sanctuary widget tests per mode, Records irregularity widget tests (empty + spread).
+
+**Gate:** `flutter analyze` ✅ · `flutter test` ✅ (146/146) · `flutter build apk --debug` ✅ · `flutter build web` ✅
+
+### Phase 12 - Dark Theme & Profile/Notification Polish (open)
+
+- [ ] **12.1** `AppColors` dark token set (bg `#1B0A2A`, card `#26063F`, lav text, line `#3E2A54`, brightened pur) + `buildAppTheme({Brightness})` dark variant in `app_theme.dart`.
+- [ ] **12.2** `main.dart` theme follows `SettingsProvider.dark` override else platform brightness; `setDark` repaints live; Profile toggle kept.
+- [ ] **12.3** Profile real data - `29 Days`/`5 Days` -> `CycleProvider.meanCycleLength`/`bleedLength` (empty-state dashes); bell denominator -> `reminders.length`; version string -> `package_info_plus` (single source, replaces hardcoded `1.2.4`).
+- [ ] **12.4** Notification `freq` semantics honoured - `buildNotificationRequests` maps freq -> schedule rule (daily, daily-during-peak, window-start one-shot, period-minus-3-days one-shot, hourly daytime); re-sync whenever `CycleProvider` or reminders change.
+- [ ] **12.5** Stop swallowing scheduling errors - surface via `debugPrint` + SnackBar on Profile toggle failure.
+- [ ] **12.6** Docs - `DESIGN.md` §2 dark tokens + Screen 14; `PLAN.md`.
+- [ ] **12.7** Tests - dark theme builder, freq -> request mapping per rule, profile reads provider values (widget test), re-sync trigger.
+
+**Gate:** `flutter analyze` · `flutter test` · `flutter build apk --debug` · `flutter build web`
+
+### Phase 13 - Release Hardening & Final Gate (open)
+
+- [ ] **13.1** Android - `key.properties` + release `signingConfigs` (git-ignored keystore, README steps), drop applicationId TODO, pin compile/target/min SDK, `android:label="Witchy"`.
+- [ ] **13.2** Branded launcher icons via `flutter_launcher_icons` - cat-moon icon for Android (all densities), iOS (incl. adaptive), web; replaces default Flutter logo everywhere.
+- [ ] **13.3** iOS - `DEVELOPMENT_TEAM` placeholder, uncomment Podfile platform (13.0), `PrivacyInfo.xcprivacy`, `ITSAppUsesNonExemptEncryption=false`; comment in `auth_provider.dart` documenting the future Google/Apple sign-in config (kept hidden per scope decision).
+- [ ] **13.4** Web - `<title>Witchy</title>`, meta description, `apple-mobile-web-app-title`, `manifest.json` name/description + `theme_color`/`background_color` `#3B0A5E`, icons from 13.2.
+- [ ] **13.5** Version single-sourced from pubspec into the profile footer (12.3).
+- [ ] **13.6** Verify live endpoints - `legal_links.dart` URLs deployed; `articles.xml` reachable and parseable.
+- [ ] **13.7** Test-suite review - add coverage for feed, alerts, gestation, chart, dark mode; zero skipped tests.
+- [ ] **13.8** Release gate - `flutter analyze` zero issues · `flutter test` all green · `flutter build apk --release` · `flutter build ios --release --no-codesign` · `flutter build web`.
+- [ ] **13.9** Docs - `PLAN.md` Milestone 1 closed, `DESIGN.md` final bump, `README` build/signing instructions.
+
+**Gate:** `flutter analyze` · `flutter test` · `flutter build apk --release` · `flutter build ios --release --no-codesign` · `flutter build web`
+
+> Out of scope (flagged): Google/Apple sign-in activation (hidden), real couples/backend sync, Coven posting, sovereign-blood screen from MOCK.html (not in DESIGN.md), localization, analytics/crash reporting.
+
+
+### Fixes - Post Milestone 1 phases
+
+- [ ] rhythyms -> button: should mark user as logged-in and continue to main screen 
+- [ ] profile -> signup: should mark user as logged-out and return to first screen
+- [ ] floating button: opacity agains purple widgets/cards is not good - try to add a gold border to make it more visible
+- [ ] profile: after sign-out, we need a delete all data button (dark-ish red bg, white text)
+- [ ] rhythyms - tracking mode: should be a multi-toggle - the app MUST allow tracking all modes (cycle, pregnancy, perimenopause) simultaneously on the same interface (calendar, records, sanctuary, fertility, alert)
+ 
 --- 
 
 ## Milestone 2 - TBD

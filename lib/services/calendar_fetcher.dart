@@ -14,6 +14,9 @@ class CalendarFetcher {
     Map<DateTime, DayLog> logs = const {},
     int? selectedDay,
     DateTime? today,
+    bool showFertility = true,
+    DateTime? predictedStart,
+    DateTime? predictedEnd,
   }) {
     final now = today ?? DateTime.now();
     final todayDate = DateTime(now.year, now.month, now.day);
@@ -31,20 +34,32 @@ class CalendarFetcher {
       }
       final day = date.day;
       final log = logs[date];
+      final predicted =
+          predictedStart != null && predictedEnd != null
+              ? _inPredictedWindow(predictedStart, predictedEnd, date, bleedLength)
+              : CycleCalculator.isPeriodDay(lastStart, date, cycleLength, bleedLength);
       cells.add(
         CalendarDayCell(
           day: day,
           cycleDay: CycleCalculator.cycleDay(lastStart, date, cycleLength),
           isToday: date == todayDate,
-          isPredictedPeriod: CycleCalculator.isPeriodDay(lastStart, date, cycleLength, bleedLength),
+          isPredictedPeriod: predicted,
           isLoggedBleed: log != null && log.flow.isNotEmpty,
-          isFertile: CycleCalculator.isFertileDay(lastStart, date, cycleLength),
-          isOvulation: CycleCalculator.isOvulationDay(lastStart, date, cycleLength),
+          isFertile: showFertility && CycleCalculator.isFertileDay(lastStart, date, cycleLength),
+          isOvulation: showFertility && CycleCalculator.isOvulationDay(lastStart, date, cycleLength),
           isLogged: log != null,
           isSelected: selectedDay == day,
         ),
       );
     }
     return MonthCells(month: first, cells: cells);
+  }
+
+  /// Marks the union of possible bleed days: every day from the earliest
+  /// possible start through the latest possible start + bleed length.
+  static bool _inPredictedWindow(DateTime start, DateTime end, DateTime date, int bleedLength) {
+    final span = CycleCalculator.daysBetween(start, end) + bleedLength;
+    final off = CycleCalculator.daysBetween(start, date);
+    return off >= 0 && off < span;
   }
 }

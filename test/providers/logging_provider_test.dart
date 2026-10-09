@@ -29,6 +29,14 @@ void main() {
     expect(entry.moods, {'Enchanted'});
   });
 
+  test('setTemperature writes and clears the reading', () {
+    final day = DateTime(2026, 9, 20);
+    provider.setTemperature(day, 36.4);
+    expect(provider.peekDay(day)!.temperature, 36.4);
+    provider.setTemperature(day, null);
+    expect(provider.peekDay(day)!.temperature, isNull);
+  });
+
   test('category mutators toggle sets including discharge', () {
     final day = DateTime(2026, 9, 20);
     provider.toggleCollection(day, 'Cup');

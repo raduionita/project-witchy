@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/cycle_settings.dart';
+import '../models/tracking_mode.dart';
 import '../services/prefs_service.dart';
 
 class OnboardingProvider extends ChangeNotifier {
@@ -10,6 +11,7 @@ class OnboardingProvider extends ChangeNotifier {
     this.selectedDay = 17,
     this.cycleLength = 28,
     this.bleedLength = 5,
+    this.trackingMode = TrackingMode.cycle,
     int? yearOfBirth,
     DateTime? lastPeriodStart,
   }) : yearOfBirth = yearOfBirth ?? DateTime.now().year - 25,
@@ -20,6 +22,7 @@ class OnboardingProvider extends ChangeNotifier {
   int selectedDay;
   int cycleLength;
   int bleedLength;
+  TrackingMode trackingMode;
   int? yearOfBirth;
   DateTime lastPeriodStart;
   DateTime? pickedDate;
@@ -39,10 +42,18 @@ class OnboardingProvider extends ChangeNotifier {
       onboarded: await prefs.isOnboarded(),
       cycleLength: await prefs.cycleLength(),
       bleedLength: await prefs.bleedLength(),
+      trackingMode: await prefs.trackingMode(),
       yearOfBirth: await prefs.birthYear(),
       selectedDay: selected,
       lastPeriodStart: last ?? _derive(selected),
     );
+  }
+
+  void setTrackingMode(TrackingMode mode) {
+    if (mode == trackingMode) return;
+    trackingMode = mode;
+    notifyListeners();
+    _prefs.setTrackingMode(mode);
   }
 
   void setYear(int y) {
@@ -76,6 +87,7 @@ class OnboardingProvider extends ChangeNotifier {
     final last = pickedDate ?? DateTime(now.year, now.month, selectedDay <= 28 ? selectedDay : 28);
     lastPeriodStart = last;
     await _prefs.saveRhythms(cycleLength, bleedLength, last);
+    await _prefs.setTrackingMode(trackingMode);
     final year = yearOfBirth;
     if (year != null) await _prefs.setBirthYear(year);
     await _prefs.setOnboarded();

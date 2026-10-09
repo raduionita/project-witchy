@@ -43,12 +43,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Awaken Your Power'));
     await tester.pumpAndSettle();
-    expect(find.text('Your Privacy Promise'), findsOneWidget);
+    expect(find.text('A Note on Privacy'), findsOneWidget);
 
     // Accept is inert until every box is checked.
     await tester.tap(find.text('Accept'));
     await tester.pumpAndSettle();
-    expect(find.text('Your Privacy Promise'), findsOneWidget);
+    expect(find.text('A Note on Privacy'), findsOneWidget);
 
     for (var i = 0; i < 3; i++) {
       await tester.tap(find.byType(Checkbox).at(i));
@@ -78,7 +78,7 @@ void main() {
     expect(find.text('Join Witchy'), findsOneWidget);
   });
 
-  testWidgets('Join skip enters onboarding; journey needs a birth year', (WidgetTester tester) async {
+  testWidgets('Join skip enters onboarding; journey ready with default birth year', (WidgetTester tester) async {
     await tester.pumpWidget(await _buildApp(initial: {'witchy_privacy_accepted': true}));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Awaken Your Power'));
@@ -87,15 +87,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Set Your Rhythms'), findsOneWidget);
 
-    // CTA stays inert until a year of birth is chosen.
-    await tester.tap(find.text('Begin the Journey'));
-    await tester.pumpAndSettle();
-    expect(find.text('Set Your Rhythms'), findsOneWidget);
+    // Default birth year (now − 25) is preselected, so the CTA is active immediately.
+    expect(find.text('${DateTime.now().year - 25}'), findsWidgets);
 
-    await tester.tap(find.byType(DropdownButton<int>));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('2024').last);
-    await tester.pumpAndSettle();
     await tester.tap(find.text('Begin the Journey'));
     await tester.pumpAndSettle();
     expect(find.text('Sanctuary'), findsOneWidget);

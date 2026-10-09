@@ -37,7 +37,7 @@ class CalendarFetcher {
           cycleDay: CycleCalculator.cycleDay(lastStart, date, cycleLength),
           isToday: date == todayDate,
           isPredictedPeriod: CycleCalculator.isPeriodDay(lastStart, date, cycleLength, bleedLength),
-          isLoggedBleed: log != null && log.flow != 'None',
+          isLoggedBleed: log != null && log.flow.isNotEmpty,
           isFertile: CycleCalculator.isFertileDay(lastStart, date, cycleLength),
           isOvulation: CycleCalculator.isOvulationDay(lastStart, date, cycleLength),
           isLogged: log != null,

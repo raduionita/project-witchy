@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../common/legal_links.dart';
 import '../navigation/app_nav.dart';
 import '../services/prefs_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../utils/legal_links.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 
@@ -18,14 +18,31 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
   final PrefsService _prefs = PrefsService();
   bool _terms = false;
   bool _privacy = false;
-  bool _child = false;
+  bool _age = false;
+  bool _acceptAll = false;
 
-  bool get _allAgreed => _terms && _privacy && _child;
+  bool get _allAgreed => _terms && _privacy && _age;
+
+  void _update(void Function() change) {
+    setState(() {
+      change();
+      _acceptAll = _allAgreed;
+    });
+  }
+
+  void _setAll(bool value) {
+    setState(() {
+      _acceptAll = value;
+      _terms = value;
+      _privacy = value;
+      _age = value;
+    });
+  }
 
   Future<void> _accept() async {
     await _prefs.setPrivacyAccepted();
     if (!mounted) return;
-    context.reset('/auth');
+    context.reset('/onboarding');
   }
 
   void _decline() => context.backOr('/');
@@ -47,10 +64,10 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text('Your Privacy Promise', style: AppText.h2, textAlign: TextAlign.center),
+                        Text('A Note on Privacy', style: AppText.h2, textAlign: TextAlign.center),
                         const SizedBox(height: 5),
                         Text(
-                          'Witchy keeps your body\u2019s stories where they belong \u2014 on this device. Nothing you log is uploaded, sold, or shared with third parties, and Witchy never replaces professional medical care.',
+                          'Witchy keeps your body\u2019s stories where they belong - on this device. Nothing you log is uploaded, sold, or shared with third parties, and Witchy never replaces professional medical care.',
                           style: AppText.sub,
                           textAlign: TextAlign.center,
                         ),
@@ -63,22 +80,27 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                                 title: 'I agree to the Terms of Service',
                                 link: 'Read the Terms',
                                 value: _terms,
-                                onChanged: (v) => setState(() => _terms = v ?? false),
+                                onChanged: (v) => _update(() => _terms = v ?? false),
                                 onLink: () => _open('Terms of Service', LegalLinks.terms),
                               ),
                               _ConsentRow(
                                 title: 'I agree to the Privacy Policy',
                                 link: 'Read the Privacy Policy',
                                 value: _privacy,
-                                onChanged: (v) => setState(() => _privacy = v ?? false),
+                                onChanged: (v) => _update(() => _privacy = v ?? false),
                                 onLink: () => _open('Privacy Policy', LegalLinks.privacy),
                               ),
                               _ConsentRow(
-                                title: 'I confirm I am of the required age and accept the Child Protection notice',
-                                link: 'Read the Child Protection Policy',
-                                value: _child,
-                                onChanged: (v) => setState(() => _child = v ?? false),
-                                onLink: () => _open('Child Protection', LegalLinks.childProtection),
+                                title: 'I confirm I am 16 or older',
+                                link: 'Read the Safe Space guidelines',
+                                value: _age,
+                                onChanged: (v) => _update(() => _age = v ?? false),
+                                onLink: () => _open('Safe Space', LegalLinks.childProtection),
+                              ),
+                              _ConsentRow(
+                                title: 'Accept all',
+                                value: _acceptAll,
+                                onChanged: (v) => _setAll(v ?? false),
                               ),
                             ],
                           ),
@@ -92,12 +114,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
                 children: [
                   Expanded(child: _OutlineButton(label: 'Refuse', onTap: _decline)),
                   const SizedBox(width: 12),
-                  Expanded(
-                    child: Opacity(
-                      opacity: _allAgreed ? 1 : 0.45,
-                      child: AppButton(label: 'Accept', onTap: _allAgreed ? _accept : null),
-                    ),
-                  ),
+                  Expanded(child: Opacity(opacity: _allAgreed ? 1 : 0.45, child: AppButton(label: 'Accept', onTap: _allAgreed ? _accept : null))),
                 ],
               ),
             ],
@@ -110,12 +127,12 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
 
 class _ConsentRow extends StatelessWidget {
   final String title;
-  final String link;
+  final String? link;
   final bool value;
   final ValueChanged<bool?> onChanged;
-  final VoidCallback onLink;
+  final VoidCallback? onLink;
   final bool first;
-  const _ConsentRow({required this.title, required this.link, required this.value, required this.onChanged, required this.onLink, this.first = false});
+  const _ConsentRow({required this.title, this.link, required this.value, required this.onChanged, this.onLink, this.first = false});
 
   @override
   Widget build(BuildContext context) {
@@ -126,12 +143,7 @@ class _ConsentRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Checkbox(
-            value: value,
-            activeColor: AppColors.pur,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            onChanged: onChanged,
-          ),
+          Checkbox(value: value, activeColor: AppColors.pur, materialTapTargetSize: MaterialTapTargetSize.shrinkWrap, onChanged: onChanged),
           Expanded(
             child: GestureDetector(
               onTap: () => onChanged(!value),
@@ -139,14 +151,13 @@ class _ConsentRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(title, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink), textAlign: TextAlign.center),
-                  const SizedBox(height: 2),
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: onLink,
-                      child: Text(link, style: AppText.sans(10.5, c: AppColors.pur).copyWith(decoration: TextDecoration.underline), textAlign: TextAlign.center),
+                  if (link != null && onLink != null) ...[
+                    const SizedBox(height: 2),
+                    MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: GestureDetector(onTap: onLink, child: Text(link!, style: AppText.sans(10.5, c: AppColors.pur).copyWith(decoration: TextDecoration.underline), textAlign: TextAlign.center)),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),

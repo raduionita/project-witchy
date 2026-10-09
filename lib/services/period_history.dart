@@ -7,7 +7,7 @@ class PeriodHistory {
 
   static DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
 
-  static bool isBleedDay(DayLog? log) => log != null && log.flow != 'None';
+  static bool isBleedDay(DayLog? log) => log != null && log.flow.isNotEmpty;
 
   /// Groups logged bleed days into consecutive spans, oldest first.
   static List<PeriodSpan> spans(Map<DateTime, DayLog> logs) {

@@ -135,6 +135,25 @@
     </div>
   </section>
 
+  <section class="card detail" aria-live="polite">
+    <div class="detail-head">
+      <svg id="detailMoon" width="56" height="56" viewBox="0 0 44 44" aria-hidden="true"></svg>
+      <div>
+        <div class="detail-title" id="detailTitle"></div>
+        <div class="detail-phase" id="detailPhase"></div>
+        <div class="detail-note" id="detailNote" hidden></div>
+      </div>
+      <div class="badge" id="detailBadge"></div>
+    </div>
+    <div class="row">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#C23B6E" aria-hidden="true"><path d="M12 2.5C12 2.5 5.5 10 5.5 14.5a6.5 6.5 0 0 0 13 0C18.5 10 12 2.5 12 2.5z"/></svg>
+      No flow logged yet
+    </div>
+    <div class="row">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#6B2FB5" aria-hidden="true"><path d="M12 21s-8-5.2-8-11a4.7 4.7 0 0 1 8-3.3A4.7 4.7 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg>
+      No mood logged yet
+    </div>
+  </section>
 </div>
 
 <script>
@@ -243,7 +262,41 @@
     }
   }
 
+  // ---- Day detail card ----
+  function renderDetail() {
+    var f = info(selected);
+    var cd = f.cd, kind = f.kind, phase, glyph;
+
+    if (kind === "period")      { phase = "New Moon · Period"; glyph = "period"; }
+    else if (kind === "ovu")    { phase = "Full Moon · Ovulation"; glyph = "ovu"; }
+    else if (kind === "fertile"){ phase = "Waxing Moon · Fertile window"; glyph = "fertile"; }
+    else if (cd > PERIOD_LEN && cd < OVULATION_CD - FERTILE_SPAN) { phase = "Waxing Moon · Follicular phase"; glyph = "wax"; }
+    else                        { phase = "Waning Moon · Luteal phase"; glyph = "wane"; }
+
+    document.getElementById("detailTitle").textContent =
+      MONTHS[selected.getMonth()] + " " + selected.getDate() + ", " + selected.getFullYear();
+    document.getElementById("detailPhase").textContent = phase;
+    document.getElementById("detailMoon").innerHTML = moonSvg(glyph, selected > stripTime(TODAY));
+
+    var note = document.getElementById("detailNote");
+    if (cd === CYCLE_LENGTH) { note.hidden = false; note.textContent = "Period may start tomorrow"; }
+    else { note.hidden = true; note.textContent = ""; }
+
+    var badge = document.getElementById("detailBadge");
+    badge.textContent = (kind === "period" ? "Period Day " : "Cycle Day ") + cd;
+    badge.className = "badge" + (kind === "period" ? " period" : "");
+  }
+
+  // ---- Month navigation ----
+  document.getElementById("prev").addEventListener("click", function () {
+    view = new Date(view.getFullYear(), view.getMonth() - 1, 1); render();
+  });
+  document.getElementById("next").addEventListener("click", function () {
+    view = new Date(view.getFullYear(), view.getMonth() + 1, 1); render();
+  });
+
   render();
+  renderDetail();
 })();
 </script>
 </body>

@@ -32,6 +32,10 @@ abstract final class AppColors {
   static const blue = Color(0xFF3E7BC0);
   static const green = Color(0xFF4C8C4A);
   static const red = Color(0xFFC0392B);
+  static const orange = Color(0xFFE07B36);
+  static const teal = Color(0xFF2A9D8F);
+  static const brown = Color(0xFF9C6B3F);
+  static const indigo = Color(0xFF5B4A8C);
   static const tabBg = Color(0xFFEFE6F6);
   static const tabText = Color(0xFF6B5B7D);
   static const orbLight = Color(0xFF4A1170);
@@ -63,4 +67,27 @@ abstract final class AppColors {
     blurRadius: 18,
     offset: Offset(0, 8),
   );
+
+  /// WCAG contrast ratio between two colors (1..21).
+  static double contrast(Color a, Color b) {
+    final la = a.computeLuminance();
+    final lb = b.computeLuminance();
+    final hi = la > lb ? la : lb;
+    final lo = la > lb ? lb : la;
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  /// Darkens [c] just enough to stay readable (>= 4.5:1) on [bg].
+  /// Used for section titles so vivid accents (gold, orange) keep AA contrast.
+  static Color readableOn(Color c, Color bg) {
+    var out = c;
+    var guard = 0;
+    while (contrast(out, bg) < 4.5 && guard++ < 24) {
+      out = Color.lerp(out, Colors.black, 0.1)!;
+    }
+    return out;
+  }
+
+  /// White or ink, whichever contrasts more against [bg] (selected chip text).
+  static Color onColor(Color bg) => contrast(bg, Colors.white) >= contrast(bg, ink) ? Colors.white : ink;
 }

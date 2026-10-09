@@ -28,7 +28,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Future<void> _awaken() async {
     final accepted = await context.read<PrefsService>().isPrivacyAccepted();
     if (!mounted) return;
-    context.go(accepted ? '/auth' : '/privacy');
+    context.go(accepted ? '/onboarding' : '/privacy');
   }
 
   @override

@@ -8,7 +8,10 @@ class QuickAction extends StatelessWidget {
   final FaIconData icon;
   final String label;
   final VoidCallback onTap;
-  const QuickAction({super.key, required this.icon, required this.label, required this.onTap});
+
+  /// Solid purple state for a category that already has entries logged today.
+  final bool filled;
+  const QuickAction({super.key, required this.icon, required this.label, required this.onTap, this.filled = false});
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +19,18 @@ class QuickAction extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.line)),
-        child: Column(children: [IconBadge(icon: icon), const SizedBox(height: 8), Text(label, style: AppText.sans(10, w: FontWeight.w500, c: AppColors.chipText))]),
+        decoration: BoxDecoration(
+          color: filled ? AppColors.pur : Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: filled ? AppColors.pur : AppColors.line),
+        ),
+        child: Column(
+          children: [
+            IconBadge(icon: icon, bg: filled ? Colors.white : AppColors.lav, fg: AppColors.pur),
+            const SizedBox(height: 8),
+            Text(label, style: AppText.sans(10, w: FontWeight.w500, c: filled ? Colors.white : AppColors.chipText)),
+          ],
+        ),
       ),
     );
   }

@@ -4,7 +4,6 @@ import '../models/mock_data.dart';
 import '../screens/alerts_screen.dart';
 import '../screens/article_detail_screen.dart';
 import '../screens/binding_screen.dart';
-import '../screens/blood_screen.dart';
 import '../screens/chart_screen.dart';
 import '../screens/fertility_screen.dart';
 import '../screens/gestation_screen.dart';
@@ -129,8 +128,6 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
         return const ProfileScreen();
       case '/alerts':
         return const AlertsScreen();
-      case '/cycle':
-        return const BloodScreen();
       case '/fertility':
         return const FertilityScreen();
       case '/library':

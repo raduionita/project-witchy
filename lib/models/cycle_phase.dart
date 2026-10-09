@@ -15,4 +15,20 @@ extension CyclePhaseLabel on CyclePhase {
         return 'Waning Glow';
     }
   }
+
+  /// Plain calendar-relative name shown under dates on entry cards.
+  String get phaseName {
+    switch (this) {
+      case CyclePhase.menstrual:
+        return 'Period';
+      case CyclePhase.follicular:
+        return 'Follicular phase';
+      case CyclePhase.fertile:
+        return 'Fertile window';
+      case CyclePhase.ovulatory:
+        return 'Ovulation';
+      case CyclePhase.luteal:
+        return 'Luteal phase';
+    }
+  }
 }

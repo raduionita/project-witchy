@@ -20,13 +20,40 @@ void main() {
     expect(provider.snapshot(), isEmpty);
   });
 
-  test('mutators create the entry with flow None default', () {
+  test('mutators create the entry with an empty flow default', () {
     final day = DateTime(2026, 9, 20);
     provider.toggleMood(day, 'Enchanted');
     final entry = provider.peekDay(day);
     expect(entry, isNotNull);
-    expect(entry!.flow, 'None');
+    expect(entry!.flow, isEmpty);
     expect(entry.moods, {'Enchanted'});
+  });
+
+  test('category mutators toggle sets including discharge', () {
+    final day = DateTime(2026, 9, 20);
+    provider.toggleCollection(day, 'Cup');
+    provider.toggleDigestion(day, 'Nausea');
+    provider.toggleSkinHair(day, 'Acne');
+    provider.toggleCravings(day, 'Sweet cravings');
+    provider.toggleSex(day, 'Protected sex');
+    provider.toggleSleep(day, 'Insomnia');
+    provider.toggleDischarge(day, 'Creamy');
+    provider.toggleFlow(day, 'Light');
+    final entry = provider.peekDay(day)!;
+    expect(entry.collection, {'Cup'});
+    expect(entry.digestion, {'Nausea'});
+    expect(entry.skinHair, {'Acne'});
+    expect(entry.cravings, {'Sweet cravings'});
+    expect(entry.sex, {'Protected sex'});
+    expect(entry.sleep, {'Insomnia'});
+    expect(entry.discharge, {'Creamy'});
+    expect(entry.flow, {'Light'});
+
+    // Toggle off removes again.
+    provider.toggleSleep(day, 'Insomnia');
+    provider.toggleFlow(day, 'Light');
+    expect(provider.peekDay(day)!.sleep, isEmpty);
+    expect(provider.peekDay(day)!.flow, isEmpty);
   });
 
   test('deleteDay removes the entry entirely', () async {
@@ -46,7 +73,7 @@ void main() {
     provider.setFlow(day, 'Light');
     final snap = provider.snapshot();
     expect(snap.keys, contains(DateTime(2026, 9, 5)));
-    expect(snap[DateTime(2026, 9, 5)]!.flow, 'Light');
+    expect(snap[DateTime(2026, 9, 5)]!.flow, {'Light'});
   });
 
   test('restoreDay reverts mutations to the original snapshot copy', () async {
@@ -64,13 +91,13 @@ void main() {
 
     provider.restoreDay(day, original);
     final entry = provider.peekDay(day)!;
-    expect(entry.flow, 'Heavy');
+    expect(entry.flow, {'Heavy'});
     expect(entry.moods, {'Enchanted'});
     expect(entry.pain, 6);
     expect(entry.notes, 'before');
     await Future<void>.delayed(const Duration(milliseconds: 20));
     final restored = await LoggingProvider.load(prefs);
-    expect(restored.peekDay(day)!.flow, 'Heavy');
+    expect(restored.peekDay(day)!.flow, {'Heavy'});
   });
 
   test('restoreDay with null removes an entry created during editing', () {

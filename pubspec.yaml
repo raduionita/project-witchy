@@ -41,6 +41,7 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/svgs/
 flutter_native_splash:
   color: "#3B0A5E"
   image: assets/images/cat-moon-gold-512.png

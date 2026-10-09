@@ -22,8 +22,8 @@ void main() {
 
     test('marks predicted period, ovulation, fertile and logged bleed days', () {
       final logs = {
-        DateTime(2026, 9, 10): DayLog(flow: 'Light'),
-        DateTime(2026, 9, 11): DayLog(flow: 'None'),
+        DateTime(2026, 9, 10): DayLog(flow: {'Light'}),
+        DateTime(2026, 9, 11): DayLog(),
       };
       final cells = CalendarFetcher.forMonth(
         month: DateTime(2026, 9),
@@ -54,7 +54,7 @@ void main() {
         lastStart: DateTime(2026, 9, 1),
         cycleLength: 28,
         bleedLength: 5,
-        logs: {DateTime(2026, 9, 20): DayLog(flow: 'Heavy')},
+        logs: {DateTime(2026, 9, 20): DayLog(flow: {'Heavy'})},
       );
       final cell = cells.cellFor(20)!;
       expect(cell.isPredictedPeriod, isFalse);

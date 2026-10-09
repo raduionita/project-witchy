@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
+import '../common/log_data.dart';
 import '../models/day_log.dart';
 import '../providers/logging_provider.dart';
 import '../theme/app_colors.dart';
@@ -11,34 +12,25 @@ import 'app_slider_row.dart';
 
 const kMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-Future<void> showLogSheet(BuildContext context, DateTime date) {
+/// Opens the log sheet for [date]; when [scrollTo] is given the sheet scrolls
+/// (only if needed) to that category's section.
+Future<void> showLogSheet(BuildContext context, DateTime date, {LogCategory? scrollTo}) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: AppColors.bg,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-    builder: (_) => DraggableScrollableSheet(expand: false, initialChildSize: 0.85, minChildSize: 0.5, maxChildSize: 0.95, builder: (_, ctrl) => LogBottomSheet(date: date, scroll: ctrl)),
+    builder:
+        (_) =>
+            DraggableScrollableSheet(expand: false, initialChildSize: 0.85, minChildSize: 0.5, maxChildSize: 0.95, builder: (_, ctrl) => LogBottomSheet(date: date, scroll: ctrl, scrollTo: scrollTo)),
   );
 }
 
 class LogBottomSheet extends StatefulWidget {
   final DateTime date;
   final ScrollController scroll;
-  const LogBottomSheet({super.key, required this.date, required this.scroll});
-
-  static const flows = ['None', 'Light', 'Medium', 'Heavy'];
-  static const moods = [
-    ('Enchanted', AppIcons.spark, AppColors.pur),
-    ('Grounded', AppIcons.leaf, AppColors.green),
-    ('Shadowy', AppIcons.moon, Color(0xFF5B4A8C)),
-    ('Restless', AppIcons.zap, Color(0xFFC2703B)),
-  ];
-  static const symptoms = [
-    ('Uterine Cramps', AppIcons.alert, AppColors.pur),
-    ('Headache', AppIcons.zap, Color(0xFFC2703B)),
-    ('Bloating', AppIcons.drop, Color(0xFF3E7BC0)),
-    ('Fatigue', AppIcons.moon, Color(0xFF5B4A8C)),
-  ];
+  final LogCategory? scrollTo;
+  const LogBottomSheet({super.key, required this.date, required this.scroll, this.scrollTo});
 
   @override
   State<LogBottomSheet> createState() => _LogBottomSheetState();
@@ -48,11 +40,45 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
   /// Snapshot taken before any edit, so cancel can discard changes.
   late final DayLog? _original;
 
+  /// Key attached to the [widget.scrollTo] section so it can be revealed.
+  GlobalKey? _targetKey;
+  int _scrollRetries = 0;
+
   @override
   void initState() {
     super.initState();
     _original = context.read<LoggingProvider>().peekDay(widget.date)?.copy();
+    if (widget.scrollTo != null) {
+      _targetKey = GlobalKey();
+      // Wait out the sheet's entrance animation, then position the content.
+      Future<void>.delayed(const Duration(milliseconds: 350), () {
+        if (mounted) _scheduleScroll();
+      });
+    }
   }
+
+  void _scheduleScroll() => WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToTarget());
+
+  /// Scrolls the target category into view when it isn't fully visible already.
+  void _scrollToTarget() {
+    final targetCtx = _targetKey?.currentContext;
+    final targetBox = targetCtx?.findRenderObject() as RenderBox?;
+    final viewportBox = context.findRenderObject() as RenderBox?;
+    if (!mounted || targetCtx == null || targetBox == null || viewportBox == null || !targetBox.attached || !viewportBox.attached) {
+      if (_scrollRetries++ < 3) _scheduleScroll();
+      return;
+    }
+    final top = targetBox.localToGlobal(Offset.zero, ancestor: viewportBox).dy;
+    final bottom = top + targetBox.size.height;
+    if (top >= 0 && bottom <= viewportBox.size.height) return; // already fully visible
+    final delta = top < 0 ? top - 12 : bottom - viewportBox.size.height + 12;
+    final position = widget.scroll.position;
+    final target = (position.pixels + delta).clamp(position.minScrollExtent, position.maxScrollExtent).toDouble();
+    if ((target - position.pixels).abs() < 1) return;
+    position.animateTo(target, duration: const Duration(milliseconds: 220), curve: Curves.easeOutCubic);
+  }
+
+  GlobalKey? _keyFor(LogCategory category) => widget.scrollTo?.title == category.title ? _targetKey : null;
 
   void _cancel() {
     context.read<LoggingProvider>().restoreDay(widget.date, _original);
@@ -76,47 +102,117 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
         const SizedBox(height: 4),
         Text('Select physical and mental essences flowing within you.', style: AppText.sub, textAlign: TextAlign.center),
         const SizedBox(height: 12),
-        Text('Bleed Intensity', style: AppText.sec),
-        const SizedBox(height: 8),
-        Row(spacing: 8, children: [for (final f in LogBottomSheet.flows) Expanded(child: AppChip(label: f, selected: entry.flow == f, onTap: () => context.read<LoggingProvider>().setFlow(date, f)))]),
-        const SizedBox(height: 12),
-        Text('Emotional Currents', style: AppText.sec),
-        const SizedBox(height: 8),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          childAspectRatio: 3.4,
-          children: [
-            for (final m in LogBottomSheet.moods)
-              AppChip(label: m.$1, icon: m.$2, iconColor: m.$3, selected: entry.moods.contains(m.$1), onTap: () => context.read<LoggingProvider>().toggleMood(date, m.$1)),
-          ],
+        _LogCycleSection(
+          category: LogData.flows,
+          sectionKey: _keyFor(LogData.flows),
+          selected: (o) => entry.flow.contains(o.name),
+          onTap: (o) => context.read<LoggingProvider>().toggleFlow(date, o.name),
         ),
-        const SizedBox(height: 12),
-        Text('Somatic Echoes', style: AppText.sec),
-        const SizedBox(height: 8),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 8,
-          crossAxisSpacing: 8,
-          childAspectRatio: 3.4,
-          children: [
-            for (final s in LogBottomSheet.symptoms)
-              AppChip(label: s.$1, icon: s.$2, iconColor: s.$3, selected: entry.symptoms.contains(s.$1), onTap: () => context.read<LoggingProvider>().toggleSymptom(date, s.$1)),
-          ],
+        _LogCycleSection(
+          category: LogData.collectionMethods,
+          sectionKey: _keyFor(LogData.collectionMethods),
+          selected: (o) => entry.collection.contains(o.name),
+          onTap: (o) => context.read<LoggingProvider>().toggleCollection(date, o.name),
         ),
-        const SizedBox(height: 12),
-        AppSliderRow(label: 'Uterine Contraction Pain', value: 'Level ${entry.pain.round()}', min: 0, max: 10, current: entry.pain, onChanged: (v) => context.read<LoggingProvider>().setPain(date, v)),
+        _LogCycleSection(
+          category: LogData.painSymptoms,
+          sectionKey: _keyFor(LogData.painSymptoms),
+          selected: (o) => entry.symptoms.contains(o.name),
+          onTap: (o) => context.read<LoggingProvider>().toggleSymptom(date, o.name),
+        ),
+        _LogCycleSection(
+          category: LogData.digestion,
+          sectionKey: _keyFor(LogData.digestion),
+          selected: (o) => entry.digestion.contains(o.name),
+          onTap: (o) => context.read<LoggingProvider>().toggleDigestion(date, o.name),
+        ),
+        _LogCycleSection(
+          category: LogData.skinHair,
+          sectionKey: _keyFor(LogData.skinHair),
+          selected: (o) => entry.skinHair.contains(o.name),
+          onTap: (o) => context.read<LoggingProvider>().toggleSkinHair(date, o.name),
+        ),
+        _LogCycleSection(
+          category: LogData.moods,
+          sectionKey: _keyFor(LogData.moods),
+          selected: (o) => entry.moods.contains(o.name),
+          onTap: (o) => context.read<LoggingProvider>().toggleMood(date, o.name),
+        ),
+        _LogCycleSection(
+          category: LogData.cravings,
+          sectionKey: _keyFor(LogData.cravings),
+          selected: (o) => entry.cravings.contains(o.name),
+          onTap: (o) => context.read<LoggingProvider>().toggleCravings(date, o.name),
+        ),
+        _LogCycleSection(
+          category: LogData.discharge,
+          sectionKey: _keyFor(LogData.discharge),
+          selected: (o) => entry.discharge.contains(o.name),
+          onTap: (o) => context.read<LoggingProvider>().toggleDischarge(date, o.name),
+        ),
+        _LogCycleSection(category: LogData.sex, sectionKey: _keyFor(LogData.sex), selected: (o) => entry.sex.contains(o.name), onTap: (o) => context.read<LoggingProvider>().toggleSex(date, o.name)),
+        _LogCycleSection(
+          category: LogData.sleep,
+          sectionKey: _keyFor(LogData.sleep),
+          selected: (o) => entry.sleep.contains(o.name),
+          onTap: (o) => context.read<LoggingProvider>().toggleSleep(date, o.name),
+        ),
+        _LogCycleSlider(date: date, pain: entry.pain),
         const SizedBox(height: 8),
         Text('Notes', style: AppText.sec),
         const SizedBox(height: 8),
         _NotesField(date: date, initialNotes: entry.notes),
       ],
     );
+  }
+}
+
+/// One log-sheet category: sec title + 2-col multi-toggle chip grid.
+class _LogCycleSection extends StatelessWidget {
+  final LogCategory category;
+  final GlobalKey? sectionKey;
+  final bool Function(LogOption) selected;
+  final void Function(LogOption) onTap;
+  const _LogCycleSection({required this.category, this.sectionKey, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = AppColors.readableOn(category.color, AppColors.bg);
+    return Padding(
+      key: sectionKey,
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(category.title, style: AppText.sec.copyWith(color: color)),
+          const SizedBox(height: 8),
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: 4.8,
+            children: [
+              for (final o in category.options)
+                AppChip(label: o.name, icon: o.icon, iconColor: color, iconCount: o.iconCount, selected: selected(o), selectedColor: category.color, onTap: () => onTap(o)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Uterine contraction pain slider bound to the day's log entry.
+class _LogCycleSlider extends StatelessWidget {
+  final DateTime date;
+  final double pain;
+  const _LogCycleSlider({required this.date, required this.pain});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppSliderRow(label: 'Uterine Contraction Pain', value: 'Level ${pain.round()}', min: 0, max: 10, current: pain, onChanged: (v) => context.read<LoggingProvider>().setPain(date, v));
   }
 }
 

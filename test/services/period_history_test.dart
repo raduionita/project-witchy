@@ -4,7 +4,7 @@ import 'package:witchy/services/period_history.dart';
 
 void main() {
   Map<DateTime, DayLog> logs(Iterable<DateTime> days, {String flow = 'Medium'}) =>
-      {for (final d in days) d: DayLog(flow: flow)};
+      {for (final d in days) d: DayLog(flow: {flow})};
 
   group('PeriodHistory.spans', () {
     test('groups consecutive bleed days and splits across gaps', () {
@@ -24,10 +24,10 @@ void main() {
       expect(spans.last.length, 3);
     });
 
-    test('ignores flow None entries and missing logs', () {
+    test('ignores empty-flow entries and missing logs', () {
       final spans = PeriodHistory.spans({
-        DateTime(2026, 9, 14): DayLog(flow: 'Medium'),
-        DateTime(2026, 9, 15): DayLog(flow: 'None'),
+        DateTime(2026, 9, 14): DayLog(flow: {'Medium'}),
+        DateTime(2026, 9, 15): DayLog(),
       });
       expect(spans, hasLength(1));
       expect(spans.single.length, 1);

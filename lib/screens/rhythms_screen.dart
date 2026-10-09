@@ -42,8 +42,7 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
   @override
   Widget build(BuildContext context) {
     final ob = context.watch<OnboardingProvider>();
-    final date = ob.pickedDate;
-    final nowYear = DateTime.now().year;
+    // Default year (now − 25) is preselected, so this is true from the first frame.
     final canFinish = ob.yearOfBirth != null;
     return Scaffold(
       body: SafeArea(
@@ -52,93 +51,157 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Set Your Rhythms', style: AppText.h2),
-              const SizedBox(height: 5),
-              Text('Calibrate your lunar engine. When did your last bleeding phase commence?', style: AppText.sub),
+              const _Header(),
               const SizedBox(height: 12),
-              AppCard(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Year of Birth', style: AppText.sans(11, c: AppColors.muted)),
-                        const SizedBox(height: 3),
-                        Text(ob.yearOfBirth?.toString() ?? 'Select year', style: AppText.serif(14, c: canFinish ? AppColors.ink : AppColors.placeholder)),
-                      ],
-                    ),
-                    DropdownButtonHideUnderline(
-                      child: DropdownButton<int>(
-                        value: ob.yearOfBirth,
-                        isDense: true,
-                        hint: Text('Year', style: AppText.sans(11, c: AppColors.placeholder)),
-                        items: [
-                          for (var y = nowYear; y >= nowYear - 100; y--)
-                            DropdownMenuItem(value: y, child: Text('$y', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.ink))),
-                        ],
-                        onChanged: (v) {
-                          if (v != null) context.read<OnboardingProvider>().setYear(v);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              const _YearOfBirthCard(),
               const SizedBox(height: 12),
-              AppCard(
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: _pickDate,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Last bleeding phase', style: AppText.sans(11, c: AppColors.muted)),
-                            const SizedBox(height: 3),
-                            Text(date == null ? 'Pick a date' : DateFormat('MMMM d, yyyy').format(date), style: AppText.serif(14, c: date == null ? AppColors.placeholder : AppColors.ink)),
-                          ],
-                        ),
-                        const FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              _LastBleedDateCard(onTap: _pickDate),
               const SizedBox(height: 12),
-              AppCard(
-                child: AppSliderRow(
-                  label: 'Cycle duration (stardust tides)',
-                  value: '${ob.cycleLength} Days',
-                  min: 20,
-                  max: 40,
-                  current: ob.cycleLength.toDouble(),
-                  onChanged: (v) => context.read<OnboardingProvider>().setCycle(v.round()),
-                ),
-              ),
+              const _CycleLengthCard(),
               const SizedBox(height: 12),
-              AppCard(
-                child: AppSliderRow(
-                  label: 'Bleeding phase length',
-                  value: '${ob.bleedLength} Days',
-                  min: 2,
-                  max: 10,
-                  current: ob.bleedLength.toDouble(),
-                  onChanged: (v) => context.read<OnboardingProvider>().setBleed(v.round()),
-                ),
-              ),
+              const _BleedLengthCard(),
               const Spacer(),
-              Opacity(
-                opacity: canFinish ? 1 : 0.45,
-                child: AppButton(label: 'Begin the Journey', onTap: canFinish ? _complete : null),
-              ),
+              _JourneyButton(canFinish: canFinish, onComplete: _complete),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header();
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Set Your Rhythms', style: AppText.h2),
+        const SizedBox(height: 5),
+        Text('Calibrate your lunar engine. When did your last bleeding phase commence?', style: AppText.sub),
+      ],
+    );
+  }
+}
+
+/// Year-of-birth dropdown; preselected with the provider default (now − 25).
+class _YearOfBirthCard extends StatelessWidget {
+  const _YearOfBirthCard();
+  @override
+  Widget build(BuildContext context) {
+    final ob = context.watch<OnboardingProvider>();
+    final year = ob.yearOfBirth;
+    final nowYear = DateTime.now().year;
+    return AppCard(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Year of Birth', style: AppText.sans(11, c: AppColors.muted)),
+              const SizedBox(height: 3),
+              Text(year?.toString() ?? 'Select year', style: AppText.serif(14, c: year == null ? AppColors.placeholder : AppColors.ink)),
+            ],
+          ),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<int>(
+              value: year,
+              isDense: true,
+              hint: Text('Year', style: AppText.sans(11, c: AppColors.placeholder)),
+              items: [
+                for (var y = nowYear; y >= nowYear - 100; y--)
+                  DropdownMenuItem(value: y, child: Text('$y', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.ink))),
+              ],
+              onChanged: (v) {
+                if (v != null) context.read<OnboardingProvider>().setYear(v);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LastBleedDateCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _LastBleedDateCard({required this.onTap});
+  @override
+  Widget build(BuildContext context) {
+    final date = context.watch<OnboardingProvider>().pickedDate;
+    return AppCard(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: onTap,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Last bleeding phase', style: AppText.sans(11, c: AppColors.muted)),
+                  const SizedBox(height: 3),
+                  Text(date == null ? 'Pick a date' : DateFormat('MMMM d, yyyy').format(date), style: AppText.serif(14, c: date == null ? AppColors.placeholder : AppColors.ink)),
+                ],
+              ),
+              const FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CycleLengthCard extends StatelessWidget {
+  const _CycleLengthCard();
+  @override
+  Widget build(BuildContext context) {
+    final ob = context.watch<OnboardingProvider>();
+    return AppCard(
+      child: AppSliderRow(
+        label: 'Cycle duration (stardust tides)',
+        value: '${ob.cycleLength} Days',
+        min: 20,
+        max: 40,
+        current: ob.cycleLength.toDouble(),
+        onChanged: (v) => context.read<OnboardingProvider>().setCycle(v.round()),
+      ),
+    );
+  }
+}
+
+class _BleedLengthCard extends StatelessWidget {
+  const _BleedLengthCard();
+  @override
+  Widget build(BuildContext context) {
+    final ob = context.watch<OnboardingProvider>();
+    return AppCard(
+      child: AppSliderRow(
+        label: 'Bleeding phase length',
+        value: '${ob.bleedLength} Days',
+        min: 2,
+        max: 10,
+        current: ob.bleedLength.toDouble(),
+        onChanged: (v) => context.read<OnboardingProvider>().setBleed(v.round()),
+      ),
+    );
+  }
+}
+
+class _JourneyButton extends StatelessWidget {
+  final bool canFinish;
+  final VoidCallback onComplete;
+  const _JourneyButton({required this.canFinish, required this.onComplete});
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: canFinish ? 1 : 0.45,
+      child: AppButton(label: 'Begin the Journey', onTap: canFinish ? onComplete : null),
     );
   }
 }

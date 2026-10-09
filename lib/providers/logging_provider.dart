@@ -38,22 +38,35 @@ class LoggingProvider extends ChangeNotifier {
     _save();
   }
 
+  /// Replace-style flow set: single-select screens (blood volume, onboarding seed).
   void setFlow(DateTime d, String v) {
-    day(d).flow = v;
+    day(d).flow..clear()..add(v);
     notifyListeners();
     _save();
   }
 
-  void toggleMood(DateTime d, String v) {
-    final m = day(d).moods;
-    m.contains(v) ? m.remove(v) : m.add(v);
-    notifyListeners();
-    _save();
-  }
+  void toggleFlow(DateTime d, String v) => _toggle(day(d).flow, v);
 
-  void toggleSymptom(DateTime d, String v) {
-    final s = day(d).symptoms;
-    s.contains(v) ? s.remove(v) : s.add(v);
+  void toggleMood(DateTime d, String v) => _toggle(day(d).moods, v);
+
+  void toggleSymptom(DateTime d, String v) => _toggle(day(d).symptoms, v);
+
+  void toggleCollection(DateTime d, String v) => _toggle(day(d).collection, v);
+
+  void toggleDigestion(DateTime d, String v) => _toggle(day(d).digestion, v);
+
+  void toggleSkinHair(DateTime d, String v) => _toggle(day(d).skinHair, v);
+
+  void toggleCravings(DateTime d, String v) => _toggle(day(d).cravings, v);
+
+  void toggleSex(DateTime d, String v) => _toggle(day(d).sex, v);
+
+  void toggleSleep(DateTime d, String v) => _toggle(day(d).sleep, v);
+
+  void toggleDischarge(DateTime d, String v) => _toggle(day(d).discharge, v);
+
+  void _toggle(Set<String> set, String v) {
+    set.contains(v) ? set.remove(v) : set.add(v);
     notifyListeners();
     _save();
   }

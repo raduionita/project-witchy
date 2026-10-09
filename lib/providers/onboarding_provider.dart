@@ -10,9 +10,10 @@ class OnboardingProvider extends ChangeNotifier {
     this.selectedDay = 17,
     this.cycleLength = 28,
     this.bleedLength = 5,
-    this.yearOfBirth,
+    int? yearOfBirth,
     DateTime? lastPeriodStart,
-  }) : lastPeriodStart = lastPeriodStart ?? _derive(selectedDay);
+  }) : yearOfBirth = yearOfBirth ?? DateTime.now().year - 25,
+       lastPeriodStart = lastPeriodStart ?? _derive(selectedDay);
 
   final PrefsService _prefs;
   bool onboarded;

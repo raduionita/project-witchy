@@ -51,7 +51,7 @@ void main() {
     expect(reloaded.lastPeriodStart, DateTime(2026, 9, 3));
     expect(reloaded.selectedDay, 3);
     final restored = await LoggingProvider.load(prefs);
-    expect(restored.peekDay(DateTime(2026, 9, 3))?.flow, 'Medium');
+    expect(restored.peekDay(DateTime(2026, 9, 3))?.flow, {'Medium'});
   });
 
   test('privacy consent and birth year persist across reload', () async {
@@ -105,7 +105,7 @@ void main() {
 
     final reloaded = await LoggingProvider.load(prefs);
     final restored = reloaded.day(day);
-    expect(restored.flow, 'Heavy');
+    expect(restored.flow, {'Heavy'});
     expect(restored.pain, 9.5);
     expect(restored.moods, contains('Enchanted'));
     expect(restored.notes, 'Ritual notes.');
@@ -115,13 +115,13 @@ void main() {
   test('LoggingProvider day logs persist across a full reload cycle', () async {
     final day = DateTime(2026, 10, 15);
     final logging = LoggingProvider(prefs, days: {
-      LoggingProvider.keyFor(day): DayLog(flow: 'Light', pain: 2, notes: 'Saved entry.'),
+      LoggingProvider.keyFor(day): DayLog(flow: {'Light'}, pain: 2, notes: 'Saved entry.'),
     });
     await prefs.saveDayLogs({LoggingProvider.keyFor(day): logging.day(day)});
 
     final reloaded = await LoggingProvider.load(prefs);
     final restored = reloaded.day(day);
-    expect(restored.flow, 'Light');
+    expect(restored.flow, {'Light'});
     expect(restored.pain, 2);
     expect(restored.notes, 'Saved entry.');
   });

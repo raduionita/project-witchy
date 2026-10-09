@@ -6,7 +6,7 @@ This plan is split into **Phases**. Each phase is a list of tasks that MUST be c
 
 **Status legend:** `[x]` done · `[~]` done differently (details noted) · `[-]` obsolete (superseded) · `[ ]` open
 
-> Phases were compacted (old 0–13 → new 0–5); obsolete `[-]` tasks were pruned and deviations kept as `[~]` or footnotes. Final test suite: **81/81**. Production-readiness work is planned as open **Phases 6–13** (bottom of Milestone 1) — scope decisions locked: Coven = remote article feed (Library removed), Binding removed, auth hidden as-is, tracking chips (Cycle/Pregnancy/Perimenopause), real BBT, real alerts, dark theme, release hardening.
+> Phases were compacted (old 0-13 → new 0-5); obsolete `[-]` tasks were pruned and deviations kept as `[~]` or footnotes. Production-readiness ran as **Phases 6-13** (Milestone 1, now closed) - scope decisions: Coven = remote article feed (Library removed), Binding removed, auth hidden as-is, tracking chips (Cycle/Pregnancy/Perimenopause), real BBT, real alerts, dark theme, release hardening. Final test suite: **164/164**.
 
 ---
 
@@ -52,7 +52,7 @@ test/
 
 ---
 
-## Milestone 1 — MVP - In Progress
+## Milestone 1 - MVP (done)
 
 ### Phase 0 — Foundation & Data Layer ✅
 
@@ -257,43 +257,53 @@ test/
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (146/146) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
-### Phase 12 - Dark Theme & Profile/Notification Polish (open)
+### Phase 12 - Dark Theme & Profile/Notification Polish (done)
 
-- [ ] **12.1** `AppColors` dark token set (bg `#1B0A2A`, card `#26063F`, lav text, line `#3E2A54`, brightened pur) + `buildAppTheme({Brightness})` dark variant in `app_theme.dart`.
-- [ ] **12.2** `main.dart` theme follows `SettingsProvider.dark` override else platform brightness; `setDark` repaints live; Profile toggle kept.
-- [ ] **12.3** Profile real data - `29 Days`/`5 Days` -> `CycleProvider.meanCycleLength`/`bleedLength` (empty-state dashes); bell denominator -> `reminders.length`; version string -> `package_info_plus` (single source, replaces hardcoded `1.2.4`).
-- [ ] **12.4** Notification `freq` semantics honoured - `buildNotificationRequests` maps freq -> schedule rule (daily, daily-during-peak, window-start one-shot, period-minus-3-days one-shot, hourly daytime); re-sync whenever `CycleProvider` or reminders change.
-- [ ] **12.5** Stop swallowing scheduling errors - surface via `debugPrint` + SnackBar on Profile toggle failure.
-- [ ] **12.6** Docs - `DESIGN.md` §2 dark tokens + Screen 14; `PLAN.md`.
-- [ ] **12.7** Tests - dark theme builder, freq -> request mapping per rule, profile reads provider values (widget test), re-sync trigger.
+- [x] **12.1** `AppColors` dark token set (bg `#1B0A2A`, card `#26063F`, lav text, line `#3E2A54`, brightened pur) + `buildAppTheme({Brightness})` dark variant in `app_theme.dart`. Mode-varying tokens became getters behind `AppColors.dark` (const call sites and const default params de-consted; `LogData` categories became getters so section colors resolve live).
+- [x] **12.2** `main.dart` theme follows `SettingsProvider.dark` override else platform brightness; `setDark` repaints live (`ListenableBuilder` on the settings instance above `MaterialApp.router`); Profile toggle kept.
+- [x] **12.3** Profile real data - `29 Days`/`5 Days` -> `CycleProvider.meanCycleLength`/`bleedLength` (empty-state dashes); bell denominator -> `reminders.length`; version string -> `package_info_plus` ^10.2.2 (single source, fallback `1.0.0` on hosts without a bundle).
+- [x] **12.4** Notification `freq` semantics honoured - `buildNotificationRequests` maps freq -> schedule rule (`Every day`/`Daytime` daily repeat, `Daily during peak` one-shot per predicted bleed day, `Window start` one-shot at `CycleProvider.fertileWindowStart`, `3 days prior` one-shot at predicted start minus 3; deterministic `idAtDate`, cancel window -7..+45 days); `main.dart` re-syncs on `CycleProvider`/`RemindersProvider` change with cycle anchors.
+- [x] **12.5** Stop swallowing scheduling errors - sync methods `debugPrint` + rethrow; `main` wraps startup sync in try/catch log; Profile lunar + bell toggles await and surface failures as SnackBar.
+- [x] **12.6** Docs - `DESIGN.md` §2.1 dark tokens + Screen 14 rewrite (v1.9.6); `PLAN.md`.
+- [x] **12.7** Tests - dark theme builder (`test/theme/app_theme_test.dart`), freq -> request mapping (expanded `notification_service_test.dart`: per-freq rules, past-date drop, missing-anchor skip, `idAtDate`), profile reads provider values (`test/screens/profile_screen_test.dart`: real averages, dash fallback, bell count, version footer via scroll). Re-sync trigger not unit-tested (listener wiring lives in `main()`).
 
-**Gate:** `flutter analyze` · `flutter test` · `flutter build apk --debug` · `flutter build web`
+**Gate:** `flutter analyze` ✅ · `flutter test` ✅ (157/157) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
-### Phase 13 - Release Hardening & Final Gate (open)
+### Phase 13 - Release Hardening & Final Gate (done)
 
-- [ ] **13.1** Android - `key.properties` + release `signingConfigs` (git-ignored keystore, README steps), drop applicationId TODO, pin compile/target/min SDK, `android:label="Witchy"`.
-- [ ] **13.2** Branded launcher icons via `flutter_launcher_icons` - cat-moon icon for Android (all densities), iOS (incl. adaptive), web; replaces default Flutter logo everywhere.
-- [ ] **13.3** iOS - `DEVELOPMENT_TEAM` placeholder, uncomment Podfile platform (13.0), `PrivacyInfo.xcprivacy`, `ITSAppUsesNonExemptEncryption=false`; comment in `auth_provider.dart` documenting the future Google/Apple sign-in config (kept hidden per scope decision).
-- [ ] **13.4** Web - `<title>Witchy</title>`, meta description, `apple-mobile-web-app-title`, `manifest.json` name/description + `theme_color`/`background_color` `#3B0A5E`, icons from 13.2.
-- [ ] **13.5** Version single-sourced from pubspec into the profile footer (12.3).
-- [ ] **13.6** Verify live endpoints - `legal_links.dart` URLs deployed; `articles.xml` reachable and parseable.
-- [ ] **13.7** Test-suite review - add coverage for feed, alerts, gestation, chart, dark mode; zero skipped tests.
-- [ ] **13.8** Release gate - `flutter analyze` zero issues · `flutter test` all green · `flutter build apk --release` · `flutter build ios --release --no-codesign` · `flutter build web`.
-- [ ] **13.9** Docs - `PLAN.md` Milestone 1 closed, `DESIGN.md` final bump, `README` build/signing instructions.
+- [x] **13.1** Android - `android/key.properties` + release `signingConfigs` (loaded when the git-ignored file exists, debug-key fallback otherwise so local release builds keep working), applicationId TODO dropped (`com.qvonyx.witchy`), compile/target/min pinned to 36/36/24, `android:label="Witchy"`, keystore generation + `key.properties` steps added to `README.md`, `.gitignore` covers `key.properties`/`*.jks`/`*.keystore`.
+- [x] **13.2** Branded launcher icons via `flutter_launcher_icons` ^0.14.4 - `tool/generate_app_icon.dart` composites the gold cat-moon onto brand purple into `assets/images/app_icon_1024.png`; Android legacy + adaptive (fg gold, bg `#3B0A5E`, generated `colors.xml` + `mipmap-anydpi-v26`), full iOS AppIcon set, web icons + favicon. Reverted the tool's invalid `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS` rewrite in `project.pbxproj`.
+- [x] **13.3** iOS - empty `DEVELOPMENT_TEAM` placeholder in all three Runner configs (fill in Xcode), `Podfile` platform `13.0`, `ios/Runner/PrivacyInfo.xcprivacy` bundled via pbxproj (NSUserDefaults reason CA92.1, no tracking/collection), `ITSAppUsesNonExemptEncryption=false` in Info.plist, scope note in `auth_provider.dart` about the config sign-in would need.
+- [x] **13.4** Web - `<title>Witchy</title>`, real meta description, `apple-mobile-web-app-title` Witchy; `manifest.json` name/short_name Witchy, real description, `theme_color`/`background_color` `#3B0A5E` (valid JSON verified).
+- [x] **13.5** Version single-sourced - Profile footer reads `package_info_plus` (done in 12.3).
+- [x] **13.6** Live endpoints verified - `https://qvonyx.com/witchy/articles.xml` reachable and parses (18 items); item links are relative slugs so `FeedService._resolveLink` resolves them against the feed URL (new test). Legal URLs `https://qvonyx.com/witchy/{terms,privacy,child-protection}.html` all return 200.
+- [x] **13.7** Test-suite review - 158 cases, zero skipped; coverage includes feed parse/cache/link resolution, alerts generator/inbox, gestation math/content/screen, BBT chart, dark theme, profile provider reads.
+- [x] **13.8** Release gate - `flutter analyze` zero issues · `flutter test` 158/158 · `flutter build apk --release` ✓ (60.6MB, debug-key fallback) · `flutter build ios --release --no-codesign` ✓ (23.2MB, PrivacyInfo bundled) · `flutter build web` ✓.
+- [x] **13.9** Docs - `PLAN.md` Milestone 1 closed, `DESIGN.md` bumped to 1.9.7, `README.md` build/signing/icon instructions.
 
-**Gate:** `flutter analyze` · `flutter test` · `flutter build apk --release` · `flutter build ios --release --no-codesign` · `flutter build web`
+**Gate:** `flutter analyze` ✅ · `flutter test` ✅ (158/158) · `flutter build apk --release` ✅ · `flutter build ios --release --no-codesign` ✅ · `flutter build web` ✅
 
 > Out of scope (flagged): Google/Apple sign-in activation (hidden), real couples/backend sync, Coven posting, sovereign-blood screen from MOCK.html (not in DESIGN.md), localization, analytics/crash reporting.
 
 
-### Fixes - Post Milestone 1 phases
+### Fixes 1 (done)
 
-- [ ] rhythyms -> button: should mark user as logged-in and continue to main screen 
-- [ ] profile -> signup: should mark user as logged-out and return to first screen
-- [ ] floating button: opacity agains purple widgets/cards is not good - try to add a gold border to make it more visible
-- [ ] profile: after sign-out, we need a delete all data button (dark-ish red bg, white text)
-- [ ] rhythyms - tracking mode: should be a multi-toggle - the app MUST allow tracking all modes (cycle, pregnancy, perimenopause) simultaneously on the same interface (calendar, records, sanctuary, fertility, alert)
+- [x] theme -> dark vs light: should start as light (default) - use toggle in profile -> settings
+- [x] rhythyms -> button: should mark user as logged-in and continue to main screen 
+- [x] profile -> signup: should mark user as logged-out and return to first screen
+- [x] floating button: opacity agains purple widgets/cards is not good - try to add a gold border to make it more visible
+- [x] profile: after sign-out, we need a delete all data button (dark-ish red bg, white text)
+- [x] rhythyms - tracking mode: should be a multi-toggle - the app MUST allow tracking all modes (cycle, pregnancy, perimenopause) simultaneously on the same interface (calendar, records, sanctuary, fertility, alert)
+- [x] app: app icon needed - should be the same as the one in the splash screen - use images in @resources/
  
+### Fixes 2
+
+- [ ] rythyms -> tracking: widget/card should be full width - icons neede to be visible when a chip is selected (now backgroundh has the same color as the selected chip = bad contrast)
+- [ ] profile -> session: the buttons need a confirm dialog/drawer - rename the text to "Leave Coven" and "Erase All Spells" - the dialog should explain the consequences of each action
+- [ ] magic (coven sanctum) -> needs min 1 entry, always last, with info about the app, it should open an article (since it's local)
+- [ ] log_bottom_sheet: add a divider between each `_LogCycleSection` - make title and buttons always visible, the rest should scroll
+- [ ] tracking: SanctuaryScreen (today) and CycleScreen (calendar) should have as small (full width) widget/card showing what is being tracked (cycle, pregnancy, perimenopause)
+
 --- 
 
 ## Milestone 2 - TBD

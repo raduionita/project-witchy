@@ -4,11 +4,11 @@ import 'app_colors.dart';
 
 /// Playfair Display for serif headings, Inter for body. Matches HTML tokens.
 abstract final class AppText {
-  static TextStyle serif(double size, {FontWeight w = FontWeight.w700, Color c = AppColors.ink, double? h}) =>
-      GoogleFonts.playfairDisplay(fontSize: size, fontWeight: w, color: c, height: h);
+  static TextStyle serif(double size, {FontWeight w = FontWeight.w700, Color? c, double? h}) =>
+      GoogleFonts.playfairDisplay(fontSize: size, fontWeight: w, color: c ?? AppColors.ink, height: h);
 
-  static TextStyle sans(double size, {FontWeight w = FontWeight.w400, Color c = AppColors.body, double? h}) =>
-      GoogleFonts.inter(fontSize: size, fontWeight: w, color: c, height: h);
+  static TextStyle sans(double size, {FontWeight w = FontWeight.w400, Color? c, double? h}) =>
+      GoogleFonts.inter(fontSize: size, fontWeight: w, color: c ?? AppColors.body, height: h);
 
   static TextStyle get brand => serif(34, w: FontWeight.w800);
   static TextStyle get h2 => serif(21);

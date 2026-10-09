@@ -21,6 +21,7 @@ class PrefsService {
   static const _birthYear = 'witchy_birth_year';
   static const _feedCache = 'witchy_feed_cache';
   static const _trackingMode = 'witchy_tracking_mode';
+  static const _trackingModes = 'witchy_tracking_modes';
   static const _alerts = 'witchy_alerts';
   static const _pregnancyLmp = 'witchy_pregnancy_lmp';
 
@@ -30,8 +31,18 @@ class PrefsService {
   Future<int?> birthYear() async => (await SharedPreferences.getInstance()).getInt(_birthYear);
   Future<void> setBirthYear(int year) async => (await SharedPreferences.getInstance()).setInt(_birthYear, year);
 
-  Future<TrackingMode> trackingMode() async => TrackingMode.fromJson((await SharedPreferences.getInstance()).getString(_trackingMode));
-  Future<void> setTrackingMode(TrackingMode mode) async => (await SharedPreferences.getInstance()).setString(_trackingMode, mode.name);
+  /// Active tracking modes; migrates the legacy single-mode string and defaults to {cycle}.
+  Future<Set<TrackingMode>> trackingModes() async {
+    final p = await SharedPreferences.getInstance();
+    final raw = p.getString(_trackingModes);
+    if (raw != null) {
+      return (jsonDecode(raw) as List<dynamic>).map((e) => TrackingMode.fromJson(e)).toSet();
+    }
+    final legacy = p.getString(_trackingMode);
+    return legacy == null ? {TrackingMode.cycle} : {TrackingMode.fromJson(legacy)};
+  }
+
+  Future<void> setTrackingModes(Set<TrackingMode> modes) async => (await SharedPreferences.getInstance()).setString(_trackingModes, jsonEncode([for (final m in modes) m.name]));
 
   Future<bool> isOnboarded() async => (await SharedPreferences.getInstance()).getBool(_onboarded) ?? false;
   Future<void> setOnboarded() async => (await SharedPreferences.getInstance()).setBool(_onboarded, true);
@@ -120,4 +131,13 @@ class PrefsService {
 
   Future<void> saveSession(Map<String, String> data) async => (await SharedPreferences.getInstance()).setString(_session, jsonEncode(data));
   Future<void> clearSession() async => (await SharedPreferences.getInstance()).remove(_session);
+
+  /// Removes every app key (Delete All Data) - leaves foreign keys untouched.
+  Future<void> clearAllData() async {
+    final p = await SharedPreferences.getInstance();
+    final witchyKeys = p.getKeys().where((k) => k.startsWith('witchy_')).toList();
+    for (final key in witchyKeys) {
+      await p.remove(key);
+    }
+  }
 }

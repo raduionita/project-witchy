@@ -8,7 +8,9 @@ class IconBadge extends StatelessWidget {
   final Color bg;
   final Color fg;
   final double size;
-  const IconBadge({super.key, required this.icon, this.bg = AppColors.lav, this.fg = AppColors.pur, this.size = 34});
+  IconBadge({super.key, required this.icon, Color? bg, Color? fg, this.size = 34})
+      : bg = bg ?? AppColors.lav,
+        fg = fg ?? AppColors.pur;
 
   @override
   Widget build(BuildContext context) {

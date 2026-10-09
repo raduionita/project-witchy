@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../navigation/app_nav.dart';
 import '../models/tracking_mode.dart';
 import '../providers/alert_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/cycle_provider.dart';
+import '../providers/gestation_provider.dart';
+import '../providers/logging_provider.dart';
 import '../providers/onboarding_provider.dart';
 import '../providers/reminders_provider.dart';
 import '../providers/settings_provider.dart';
 import '../services/notification_service.dart';
+import '../services/prefs_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_icons.dart';
@@ -17,6 +21,7 @@ import '../widgets/app_top_bar.dart';
 import '../widgets/app_avatar.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
+import '../widgets/danger_button.dart';
 import '../widgets/icon_badge.dart';
 import '../widgets/info_pill.dart';
 import '../widgets/tracking_mode_chip.dart';
@@ -24,7 +29,7 @@ import '../widgets/tracking_mode_chip.dart';
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  void _openTrackingSheet(BuildContext context, TrackingMode current) {
+  void _openTrackingSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       builder: (sheetContext) => SafeArea(
@@ -35,13 +40,14 @@ class ProfileScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('What shall we track?', style: AppText.secIn),
+              const SizedBox(height: 4),
+              Text('Toggle every mode you track - they can all be active at once.', style: AppText.sans(11, c: AppColors.muted)),
               const SizedBox(height: 12),
-              TrackingModeChips(
-                value: current,
-                onChanged: (mode) {
-                  context.read<OnboardingProvider>().setTrackingMode(mode);
-                  Navigator.of(sheetContext).pop();
-                },
+              Consumer<OnboardingProvider>(
+                builder: (consumerContext, ob, _) => TrackingModeChips(
+                  selected: ob.trackingModes,
+                  onToggle: (mode) => consumerContext.read<OnboardingProvider>().toggleTrackingMode(mode),
+                ),
               ),
             ],
           ),
@@ -50,10 +56,63 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _confirmDeleteData(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Delete all data?', style: AppText.serif(16)),
+        content: Text(
+          'This erases every log, setting and session on this device. It cannot be undone.',
+          style: AppText.sans(13, c: AppColors.body),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text('Cancel', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.muted))),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text('Delete', style: AppText.sans(13, w: FontWeight.w700, c: AppColors.danger))),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final prefs = context.read<PrefsService>();
+    final settings = context.read<SettingsProvider>();
+    final reminders = context.read<RemindersProvider>();
+    final cycle = context.read<CycleProvider>();
+
+    // In-memory resets; alerts last so cycle-triggered regeneration happens first.
+    context.read<AuthProvider>().resetToDefaults();
+    context.read<OnboardingProvider>().resetToDefaults();
+    context.read<LoggingProvider>().resetToDefaults();
+    settings.resetToDefaults();
+    reminders.resetToDefaults();
+    context.read<GestationProvider>().resetToDefaults();
+    context.read<AlertProvider>().resetToDefaults();
+    // Wipe after resets too - alert regeneration may have re-saved keys.
+    await prefs.clearAllData();
+
+    try {
+      await NotificationService.syncPeriodPrediction(
+        enabled: settings.lunarNotifications,
+        predictedStart: cycle.nextPeriodStart(),
+      );
+      await NotificationService.syncAll(
+        reminders.items,
+        predictedStart: cycle.nextPeriodStart(),
+        fertileStart: cycle.fertileWindowStart(),
+        bleedLength: cycle.bleedLength,
+      );
+    } catch (e) {
+      debugPrint('Notification resync after data wipe failed: $e');
+    }
+
+    if (context.mounted) context.reset('/');
+  }
+
   @override
   Widget build(BuildContext context) {
     final bells = context.watch<RemindersProvider>();
     final activeBells = bells.items.where((r) => r.enabled).length;
+    final cycle = context.watch<CycleProvider>();
+    final meanCycle = cycle.meanCycleLength;
     final settings = context.watch<SettingsProvider>();
     final auth = context.watch<AuthProvider>();
     final onboarding = context.watch<OnboardingProvider>();
@@ -103,15 +162,18 @@ class ProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Lunar Alignments', style: AppText.secIn),
-                SettingsRow(label: 'Average Cycle Length', trailing: Text('29 Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted)), first: true),
-                SettingsRow(label: 'Bleeding Phase Length', trailing: Text('5 Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted))),
+                SettingsRow(label: 'Average Cycle Length', trailing: Text(meanCycle == null ? '—' : '${meanCycle.toStringAsFixed(0)} Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted)), first: true),
+                SettingsRow(label: 'Bleeding Phase Length', trailing: Text('${cycle.bleedLength} Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted))),
                 SettingsRow(
                   label: 'Tracking Mode',
                   trailing: MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
-                      onTap: () => _openTrackingSheet(context, onboarding.trackingMode),
-                      child: Text(onboarding.trackingMode.label, style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)),
+                      onTap: () => _openTrackingSheet(context),
+                      child: Text(
+                        onboarding.trackingModes.map((m) => m.label).join(', '),
+                        style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline),
+                      ),
                     ),
                   ),
                 ),
@@ -119,7 +181,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          if (onboarding.trackingMode == TrackingMode.pregnancy) ...[
+          if (onboarding.trackingModes.contains(TrackingMode.pregnancy)) ...[
             AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,13 +207,19 @@ class ProfileScreen extends StatelessWidget {
                   trailing: Switch(
                     value: settings.lunarNotifications,
                     activeThumbColor: const Color(0xFF7B2CBF),
-                    onChanged: (v) {
+                    onChanged: (v) async {
                       context.read<SettingsProvider>().setLunar(v);
                       final cycle = context.read<CycleProvider>();
-                      NotificationService.syncPeriodPrediction(
-                        enabled: v,
-                        predictedStart: cycle.nextPeriodStart(),
-                      );
+                      try {
+                        await NotificationService.syncPeriodPrediction(
+                          enabled: v,
+                          predictedStart: cycle.nextPeriodStart(),
+                        );
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update notifications: $e')));
+                        }
+                      }
                     },
                   ),
                   first: true,
@@ -170,10 +238,10 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Text('Amulet Bells', style: AppText.secIn),
                 const SizedBox(height: 4),
-                Text('$activeBells of 5 bells active', style: AppText.sans(11.5, c: AppColors.muted)),
+                Text('$activeBells of ${bells.items.length} bells active', style: AppText.sans(11.5, c: AppColors.muted)),
                 const SizedBox(height: 8),
                 for (var i = 0; i < bells.items.length; i++) ...[
-                  if (i > 0) const Divider(height: 12, color: AppColors.line),
+                  if (i > 0) Divider(height: 12, color: AppColors.line),
                   Row(
                     children: [
                       IconBadge(icon: bells.items[i].icon, bg: bells.items[i].badgeBg, fg: bells.items[i].badgeFg),
@@ -187,9 +255,21 @@ class ProfileScreen extends StatelessWidget {
                       Switch(
                         value: bells.items[i].enabled,
                         activeThumbColor: AppColors.pur,
-                        onChanged: (v) {
+                        onChanged: (v) async {
                           context.read<RemindersProvider>().toggle(i, v);
-                          NotificationService.syncReminder(bells.items[i]);
+                          final cycle = context.read<CycleProvider>();
+                          try {
+                            await NotificationService.syncReminder(
+                              bells.items[i],
+                              predictedStart: cycle.nextPeriodStart(),
+                              fertileStart: cycle.fertileWindowStart(),
+                              bleedLength: cycle.bleedLength,
+                            );
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update bell: $e')));
+                            }
+                          }
                         },
                       ),
                     ],
@@ -219,11 +299,25 @@ class ProfileScreen extends StatelessWidget {
                     if (context.mounted) context.reset('/');
                   },
                 ),
+                const SizedBox(height: 10),
+                DangerButton(label: 'Delete All Data', onTap: () => _confirmDeleteData(context)),
               ],
             ),
           ),
           const SizedBox(height: 12),
-          Center(child: Text('Witchy App\nVersion 1.2.4 · Made with celestial energy', textAlign: TextAlign.center, style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6))),
+          Center(
+            child: FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snap) {
+                final version = snap.data?.version ?? '1.0.0';
+                return Text(
+                  'Witchy App\nVersion $version · Made with celestial energy',
+                  textAlign: TextAlign.center,
+                  style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

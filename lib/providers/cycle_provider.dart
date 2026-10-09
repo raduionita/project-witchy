@@ -42,10 +42,10 @@ class CycleProvider extends ChangeNotifier {
 
   int get bleedLength => _onboarding.bleedLength;
 
-  /// Fertility predictions only surface in the default Cycle mode.
-  bool get showFertilityPredictions => _onboarding.trackingMode == TrackingMode.cycle;
+  /// Fertility predictions only surface while the Cycle mode is active.
+  bool get showFertilityPredictions => _onboarding.trackingModes.contains(TrackingMode.cycle);
 
-  bool get isPerimenopause => _onboarding.trackingMode == TrackingMode.perimenopause;
+  bool get isPerimenopause => _onboarding.trackingModes.contains(TrackingMode.perimenopause);
 
   /// Shortest observed cycle length; falls back to the effective length.
   int get shortestCycleLength => observedCycleLengths.isEmpty ? effectiveCycleLength : observedCycleLengths.reduce((a, b) => a < b ? a : b);
@@ -75,6 +75,9 @@ class CycleProvider extends ChangeNotifier {
   int daysUntilPeriod({DateTime? today}) => CycleCalculator.daysUntilPeriod(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
 
   DateTime ovulationDay({DateTime? today}) => CycleCalculator.ovulationDay(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
+
+  /// First day of the fertile window (ovulation minus 2); null when fertility predictions are off.
+  DateTime? fertileWindowStart({DateTime? today}) => showFertilityPredictions ? ovulationDay(today: today).subtract(const Duration(days: 2)) : null;
 
   int daysUntilOvulation({DateTime? today}) => CycleCalculator.daysUntilOvulation(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
 

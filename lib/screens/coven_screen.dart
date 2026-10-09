@@ -61,7 +61,7 @@ class _CovenScreenState extends State<CovenScreen> {
 
   Widget _buildBody() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.pur));
+      return Center(child: CircularProgressIndicator(color: AppColors.pur));
     }
     final articles = _articles ?? const <Article>[];
     if (articles.isEmpty) {

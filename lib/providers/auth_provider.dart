@@ -5,6 +5,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../models/auth_identity.dart';
 import '../services/prefs_service.dart';
 
+// Hidden per scope decision - enabling needs Google client ids, iOS REVERSED_CLIENT_ID scheme, and the Apple Sign-In capability.
 class AuthProvider extends ChangeNotifier {
   AuthProvider(this._prefs, {this.signedIn = false, this.identity});
 
@@ -46,6 +47,15 @@ class AuthProvider extends ChangeNotifier {
     };
   });
 
+  /// Marks the device as logged in after onboarding finishes (no third-party auth).
+  Future<void> markLocalSession() async {
+    if (signedIn) return;
+    await _prefs.saveSession({'method': 'local'});
+    identity = const AuthIdentity(method: 'local');
+    signedIn = true;
+    notifyListeners();
+  }
+
   Future<void> signOut() async {
     if (identity?.method == 'google') {
       try {
@@ -56,6 +66,15 @@ class AuthProvider extends ChangeNotifier {
     signedIn = false;
     identity = null;
     lastError = null;
+    notifyListeners();
+  }
+
+  /// In-memory reset after Delete All Data (prefs already wiped).
+  void resetToDefaults() {
+    signedIn = false;
+    identity = null;
+    lastError = null;
+    busy = false;
     notifyListeners();
   }
 

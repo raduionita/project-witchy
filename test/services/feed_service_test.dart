@@ -62,6 +62,16 @@ void main() {
     test('malformed xml throws', () {
       expect(() => FeedService.parseFeed('not xml'), throwsFormatException);
     });
+
+    test('resolves relative item links against the feed URL', () {
+      const xml = '''
+      <rss version="2.0"><channel>
+        <item><title>Rel</title><link>my-article.html</link></item>
+      </channel></rss>
+      ''';
+      final items = FeedService.parseFeed(xml);
+      expect(items.single.link, 'https://qvonyx.com/witchy/my-article.html');
+    });
   });
 
   group('FeedService cache', () {

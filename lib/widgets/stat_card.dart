@@ -8,7 +8,8 @@ class StatCard extends StatelessWidget {
   final String value;
   final String sub;
   final Color valueColor;
-  const StatCard({super.key, required this.label, required this.value, required this.sub, this.valueColor = AppColors.pur});
+  StatCard({super.key, required this.label, required this.value, required this.sub, Color? valueColor})
+      : valueColor = valueColor ?? AppColors.pur;
 
   @override
   Widget build(BuildContext context) {

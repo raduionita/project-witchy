@@ -107,7 +107,7 @@ class _CycleScreenState extends State<CycleScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              GestureDetector(onTap: () => _shiftMonth(-1), child: const FaIcon(AppIcons.left, size: AppIconSize.head, color: AppColors.muted)),
+              GestureDetector(onTap: () => _shiftMonth(-1), child: FaIcon(AppIcons.left, size: AppIconSize.head, color: AppColors.muted)),
               MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
@@ -117,12 +117,12 @@ class _CycleScreenState extends State<CycleScreen> {
                     children: [
                       Text(DateFormat('MMMM yyyy').format(_month), style: AppText.serif(13.5)),
                       const SizedBox(width: 6),
-                      const FaIcon(AppIcons.right, size: AppIconSize.xs, color: AppColors.muted),
+                      FaIcon(AppIcons.right, size: AppIconSize.xs, color: AppColors.muted),
                     ],
                   ),
                 ),
               ),
-              GestureDetector(onTap: () => _shiftMonth(1), child: const FaIcon(AppIcons.right, size: AppIconSize.head, color: AppColors.muted)),
+              GestureDetector(onTap: () => _shiftMonth(1), child: FaIcon(AppIcons.right, size: AppIconSize.head, color: AppColors.muted)),
             ],
           ),
           const SizedBox(height: 12),
@@ -136,7 +136,7 @@ class _CycleScreenState extends State<CycleScreen> {
               children: [
                 if (daysLate > 0) AppTag.gold(daysLate == 1 ? '1 Day Late' : '$daysLate Days Late'),
                 if (daysLate > 0 && !_isCurrentMonth) const SizedBox(width: 8),
-                if (!_isCurrentMonth) MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: () => _setMonth(DateTime.now()), child: const AppTag('Today'))),
+                if (!_isCurrentMonth) MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: () => _setMonth(DateTime.now()), child: AppTag('Today'))),
               ],
             ),
           ],

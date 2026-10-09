@@ -125,7 +125,7 @@ void main() {
     });
 
     test('pregnancy mode suppresses fertile and ovulation predictions', () {
-      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 28, bleedLength: 5, lastPeriodStart: DateTime(2026, 9, 1), trackingMode: TrackingMode.pregnancy);
+      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 28, bleedLength: 5, lastPeriodStart: DateTime(2026, 9, 1), trackingModes: {TrackingMode.pregnancy});
       logging = LoggingProvider(prefs);
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.showFertilityPredictions, isFalse);
@@ -151,7 +151,7 @@ void main() {
     });
 
     test('observed spread widens the window with shortest-to-longest lengths', () {
-      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 40, bleedLength: 5, lastPeriodStart: DateTime(2026, 9, 1), trackingMode: TrackingMode.perimenopause);
+      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 40, bleedLength: 5, lastPeriodStart: DateTime(2026, 9, 1), trackingModes: {TrackingMode.perimenopause});
       logging = LoggingProvider(prefs);
       // 28-day then 35-day observed cycles ending at Sep 2.
       for (final start in [DateTime(2026, 7, 1), DateTime(2026, 7, 29), DateTime(2026, 9, 2)]) {

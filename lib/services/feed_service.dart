@@ -37,7 +37,7 @@ class FeedService {
     return document.findAllElements('item').map((item) {
       return Article(
         title: item.getElement('title')?.innerText.trim() ?? '',
-        link: item.getElement('link')?.innerText.trim() ?? '',
+        link: _resolveLink(item.getElement('link')?.innerText.trim() ?? ''),
         description: _stripHtml(item.getElement('description')?.innerText.trim() ?? ''),
         category: (item.getElement('category')?.innerText.trim() ?? 'GUIDE').toUpperCase(),
         pubDate: _parseDate(item.getElement('pubDate')?.innerText.trim() ?? ''),
@@ -48,6 +48,14 @@ class FeedService {
   static String _stripHtml(String input) {
     final withoutTags = input.replaceAll(RegExp(r'<[^>]*>'), ' ');
     return withoutTags.replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
+  // Feed entries may be relative slugs - resolve them against the feed URL.
+  static String _resolveLink(String raw) {
+    if (raw.isEmpty) return raw;
+    final uri = Uri.tryParse(raw);
+    if (uri == null || uri.hasScheme) return raw;
+    return Uri.parse(feedUrl).resolve(raw).toString();
   }
 
   static DateTime? _parseDate(String raw) {

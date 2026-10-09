@@ -29,4 +29,11 @@ class RemindersProvider extends ChangeNotifier {
   }
 
   void _save() => _prefs.saveReminderStates({for (final item in items) item.title: item.enabled});
+
+  /// In-memory reset after Delete All Data (prefs already wiped).
+  void resetToDefaults() {
+    final defaults = MockData.reminders();
+    items..clear()..addAll(defaults);
+    notifyListeners();
+  }
 }

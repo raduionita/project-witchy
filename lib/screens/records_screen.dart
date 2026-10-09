@@ -117,7 +117,7 @@ class _BleedRow extends StatelessWidget {
     final range = '${DateFormat('MMM d').format(span.start)} – ${DateFormat('MMM d').format(span.end)}';
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 9),
-      decoration: const BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
+      decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

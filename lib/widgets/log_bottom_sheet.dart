@@ -178,7 +178,7 @@ class _LogCycleSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.readableOn(category.color, AppColors.bg);
+    final color = AppColors.readableOn(category.color ?? AppColors.pur, AppColors.bg);
     return Padding(
       key: sectionKey,
       padding: const EdgeInsets.only(bottom: 12),
@@ -196,7 +196,7 @@ class _LogCycleSection extends StatelessWidget {
             childAspectRatio: 4.8,
             children: [
               for (final o in category.options)
-                AppChip(label: o.name, icon: o.icon, iconColor: color, iconCount: o.iconCount, selected: selected(o), selectedColor: category.color, onTap: () => onTap(o)),
+                AppChip(label: o.name, icon: o.icon, iconColor: color, iconCount: o.iconCount, selected: selected(o), selectedColor: category.color ?? AppColors.pur, onTap: () => onTap(o)),
             ],
           ),
         ],
@@ -344,8 +344,8 @@ class _NotesFieldState extends State<_NotesField> {
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.all(12),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.line)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.pur)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.line)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.pur)),
       ),
     );
   }

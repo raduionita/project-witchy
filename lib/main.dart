@@ -28,12 +28,27 @@ Future<void> main() async {
   final gestation = await GestationProvider.load(prefs);
   final cycle = CycleProvider(onboarding, logging);
   alerts.bind(cycle, logging);
-  await NotificationService.init();
-  await NotificationService.syncAll(reminders.items);
-  await NotificationService.syncPeriodPrediction(
-    enabled: settings.lunarNotifications,
-    predictedStart: cycle.nextPeriodStart(),
-  );
+  try {
+    await NotificationService.init();
+    await NotificationService.syncPeriodPrediction(
+      enabled: settings.lunarNotifications,
+      predictedStart: cycle.nextPeriodStart(),
+    );
+  } catch (e) {
+    debugPrint('Notification startup failed: $e');
+  }
+  void resync() {
+    NotificationService.syncAll(
+      reminders.items,
+      predictedStart: cycle.nextPeriodStart(),
+      fertileStart: cycle.fertileWindowStart(),
+      bleedLength: cycle.bleedLength,
+    ).catchError((e) => debugPrint('Notification resync failed: $e'));
+  }
+
+  cycle.addListener(resync);
+  reminders.addListener(resync);
+  resync();
   runApp(App(prefs: prefs, auth: auth, onboarding: onboarding, logging: logging, settings: settings, reminders: reminders, cycle: cycle, alerts: alerts, gestation: gestation));
 }
 
@@ -90,12 +105,18 @@ class _AppState extends State<App> {
       ],
       child: AppRouterScope(
         delegate: _delegate,
-        child: MaterialApp.router(
-          title: 'Witchy',
-          theme: buildAppTheme(),
-          debugShowCheckedModeBanner: false,
-          routerDelegate: _delegate,
-          routeInformationParser: const AppRouteParser(),
+        child: ListenableBuilder(
+          listenable: widget.settings,
+          builder: (context, _) {
+            final useDark = widget.settings.darkMode;
+            return MaterialApp.router(
+              title: 'Witchy',
+              theme: buildAppTheme(brightness: useDark ? Brightness.dark : Brightness.light),
+              debugShowCheckedModeBanner: false,
+              routerDelegate: _delegate,
+              routeInformationParser: const AppRouteParser(),
+            );
+          },
         ),
       ),
     );

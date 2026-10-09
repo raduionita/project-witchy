@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../navigation/app_nav.dart';
+import '../providers/auth_provider.dart';
 import '../providers/onboarding_provider.dart';
 import '../services/prefs_service.dart';
 import '../theme/app_colors.dart';
@@ -21,7 +22,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (context.read<OnboardingProvider>().onboarded) context.go('/dashboard');
+      final auth = context.read<AuthProvider>();
+      if (auth.signedIn && context.read<OnboardingProvider>().onboarded) context.go('/dashboard');
     });
   }
 

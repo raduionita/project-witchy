@@ -44,4 +44,28 @@ void main() {
     expect(await prefs.session(), isNull);
     expect(raw.getString('witchy_session'), isNull);
   });
+
+  test('markLocalSession signs in and persists a local session', () async {
+    final auth = await AuthProvider.load(prefs);
+
+    await auth.markLocalSession();
+
+    expect(auth.signedIn, isTrue);
+    expect(auth.identity?.method, 'local');
+    expect(await prefs.session(), {'method': 'local'});
+
+    final reloaded = await AuthProvider.load(prefs);
+    expect(reloaded.signedIn, isTrue);
+    expect(reloaded.identity?.method, 'local');
+  });
+
+  test('markLocalSession keeps an existing real identity', () async {
+    await prefs.saveSession({'method': 'google', 'email': 'moon@star.io'});
+    final auth = await AuthProvider.load(prefs);
+
+    await auth.markLocalSession();
+
+    expect(auth.identity?.method, 'google');
+    expect((await prefs.session())?['method'], 'google');
+  });
 }

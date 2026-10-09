@@ -33,4 +33,11 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     _prefs.setDarkMode(v);
   }
+
+  /// In-memory reset after Delete All Data (prefs already wiped).
+  void resetToDefaults() {
+    lunarNotifications = true;
+    darkMode = false;
+    notifyListeners();
+  }
 }

@@ -99,3 +99,7 @@ backend/node_modules/
 flutter.bak/
 
 *.code-workspace
+
+**/android/key.properties
+*.jks
+*.keystore

@@ -1,11 +1,11 @@
 {
-    "name": "witchy",
-    "short_name": "witchy",
+    "name": "Witchy",
+    "short_name": "Witchy",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#3B0A5E",
+    "theme_color": "#3B0A5E",
+    "description": "Witchy is a comprehensive health tracking application for menstrual cycle, fertility, pregnancy, and reproductive health.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

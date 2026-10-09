@@ -1,5 +1,5 @@
 # WITCHY: Mobile Design System & UI/UX Specification
-**Document Version:** 1.9.5
+**Document Version:** 1.9.8
 **Product Name:** Witchy — Comprehensive Menstrual, Fertility & Reproductive Health Tracker
 **Target Platforms:** iOS, Android, web (Cross-Platform Mobile App)
 **Primary Aesthetic:** Celestial witch / soft mystic — deep plum gradients on lavender-white, gold accents, Playfair Display + Inter
@@ -51,10 +51,15 @@ Witchy uses a dark purple-led palette per mockup (see 2.0).
 | `color-ink` | `#2A0A3C` | `rgb(42,10,60)` | Headings | 15.1:1 on `#FAF7FC` |
 | `color-gold` | `#D9A036` | `rgb(217,160,54)` | Accents, tags on dark, progress fill | 2.4:1 decorative only |
 | `color-pink` | `#E0517F` | `rgb(224,81,127)` | Fertility peak value, period tags, bleed icons | 4.1:1 on white |
+| `color-danger` | `#8B1E2F` | `rgb(139,30,47)` | Delete All Data destructive button | 9.0:1 (AAA) on white |
 | `color-line` | `#ECE3F2` | `rgb(236,227,242)` | Borders, dividers | — |
 | `color-surface` | `#FAF7FC` | `rgb(250,247,252)` | Scaffold | — |
 
 Code: `lib/theme/app_colors.dart` (`AppColors`).
+
+**Dark variant (Milestone 1 Phase 12):** `AppColors.dark` flips mode-varying tokens via getters - bg `#1B0A2A`, card `#26063F`, ink `#F3EAF9`, body `#CDBEDD`, muted `#9E90AC`, line `#3E2A54`, pur `#9D5CFF`, field `#2A0F45`, plus dark `lav/lav2/switchOff/sliderTrack/sectionTitle/chipText/navInactive/placeholder/fertile*/pinkBg/goldBg/blueBg/tabBg` values. Accent tokens (`gold`, `pink`, `plum`, `orb*`, `avatar*`) stay shared. `buildAppTheme({Brightness brightness})` in `lib/theme/app_theme.dart` sets the flag and builds the matching `ThemeData`; `main.dart` picks dark ONLY when `SettingsProvider.darkMode` is on (light is the default; the Profile toggle is the sole control, platform brightness is ignored - Dark Magic Mode toggle repaints live).
+
+**App icon (Milestone 1 Phase 13):** gold cat-moon mark on brand purple `#3B0A5E`. Source art `assets/images/cat-moon-gold-512.png`; `tool/generate_app_icon.dart` composites `assets/images/app_icon_1024.png` (glyph at 80% inset) and `flutter_launcher_icons` (config in `pubspec.yaml`) generates Android legacy + adaptive (foreground gold, background `#3B0A5E`), the iOS AppIcon set, and web icons + favicon. Regenerate with `dart run tool/generate_app_icon.dart && dart run flutter_launcher_icons`.
 
 ### 2.2 Typography System
 
@@ -125,7 +130,7 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 | Entry | Welcome | `/` | → `/privacy`, `/onboarding`, `/dashboard` | CTA `Awaken Your Power` → `/privacy` first run, straight to `/onboarding` once consented (auth screen exists at `/auth` but stays hidden); returning onboarded users auto-redirect `/dashboard` |
 | Entry | A Note on Privacy (gate) | `/privacy` | → `/webview`, `/`, `/onboarding` | 3 checkbox rows (Terms / Privacy Policy / Safe Space) → in-app webview; Refuse → `/`, Accept (all checked) → saves `witchy_privacy_accepted` + `/onboarding` |
 | Entry | Join the Coven | `/auth` | → `/onboarding` | Bottom stack: Continue with Google / Continue with Apple / Skip for now — all `reset` to `/onboarding` (local session, errors → SnackBar) |
-| Onboarding | Set Your Rhythms | `/onboarding` | → `/dashboard` | Tracking mode chips (Cycle default / Pregnancy / Perimenopause), Year of Birth dropdown (defaults to now − 25, so CTA active from first frame), last-bleed date picker, 28d/5d sliders; `Begin the Journey` → persist + log first day → shell |
+| Onboarding | Set Your Rhythms | `/onboarding` | → `/dashboard` | Tracking mode chips (multi-toggle, default `{Cycle}`, all three can be active at once), Year of Birth dropdown (defaults to now − 25, so CTA active from first frame), last-bleed date picker, 28d/5d sliders; `Begin the Journey` → persist + log first day → shell |
 | Home | Sanctuary | `/dashboard` (shell 0) | → `/fertility`, log sheet | Orb day 14 Full Moon Peak; Bleeding In 14d/Nov 10 (Perimenopause: earliest-latest window `dMin-dMax Days` + `d MMM - d MMM · range` sub, no single-day claim); Peak Today → fertility (fertility stat card hidden outside Cycle mode); `Today's magic` QA (Flow/Mood/Pain/Sleep, LogData icons) → log sheet today scrolled to category; day-detail card (glyph + phase + Cycle Day badge + flow/mood rows → log sheet; Perimenopause softens the note to `Period may start any day now` for d-1/d-2) |
 | Home | Lunar Cycle Map | `/calendar` (shell 1) | → log sheet, month picker | Oct 2026 grid (today ring, dimmed adjacent days, cycle-day micro-labels, legend row); Perimenopause replaces arithmetic predictions with the `CalendarFetcher` predicted window (whole possible bleed range marked, fertile/ovulation glyphs hidden); day tap → log bottom sheet; month label → month/year picker sheet; late pill + Today chip when late/off-month; detail card with status tag, tappable rows, clear-day confirm (`/chart` now via Records → Trends) |
 | Log | Apothecary Log sheet | bottom drawer (no route) | — | `showLogSheet(date)`; 10 categories in `lib/common/log_data.dart` (all multi-toggle 2-col); per-date state in `LoggingProvider` (`DayLog` map); entries = calendar day tap, Sanctuary QA |
@@ -191,7 +196,7 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 - **Purpose:** Calibrate year of birth, last bleed date, cycle + bleed lengths; persist via `PrefsService` (`OnboardingProvider.finish`).
 - **Layout Structure:**
   - **Header:** `h2` `"Set Your Rhythms"` + sub `"Calibrate your lunar engine. When did your last bleeding phase commence?"`.
-  - **Tracking Mode Card:** `AppCard` `"What shall we track?"` + `TrackingModeChips` single-select `AppChip` row (`lib/widgets/tracking_mode_chip.dart`) - `Cycle` (droplet, default), `Pregnancy` (person-pregnant), `Perimenopause` (moon); selected = pur fill; writes `OnboardingProvider.trackingMode` (persists `witchy_tracking_mode`) and is saved again in `finish()`.
+  - **Tracking Mode Card:** `AppCard` `"What shall we track?"` + `TrackingModeChips` multi-toggle `AppChip` row (`lib/widgets/tracking_mode_chip.dart`) - `Cycle` (droplet, default), `Pregnancy` (person-pregnant), `Perimenopause` (moon); selected = pur fill; any number of modes can be active at once and the last one can never be deselected (always >= 1); writes `OnboardingProvider.trackingModes` (a `Set`, persists `witchy_tracking_modes` JSON list with legacy `witchy_tracking_mode` migration) and is saved again in `finish()`.
   - **Year of Birth Card:** `AppCard` — label + serif value with `DropdownButton<int>` (current year … −100) → `setYear`, persisted as `witchy_birth_year`; preselected with the `OnboardingProvider` fallback default (`DateTime.now().year − 25`) so a value always exists.
   - **Date Card:** Tappable `AppCard` — `"Last bleeding phase"` + serif date (`Pick a date` placeholder) + calendar icon → native `showDatePicker` (past dates only).
   - **Slider Cards:** Two `AppCard`s hosting `AppSliderRow` — `"Cycle duration (stardust tides)"` (`20–40`, default `28 Days`), `"Bleeding phase length"` (`2–10`, default `5 Days`).
@@ -257,7 +262,7 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 
 ### Screen 11: Gestation Spells (`/pregnancy`)
 
-- **Purpose:** Computed gestational tracker, reachable only when `TrackingMode.pregnancy` (Profile row is hidden in other modes); replaces the hardcoded Week 12 mock.
+- **Purpose:** Computed gestational tracker, reachable only when `TrackingMode.pregnancy` is in `trackingModes` (Profile row is hidden otherwise); replaces the hardcoded Week 12 mock.
 - **Data:** `GestationProvider` (persisted `witchy_pregnancy_lmp`) computes gestational days from the LMP date-only, `week = days ~/ 7`, `dayOfWeek = days % 7`, `progress = days/280` (clamped), `daysRemaining`, `daysPastDue`, `dueDate = lmp + 280`, `trimester` (weeks 0-12 / 13-27 / 28+). Week content from `GestationContent.forWeek` (10 buckets covering weeks 0-40 + past-term fallback) in `lib/common/gestation_content.dart`.
 - **Layout Structure:**
   - **App Bar:** `AppTopBar("Gestation Spells", action: favorite_border)`.
@@ -282,12 +287,12 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 - **Layout Structure:**
   - **App Bar:** `"Witch Profile"` — back top-left → home (fallback `/dashboard`), **alerts top-right** (`AppIcons.alerts`, same as shell) → `/alerts`.
   - **Identity Header:** `AppAvatar` HS `84pt` (white ring + gold halo), serif `"High Priestess Selene"` (18pt), gold caps `"SCORPIO MOON · THIRD CYCLE"`, gold star.
-  - **Lunar Alignments Card:** Statics `29 Days / 5 Days` (stats only) + `Tracking Mode` row (pur underline label = current mode) → bottom sheet with the same 3 `TrackingModeChips`; picking a chip persists via `OnboardingProvider.setTrackingMode` and closes the sheet.
-  - **Apothecary Settings Card:** `Gestation Spells → View` (→ `/pregnancy`) - card rendered only when `TrackingMode.pregnancy`.
-  - **App Settings Card (new):** `SettingsRow` switches — `Receive Lunar Notifications` (ON, `setLunar` + `NotificationService.syncPeriodPrediction`) and `Dark Magic Mode` (OFF, `setDark`), owned by `SettingsProvider`.
-  - **Amulet Bells Card:** `"Amulet Bells"` header + live `"X of 5 bells active"` (watches `RemindersProvider`) + **5 inline bell rows** (hairline dividers): `IconBadge` + serif title + muted subtitle + pur `Switch` (`toggle` + `NotificationService.syncReminder`); when ON, `InfoPill` pair (clock time / spark freq) below the row.
-  - **Session Card:** `AppButton("Sign Out")` → clears session, `reset('/')`.
-  - **Footer:** Centered `"Witchy App / Version 1.2.4 · Made with celestial energy"` (9.5, placeholder).
+  - **Lunar Alignments Card:** Live values from `CycleProvider` - `Average Cycle Length` = `meanCycleLength` (`—` until 2 observed cycles) and `Bleeding Phase Length` = `bleedLength` + `Tracking Mode` row (pur underline label = active modes joined with `, `) → bottom sheet with the same 3 `TrackingModeChips`; tapping a chip toggles it via `OnboardingProvider.toggleTrackingMode` (multi-select, the sheet stays open, >= 1 mode always kept).
+  - **Apothecary Settings Card:** `Gestation Spells → View` (→ `/pregnancy`) - card rendered only when `trackingModes` contains `TrackingMode.pregnancy`.
+  - **App Settings Card (new):** `SettingsRow` switches — `Receive Lunar Notifications` (ON, `setLunar` + awaited `NotificationService.syncPeriodPrediction`, failure surfaced as SnackBar) and `Dark Magic Mode` (OFF, `setDark`, now drives the real dark theme), owned by `SettingsProvider`.
+  - **Amulet Bells Card:** `"Amulet Bells"` header + live `"X of N bells active"` (`N = RemindersProvider.items.length`) + inline bell rows (hairline dividers): `IconBadge` + serif title + muted subtitle + pur `Switch` (`toggle` + awaited `NotificationService.syncReminder` with cycle anchors, failure → SnackBar); when ON, `InfoPill` pair (clock time / spark freq) below the row. Bell `freq` now drives scheduling: `Every day`/`Daytime` repeat daily (hourly fans out 08:00-20:00), `Daily during peak` fires once per predicted bleed day, `Window start` once at fertile-window start, `3 days prior` once at predicted start minus 3; bells re-sync whenever cycle data or reminders change.
+  - **Session Card:** `AppButton("Sign Out")` → clears session, `reset('/')` (welcome requires signed-in, so sign-out stays on the first screen); below it a `DangerButton("Delete All Data")` (`AppColors.danger` `#8B1E2F` bg, white label) - confirm dialog (`Delete all data?`) → wipes every `witchy_*` pref, resets all providers in memory, resyncs notifications, lands on welcome.
+  - **Footer:** Centered `"Witchy App / Version <package_info_plus> · Made with celestial energy"` (9.5, placeholder; single-sourced from pubspec).
 
 ### Screen 16: Celestial Alerts (`/alerts`)
 

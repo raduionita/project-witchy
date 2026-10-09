@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../navigation/app_nav.dart';
 import '../models/tracking_mode.dart';
+import '../providers/auth_provider.dart';
 import '../providers/gestation_provider.dart';
 import '../providers/logging_provider.dart';
 import '../providers/onboarding_provider.dart';
@@ -38,8 +39,10 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
     final onboarding = context.read<OnboardingProvider>();
     await onboarding.finish();
     if (!mounted) return;
+    await context.read<AuthProvider>().markLocalSession();
+    if (!mounted) return;
     context.read<LoggingProvider>().setFlow(onboarding.lastPeriodStart, 'Medium');
-    if (onboarding.trackingMode == TrackingMode.pregnancy) {
+    if (onboarding.trackingModes.contains(TrackingMode.pregnancy)) {
       final gestation = context.read<GestationProvider>();
       await gestation.setLmp(onboarding.lastPeriodStart);
       if (!mounted) return;
@@ -95,7 +98,7 @@ class _Header extends StatelessWidget {
   }
 }
 
-/// Single-select tracking mode picker; defaults to Cycle.
+/// Multi-toggle tracking mode picker; defaults to Cycle (always at least one active).
 class _TrackingModeCard extends StatelessWidget {
   const _TrackingModeCard();
   @override
@@ -107,7 +110,7 @@ class _TrackingModeCard extends StatelessWidget {
         children: [
           Text('What shall we track?', style: AppText.secIn),
           const SizedBox(height: 10),
-          TrackingModeChips(value: ob.trackingMode, onChanged: (mode) => context.read<OnboardingProvider>().setTrackingMode(mode)),
+          TrackingModeChips(selected: ob.trackingModes, onToggle: (mode) => context.read<OnboardingProvider>().toggleTrackingMode(mode)),
         ],
       ),
     );
@@ -176,7 +179,7 @@ class _LastBleedDateCard extends StatelessWidget {
                   Text(date == null ? 'Pick a date' : DateFormat('MMMM d, yyyy').format(date), style: AppText.serif(14, c: date == null ? AppColors.placeholder : AppColors.ink)),
                 ],
               ),
-              const FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),
+              FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),
             ],
           ),
         ),

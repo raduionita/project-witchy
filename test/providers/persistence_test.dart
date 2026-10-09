@@ -157,28 +157,65 @@ void main() {
     expect(await prefs.session(), isNull);
   });
 
-  test('tracking mode defaults to cycle and persists across reload', () async {
+  test('tracking modes default to {cycle}, toggle reacts and persists across reload', () async {
     final defaults = await OnboardingProvider.load(prefs);
-    expect(defaults.trackingMode, TrackingMode.cycle);
+    expect(defaults.trackingModes, {TrackingMode.cycle});
 
     var notifications = 0;
     defaults.addListener(() => notifications++);
-    defaults.setTrackingMode(TrackingMode.perimenopause);
+    defaults.toggleTrackingMode(TrackingMode.perimenopause);
     await pumpEventQueue();
 
     expect(notifications, 1);
+    expect(defaults.trackingModes, {TrackingMode.cycle, TrackingMode.perimenopause});
     final reloaded = await OnboardingProvider.load(prefs);
-    expect(reloaded.trackingMode, TrackingMode.perimenopause);
+    expect(reloaded.trackingModes, {TrackingMode.cycle, TrackingMode.perimenopause});
   });
 
-  test('OnboardingProvider.finish saves the chosen tracking mode', () async {
+  test('toggle refuses to deselect the last active mode', () async {
+    final onboarding = OnboardingProvider(prefs, trackingModes: {TrackingMode.pregnancy});
+    var notifications = 0;
+    onboarding.addListener(() => notifications++);
+
+    onboarding.toggleTrackingMode(TrackingMode.pregnancy);
+
+    expect(notifications, 0);
+    expect(onboarding.trackingModes, {TrackingMode.pregnancy});
+  });
+
+  test('OnboardingProvider.finish saves the chosen tracking modes', () async {
     final onboarding = OnboardingProvider(prefs, cycleLength: 28, bleedLength: 5);
-    onboarding.setTrackingMode(TrackingMode.pregnancy);
+    onboarding.toggleTrackingMode(TrackingMode.pregnancy);
     await onboarding.finish();
     await pumpEventQueue();
 
-    expect(await prefs.trackingMode(), TrackingMode.pregnancy);
+    expect(await prefs.trackingModes(), {TrackingMode.cycle, TrackingMode.pregnancy});
     final reloaded = await OnboardingProvider.load(prefs);
-    expect(reloaded.trackingMode, TrackingMode.pregnancy);
+    expect(reloaded.trackingModes, {TrackingMode.cycle, TrackingMode.pregnancy});
+  });
+
+  test('legacy single-mode value migrates into the tracking mode set', () async {
+    SharedPreferences.setMockInitialValues({'witchy_tracking_mode': 'pregnancy'});
+    final localPrefs = PrefsService();
+
+    expect(await localPrefs.trackingModes(), {TrackingMode.pregnancy});
+  });
+
+  test('clearAllData removes every witchy_ key and keeps foreign keys', () async {
+    SharedPreferences.setMockInitialValues({
+      'witchy_onboarded': true,
+      'witchy_cycle_len': 30,
+      'witchy_session': '{"method":"local"}',
+      'other_app_key': 'keep me',
+    });
+    final localPrefs = PrefsService();
+
+    await localPrefs.clearAllData();
+
+    final stored = await SharedPreferences.getInstance();
+    expect(stored.getKeys().where((k) => k.startsWith('witchy_')), isEmpty);
+    expect(stored.getString('other_app_key'), 'keep me');
+    expect(await localPrefs.isOnboarded(), isFalse);
+    expect(await localPrefs.session(), isNull);
   });
 }

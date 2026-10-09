@@ -46,7 +46,7 @@ class _MainScreenState extends State<MainScreen> {
                   width: 50,
                   height: 50,
                   alignment: Alignment.center,
-                  decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.plumGradient, boxShadow: [AppColors.primaryShadow]),
+                  decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.plumGradient, border: Border.fromBorderSide(BorderSide(color: AppColors.gold, width: 1.5)), boxShadow: [AppColors.primaryShadow]),
                   child: const FaIcon(AppIcons.quill, size: AppIconSize.base, color: AppColors.gold),
                 ),
               ),

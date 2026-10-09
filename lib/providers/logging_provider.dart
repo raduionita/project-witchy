@@ -90,4 +90,10 @@ class LoggingProvider extends ChangeNotifier {
   }
 
   void _save() => _prefs.saveDayLogs(_days);
+
+  /// In-memory reset after Delete All Data (prefs already wiped).
+  void resetToDefaults() {
+    _days.clear();
+    notifyListeners();
+  }
 }

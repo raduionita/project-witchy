@@ -80,4 +80,11 @@ class AlertProvider extends ChangeNotifier {
   }
 
   void _save() => _prefs.saveAlertItems(_items);
+
+  /// In-memory reset after Delete All Data (prefs already wiped).
+  /// Called last so cycle-triggered regeneration runs before this clears.
+  void resetToDefaults() {
+    _items.clear();
+    notifyListeners();
+  }
 }

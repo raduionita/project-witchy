@@ -19,7 +19,7 @@ void main() {
       cycleLength: 28,
       bleedLength: 5,
       lastPeriodStart: DateTime.now().subtract(const Duration(days: 13)),
-      trackingMode: mode,
+      trackingModes: {mode},
     );
     final logging = LoggingProvider(prefs);
     final cycle = CycleProvider(onboarding, logging);

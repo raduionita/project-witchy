@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
@@ -124,7 +126,11 @@ void main() {
   });
 
   testWidgets('calendar tab shows the legend and the label opens the picker', (tester) async {
-    SharedPreferences.setMockInitialValues({'witchy_onboarded': true, 'witchy_privacy_accepted': true});
+    SharedPreferences.setMockInitialValues({
+      'witchy_onboarded': true,
+      'witchy_privacy_accepted': true,
+      'witchy_session': jsonEncode({'method': 'local'}),
+    });
     final prefs = PrefsService();
     final onboarding = await OnboardingProvider.load(prefs);
     final logging = await LoggingProvider.load(prefs);

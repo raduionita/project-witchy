@@ -55,4 +55,10 @@ class GestationProvider extends ChangeNotifier {
     if (w < 28) return 2;
     return 3;
   }
+
+  /// In-memory reset after Delete All Data (prefs already wiped).
+  void resetToDefaults() {
+    lmpDate = null;
+    notifyListeners();
+  }
 }

@@ -38,7 +38,7 @@ void main() {
       cycleLength: 28,
       bleedLength: 5,
       lastPeriodStart: lastStart,
-      trackingMode: TrackingMode.perimenopause,
+      trackingModes: {TrackingMode.perimenopause},
     );
     final logging = LoggingProvider(prefs);
     return (cycle: CycleProvider(onboarding, logging), logging: logging);

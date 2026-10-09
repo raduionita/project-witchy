@@ -52,6 +52,45 @@ Witchy is dedicated to providing evidence-based reproductive health insights wit
 
 ---
 
+## Building for Release
+
+### Android release signing
+
+1. Generate a keystore once (keep it safe, it cannot be recreated):
+
+```bash
+keytool -genkey -v -keystore ~/witchy-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias witchy
+```
+
+2. Create `android/key.properties` (git-ignored):
+
+```properties
+storePassword=<keystore password>
+keyPassword=<key password>
+keyAlias=witchy
+storeFile=/absolute/path/to/witchy-release.jks
+```
+
+3. Build:
+
+```bash
+flutter build apk --release
+```
+
+Without `key.properties` the release build falls back to the debug key (local testing only - never ship that APK).
+
+### Launcher icons
+
+Branded icons are generated with `flutter_launcher_icons` (config in `pubspec.yaml`).
+To regenerate after changing the art:
+
+```bash
+dart run tool/generate_app_icon.dart   # composites gold cat-moon onto brand purple -> assets/images/app_icon_1024.png
+dart run flutter_launcher_icons
+```
+
+---
+
 ## License & Terms
 
 By using Witchy, you agree to the app's Terms of Service and Privacy Policy. For detailed terms, visit the Witchy Health website, the Google Play Store listing, or the in-app privacy screen (Terms of Service, Privacy Policy, and Child Protection pages).

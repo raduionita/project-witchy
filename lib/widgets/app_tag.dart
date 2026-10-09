@@ -6,7 +6,9 @@ class AppTag extends StatelessWidget {
   final String label;
   final Color bg;
   final Color fg;
-  const AppTag(this.label, {super.key, this.bg = AppColors.lav, this.fg = AppColors.purDark});
+  AppTag(this.label, {super.key, Color? bg, Color? fg})
+      : bg = bg ?? AppColors.lav,
+        fg = fg ?? AppColors.purDark;
   factory AppTag.pink(String l) => AppTag(l, bg: AppColors.pinkBg, fg: AppColors.pinkDark);
   factory AppTag.gold(String l) => AppTag(l, bg: const Color(0x29D9A036), fg: AppColors.gold);
 

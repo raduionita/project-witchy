@@ -82,7 +82,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
               alignment: Alignment.center,
               children: [
                 if (cell.isToday)
-                  const SizedBox(width: 44, height: 44, child: DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.lav))),
+                  SizedBox(width: 44, height: 44, child: DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.lav))),
                 if (glyph != null) SvgPicture.asset(glyph, width: 44, height: 44, excludeFromSemantics: true),
                 if (cell.isToday) _ring(AppColors.pur, 1.5),
                 if (cell.isSelected) _ring(AppColors.ink, 2),

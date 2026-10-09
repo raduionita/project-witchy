@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-ThemeData buildAppTheme() {
-  final base = ThemeData(useMaterial3: true, scaffoldBackgroundColor: AppColors.bg);
+/// Builds the app theme for [brightness]. Flips [AppColors.dark] first so
+/// every token getter resolves to the matching light/dark value.
+ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
+  AppColors.dark = brightness == Brightness.dark;
+  final base = ThemeData(useMaterial3: true, brightness: brightness, scaffoldBackgroundColor: AppColors.bg);
   return base.copyWith(
-    colorScheme: ColorScheme.fromSeed(seedColor: AppColors.pur).copyWith(
+    colorScheme: ColorScheme.fromSeed(seedColor: AppColors.pur, brightness: brightness).copyWith(
       primary: AppColors.pur,
       surface: AppColors.bg,
     ),
@@ -20,17 +23,17 @@ ThemeData buildAppTheme() {
         fontWeight: FontWeight.w700,
         color: AppColors.ink,
       ),
-      iconTheme: const IconThemeData(color: AppColors.chipText),
+      iconTheme: IconThemeData(color: AppColors.chipText),
     ),
     cardTheme: CardThemeData(
       color: AppColors.card,
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: const BorderSide(color: AppColors.line),
+        side: BorderSide(color: AppColors.line),
       ),
     ),
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: Colors.white,
       selectedItemColor: AppColors.pur,
       unselectedItemColor: AppColors.navInactive,

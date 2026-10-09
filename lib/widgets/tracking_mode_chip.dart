@@ -6,9 +6,9 @@ import '../theme/app_icons.dart';
 import 'app_chip.dart';
 
 class TrackingModeChips extends StatelessWidget {
-  final TrackingMode value;
-  final ValueChanged<TrackingMode> onChanged;
-  const TrackingModeChips({super.key, required this.value, required this.onChanged});
+  final Set<TrackingMode> selected;
+  final ValueChanged<TrackingMode> onToggle;
+  const TrackingModeChips({super.key, required this.selected, required this.onToggle});
 
   static const Map<TrackingMode, FaIconData> _icons = {
     TrackingMode.cycle: AppIcons.drop,
@@ -26,8 +26,8 @@ class TrackingModeChips extends StatelessWidget {
           AppChip(
             label: mode.label,
             icon: _icons[mode],
-            selected: value == mode,
-            onTap: () => onChanged(mode),
+            selected: selected.contains(mode),
+            onTap: () => onToggle(mode),
           ),
       ],
     );

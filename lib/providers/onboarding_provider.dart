@@ -11,10 +11,11 @@ class OnboardingProvider extends ChangeNotifier {
     this.selectedDay = 17,
     this.cycleLength = 28,
     this.bleedLength = 5,
-    this.trackingMode = TrackingMode.cycle,
+    Set<TrackingMode>? trackingModes,
     int? yearOfBirth,
     DateTime? lastPeriodStart,
-  }) : yearOfBirth = yearOfBirth ?? DateTime.now().year - 25,
+  }) : trackingModes = (trackingModes == null || trackingModes.isEmpty) ? {TrackingMode.cycle} : {...trackingModes},
+       yearOfBirth = yearOfBirth ?? DateTime.now().year - 25,
        lastPeriodStart = lastPeriodStart ?? _derive(selectedDay);
 
   final PrefsService _prefs;
@@ -22,7 +23,7 @@ class OnboardingProvider extends ChangeNotifier {
   int selectedDay;
   int cycleLength;
   int bleedLength;
-  TrackingMode trackingMode;
+  Set<TrackingMode> trackingModes;
   int? yearOfBirth;
   DateTime lastPeriodStart;
   DateTime? pickedDate;
@@ -42,18 +43,25 @@ class OnboardingProvider extends ChangeNotifier {
       onboarded: await prefs.isOnboarded(),
       cycleLength: await prefs.cycleLength(),
       bleedLength: await prefs.bleedLength(),
-      trackingMode: await prefs.trackingMode(),
+      trackingModes: await prefs.trackingModes(),
       yearOfBirth: await prefs.birthYear(),
       selectedDay: selected,
       lastPeriodStart: last ?? _derive(selected),
     );
   }
 
-  void setTrackingMode(TrackingMode mode) {
-    if (mode == trackingMode) return;
-    trackingMode = mode;
+  /// Multi-toggle: adds/removes [mode] but always keeps at least one active.
+  void toggleTrackingMode(TrackingMode mode) {
+    final next = {...trackingModes};
+    if (next.contains(mode)) {
+      if (next.length == 1) return;
+      next.remove(mode);
+    } else {
+      next.add(mode);
+    }
+    trackingModes = next;
     notifyListeners();
-    _prefs.setTrackingMode(mode);
+    _prefs.setTrackingModes(next);
   }
 
   void setYear(int y) {
@@ -87,11 +95,24 @@ class OnboardingProvider extends ChangeNotifier {
     final last = pickedDate ?? DateTime(now.year, now.month, selectedDay <= 28 ? selectedDay : 28);
     lastPeriodStart = last;
     await _prefs.saveRhythms(cycleLength, bleedLength, last);
-    await _prefs.setTrackingMode(trackingMode);
+    await _prefs.setTrackingModes(trackingModes);
     final year = yearOfBirth;
     if (year != null) await _prefs.setBirthYear(year);
     await _prefs.setOnboarded();
     onboarded = true;
+    notifyListeners();
+  }
+
+  /// In-memory reset after Delete All Data (prefs already wiped).
+  void resetToDefaults() {
+    onboarded = false;
+    selectedDay = 17;
+    cycleLength = 28;
+    bleedLength = 5;
+    trackingModes = {TrackingMode.cycle};
+    yearOfBirth = DateTime.now().year - 25;
+    lastPeriodStart = _derive(17);
+    pickedDate = null;
     notifyListeners();
   }
 }

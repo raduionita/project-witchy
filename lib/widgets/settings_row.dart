@@ -12,7 +12,7 @@ class SettingsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(border: first ? null : const Border(top: BorderSide(color: AppColors.line))),
+      decoration: BoxDecoration(border: first ? null : Border(top: BorderSide(color: AppColors.line))),
       child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label, style: AppText.sans(12, w: FontWeight.w500, c: AppColors.ink)), trailing]),
     );
   }

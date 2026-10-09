@@ -14,7 +14,7 @@ class AppBottomNav extends StatelessWidget {
     const items = [(AppIcons.moon, 'Today'), (AppIcons.cal, 'Calendar'), (AppIcons.chart, 'Insights'), (AppIcons.spark, 'Magic')];
     return Container(
       height: 78,
-      decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.line))),
+      decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.line))),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [

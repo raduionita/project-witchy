@@ -16,7 +16,7 @@ class CycleOrb extends StatelessWidget {
         padding: const EdgeInsets.all(9),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          gradient: SweepGradient(startAngle: -1.57, endAngle: 4.71, stops: const [0.0, 0.46, 0.46, 1.0], colors: const [AppColors.pur, AppColors.pur, Color(0xFFE9DBF5), Color(0xFFE9DBF5)]),
+          gradient: SweepGradient(startAngle: -1.57, endAngle: 4.71, stops: const [0.0, 0.46, 0.46, 1.0], colors: [AppColors.pur, AppColors.pur, const Color(0xFFE9DBF5), const Color(0xFFE9DBF5)]),
         ),
         child: Container(
           width: 172,

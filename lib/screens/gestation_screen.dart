@@ -85,7 +85,7 @@ class GestationScreen extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const IconBadge(icon: AppIcons.search),
+              IconBadge(icon: AppIcons.search),
               const SizedBox(width: 10),
               Expanded(child: Text(content.development, style: AppText.sans(11.5, h: 1.55))),
             ],
@@ -125,7 +125,7 @@ class GestationScreen extends StatelessWidget {
                   Text(DateFormat('MMMM d, yyyy').format(g.lmpDate!), style: AppText.serif(14)),
                 ],
               ),
-              const FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),
+              FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),
             ],
           ),
         ),

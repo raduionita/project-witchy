@@ -33,8 +33,8 @@ class AppTextField extends StatelessWidget {
             prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 20),
             suffixIcon:
                 onToggleObscure != null ? IconButton(onPressed: onToggleObscure, icon: FaIcon(obscure ? AppIcons.eye : AppIcons.eyeOpen, size: AppIconSize.sm, color: AppColors.muted)) : null,
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.line)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.pur)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.line)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.pur)),
           ),
         ),
       ],

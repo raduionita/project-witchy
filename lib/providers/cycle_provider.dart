@@ -35,12 +35,60 @@ class CycleProvider extends ChangeNotifier {
     bleeds = PeriodHistory.spans(_logging.snapshot());
     observedCycleLengths = PeriodHistory.cycleLengths(PeriodHistory.startsOf(bleeds));
     effectiveCycleLength = observedCycleLengths.length >= 2 ? PeriodHistory.median(observedCycleLengths)! : _onboarding.cycleLength;
-    final stated = _onboarding.lastPeriodStart;
-    final logged = bleeds.isEmpty ? null : bleeds.last.start;
-    effectiveLastStart = (logged == null || logged.isBefore(stated)) ? stated : logged;
+    effectiveLastStart = _resolveAnchor();
   }
 
+  /// Latest known bleed start.
+  ///
+  /// Real logs win over the stated onboarding date, and a candidate dated in the
+  /// future is never usable: anchoring on it makes the modular cycle arithmetic
+  /// wrap backwards (Dart's `%` is non-negative), which produced phantom
+  /// cycle days and bogus "bleeding in N days" predictions.
+  DateTime _resolveAnchor() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final candidates = <DateTime>[
+      if (bleeds.isNotEmpty) bleeds.last.start,
+      _onboarding.lastPeriodStart,
+    ];
+    DateTime? anchor;
+    for (final candidate in candidates) {
+      final day = DateTime(candidate.year, candidate.month, candidate.day);
+      if (day.isAfter(today)) continue;
+      if (anchor == null || day.isAfter(anchor)) anchor = day;
+    }
+    return anchor ?? today;
+  }
+
+  /// Bleed length always follows the onboarding slider - logged spans are often
+  /// only partially filled in, so inferring a length from them would under-report.
   int get bleedLength => _onboarding.bleedLength;
+
+  /// True when the effective cycle length comes from logged history rather than the slider.
+  bool get isCycleLengthAuto => observedCycleLengths.length >= 2;
+
+  /// True when [date] falls inside a logged bleed span.
+  bool hasLoggedBleedOn(DateTime date) => _spanIndexOf(date) >= 0;
+
+  int _spanIndexOf(DateTime date) {
+    final d = DateTime(date.year, date.month, date.day);
+    for (var i = 0; i < bleeds.length; i++) {
+      final s = bleeds[i];
+      if (!d.isBefore(s.start) && !d.isAfter(s.end)) return i;
+    }
+    return -1;
+  }
+
+  /// Bleeding day number for [date]: position within its logged span when the day
+  /// has logged bleeding, otherwise the arithmetic prediction day (0 = not a bleed day).
+  int bleedDayOf(DateTime date) {
+    final index = _spanIndexOf(date);
+    if (index >= 0) {
+      final s = bleeds[index];
+      return CycleCalculator.daysBetween(s.start, DateTime(date.year, date.month, date.day)) + 1;
+    }
+    return CycleCalculator.bleedDay(effectiveLastStart, date, effectiveCycleLength, bleedLength);
+  }
 
   /// Fertility predictions only surface while the Cycle mode is active.
   bool get showFertilityPredictions => _onboarding.trackingModes.contains(TrackingMode.cycle);
@@ -66,7 +114,12 @@ class CycleProvider extends ChangeNotifier {
 
   int cycleDay({DateTime? today}) => CycleCalculator.cycleDay(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
 
-  CyclePhase phaseAt(DateTime date) => CycleCalculator.phaseAt(effectiveLastStart, date, effectiveCycleLength, bleedLength);
+  /// Phase for [date]. A day with logged bleeding is always menstrual, even when
+  /// the pure-arithmetic cycle position would place it in another phase.
+  CyclePhase phaseAt(DateTime date) {
+    if (hasLoggedBleedOn(date)) return CyclePhase.menstrual;
+    return CycleCalculator.phaseAt(effectiveLastStart, date, effectiveCycleLength, bleedLength);
+  }
 
   CyclePhase phase({DateTime? today}) => phaseAt(today ?? DateTime.now());
 
@@ -81,6 +134,10 @@ class CycleProvider extends ChangeNotifier {
 
   int daysUntilOvulation({DateTime? today}) => CycleCalculator.daysUntilOvulation(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
 
+  /// The ovulation date [daysUntilOvulation] counts down to - rolls into the next
+  /// cycle once this cycle's peak has passed, so value and label never disagree.
+  DateTime nextOvulationDate({DateTime? today}) => CycleCalculator.nextOvulationDay(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
+
   /// Days past the projected due date with no new period logged (0 = not late).
   int daysLate({DateTime? today}) {
     final t = today ?? DateTime.now();
@@ -89,7 +146,10 @@ class CycleProvider extends ChangeNotifier {
     return diff > 0 ? diff : 0;
   }
 
-  bool isPeriodDay(DateTime date) => CycleCalculator.isPeriodDay(effectiveLastStart, date, effectiveCycleLength, bleedLength);
+  /// A period day is either an arithmetic prediction day or a day the user actually logged bleeding on.
+  bool isPeriodDay(DateTime date) =>
+      hasLoggedBleedOn(date) || CycleCalculator.isPeriodDay(effectiveLastStart, date, effectiveCycleLength, bleedLength);
+
 
   bool isFertileDay(DateTime date) => showFertilityPredictions && CycleCalculator.isFertileDay(effectiveLastStart, date, effectiveCycleLength);
 

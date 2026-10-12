@@ -9,7 +9,6 @@ import '../models/day_log.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/logging_provider.dart';
 import '../services/calendar_fetcher.dart';
-import '../services/cycle_calculator.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_icons.dart';
@@ -145,7 +144,7 @@ class _CycleScreenState extends State<CycleScreen> {
     );
   }
 
-  /// Header mirroring Sanctuary's "Today's magic" + up to 10 newest flow-logged days.
+  /// Header mirroring Today's "Today's Log" + up to 10 newest flow-logged days.
   Widget _buildLoggedCard() {
     final cycle = context.watch<CycleProvider>();
     final recent =
@@ -199,7 +198,7 @@ class _CycleScreenState extends State<CycleScreen> {
   Widget _buildEntryCard(CycleProvider cycle, DateTime date, DayLog entry) {
     final phase = cycle.phaseAt(date);
     final periodDay = cycle.isPeriodDay(date);
-    final bleedDay = periodDay ? CycleCalculator.bleedDay(cycle.effectiveLastStart, date, cycle.effectiveCycleLength, cycle.bleedLength) : 0;
+    final bleedDay = periodDay ? cycle.bleedDayOf(date) : 0;
     final selected = _selectedEntry == date;
     return AppCard(
       dark: true,

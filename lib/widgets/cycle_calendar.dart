@@ -104,7 +104,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (cell.isOvulation) Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.pink)),
+                        if (cell.isOvulation) Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.teal)),
                         if (cell.isOvulation && cell.isLogged) const SizedBox(width: 3),
                         if (cell.isLogged) Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.blue)),
                       ],

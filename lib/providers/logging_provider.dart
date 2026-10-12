@@ -45,7 +45,15 @@ class LoggingProvider extends ChangeNotifier {
     _save();
   }
 
-  void toggleFlow(DateTime d, String v) => _toggle(day(d).flow, v);
+  /// Log-sheet flow: one level at a time. Tapping the active level clears it.
+  void selectFlow(DateTime d, String v) {
+    final flow = day(d).flow;
+    final onlyThis = flow.length == 1 && flow.contains(v);
+    flow.clear();
+    if (!onlyThis) flow.add(v);
+    notifyListeners();
+    _save();
+  }
 
   void toggleMood(DateTime d, String v) => _toggle(day(d).moods, v);
 

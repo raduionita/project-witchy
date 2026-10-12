@@ -22,7 +22,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   late int index = widget.initialIndex;
-  static const titles = ['Sanctuary', 'Lunar Cycle Map', 'Lunar Records', 'Coven Sanctum'];
+  static const titles = ['Today', 'Calendar', 'Insights', 'Articles'];
 
   @override
   Widget build(BuildContext context) {

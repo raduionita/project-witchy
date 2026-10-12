@@ -24,7 +24,7 @@ class FertilityScreen extends StatelessWidget {
     final windowStart = cycle.fertileStartCycleDay;
     final windowEnd = cycle.fertileEndCycleDay;
     final windowDays = windowEnd - windowStart + 1;
-    final ovuDate = cycle.ovulationDay(today: now);
+    final ovuDate = cycle.nextOvulationDate(today: now);
 
     final chanceValue = ovuToday
         ? 'Peak Today'
@@ -37,7 +37,7 @@ class FertilityScreen extends StatelessWidget {
         ? 'Ovulation nears'
         : '${DateFormat('MMM d').format(ovuDate)} · predicted';
     final tips = ovuToday
-        ? 'The fertile crescent peaks today. Track cervical fluid and LH surge alongside temperature for the clearest conception signal.'
+        ? 'Your fertile window peaks today. Track cervical fluid and LH surge alongside temperature for the clearest conception signal.'
         : 'The fertile window opens on cycle day $windowStart. Track cervical fluid and LH surge alongside temperature for the clearest conception signal.';
 
     return Scaffold(

@@ -52,7 +52,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('lunar alignments read real cycle averages', (tester) async {
+  testWidgets('cycle averages read real cycle averages', (tester) async {
     await pumpProfile(tester, seedCycles: true);
     expect(find.text('Average Cycle Length'), findsOneWidget);
     expect(find.text('28 Days'), findsOneWidget);
@@ -68,7 +68,7 @@ void main() {
 
   testWidgets('bell count and version come from real sources', (tester) async {
     await pumpProfile(tester);
-    expect(find.text('3 of 5 bells active'), findsOneWidget);
+    expect(find.text('3 of 5 reminders active'), findsOneWidget);
     await tester.scrollUntilVisible(find.textContaining('Version'), 400);
     expect(find.textContaining('Version 1.2.4'), findsNothing);
     expect(find.textContaining('Version'), findsOneWidget);

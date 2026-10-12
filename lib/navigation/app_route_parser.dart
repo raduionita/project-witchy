@@ -6,7 +6,9 @@ class AppRouteParser extends RouteInformationParser<String> {
 
   @override
   Future<String> parseRouteInformation(RouteInformation routeInformation) {
-    final path = routeInformation.uri.path;
+    final uri = routeInformation.uri;
+    // Keep the query: /webview carries title+url and would deep-link to nothing without it.
+    final path = uri.hasQuery ? '${uri.path}?${uri.query}' : uri.path;
     return SynchronousFuture(path.isEmpty ? '/' : path);
   }
 

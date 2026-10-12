@@ -84,11 +84,11 @@ void main() {
 
   group('phase', () {
     test('phase names follow mock at key days', () {
-      expect(CycleCalculator.phase(lastStart, DateTime(2026, 9, 3), 28, 5), 'Shedding Tide');
-      expect(CycleCalculator.phase(lastStart, DateTime(2026, 9, 8), 28, 5), 'Waxing Glow');
+      expect(CycleCalculator.phase(lastStart, DateTime(2026, 9, 3), 28, 5), 'Menstrual');
+      expect(CycleCalculator.phase(lastStart, DateTime(2026, 9, 8), 28, 5), 'Follicular');
       expect(CycleCalculator.phase(lastStart, DateTime(2026, 9, 13), 28, 5), 'Fertile Window');
-      expect(CycleCalculator.phase(lastStart, DateTime(2026, 9, 14), 28, 5), 'Full Moon Peak');
-      expect(CycleCalculator.phase(lastStart, DateTime(2026, 9, 22), 28, 5), 'Waning Glow');
+      expect(CycleCalculator.phase(lastStart, DateTime(2026, 9, 14), 28, 5), 'Ovulation');
+      expect(CycleCalculator.phase(lastStart, DateTime(2026, 9, 22), 28, 5), 'Luteal');
     });
 
     test('phaseAt returns enum values at key days', () {
@@ -105,11 +105,11 @@ void main() {
     });
 
     test('enum labels cover all phases', () {
-      expect(CyclePhase.menstrual.label, 'Shedding Tide');
-      expect(CyclePhase.follicular.label, 'Waxing Glow');
+      expect(CyclePhase.menstrual.label, 'Menstrual');
+      expect(CyclePhase.follicular.label, 'Follicular');
       expect(CyclePhase.fertile.label, 'Fertile Window');
-      expect(CyclePhase.ovulatory.label, 'Full Moon Peak');
-      expect(CyclePhase.luteal.label, 'Waning Glow');
+      expect(CyclePhase.ovulatory.label, 'Ovulation');
+      expect(CyclePhase.luteal.label, 'Luteal');
     });
   });
 

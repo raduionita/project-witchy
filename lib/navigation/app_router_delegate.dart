@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../models/tracking_mode.dart';
+import '../providers/onboarding_provider.dart';
 import '../screens/alerts_screen.dart';
+import '../screens/bleeding_screen.dart';
 import '../screens/chart_screen.dart';
 import '../screens/fertility_screen.dart';
 import '../screens/gestation_screen.dart';
@@ -75,7 +79,7 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
   Widget build(BuildContext context) {
     return Navigator(
       key: navigatorKey,
-      pages: [for (var i = 0; i < _stack.length; i++) _pageFor(_stack[i], i)],
+      pages: [for (var i = 0; i < _stack.length; i++) _pageFor(context, _stack[i], i)],
       onDidRemovePage: _onDidRemovePage,
     );
   }
@@ -88,11 +92,11 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
     }
   }
 
-  Page<Object?> _pageFor(String path, int index) {
-    return MaterialPage<Object?>(key: ValueKey('$path@$index'), name: path, child: _childFor(path));
+  Page<Object?> _pageFor(BuildContext context, String path, int index) {
+    return MaterialPage<Object?>(key: ValueKey('$path@$index'), name: path, child: _childFor(context, path));
   }
 
-  Widget _childFor(String path) {
+  Widget _childFor(BuildContext context, String path) {
     final segments = Uri.parse(path).pathSegments;
     // /webview?url=…&title=… in-app pages (query carries the target).
     if (segments.isNotEmpty && segments.first == 'webview') {
@@ -120,8 +124,14 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
         return const AlertsScreen();
       case '/fertility':
         return const FertilityScreen();
-      case '/pregnancy':
+      case '/bleeding':
+        return const BleedingScreen();
+      case '/pregnancy': {
+        // Gated: only when pregnancy tracking is on and onboarding is done.
+        final ob = context.read<OnboardingProvider>();
+        if (!ob.onboarded || !ob.trackingModes.contains(TrackingMode.pregnancy)) return const WelcomeScreen();
         return const GestationScreen();
+      }
       case '/chart':
         return const ChartScreen();
       case '/splash':

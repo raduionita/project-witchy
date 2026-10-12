@@ -29,7 +29,7 @@ class AlertGenerator {
           type: AlertType.periodPredicted,
           title: 'Period Approaching',
           body:
-              'Your bleeding phase is predicted to begin in $days ${days == 1 ? 'day' : 'days'}. Prepare your herbal tea blends.',
+              'Your period is predicted to begin in $days ${days == 1 ? 'day' : 'days'}. Log symptoms as the days approach.',
           createdAt: now,
           eventDate: start,
         ),
@@ -42,7 +42,7 @@ class AlertGenerator {
           id: 'fertile-${_dateKey(today)}',
           type: AlertType.fertileWindow,
           title: 'Fertility Window Peak',
-          body: 'Your fertility peaks today under the fertile crescent. High chance of ovulation.',
+          body: 'Your fertility peaks today. High chance of ovulation.',
           createdAt: now,
           eventDate: today,
         ),
@@ -65,7 +65,7 @@ class AlertGenerator {
         AlertItem(
           id: 'log-${_dateKey(today)}',
           type: AlertType.logMissing,
-          title: 'Magical Log Missing',
+          title: 'Log Missing',
           body: 'You have not logged today yet. Record flow, mood and symptoms to keep predictions aligned.',
           createdAt: now,
           eventDate: today,
@@ -89,8 +89,8 @@ class AlertGenerator {
       return AlertItem(
         id: 'moon-new-${_dateKey(today)}',
         type: AlertType.lunarMilestone,
-        title: 'New Moon',
-        body: 'The sky is dark and ripe. A clean slate for setting fresh cycle intentions.',
+        title: 'Cycle Start',
+        body: 'A new cycle begins. A good day to reset your tracking.',
         createdAt: now,
         eventDate: today,
       );
@@ -99,8 +99,8 @@ class AlertGenerator {
       return AlertItem(
         id: 'moon-full-${_dateKey(today)}',
         type: AlertType.lunarMilestone,
-        title: 'Full Moon',
-        body: 'Peak illumination tonight. A strong moment for reflection and release.',
+        title: 'Ovulation Window',
+        body: 'Ovulation is near. A good window to log symptoms and temperature.',
         createdAt: now,
         eventDate: today,
       );

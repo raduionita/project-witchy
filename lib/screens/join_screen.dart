@@ -49,7 +49,7 @@ class _JoinScreenState extends State<JoinScreen> {
                     Text('Join Witchy', style: AppText.h2),
                     const SizedBox(height: 6),
                     Text(
-                      'Your rhythms stay on this device. Sign up to keep your magic in sync, or slip in incognito and begin straight away.',
+                      'Your data stays on this device. Sign in to back it up, or continue without an account.',
                       style: AppText.sub,
                       textAlign: TextAlign.center,
                     ),

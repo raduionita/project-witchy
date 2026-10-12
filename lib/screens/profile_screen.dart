@@ -56,6 +56,26 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  Future<void> _confirmSignOut(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Sign out?', style: AppText.serif(16)),
+        content: Text(
+          'You will return to the welcome screen. Your logs and settings stay on this device, and you can sign back in at any time.',
+          style: AppText.sans(13, c: AppColors.body),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text('Cancel', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.muted))),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text('Sign Out', style: AppText.sans(13, w: FontWeight.w700, c: AppColors.danger))),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    await context.read<AuthProvider>().signOut();
+    if (context.mounted) context.reset('/');
+  }
+
   Future<void> _confirmDeleteData(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -117,11 +137,11 @@ class ProfileScreen extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
     final onboarding = context.watch<OnboardingProvider>();
     final name = auth.identity?.name?.trim();
-    final displayName = (name == null || name.isEmpty) ? 'High Priestess Selene' : name;
+    final displayName = (name == null || name.isEmpty) ? 'Guest' : name;
     final email = auth.identity?.email?.trim();
     final initials =
         (name == null || name.isEmpty)
-            ? 'HS'
+            ? 'G'
             : displayName
                 .split(' ')
                 .where((w) => w.isNotEmpty)
@@ -131,7 +151,7 @@ class ProfileScreen extends StatelessWidget {
                 .toUpperCase();
     return Scaffold(
       appBar: AppTopBar(
-        title: 'Witch Profile',
+        title: 'Profile',
         leading: AppIcons.back,
         onLeading: () => context.back(),
         action: AppIcons.alerts,
@@ -148,7 +168,7 @@ class ProfileScreen extends StatelessWidget {
               Text(displayName, style: AppText.serif(18)),
               const SizedBox(height: 2),
               Text(
-                (email == null || email.isEmpty) ? 'SCORPIO MOON · THIRD CYCLE' : email,
+                (email == null || email.isEmpty) ? 'LOCAL · CYCLE TRACKING' : email,
                 style:
                     (email == null || email.isEmpty)
                         ? AppText.sans(9, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.2)
@@ -161,7 +181,7 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Lunar Alignments', style: AppText.secIn),
+                Text('Cycle Averages', style: AppText.secIn),
                 SettingsRow(label: 'Average Cycle Length', trailing: Text(meanCycle == null ? '—' : '${meanCycle.toStringAsFixed(0)} Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted)), first: true),
                 SettingsRow(label: 'Bleeding Phase Length', trailing: Text('${cycle.bleedLength} Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted))),
                 SettingsRow(
@@ -186,9 +206,9 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Apothecary Settings', style: AppText.secIn),
+                  Text('Pregnancy Settings', style: AppText.secIn),
                   SettingsRow(
-                    label: 'Gestation Spells',
+                    label: 'Pregnancy Tracker',
                     trailing: MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: () => context.go('/pregnancy'), child: Text('View', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)))),
                     first: true,
                   ),
@@ -203,7 +223,7 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Text('App Settings', style: AppText.secIn),
                 SettingsRow(
-                  label: 'Receive Lunar Notifications',
+                  label: 'Cycle Notifications',
                   trailing: Switch(
                     value: settings.lunarNotifications,
                     activeThumbColor: const Color(0xFF7B2CBF),
@@ -225,7 +245,7 @@ class ProfileScreen extends StatelessWidget {
                   first: true,
                 ),
                 SettingsRow(
-                  label: 'Dark Magic Mode',
+                  label: 'Dark Mode',
                   trailing: Switch(value: settings.darkMode, activeThumbColor: const Color(0xFF7B2CBF), onChanged: (v) => context.read<SettingsProvider>().setDark(v)),
                 ),
               ],
@@ -236,9 +256,9 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Amulet Bells', style: AppText.secIn),
+                Text('Reminders', style: AppText.secIn),
                 const SizedBox(height: 4),
-                Text('$activeBells of ${bells.items.length} bells active', style: AppText.sans(11.5, c: AppColors.muted)),
+                Text('$activeBells of ${bells.items.length} reminders active', style: AppText.sans(11.5, c: AppColors.muted)),
                 const SizedBox(height: 8),
                 for (var i = 0; i < bells.items.length; i++) ...[
                   if (i > 0) Divider(height: 12, color: AppColors.line),
@@ -267,7 +287,7 @@ class ProfileScreen extends StatelessWidget {
                             );
                           } catch (e) {
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update bell: $e')));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update reminder: $e')));
                             }
                           }
                         },
@@ -294,10 +314,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 AppButton(
                   label: 'Sign Out',
-                  onTap: () async {
-                    await context.read<AuthProvider>().signOut();
-                    if (context.mounted) context.reset('/');
-                  },
+                  onTap: () => _confirmSignOut(context),
                 ),
                 const SizedBox(height: 10),
                 DangerButton(label: 'Delete All Data', onTap: () => _confirmDeleteData(context)),
@@ -311,7 +328,7 @@ class ProfileScreen extends StatelessWidget {
               builder: (context, snap) {
                 final version = snap.data?.version ?? '1.0.0';
                 return Text(
-                  'Witchy App\nVersion $version · Made with celestial energy',
+                  'Witchy\nVersion $version',
                   textAlign: TextAlign.center,
                   style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6),
                 );

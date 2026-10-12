@@ -26,7 +26,7 @@ class NotificationService {
   static const int periodPredictionHour = 9;
 
   static const String _channelId = 'witchy_reminders';
-  static const String _channelName = 'Amulet Reminders';
+  static const String _channelName = 'Cycle Reminders';
 
   /// Daytime window used for 'Hourly' bells (repeat through match: time).
   static const List<int> _daytimeHours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
@@ -44,7 +44,7 @@ class NotificationService {
     android: AndroidNotificationDetails(
       _channelId,
       _channelName,
-      channelDescription: 'Amulet bells and cycle predictions',
+      channelDescription: 'Cycle reminders and predictions',
       importance: Importance.high,
       priority: Priority.high,
     ),
@@ -215,8 +215,8 @@ class NotificationService {
         scheduledDate: at,
         notificationDetails: _details,
         androidScheduleMode: AndroidScheduleMode.inexact,
-        title: 'Tide Commencing',
-        body: 'Your bleeding phase is predicted to begin today.',
+        title: 'Period Expected',
+        body: 'Your period is predicted to begin today.',
         matchDateTimeComponents: DateTimeComponents.dayOfMonthAndTime,
       );
     } catch (e) {

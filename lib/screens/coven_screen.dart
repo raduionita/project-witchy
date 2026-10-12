@@ -59,26 +59,29 @@ class _CovenScreenState extends State<CovenScreen> {
     return DateFormat('d MMM yyyy').format(date.toLocal());
   }
 
+  Widget _buildAboutCard() {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppTag('About'),
+          const SizedBox(height: 8),
+          Text('Witchy', style: AppText.serif(14)),
+          const SizedBox(height: 4),
+          Text(
+            'Witchy is a private, on-device period and cycle tracker. Your logs stay on this device - no account or cloud required.',
+            style: AppText.sans(10.5, c: AppColors.muted, h: 1.5),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBody() {
     if (_loading) {
       return Center(child: CircularProgressIndicator(color: AppColors.pur));
     }
     final articles = _articles ?? const <Article>[];
-    if (articles.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('The scroll is quiet', style: AppText.h2, textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              Text('No wisdom could be gathered. Pull to try again.', style: AppText.sub, textAlign: TextAlign.center),
-            ],
-          ),
-        ),
-      );
-    }
     return RefreshIndicator(
       color: AppColors.pur,
       backgroundColor: AppColors.card,
@@ -87,6 +90,22 @@ class _CovenScreenState extends State<CovenScreen> {
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
+          if (articles.isEmpty) ...[
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 48, 8, 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('No articles yet', style: AppText.h2, textAlign: TextAlign.center),
+                    const SizedBox(height: 8),
+                    Text('Articles could not be loaded. Pull to try again.', style: AppText.sub, textAlign: TextAlign.center),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
           for (final a in articles) ...[
             GestureDetector(
               onTap: () => _openArticle(a),
@@ -113,6 +132,8 @@ class _CovenScreenState extends State<CovenScreen> {
             ),
             const SizedBox(height: 12),
           ],
+          // Local info card - always last so the screen is never blank; not an article.
+          _buildAboutCard(),
         ],
       ),
     );

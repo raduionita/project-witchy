@@ -29,18 +29,18 @@ class GestationScreen extends StatelessWidget {
 
   String _remainingCopy(GestationProvider g) {
     if (g.daysPastDue() > 0) return '${g.daysPastDue()} days past the due date';
-    if (g.daysRemaining() == 0) return 'The arrival portal opens today';
-    return '${g.daysRemaining()} days until arrival portal opens';
+    if (g.daysRemaining() == 0) return 'Your due date is today';
+    return '${g.daysRemaining()} days until your due date';
   }
 
   Widget _buildEmpty(BuildContext context) {
     return AppCard(
       child: Column(
         children: [
-          Text('Your gestation journey awaits', style: AppText.serif(15)),
+          Text('Your pregnancy tracker is ready', style: AppText.serif(15)),
           const SizedBox(height: 8),
           Text(
-            'Share the first day of your last bleeding phase and the sanctuary will chart every week of the path ahead.',
+            'Set the first day of your last period and this tracker will chart every week ahead.',
             textAlign: TextAlign.center,
             style: AppText.sans(11.5, h: 1.55, c: AppColors.muted),
           ),
@@ -58,7 +58,7 @@ class GestationScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('GESTATION SANCTUARY', style: AppText.sans(9, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.2)),
+          Text('PREGNANCY TRACKER', style: AppText.sans(9, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.2)),
           const SizedBox(height: 6),
           Text('Week ${g.week()} (Day ${g.dayOfWeek()})', style: AppText.serif(21, c: Colors.white)),
           const SizedBox(height: 10),
@@ -80,7 +80,7 @@ class GestationScreen extends StatelessWidget {
     return AppCard(
       child: Column(
         children: [
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text('Spiritual Comparison', style: AppText.serif(12.5)), AppTag(content.size)]),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text('This Week', style: AppText.serif(12.5)), AppTag(content.size)]),
           const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +100,7 @@ class GestationScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Astral Gestation Tips', style: AppText.secIn),
+          Text('Pregnancy Tips', style: AppText.secIn),
           const SizedBox(height: 6),
           Text(GestationContent.forWeek(g.week()).tip, style: AppText.sans(11.5, h: 1.55)),
         ],
@@ -137,7 +137,7 @@ class GestationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final g = context.watch<GestationProvider>();
     return Scaffold(
-      appBar: const AppTopBar(title: 'Gestation Spells', action: AppIcons.heart),
+      appBar: const AppTopBar(title: 'Pregnancy Tracker', action: AppIcons.heart),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [

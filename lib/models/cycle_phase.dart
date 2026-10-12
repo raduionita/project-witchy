@@ -4,15 +4,15 @@ extension CyclePhaseLabel on CyclePhase {
   String get label {
     switch (this) {
       case CyclePhase.menstrual:
-        return 'Shedding Tide';
+        return 'Menstrual';
       case CyclePhase.follicular:
-        return 'Waxing Glow';
+        return 'Follicular';
       case CyclePhase.fertile:
         return 'Fertile Window';
       case CyclePhase.ovulatory:
-        return 'Full Moon Peak';
+        return 'Ovulation';
       case CyclePhase.luteal:
-        return 'Waning Glow';
+        return 'Luteal';
     }
   }
 

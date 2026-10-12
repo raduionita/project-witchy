@@ -286,7 +286,7 @@ test/
 > Out of scope (flagged): Google/Apple sign-in activation (hidden), real couples/backend sync, Coven posting, sovereign-blood screen from MOCK.html (not in DESIGN.md), localization, analytics/crash reporting.
 
 
-### Fixes 1 (done)
+### Fixes 1 - 2026.10.09 (done)
 
 - [x] theme -> dark vs light: should start as light (default) - use toggle in profile -> settings
 - [x] rhythyms -> button: should mark user as logged-in and continue to main screen 
@@ -296,13 +296,36 @@ test/
 - [x] rhythyms - tracking mode: should be a multi-toggle - the app MUST allow tracking all modes (cycle, pregnancy, perimenopause) simultaneously on the same interface (calendar, records, sanctuary, fertility, alert)
 - [x] app: app icon needed - should be the same as the one in the splash screen - use images in @resources/
  
-### Fixes 2
+### Fixes 2 - 2026.10.12 (done)
 
-- [ ] rythyms -> tracking: widget/card should be full width - icons neede to be visible when a chip is selected (now backgroundh has the same color as the selected chip = bad contrast)
-- [ ] profile -> session: the buttons need a confirm dialog/drawer - rename the text to "Leave Coven" and "Erase All Spells" - the dialog should explain the consequences of each action
-- [ ] magic (coven sanctum) -> needs min 1 entry, always last, with info about the app, it should open an article (since it's local)
-- [ ] log_bottom_sheet: add a divider between each `_LogCycleSection` - make title and buttons always visible, the rest should scroll
-- [ ] tracking: SanctuaryScreen (today) and CycleScreen (calendar) should have as small (full width) widget/card showing what is being tracked (cycle, pregnancy, perimenopause)
+- [x] rythyms -> tracking: widget/card should be full width - icons neede to be visible when a chip is selected (now backgroundh has the same color as the selected chip = bad contrast) - `TrackingModeChips` now `Row` + `Expanded` (chips fill the card); `AppChip._icon` selected color fixed: uses `onColor(active)` fg instead of the chip background (icons visible on selected chips; benefits every chip incl. log sheet)
+- [x] profile -> session: the buttons need a confirm dialog/drawer - the dialog should explain the consequences of each action - added `_confirmSignOut` dialog (explains: back to welcome, logs/settings stay on device, can sign back in); `Delete All Data` already had `_confirmDeleteData` (explains erasure + not undoable); Sign Out button now wired through the dialog; test updated (confirm tap)
+- [x] magic (coven screen) -> needs minimum 1 entry, so that the screen doesn't look blank, always last, with info about the app, it should not open an article (since it's local) - `_buildAboutCard()` ("Witchy" + local/privacy blurb, not tappable) appended as last ListView entry always; when feed is empty the list shows "No articles yet" block + the about card (screen never blank). Test: `coven_screen_test.dart`
+- [x] log_bottom_sheet: add a divider between each `_LogCycleSection` - make title and buttons always visible, the rest should scroll - sheet restructured to `Column`: pinned head (drag handle + `_SheetHeader` date/cancel/approve + subtitle) above `Expanded(ListView)` body; `Divider` between consecutive sections; `_scrollToTarget` viewport now the list (`_listKey`) instead of the whole sheet so scrollTo-QA math stays correct
+- [x] app - app icon: use the can-moon logo - already cat-moon on every surface (verified: `assets/images/app_icon_1024.png`, android mipmaps + adaptive `ic_launcher_foreground`, iOS `Icon-App-*`, web `Icon-*`/`favicon.png`, splash); generated from `cat-moon-gold-512.png` via `flutter_launcher_icons` / `tool/generate_app_icon.dart` (redesign.13)
+
+Gates: `flutter analyze` = No issues found, `flutter test` = 195/195 passing.
+
+### Fixes 3 - 2026.10.12 (done)
+
+Feedback batch from debug/ screenshots (Issues 1-7 + icon audit). Product name "Witchy", moon glyphs and plum/gold visuals kept; all user-facing copy neutralized to health terminology. Routes, pref keys, enum JSON values, class/file/method names unchanged for stability.
+
+- [x] Issue 1 - legal pages: added `assets/legal/{privacy,terms,child-protection}.html` (pubspec assets), added `url_launcher: ^6.3.1`, `common/legal_links.dart` maps assets -> fallback `https://qvonyx.com/witchy/<name>.html`, `webview_screen.dart` loads bundled assets (kIsWeb -> external browser instead of blank screen) + open-in-browser button, `app_route_parser.dart` keeps query params, AndroidManifest gets INTERNET perm + `<queries>` block. Test: `test/common/legal_links_test.dart`
+- [x] Issue 2 - cycle math: `CycleCalculator.nextOvulationDay`, `CycleProvider._resolveAnchor()` skips future anchors (phantom predicted start no longer seeds the cycle) and prefers logged bleeds, `hasLoggedBleedOn`/`bleedDayOf`/`phaseAt` menstrual override (logged bleeding shows Menstrual, not Luteal), `nextOvulationDate` getter, onboarding `_derive` clamps future last-period dates. Regression tests in `cycle_provider_test.dart`
+- [x] Issue 2b - onboarding period history: `OnboardingProvider.previousPeriodStarts` + `addPreviousPeriod`/`removePreviousPeriod`/`deriveCycleLengthFromHistory` (median of recent cycles, entry for last 2+ periods), cleared in `resetToDefaults`. Test: `test/providers/onboarding_provider_test.dart`
+- [x] Issue 3 - calendar recolor: `assets/svgs/moon-period.svg` + `moon-period-predicted.svg` -> period red `#C0392B`, `moon-fertile.svg` -> fertile purple `#7B2CBF`, `moon-ovulation.svg` + ovulation dot -> turquoise `#2A9D8F`. Palette tests in `calendar_widgets_test.dart`
+- [~] Issue 3b - flow single-select: `LoggingProvider.selectFlow` replaces `toggleFlow` (one flow value per day), wired into log sheet. Deviation: `bleedLength` left slider-only (auto-deriving from history would under-report partial/current spans)
+- [x] Issue 4 - occult copy sweep (~25 lib files): tabs Today/Calendar/Insights/Articles (was Sanctuary/Lunar Cycle Map/Lunar Records/Coven Sanctum), bottom-nav "Magic"->"Articles", CTAs "Awaken Your Power"->"Get Started" / "Set Your Rhythms"->"Set Your Cycle", profile "Witch Profile"->"Profile" / "High Priestess Selene"->"Guest", "Celestial Alerts"->"Alerts" / "Whispers Received"->"Recent Alerts", "Amulet Bells"->"Reminders", "Dark Magic Mode"->"Dark Mode", phase labels Shedding Tide/Waxing Glow/Full Moon Peak/Waning Glow -> Menstrual/Follicular/Ovulation/Luteal, alert/notification titles and bodies neutralized ("New Moon"->"Cycle Start", "Full Moon"->"Ovulation Window", channel "Amulet Reminders"->"Cycle Reminders"), mock reminders, coven/records/fertility/gestation/log-sheet copy, DESIGN.md vocabulary updated in lockstep (old terms now 0 hits). MOCK.html + documents/ untouched (not compiled into the app). Tests updated accordingly (194 pass)
+- [x] Issue 5 - tappable stats + bleeding screen: `StatCard` gained optional `onTap` (MouseRegion + GestureDetector, default null keeps old behavior), call sites wired (sanctuary Bleeding In -> `/bleeding`, Fertility -> `/fertility`; records Average Bleed -> `/bleeding`, Average Cycle -> `/chart`), new `lib/screens/bleeding_screen.dart` + route `/bleeding` (per-day flow history + averages). Tests: `stat_card_test.dart`, `bleeding_screen_test.dart`
+- [x] Issue 6+7 - Pregnancy Tracker rename/decoupling: "Gestation Spells"->"Pregnancy Tracker" (gestation appbar + profile row), LMP auto-seed removed from rhythms (no silent coupling), `/pregnancy` route gated in `app_router_delegate` (needs onboarded + pregnancy tracking mode, else Welcome; context threaded through `_pageFor`/`_childFor`), "separate journey" note in onboarding, DESIGN.md updated. Test: `test/navigation/pregnancy_route_gating_test.dart`
+- [x] Issue 8 - FontAwesome icon audit: all 77 `FontAwesomeIcons.*` usages in lib/ + test/ verified present in `font_awesome_flutter` 11.0.0 (0 missing). No changes needed.
+
+Gates: `flutter analyze` = No issues found, `flutter test` = 194/194 passing.
+
+
+### Fixes 3
+
+- [ ] 
 
 --- 
 

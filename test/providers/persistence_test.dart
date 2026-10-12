@@ -37,7 +37,8 @@ void main() {
     expect(reloaded.onboarded, isTrue);
     expect(reloaded.cycleLength, 30);
     expect(reloaded.bleedLength, 6);
-    expect(reloaded.selectedDay, 21);
+    // Future day-of-month defaults are clamped, so assert the load mapping itself.
+    expect(reloaded.selectedDay, onboarding.lastPeriodStart.day);
   });
 
   test('finish with a picked date persists it and the first bleed day logs', () async {

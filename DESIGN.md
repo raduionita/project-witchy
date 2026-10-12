@@ -9,15 +9,15 @@
 
 ## 1. Executive Summary & Product Vision
 
-**Witchy** is a comprehensive, beautifully designed women's health application that re-frames reproductive health tracking as an empowering, intuitive, and holistic daily practice. By bridging clinical-grade biometric logging (menstrual flow, basal body temperature, ovulation hormones, gestational milestones) with an elegant, celestial-inspired aesthetic, Witchy allows users to understand the natural rhythms of their bodies without the sterile, patronizing feel of traditional medical apps.
+**Witchy** is a comprehensive, beautifully designed women's health application that re-frames reproductive health tracking as an empowering, intuitive, and holistic daily practice. By bridging clinical-grade biometric logging (menstrual flow, basal body temperature, ovulation hormones, gestational milestones) with an elegant, calm aesthetic, Witchy allows users to understand the natural rhythms of their bodies without the sterile, patronizing feel of traditional medical apps.
 
 ### 1.1 Core UX Objectives
 
-- Instant cycle orientation: day count, bleed countdown, fertility status in one glance (Sanctuary).
+- Instant cycle orientation: day count, bleed countdown, fertility status in one glance (Today).
 - Friction-free daily logging: single-tap flow, multi-tap moods/symptoms, pain slider.
 - Trust via consistency: one card style, one button style, one bottom nav across all 20 routes.
 - Privacy-first local auth: no backend; one-time consent gate (`witchy_privacy_accepted`), then `AuthProvider` (Google / Apple sign-in, plus skip/incognito) stores a device-only session — all rhythms persisted via `shared_preferences`.
-- Titles are mystical and frozen (`Sanctuary`, `Coven Sanctum`); only routes are clinical.
+- Titles are neutral and clinical (`Today`, `Articles`); only routes are branded.
 
 ---
 
@@ -57,7 +57,7 @@ Witchy uses a dark purple-led palette per mockup (see 2.0).
 
 Code: `lib/theme/app_colors.dart` (`AppColors`).
 
-**Dark variant (Milestone 1 Phase 12):** `AppColors.dark` flips mode-varying tokens via getters - bg `#1B0A2A`, card `#26063F`, ink `#F3EAF9`, body `#CDBEDD`, muted `#9E90AC`, line `#3E2A54`, pur `#9D5CFF`, field `#2A0F45`, plus dark `lav/lav2/switchOff/sliderTrack/sectionTitle/chipText/navInactive/placeholder/fertile*/pinkBg/goldBg/blueBg/tabBg` values. Accent tokens (`gold`, `pink`, `plum`, `orb*`, `avatar*`) stay shared. `buildAppTheme({Brightness brightness})` in `lib/theme/app_theme.dart` sets the flag and builds the matching `ThemeData`; `main.dart` picks dark ONLY when `SettingsProvider.darkMode` is on (light is the default; the Profile toggle is the sole control, platform brightness is ignored - Dark Magic Mode toggle repaints live).
+**Dark variant (Milestone 1 Phase 12):** `AppColors.dark` flips mode-varying tokens via getters - bg `#1B0A2A`, card `#26063F`, ink `#F3EAF9`, body `#CDBEDD`, muted `#9E90AC`, line `#3E2A54`, pur `#9D5CFF`, field `#2A0F45`, plus dark `lav/lav2/switchOff/sliderTrack/sectionTitle/chipText/navInactive/placeholder/fertile*/pinkBg/goldBg/blueBg/tabBg` values. Accent tokens (`gold`, `pink`, `plum`, `orb*`, `avatar*`) stay shared. `buildAppTheme({Brightness brightness})` in `lib/theme/app_theme.dart` sets the flag and builds the matching `ThemeData`; `main.dart` picks dark ONLY when `SettingsProvider.darkMode` is on (light is the default; the Profile toggle is the sole control, platform brightness is ignored - Dark Mode toggle repaints live).
 
 **App icon (Milestone 1 Phase 13):** gold cat-moon mark on brand purple `#3B0A5E`. Source art `assets/images/cat-moon-gold-512.png`; `tool/generate_app_icon.dart` composites `assets/images/app_icon_1024.png` (glyph at 80% inset) and `flutter_launcher_icons` (config in `pubspec.yaml`) generates Android legacy + adaptive (foreground gold, background `#3B0A5E`), the iOS AppIcon set, and web icons + favicon. Regenerate with `dart run tool/generate_app_icon.dart && dart run flutter_launcher_icons`.
 
@@ -68,7 +68,7 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 | Style Token | Font Family | Weight | Size (pt/dp) | Line Height | Letter Spacing | Usage Examples |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `type-display-l` | Playfair Display | 800 | 34 | 1.1 | 0 | Splash `Witchy` brand (`AppText.brand`) |
-| `type-h2` | Playfair Display | 700 | 21 | 1.2 | 0 | `Join the Coven`, `Set Your Rhythms` (`AppText.h2`) |
+| `type-h2` | Playfair Display | 700 | 21 | 1.2 | 0 | `Join Witchy`, `Set Your Cycle` (`AppText.h2`) |
 | `type-serif-18` | Playfair Display | 700 | 18 | 1.25 | 0 | Profile name, `Log Today's Energy` |
 | `type-appbar` | Playfair Display | 700 | 16.5 | 1.2 | 0.2 | `AppTopBar` titles |
 | `type-body` | Inter | 400/500 | 11–12.5 | 1.5–1.55 | 0 | Subs, alert/post/article bodies (`AppText.sub`) |
@@ -114,9 +114,9 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 
 ### 3.3 Navigation Patterns
 
-- Bottom nav: 4 tabs `Today/Calendar/Insights/Magic` (`AppBottomNav`), pur active + 18×2.5 underline; Magic icon `auto_awesome` → `CovenScreen` tab; labels frozen. Log is a bottom drawer (`showLogSheet`), not a tab.
+- Bottom nav: 4 tabs `Today/Calendar/Insights/Articles` (`AppBottomNav`), pur active + 18×2.5 underline; Articles icon `auto_awesome` → `CovenScreen` tab; labels frozen. Log is a bottom drawer (`showLogSheet`), not a tab.
 - App bar: `AppTopBar` 50px, serif 16.5 centered; shell tabs: **leading `person_outline` → `/profile`**, **action bell `notifications_outlined` → `/alerts`**; all pushed screens default **leading back `arrow_back`** (pop, `/dashboard` fallback); `/profile` leading back → home, action alerts → `/alerts`.
-- Pushes: Sanctuary Flow/Mood/Pain/Sleep QA → log bottom sheet (today, auto-scrolled to that category when off-screen); Peak card → `/fertility`; CycleMap day tap → log bottom sheet (that date); trends + CycleMap cards → `/chart`; feed article tap → `/webview?title&url` (same mechanism as legal pages); Profile gestation → `/pregnancy`; Profile top-bar alerts → `/alerts` (settings + reminders now inline in Profile).
+- Pushes: Today Flow/Mood/Pain/Sleep QA → log bottom sheet (today, auto-scrolled to that category when off-screen); Peak card → `/fertility`; CycleMap day tap → log bottom sheet (that date); trends + CycleMap cards → `/chart`; feed article tap → `/webview?title&url` (same mechanism as legal pages); Profile gestation → `/pregnancy`; Profile top-bar alerts → `/alerts` (settings + reminders now inline in Profile).
 - No legacy aliases: every route in `main.dart` is canonical and reachable (see §4.2).
 
 ---
@@ -127,20 +127,20 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 
 | User Journey Phase | Core Screen (title frozen) | Route | Connected / Sub-Screens | Dynamic Routing & Behavior |
 | :--- | :--- | :--- | :--- | :--- |
-| Entry | Welcome | `/` | → `/privacy`, `/onboarding`, `/dashboard` | CTA `Awaken Your Power` → `/privacy` first run, straight to `/onboarding` once consented (auth screen exists at `/auth` but stays hidden); returning onboarded users auto-redirect `/dashboard` |
+| Entry | Welcome | `/` | → `/privacy`, `/onboarding`, `/dashboard` | CTA `Get Started` → `/privacy` first run, straight to `/onboarding` once consented (auth screen exists at `/auth` but stays hidden); returning onboarded users auto-redirect `/dashboard` |
 | Entry | A Note on Privacy (gate) | `/privacy` | → `/webview`, `/`, `/onboarding` | 3 checkbox rows (Terms / Privacy Policy / Safe Space) → in-app webview; Refuse → `/`, Accept (all checked) → saves `witchy_privacy_accepted` + `/onboarding` |
-| Entry | Join the Coven | `/auth` | → `/onboarding` | Bottom stack: Continue with Google / Continue with Apple / Skip for now — all `reset` to `/onboarding` (local session, errors → SnackBar) |
-| Onboarding | Set Your Rhythms | `/onboarding` | → `/dashboard` | Tracking mode chips (multi-toggle, default `{Cycle}`, all three can be active at once), Year of Birth dropdown (defaults to now − 25, so CTA active from first frame), last-bleed date picker, 28d/5d sliders; `Begin the Journey` → persist + log first day → shell |
-| Home | Sanctuary | `/dashboard` (shell 0) | → `/fertility`, log sheet | Orb day 14 Full Moon Peak; Bleeding In 14d/Nov 10 (Perimenopause: earliest-latest window `dMin-dMax Days` + `d MMM - d MMM · range` sub, no single-day claim); Peak Today → fertility (fertility stat card hidden outside Cycle mode); `Today's magic` QA (Flow/Mood/Pain/Sleep, LogData icons) → log sheet today scrolled to category; day-detail card (glyph + phase + Cycle Day badge + flow/mood rows → log sheet; Perimenopause softens the note to `Period may start any day now` for d-1/d-2) |
-| Home | Lunar Cycle Map | `/calendar` (shell 1) | → log sheet, month picker | Oct 2026 grid (today ring, dimmed adjacent days, cycle-day micro-labels, legend row); Perimenopause replaces arithmetic predictions with the `CalendarFetcher` predicted window (whole possible bleed range marked, fertile/ovulation glyphs hidden); day tap → log bottom sheet; month label → month/year picker sheet; late pill + Today chip when late/off-month; detail card with status tag, tappable rows, clear-day confirm (`/chart` now via Records → Trends) |
-| Log | Apothecary Log sheet | bottom drawer (no route) | — | `showLogSheet(date)`; 10 categories in `lib/common/log_data.dart` (all multi-toggle 2-col); per-date state in `LoggingProvider` (`DayLog` map); entries = calendar day tap, Sanctuary QA |
-| Home | Lunar Records | `/insights` (shell 2) | → `/chart` | `TrendBars` of observed cycle lengths (last 7, `C1..Cn` labels, empty state < 2 cycles), 28.4d/5.2d, `Irregularity` card (shortest-longest spread + `N Days variation` tag, empty state < 2 cycles), chronology Sept/Aug/July tags; trends card tap → chart |
-| Home | Witch Profile | `/profile` (pushed, not a tab) | → `/alerts`, `/pregnancy` | Avatar HS, Scorpio Moon; `App Settings` card (lunar + dark switches), `Amulet Bells` card (5 inline bell rows, live count, pills when ON); Apothecary/`Gestation Spells → View` row only in Pregnancy mode |
-| Community | Coven Sanctum | `/coven` (shell 3, Magic tab) | → `/webview?title&url` | Remote article feed from `https://qvonyx.com/witchy/articles.xml` (`FeedService`, PrefsService cache, pull-to-refresh); article cards = `AppTag` category + pubDate + serif title + excerpt; tap → in-app webview; loading/empty states; no title/tabs/FAB of its own (shell tab title stays) |
-| Pregnancy | Gestation Spells | `/pregnancy` | — | Computed from persisted LMP (`GestationProvider`): Week/Day, gold progress, countdown, bucketed size/tips content; empty state seeds the date; only reachable in Pregnancy mode |
-| Alerts | Celestial Alerts | `/alerts` | — | `Whispers Received` inbox from `AlertProvider` (generated + persisted, unread dot on the bells); Perimenopause swaps the peak alert for the hedged `may open as early as today` wording; entry = bell top-right on shell tabs and Profile |
+| Entry | Join Witchy | `/auth` | → `/onboarding` | Bottom stack: Continue with Google / Continue with Apple / Skip for now — all `reset` to `/onboarding` (local session, errors → SnackBar) |
+| Onboarding | Set Your Cycle | `/onboarding` | → `/dashboard` | Tracking mode chips (multi-toggle, default `{Cycle}`, all three can be active at once), Year of Birth dropdown (defaults to now − 25, so CTA active from first frame), last-bleed date picker, 28d/5d sliders; `Get Started` → persist + log first day → shell |
+| Home | Today | `/dashboard` (shell 0) | → `/fertility`, log sheet | Orb day 14 Ovulation; Bleeding In 14d/Nov 10 (Perimenopause: earliest-latest window `dMin-dMax Days` + `d MMM - d MMM · range` sub, no single-day claim); Peak Today → fertility (fertility stat card hidden outside Cycle mode); `Today's Log` QA (Flow/Mood/Pain/Sleep, LogData icons) → log sheet today scrolled to category; day-detail card (glyph + phase + Cycle Day badge + flow/mood rows → log sheet; Perimenopause softens the note to `Period may start any day now` for d-1/d-2) |
+| Home | Calendar | `/calendar` (shell 1) | → log sheet, month picker | Oct 2026 grid (today ring, dimmed adjacent days, cycle-day micro-labels, legend row); Perimenopause replaces arithmetic predictions with the `CalendarFetcher` predicted window (whole possible bleed range marked, fertile/ovulation glyphs hidden); day tap → log bottom sheet; month label → month/year picker sheet; late pill + Today chip when late/off-month; detail card with status tag, tappable rows, clear-day confirm (`/chart` now via Records → Trends) |
+| Log | Log sheet | bottom drawer (no route) | — | `showLogSheet(date)`; 10 categories in `lib/common/log_data.dart` (all multi-toggle 2-col); per-date state in `LoggingProvider` (`DayLog` map); entries = calendar day tap, Today QA |
+| Home | Insights | `/insights` (shell 2) | → `/chart` | `TrendBars` of observed cycle lengths (last 7, `C1..Cn` labels, empty state < 2 cycles), 28.4d/5.2d, `Irregularity` card (shortest-longest spread + `N Days variation` tag, empty state < 2 cycles), chronology Sept/Aug/July tags; trends card tap → chart |
+| Home | Profile | `/profile` (pushed, not a tab) | → `/alerts`, `/pregnancy` | Avatar G, LOCAL · CYCLE TRACKING; `App Settings` card (lunar + dark switches), `Reminders` card (5 inline bell rows, live count, pills when ON); `Pregnancy Tracker → View` row only in Pregnancy mode |
+| Community | Articles | `/coven` (shell 3, Articles tab) | → `/webview?title&url` | Remote article feed from `https://qvonyx.com/witchy/articles.xml` (`FeedService`, PrefsService cache, pull-to-refresh); article cards = `AppTag` category + pubDate + serif title + excerpt; tap → in-app webview; loading/empty states; no title/tabs/FAB of its own (shell tab title stays) |
+| Pregnancy | Pregnancy Tracker | `/pregnancy` | — | Computed from its own persisted LMP (`GestationProvider`, not the cycle anchor): Week/Day, gold progress, countdown, bucketed size/tips content; empty state seeds the date; route gated to Pregnancy mode + onboarded |
+| Alerts | Alerts | `/alerts` | — | `Recent Alerts` inbox from `AlertProvider` (generated + persisted, unread dot on the bells); Perimenopause swaps the peak alert for the hedged `may open as early as today` wording; entry = bell top-right on shell tabs and Profile |
 | Insights | BBT & Ovulation Chart | `/chart` | — | fl_chart `LineChart` of the last 30 days of logged temperatures (gaps for unlogged days, dashed gold ovulation marker) + real pre-shift/post-shift `StatCard`s; empty state → log sheet prompt; entries = Records trends card |
-| Fertility | Fertility Window | `/fertility` | — | Orb variant (Peak Day) + window duo + TTC tips; entry = Sanctuary Peak card (Cycle mode only - `CycleProvider.showFertilityPredictions` also gates calendar glyphs, BBT ovulation marker and fertile alerts) |
+| Fertility | Fertility Window | `/fertility` | — | Orb variant (Peak Day) + window duo + TTC tips; entry = Today Peak card (Cycle mode only - `CycleProvider.showFertilityPredictions` also gates calendar glyphs, BBT ovulation marker and fertile alerts) |
 | App | App Splash Preview | `/splash` (direct only) | — | In-app preview of the native launch splash: full plum screen, gold cat-moon at 25% of the smaller axis; no in-app entry (link/button), no redirect |
 
 ### 4.2 App Structure
@@ -150,10 +150,10 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
   - /privacy → /webview?title&url
   - /auth
   - /onboarding
-- /dashboard (MainScreen shell: Sanctuary / Cycle Map / Records / Coven tabs)
+- /dashboard (MainScreen shell: Today / Calendar / Insights / Articles tabs)
   - /calendar (Cycle Map tab)
   - /insights (Records tab)
-  - /coven (Coven tab - article feed)
+  - /coven (Articles tab - article feed)
   - /chart
   - log bottom sheet (opened from FAB or day/QA taps)
 - /profile → /alerts, /pregnancy
@@ -171,8 +171,8 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 - **Purpose:** Establish brand trust, holistic health authority, and privacy focus; route newcomers through the consent gate.
 - **Layout Structure:**
   - **Hero Emblem:** `AppEmblem` circular emblem (`132x132pt`) — `#EFE2F8` outer disc, radial core (`#4A1170 → #2A0740`) with gold cat-moon (stencil `assets/images/cat-moon-mask-512.png` tinted `color: AppColors.gold` + `BlendMode.srcIn`, `cacheWidth: 256`, sized `0.36 * size`), centered in expanded upper half.
-  - **Title Section:** Brand name `"Witchy"` (`type-display-l`, 34/800), tagline `"Track your cycle with magic"` (12, muted).
-  - **Bottom Action:** Single CTA `"Awaken Your Power"` (`AppButton`); reads `PrefsService.isPrivacyAccepted()` → unconsented goes `/privacy`, consented goes `/auth`. Foot padding `20/30`. No Sign In link (auth lives on Join).
+  - **Title Section:** Brand name `"Witchy"` (`type-display-l`, 34/800), tagline `"Track your cycle and health"` (12, muted).
+  - **Bottom Action:** Single CTA `"Get Started"` (`AppButton`); reads `PrefsService.isPrivacyAccepted()` → unconsented goes `/privacy`, consented goes `/auth`. Foot padding `20/30`. No Sign In link (auth lives on Join).
   - **Returning Users:** If `OnboardingProvider.onboarded`, auto-redirect to `/dashboard` (post-frame).
   - **Native Launch Splash:** `flutter_native_splash` — plum `#3B0A5E` full-screen + gold `assets/images/cat-moon-gold-512.png`; logo = **25% of the smaller viewport axis**. Android is static dp: logo bitmaps hand-sized to `90dp × density` (25% on 360dp phones; Android 12 `windowSplashScreen*` cap 288dp); iOS `LaunchScreen.storyboard` logo box = `0.25 × min(width, height)` (priority-encoded min constraints, `scaleAspectFit`); web `<img>` uses `width: min(25vw, 25vh)`. ⚠ These hand-edits are **overwritten by `dart run flutter_native_splash:create`** — re-apply after any config change.
 
@@ -184,60 +184,60 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Consent Card:** `AppCard` with 3 centered `_ConsentRow`s — `Terms of Service`, `Privacy Policy`, `Safe Space guidelines` (age confirmation; webview title `Safe Space`, `LegalLinks.childProtection` URL unchanged) — each a checkbox (pur when checked) + title/link (center-aligned) opening the in-app webview (`LegalLinks` URLs → `/webview?title&url`).
   - **Actions:** Bottom row — `"Refuse"` (outlined) → `backOr('/')`; `"Accept"` (`AppButton`, wrapped in `Opacity 0.45` and inert until all three checked) → save consent + `reset('/auth')`. Refuse never persists consent, so the gate reappears next launch.
 
-### Screen 03: Join the Coven (`/auth`)
+### Screen 03: Join Witchy (`/auth`)
 
 - **Purpose:** Backend-free entry; no email/password form — Google / Apple sign-in or incognito skip (`AuthProvider`, device-only session in `shared_preferences`).
 - **Layout Structure:**
-  - **Center Block:** `AppEmblem` (`112pt`), `h2` `"Join Witchy"`, sub `"Your rhythms stay on this device. Sign up to keep your magic in sync, or slip in incognito and begin straight away."` — vertically centered in the free space.
+  - **Center Block:** `AppEmblem` (`112pt`), `h2` `"Join Witchy"`, sub `"Your data stays on this device. Sign in to back it up, or continue without an account."` — vertically centered in the free space.
   - **Bottom Actions (thumb reach, full width, dark like `AppButton`):** `"Continue with Google"` (`_Soc`, plum gradient + primary shadow, white label/icon) → `signInWithGoogle()`; `"Continue with Apple"` (`_Soc`, same) → `signInWithApple()`; `"Skip for now"` (`_Ghost`, solid `plum2`, white label + moon) → incognito. All three `reset('/onboarding')`; failures surface a SnackBar, user cancellation is silent.
 
-### Screen 04: Set Your Rhythms (`/onboarding`)
+### Screen 04: Set Your Cycle (`/onboarding`)
 
 - **Purpose:** Calibrate year of birth, last bleed date, cycle + bleed lengths; persist via `PrefsService` (`OnboardingProvider.finish`).
 - **Layout Structure:**
-  - **Header:** `h2` `"Set Your Rhythms"` + sub `"Calibrate your lunar engine. When did your last bleeding phase commence?"`.
+  - **Header:** `h2` `"Set Your Cycle"` + sub `"Set up your cycle. When did your last period start?"`.
   - **Tracking Mode Card:** `AppCard` `"What shall we track?"` + `TrackingModeChips` multi-toggle `AppChip` row (`lib/widgets/tracking_mode_chip.dart`) - `Cycle` (droplet, default), `Pregnancy` (person-pregnant), `Perimenopause` (moon); selected = pur fill; any number of modes can be active at once and the last one can never be deselected (always >= 1); writes `OnboardingProvider.trackingModes` (a `Set`, persists `witchy_tracking_modes` JSON list with legacy `witchy_tracking_mode` migration) and is saved again in `finish()`.
   - **Year of Birth Card:** `AppCard` — label + serif value with `DropdownButton<int>` (current year … −100) → `setYear`, persisted as `witchy_birth_year`; preselected with the `OnboardingProvider` fallback default (`DateTime.now().year − 25`) so a value always exists.
   - **Date Card:** Tappable `AppCard` — `"Last bleeding phase"` + serif date (`Pick a date` placeholder) + calendar icon → native `showDatePicker` (past dates only).
-  - **Slider Cards:** Two `AppCard`s hosting `AppSliderRow` — `"Cycle duration (stardust tides)"` (`20–40`, default `28 Days`), `"Bleeding phase length"` (`2–10`, default `5 Days`).
-  - **Bottom Action:** Spacer-pinned `"Begin the Journey"` (active from the first frame — default year is preselected; `Opacity 0.45` only if `yearOfBirth` were ever null) → `finish()` (saves rhythms + year + first-day `DayLog` `Medium`) → `reset('/dashboard')`.
+  - **Slider Cards:** Two `AppCard`s hosting `AppSliderRow` — `"Cycle length"` (`20–40`, default `28 Days`), `"Bleeding phase length"` (`2–10`, default `5 Days`).
+  - **Bottom Action:** Spacer-pinned `"Get Started"` (active from the first frame — default year is preselected; `Opacity 0.45` only if `yearOfBirth` were ever null) → `finish()` (saves rhythms + year + first-day `DayLog` `Medium`) → `reset('/dashboard')`.
 
-### Screen 05: Sanctuary (`/dashboard`)
+### Screen 05: Today (`/dashboard`)
 
 - **Purpose:** The core home screen; provides instant visibility into current cycle day, fertile status, hormone phase, and daily health insights.
 - **Layout Structure:**
-  - **Cycle Orb:** `CycleOrb` — `172pt` radial (`#4A1170 → #2A0740`) in conic ring (46% pur), `"CYCLE DAY"` gold caps + serif `14` + `"Full Moon Peak"`.
+  - **Cycle Orb:** `CycleOrb` — `172pt` radial (`#4A1170 → #2A0740`) in conic ring (46% pur), `"CYCLE DAY"` gold caps + serif `14` + `"Ovulation"`.
   - **Stat Duo:** `Bleeding In / 14 Days / Nov 10 · predicted` + pink `Fertility Window / Peak Today / High chance` (tap → `/fertility`). Perimenopause: `Bleeding In` shows the `CycleProvider.predictedRange()` window (`dMin–dMax Days`, sub `d MMM – d MMM · range`; collapses to `N Days` when the window is a single day) and the fertility card is hidden.
   - **Section Split:** each section below lives in its own private widget inside `sanctuary_screen.dart` (`_StatsRow`, `_TodaysMagicSection`, `_AstralInsightCard`, `_FertilityPeakCard`, `_InsightRow`).
-  - **Quick Actions:** `"Today's magic"` label + 4 `QuickAction` tiles — icons from `LogCategory.icon` in `LogData` (Flow droplet / Mood heart / Pain fire / Sleep moon); a tile with entries logged today renders the `filled` state (solid `AppColors.pur` bg, white label, white icon badge); all → `showLogSheet(context, today, scrollTo: category)`, sheet scrolls only when the section isn't fully visible.
+  - **Quick Actions:** `"Today's Log"` label + 4 `QuickAction` tiles — icons from `LogCategory.icon` in `LogData` (Flow droplet / Mood heart / Pain fire / Sleep moon); a tile with entries logged today renders the `filled` state (solid `AppColors.pur` bg, white label, white icon badge); all → `showLogSheet(context, today, scrollTo: category)`, sheet scrolls only when the section isn't fully visible.
   - **Day Detail Card:** light `AppCard` per `mock-calendar.html` `.detail` — 56px moon glyph (phase + predicted-period variants), serif date, phase line, `Period may start tomorrow` note when `daysUntilPeriod == 1` (Perimenopause: `Period may start any day now` on d-1/d-2), `Period Day N`/`Cycle Day N` badge, tappable flow + mood rows → log sheet (no `/library` link).
 
-### Screen 06: Lunar Cycle Map (`/calendar`)
+### Screen 06: Calendar (`/calendar`)
 
 - **Purpose:** Comprehensive monthly view showing predicted periods, ovulation windows, and historical logs.
 - **Layout Structure:**
    - **Calendar Card:** `AppCard` with month header — chevron pair + `"October 2026"` label; label tap → `showMonthPicker` modal bottom sheet (year stepper chevrons clamped 1900–2200 + 12-month grid, returns first-of-month). Below: `CycleCalendar` 7-col grid of 54dp cells (Monday-first, 4dp row gap) — **moon-glyph marks** from `assets/svgs/` via `flutter_svg`: period days = lav2 half-disc + pur ring (solid logged / dashed predicted), fertile = `pinkBg` right half-disc + pink ring, ovulation = `pinkBg` disc + pink ring (period/predicted family = pur, fertile/ovulation family = pink for at-a-glance separation); **today** = lav `#F3EAF9` background + 1.5px pur ring + bold ink number, **selected** = 2px ink ring; pink ovulation / blue logged dots at the cell foot; date 15/500 ink over cycle-day 11/500 muted micro-label; **dimmed non-tappable adjacent-month days** (`placeholder` color, number only), per-cell `Semantics` label (full date + today/selected/period/predicted/ovulation/fertile/logged/cycle day; adjacent → "outside this month"). Perimenopause passes `predictedStart`/`predictedEnd` (`CycleProvider.predictedRange()`) into `CalendarFetcher` so the predicted period is the whole possible bleed range (earliest start through latest start + bleed length) instead of single-cycle arithmetic. Then `CalendarLegend` — same SVG glyphs (period / predicted / fertile / ovulation) + blue logged dot. Status row when days-late > 0 or an adjacent month is shown: `AppTag.gold("N Days Late")` + tappable `AppTag("Today")` → jumps back to the current month. Day tap → selects day + opens log bottom sheet.
-  - **Logged Section:** built by `_buildCalendarCard()` / `_buildLoggedCard()` split — header `AppText.sec` `"Period logged"` (mirrors Sanctuary's `Today's magic`) + the **10 newest flow-logged days** (newest first), each its own `AppCard(dark: true)` purple card: serif white date + `Period Day N` / `Period Logged` tag (`AppTag.pink`), white `IconBadge` (pur glyph) + white flow/mood rows; **tap card → `showLogSheet` for that date** and it becomes the selected entry — `"Clear this day's log"` link (pink 11pt w600) renders only on it → confirm dialog (`Clear this day?` / Cancel / Clear) → `LoggingProvider.deleteDay` + selection reset. Empty state: muted `"No period logged yet"`.
+  - **Logged Section:** built by `_buildCalendarCard()` / `_buildLoggedCard()` split — header `AppText.sec` `"Period logged"` (mirrors Today's `Today's Log`) + the **10 newest flow-logged days** (newest first), each its own `AppCard(dark: true)` purple card: serif white date + `Period Day N` / `Period Logged` tag (`AppTag.pink`), white `IconBadge` (pur glyph) + white flow/mood rows; **tap card → `showLogSheet` for that date** and it becomes the selected entry — `"Clear this day's log"` link (pink 11pt w600) renders only on it → confirm dialog (`Clear this day?` / Cancel / Clear) → `LoggingProvider.deleteDay` + selection reset. Empty state: muted `"No period logged yet"`.
 
-### Screen 07: Apothecary Log (bottom drawer, no route)
+### Screen 07: Log Sheet (bottom drawer, no route)
 
-- **Purpose:** Per-day symptom logging without leaving context; opened by tapping a calendar day or Sanctuary QA.
+- **Purpose:** Per-day symptom logging without leaving context; opened by tapping a calendar day or Today QA.
 - **Layout Structure:**
   - **Sheet Chrome:** `showLogSheet(context, date)` (`log_bottom_sheet.dart`) — `showModalBottomSheet`, `DraggableScrollableSheet` (`0.5–0.95`, initial `0.85`), top-rounded `24dp`, drag handle (`40x4` line fill).
   - **Header:** Serif `{Month} {day}, {year}` (17pt) + sub `"Select physical and mental essences flowing within you."`.
-  - **Log Categories:** rendered by private `_LogCycleSection` widget — every category is a multi-toggle 2-col `AppChip` grid (`childAspectRatio: 4.8`); section titles verbatim from `resources/log_bottom_sheet.txt` in order — `Period and bleeding` (Light 1 pink droplet / Medium 2 / Heavy 3 pinkDark / Spotting 1 pur droplet via `LogOption.iconCount`; no `None` — untoggling all chips = no flow), `Collection method`, `Pain and body symptoms`, `Digestion and stool`, `Skin and hair`, `Mood and emotions`, `Cravings and appetite`, `Vaginal discharge and cervical fluid` (6 entries incl. plain-toggle `None or dry`), `Sex and sex drive`, `Sleep`. Compact `AppChip`: padding 10×6, radius 8, label 11/500, icon gap 5 (fills its grid cell). Data lives in `lib/common/log_data.dart`: `LogOption(name, icon?, color = AppColors.pur, iconCount = 1)` per entry (icon omitted when absent; `AppChip` overlaps `iconCount` copies at 6px step) grouped as `LogCategory(title, options, icon?)` in `LogData` (`icon` feeds Sanctuary quick-action tiles). Bleeding/discharge toggles go through `toggleFlow`/`toggleDischarge`; `setFlow` (replace-style) remains for the onboarding seed. Each section carries its own color (`LogCategory.color`): the title is tinted with `AppColors.readableOn(category.color, AppColors.bg)` (auto-darkened to >= 4.5:1 so vivid accents like gold stay legible), selected chips fill with the section color (label/icon via `AppColors.onColor`, white vs ink by contrast), and iconless options inherit it. Palette in `LogData` order: bleeding `red`, collection `blue`, pain `orange`, digestion `green`, skin/hair `teal`, mood `gold`, cravings `brown`, discharge `pur`, sex `pink`, sleep `indigo` (`orange`, `teal`, `brown`, `indigo` added to `AppColors`).
+  - **Log Categories:** rendered by private `_LogCycleSection` widget — every category is a multi-toggle 2-col `AppChip` grid (`childAspectRatio: 4.8`); section titles verbatim from `resources/log_bottom_sheet.txt` in order — `Period and bleeding` (Light 1 pink droplet / Medium 2 / Heavy 3 pinkDark / Spotting 1 pur droplet via `LogOption.iconCount`; no `None` — untoggling all chips = no flow), `Collection method`, `Pain and body symptoms`, `Digestion and stool`, `Skin and hair`, `Mood and emotions`, `Cravings and appetite`, `Vaginal discharge and cervical fluid` (6 entries incl. plain-toggle `None or dry`), `Sex and sex drive`, `Sleep`. Compact `AppChip`: padding 10×6, radius 8, label 11/500, icon gap 5 (fills its grid cell). Data lives in `lib/common/log_data.dart`: `LogOption(name, icon?, color = AppColors.pur, iconCount = 1)` per entry (icon omitted when absent; `AppChip` overlaps `iconCount` copies at 6px step) grouped as `LogCategory(title, options, icon?)` in `LogData` (`icon` feeds Today quick-action tiles). Bleeding/discharge toggles go through `toggleFlow`/`toggleDischarge`; `setFlow` (replace-style) remains for the onboarding seed. Each section carries its own color (`LogCategory.color`): the title is tinted with `AppColors.readableOn(category.color, AppColors.bg)` (auto-darkened to >= 4.5:1 so vivid accents like gold stay legible), selected chips fill with the section color (label/icon via `AppColors.onColor`, white vs ink by contrast), and iconless options inherit it. Palette in `LogData` order: bleeding `red`, collection `blue`, pain `orange`, digestion `green`, skin/hair `teal`, mood `gold`, cravings `brown`, discharge `pur`, sex `pink`, sleep `indigo` (`orange`, `teal`, `brown`, `indigo` added to `AppColors`).
   - **Uterine Contraction Pain:** private `_LogCycleSlider` wrapping `AppSliderRow` (0–10, live `Level N` label) → `setPain`, sits between Sleep and Notes.
   - **Basal Body Temperature:** private `_TemperatureRow` between the pain slider and Notes — `null` renders a `Not logged` label + `Add reading` `AppChip` (`AppIcons.thermometer`) that seeds 36.5 °C; once set, a serif pur live value (`36.4 °C`) + clear `IconButton` + `AppSliderRow`-styled slider (35.0–38.0 °C, `divisions: 30` = 0.1 steps, values snapped via `toStringAsFixed(1)`) → `LoggingProvider.setTemperature(date, value|null)` (`null` clears without deleting the entry).
   - **State:** Per-date `DayLog` map in `LoggingProvider` (key `yyyy-MM-dd`, persisted via `PrefsService`); unlogged days read as `DayLog` defaults — flow/discharge empty sets (legacy payloads `flow: 'Light'` / `''` / `'None'` migrate on load), empty option sets (collection/symptoms/digestion/skinHair/moods/cravings/sex/sleep), pain 6, temperature `null`, empty notes — via non-materializing `peekDay` (views never call `day()`).
 
-### Screen 08: Lunar Records (`/insights`)
+### Screen 08: Insights (`/insights`)
 
 - **Purpose:** Longitudinal analysis of cycle regularity, period duration variation, and luteal phase stability.
 - **Layout Structure:**
   - **Trends Card:** `"Stardust Cycle Trends"` + `TrendBars(values, labels)` (112pt, real observed cycle lengths from `CycleProvider.observedCycleLengths`, last 7 capped, pur-gradient bars, `C1..Cn` labels, padded y-range so 1-day differences stay visible); under 2 completed cycles → centered muted `"Log two completed cycles to grow your trends."` empty state; tap → `/chart`.
   - **Average Duo:** Centered `StatCard`s — `28.4 d / Average Cycle`, `5.2 d / Average Bleed`.
   - **Irregularity Card:** `"Irregularity"` + `shortest–longest Days` serif value, `Shortest to longest cycle` sub and `N Days variation` `AppTag` (spread from `CycleProvider.cycleSpread`, i.e. longest minus shortest observed lengths); under 2 completed cycles → muted `"Log two completed cycles to see your spread."` empty state. Most meaningful in Perimenopause mode but always visible.
-  - **Chronology Card:** `"Chronology of Bleeds"` + 3 `_Crow` rows (`Sept 14–19 / 5 Days / On Time`, `Aug 16–21 / On Time`, `July 19–23 / 4 Days / Short` pink tag).
+  - **Chronology Card:** `"Period History"` + 3 `_Crow` rows (`Sept 14–19 / 5 Days / On Time`, `Aug 16–21 / On Time`, `July 19–23 / 4 Days / Short` pink tag).
 
 ### Screen 09: BBT & Ovulation Chart (`/chart`)
 
@@ -258,63 +258,63 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Peak Orb:** `CycleOrb` variant — serif `14` + `"Peak Day"` phase.
   - **Window Duo:** Pink `Conception chance / Peak Today / Ovulation likely` + `Window / 5 Days / Day 12 – Day 16`.
   - **Tips Card:** Dark card — serif `"TTC Tips"` + cervical-fluid/LH-surge guidance body.
-  - **Entry:** Sanctuary Peak Today card. LH/camera reader deferred.
+  - **Entry:** Today Peak card. LH/camera reader deferred.
 
-### Screen 11: Gestation Spells (`/pregnancy`)
+### Screen 11: Pregnancy Tracker (`/pregnancy`)
 
-- **Purpose:** Computed gestational tracker, reachable only when `TrackingMode.pregnancy` is in `trackingModes` (Profile row is hidden otherwise); replaces the hardcoded Week 12 mock.
+- **Purpose:** Computed gestational tracker, reachable only when `TrackingMode.pregnancy` is in `trackingModes` (Profile row is hidden otherwise); replaces the hardcoded Week 12 mock. **Decoupled from cycle tracking:** the route is gated in `AppRouterDelegate` (not onboarded or pregnancy mode off -> welcome) and the LMP is never auto-seeded from `OnboardingProvider.lastPeriodStart` - the tracker owns its own persisted date.
 - **Data:** `GestationProvider` (persisted `witchy_pregnancy_lmp`) computes gestational days from the LMP date-only, `week = days ~/ 7`, `dayOfWeek = days % 7`, `progress = days/280` (clamped), `daysRemaining`, `daysPastDue`, `dueDate = lmp + 280`, `trimester` (weeks 0-12 / 13-27 / 28+). Week content from `GestationContent.forWeek` (10 buckets covering weeks 0-40 + past-term fallback) in `lib/common/gestation_content.dart`.
 - **Layout Structure:**
-  - **App Bar:** `AppTopBar("Gestation Spells", action: favorite_border)`.
+  - **App Bar:** `AppTopBar("Pregnancy Tracker", action: favorite_border)`.
   - **Empty State (no LMP):** AppCard - serif `"Your gestation journey awaits"` + muted body + `AppButton("Set last period date")` → past-only `showDatePicker` (last 300 days, `lastDate: now`) seeds the provider.
   - **Progress Card (dark):** gold caps `"GESTATION SANCTUARY"`, serif `"Week N (Day D)"` (21pt) computed, gold progress bar (`6pt`, value = `progress`), countdown copy (`"$n days until arrival portal opens"` / `"The arrival portal opens today"` / `"$n days past the due date"`), due-date + `T{n} Trimester` line.
   - **Comparison Card:** `"Spiritual Comparison"` + `AppTag(content.size)`; search `IconBadge` + `content.development` body (bucket content, e.g. weeks 12-15 = `"Apple Size"`).
-  - **Tips Card:** `"Astral Gestation Tips"` + `content.tip` body.
+  - **Tips Card:** `"Pregnancy Tips"` + `content.tip` body.
   - **LMP Row Card:** `"Last bleeding phase"` + formatted date + calendar icon → reopens the picker.
-- **Seeding:** choosing the Pregnancy chip in onboarding seeds `lmpDate = lastPeriodStart` on `Begin the Journey` (`rhythms_screen._complete`).
+- **Seeding:** none - the Pregnancy chip only enables the screen; the user sets the LMP on the screen itself (empty-state button or LMP row). Onboarding finish no longer calls `GestationProvider.setLmp`.
 
-### Screen 12: Apothecary Library (`/library`)
+### Screen 12: Removed (`/library`)
 
-- **Removed in Milestone 1 Phase 6.** Static library list replaced by the Coven Sanctum article feed (Screen 17); `/library` and `/library/<slug>` routes deleted.
+- **Removed in Milestone 1 Phase 6.** Static library list replaced by the Articles feed (Screen 17); `/library` and `/library/<slug>` routes deleted.
 
 ### Screen 13: Article Detail (`/library/<slug>`)
 
 - **Removed in Milestone 1 Phase 6.** Article bodies now live on the linked web pages, opened via `/webview?title&url`.
 
-### Screen 14: Witch Profile (`/profile`)
+### Screen 14: Profile (`/profile`)
 
 - **Purpose:** Identity + alignments hub; owns app settings and amulet bells inline (settings/reminders screens removed in Phase 4).
 - **Layout Structure:**
-  - **App Bar:** `"Witch Profile"` — back top-left → home (fallback `/dashboard`), **alerts top-right** (`AppIcons.alerts`, same as shell) → `/alerts`.
-  - **Identity Header:** `AppAvatar` HS `84pt` (white ring + gold halo), serif `"High Priestess Selene"` (18pt), gold caps `"SCORPIO MOON · THIRD CYCLE"`, gold star.
-  - **Lunar Alignments Card:** Live values from `CycleProvider` - `Average Cycle Length` = `meanCycleLength` (`—` until 2 observed cycles) and `Bleeding Phase Length` = `bleedLength` + `Tracking Mode` row (pur underline label = active modes joined with `, `) → bottom sheet with the same 3 `TrackingModeChips`; tapping a chip toggles it via `OnboardingProvider.toggleTrackingMode` (multi-select, the sheet stays open, >= 1 mode always kept).
-  - **Apothecary Settings Card:** `Gestation Spells → View` (→ `/pregnancy`) - card rendered only when `trackingModes` contains `TrackingMode.pregnancy`.
-  - **App Settings Card (new):** `SettingsRow` switches — `Receive Lunar Notifications` (ON, `setLunar` + awaited `NotificationService.syncPeriodPrediction`, failure surfaced as SnackBar) and `Dark Magic Mode` (OFF, `setDark`, now drives the real dark theme), owned by `SettingsProvider`.
-  - **Amulet Bells Card:** `"Amulet Bells"` header + live `"X of N bells active"` (`N = RemindersProvider.items.length`) + inline bell rows (hairline dividers): `IconBadge` + serif title + muted subtitle + pur `Switch` (`toggle` + awaited `NotificationService.syncReminder` with cycle anchors, failure → SnackBar); when ON, `InfoPill` pair (clock time / spark freq) below the row. Bell `freq` now drives scheduling: `Every day`/`Daytime` repeat daily (hourly fans out 08:00-20:00), `Daily during peak` fires once per predicted bleed day, `Window start` once at fertile-window start, `3 days prior` once at predicted start minus 3; bells re-sync whenever cycle data or reminders change.
+  - **App Bar:** `"Profile"` — back top-left → home (fallback `/dashboard`), **alerts top-right** (`AppIcons.alerts`, same as shell) → `/alerts`.
+  - **Identity Header:** `AppAvatar` G `84pt` (white ring + gold halo), serif `"Guest"` (18pt), gold caps `"LOCAL · CYCLE TRACKING"`, gold star.
+  - **Cycle Averages Card:** Live values from `CycleProvider` - `Average Cycle Length` = `meanCycleLength` (`—` until 2 observed cycles) and `Bleeding Phase Length` = `bleedLength` + `Tracking Mode` row (pur underline label = active modes joined with `, `) → bottom sheet with the same 3 `TrackingModeChips`; tapping a chip toggles it via `OnboardingProvider.toggleTrackingMode` (multi-select, the sheet stays open, >= 1 mode always kept).
+  - **Pregnancy Settings Card:** `Pregnancy Tracker → View` (→ `/pregnancy`) - card rendered only when `trackingModes` contains `TrackingMode.pregnancy`.
+  - **App Settings Card (new):** `SettingsRow` switches — `Cycle Notifications` (ON, `setLunar` + awaited `NotificationService.syncPeriodPrediction`, failure surfaced as SnackBar) and `Dark Mode` (OFF, `setDark`, now drives the real dark theme), owned by `SettingsProvider`.
+  - **Reminders Card:** `"Reminders"` header + live `"X of N reminders active"` (`N = RemindersProvider.items.length`) + inline bell rows (hairline dividers): `IconBadge` + serif title + muted subtitle + pur `Switch` (`toggle` + awaited `NotificationService.syncReminder` with cycle anchors, failure → SnackBar); when ON, `InfoPill` pair (clock time / spark freq) below the row. Bell `freq` now drives scheduling: `Every day`/`Daytime` repeat daily (hourly fans out 08:00-20:00), `Daily during peak` fires once per predicted bleed day, `Window start` once at fertile-window start, `3 days prior` once at predicted start minus 3; bells re-sync whenever cycle data or reminders change.
   - **Session Card:** `AppButton("Sign Out")` → clears session, `reset('/')` (welcome requires signed-in, so sign-out stays on the first screen); below it a `DangerButton("Delete All Data")` (`AppColors.danger` `#8B1E2F` bg, white label) - confirm dialog (`Delete all data?`) → wipes every `witchy_*` pref, resets all providers in memory, resyncs notifications, lands on welcome.
-  - **Footer:** Centered `"Witchy App / Version <package_info_plus> · Made with celestial energy"` (9.5, placeholder; single-sourced from pubspec).
+  - **Footer:** Centered `"Witchy / Version <package_info_plus>"` (9.5, placeholder; single-sourced from pubspec).
 
-### Screen 16: Celestial Alerts (`/alerts`)
+### Screen 16: Alerts (`/alerts`)
 
 - **Purpose:** Generated inbox of real cycle milestones - replaces the former static mock list.
 - **Data:** `AlertProvider` (persisted under `witchy_alerts`, cap 30) merges candidates from `AlertGenerator` on startup and whenever `CycleProvider` changes; candidates dedupe by stable id (`period-d2-<date>`, `fertile-<date>`, `log-<date>`, `moon-new|full-<date>`), expired `eventDate`s are pruned, read state survives regeneration.
 - **Generator rules:** period predicted in 2/1 days, ovulation day = fertile peak (Perimenopause: raw ovulation day instead fires the hedged `Fertility Window` alert - "may open as early as today. Timing can shift in perimenopause."), missing daily log after 18:00, new/full moon via synodic phase (epoch 2000-01-06T18:14Z, 29.530588853 d).
 - **Layout Structure:**
-  - **App Bar:** `AppTopBar("Celestial Alerts")`, back pops.
-  - **Inbox Header:** Serif `"Whispers Received"` + sub `"The cosmos whispers its reminders. Align your biological temple."`.
+  - **App Bar:** `AppTopBar("Alerts")`, back pops.
+  - **Inbox Header:** Serif `"Recent Alerts"` + sub `"Reminders for the days ahead, based on your cycle."`.
   - **Alert Cards:** One `AppCard` per alert - tinted `IconBadge` (tints derive from `AlertType`) + serif title + relative `intl` timestamp (`just now` / `N min ago` / `N h ago` / `yesterday` / `d MMM`); unread shows a pink dot + full-ink title/body, read dims to muted; tap marks read.
-  - **Empty State:** `"No whispers yet"` card - "The cosmos is quiet right now. Alerts appear as your cycle nears a milestone."
+  - **Empty State:** "`"No alerts yet"` card - "Nothing new right now. Alerts appear as your cycle nears a milestone."`
   - **Entry:** Bell top-right on the shell tabs and the Profile top bar shows a pink unread dot while `unreadCount > 0`.
 
-### Screen 17: Coven Sanctum (`/coven`)
+### Screen 17: Articles (`/coven`)
 
 - **Purpose:** Remote wisdom feed - RSS-style article list served from `https://qvonyx.com/witchy/articles.xml`; each entry opens in the in-app webview.
 - **Layout Structure:**
-  - **No own title/tabs/FAB.** Rendered as the shell's 4th tab (shell app bar keeps the frozen `Coven Sanctum` title).
-  - **Data:** `FeedService` fetches + parses `<item>` entries (title, link, description with HTML stripped, pubDate, category - default `GUIDE`); payload cached in `PrefsService` (`witchy_feed_cache`) for offline; pull-to-refresh refetches; network failure falls back to cache, empty cache shows the `"The scroll is quiet"` empty state.
+  - **No own title/tabs/FAB.** Rendered as the shell's 4th tab (shell app bar keeps the `Articles` title).
+  - **Data:** `FeedService` fetches + parses `<item>` entries (title, link, description with HTML stripped, pubDate, category - default `GUIDE`); payload cached in `PrefsService` (`witchy_feed_cache`) for offline; pull-to-refresh refetches; network failure falls back to cache, empty cache shows the `"No articles yet"` empty state.
   - **Article Cards:** `AppCard` per item - `AppTag(category)` + muted `d MMM yyyy` pubDate row, serif 14 title, muted 10.5 excerpt (3-line ellipsis); tap → `context.go('/webview?title=<enc>&url=<enc>')`.
 
-### Screen 18: Coven Binding (`/binding`)
+### Screen 18: Removed (`/binding`)
 
 - **Removed in Milestone 1 Phase 6.** Couple/partner sync needs a backend (forbidden by project rules); the invite UI and the 3 local share flags were no-ops and were deleted with their prefs keys.
 

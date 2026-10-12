@@ -14,8 +14,8 @@ class AppChip extends StatelessWidget {
   final VoidCallback onTap;
   const AppChip({super.key, required this.label, this.icon, this.iconColor, this.iconCount = 1, this.selected = false, this.selectedColor, required this.onTap});
 
-  Widget _icon(Color active) {
-    final color = selected ? active : (iconColor ?? AppColors.pur);
+  Widget _icon(Color active, Color fg) {
+    final color = selected ? fg : (iconColor ?? AppColors.pur);
     if (iconCount == 1) return FaIcon(icon, size: AppIconSize.sm, color: color);
     const step = 7.0;
     return SizedBox(
@@ -38,7 +38,7 @@ class AppChip extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[_icon(active), const SizedBox(width: 5)],
+            if (icon != null) ...[_icon(active, fg), const SizedBox(width: 5)],
             Flexible(child: Text(label, style: AppText.sans(12.5, w: FontWeight.w500, c: selected ? fg : AppColors.chipText))),
           ],
         ),

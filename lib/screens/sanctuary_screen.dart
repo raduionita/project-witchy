@@ -67,7 +67,7 @@ class SanctuaryScreen extends StatelessWidget {
             ? 'High chance'
             : fertileNow
             ? 'Ovulation nears'
-            : '${DateFormat('MMM d').format(cycle.ovulationDay(today: now))} · predicted';
+            : '${DateFormat('MMM d').format(cycle.nextOvulationDate(today: now))} · predicted';
     String bleedValue = '$daysUntil Days';
     String bleedSub = '${DateFormat('MMM d').format(nextStart)} · predicted';
     if (cycle.isPerimenopause) {
@@ -80,10 +80,10 @@ class SanctuaryScreen extends StatelessWidget {
     }
     return Row(
       children: [
-        Expanded(child: StatCard(label: 'Bleeding In', value: bleedValue, sub: bleedSub)),
+        Expanded(child: StatCard(label: 'Bleeding In', value: bleedValue, sub: bleedSub, onTap: () => context.go('/bleeding'))),
         if (cycle.showFertilityPredictions) ...[
           const SizedBox(width: 12),
-          Expanded(child: GestureDetector(onTap: () => context.go('/fertility'), child: StatCard(label: 'Fertility Window', value: value, sub: sub, valueColor: AppColors.pink))),
+          Expanded(child: StatCard(label: 'Fertility Window', value: value, sub: sub, valueColor: AppColors.pink, onTap: () => context.go('/fertility'))),
         ],
       ],
     );
@@ -98,7 +98,7 @@ class SanctuaryScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Today's magic", style: AppText.sec),
+        Text("Today's Log", style: AppText.sec),
         const SizedBox(height: 8),
         Row(
           children: [
@@ -148,7 +148,7 @@ class SanctuaryScreen extends StatelessWidget {
     final flow = entry?.flow ?? const <String>{};
     final moods = entry?.moods ?? const <String>{};
     final logged = flow.isNotEmpty;
-    final bleedDay = periodDay ? CycleCalculator.bleedDay(cycle.effectiveLastStart, today, cycle.effectiveCycleLength, cycle.bleedLength) : 0;
+    final bleedDay = periodDay ? cycle.bleedDayOf(today) : 0;
     final daysUntil = cycle.daysUntilPeriod(today: now);
     // Softened wording in perimenopause where timing is less predictable.
     final soonNote = cycle.isPerimenopause ? (daysUntil == 1 || daysUntil == 2) : daysUntil == 1;

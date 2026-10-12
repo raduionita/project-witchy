@@ -42,6 +42,10 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
 
   /// Key attached to the [widget.scrollTo] section so it can be revealed.
   GlobalKey? _targetKey;
+
+  /// Key on the scrolling body so visibility math uses the scroll viewport,
+  /// not the whole sheet (the header sits outside the list now).
+  final GlobalKey _listKey = GlobalKey();
   int _scrollRetries = 0;
 
   @override
@@ -63,7 +67,7 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
   void _scrollToTarget() {
     final targetCtx = _targetKey?.currentContext;
     final targetBox = targetCtx?.findRenderObject() as RenderBox?;
-    final viewportBox = context.findRenderObject() as RenderBox?;
+    final viewportBox = _listKey.currentContext?.findRenderObject() as RenderBox?;
     if (!mounted || targetCtx == null || targetBox == null || viewportBox == null || !targetBox.attached || !viewportBox.attached) {
       if (_scrollRetries++ < 3) _scheduleScroll();
       return;
@@ -92,83 +96,105 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
     final log = context.watch<LoggingProvider>();
     final date = widget.date;
     final entry = log.peekDay(date) ?? DayLog();
-    return ListView(
-      controller: widget.scroll,
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
+    final sections = <Widget>[
+      _LogCycleSection(
+        category: LogData.flows,
+        sectionKey: _keyFor(LogData.flows),
+        selected: (o) => entry.flow.contains(o.name),
+        onTap: (o) => context.read<LoggingProvider>().selectFlow(date, o.name),
+      ),
+      _LogCycleSection(
+        category: LogData.collectionMethods,
+        sectionKey: _keyFor(LogData.collectionMethods),
+        selected: (o) => entry.collection.contains(o.name),
+        onTap: (o) => context.read<LoggingProvider>().toggleCollection(date, o.name),
+      ),
+      _LogCycleSection(
+        category: LogData.painSymptoms,
+        sectionKey: _keyFor(LogData.painSymptoms),
+        selected: (o) => entry.symptoms.contains(o.name),
+        onTap: (o) => context.read<LoggingProvider>().toggleSymptom(date, o.name),
+      ),
+      _LogCycleSection(
+        category: LogData.digestion,
+        sectionKey: _keyFor(LogData.digestion),
+        selected: (o) => entry.digestion.contains(o.name),
+        onTap: (o) => context.read<LoggingProvider>().toggleDigestion(date, o.name),
+      ),
+      _LogCycleSection(
+        category: LogData.skinHair,
+        sectionKey: _keyFor(LogData.skinHair),
+        selected: (o) => entry.skinHair.contains(o.name),
+        onTap: (o) => context.read<LoggingProvider>().toggleSkinHair(date, o.name),
+      ),
+      _LogCycleSection(
+        category: LogData.moods,
+        sectionKey: _keyFor(LogData.moods),
+        selected: (o) => entry.moods.contains(o.name),
+        onTap: (o) => context.read<LoggingProvider>().toggleMood(date, o.name),
+      ),
+      _LogCycleSection(
+        category: LogData.cravings,
+        sectionKey: _keyFor(LogData.cravings),
+        selected: (o) => entry.cravings.contains(o.name),
+        onTap: (o) => context.read<LoggingProvider>().toggleCravings(date, o.name),
+      ),
+      _LogCycleSection(
+        category: LogData.discharge,
+        sectionKey: _keyFor(LogData.discharge),
+        selected: (o) => entry.discharge.contains(o.name),
+        onTap: (o) => context.read<LoggingProvider>().toggleDischarge(date, o.name),
+      ),
+      _LogCycleSection(category: LogData.sex, sectionKey: _keyFor(LogData.sex), selected: (o) => entry.sex.contains(o.name), onTap: (o) => context.read<LoggingProvider>().toggleSex(date, o.name)),
+      _LogCycleSection(
+        category: LogData.sleep,
+        sectionKey: _keyFor(LogData.sleep),
+        selected: (o) => entry.sleep.contains(o.name),
+        onTap: (o) => context.read<LoggingProvider>().toggleSleep(date, o.name),
+      ),
+    ];
+    return Column(
       children: [
-        Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.line, borderRadius: BorderRadius.circular(2)))),
-        const SizedBox(height: 12),
-        _SheetHeader(date: date, original: _original, onCancel: _cancel, onApprove: _approve),
-        const SizedBox(height: 4),
-        Text('Select physical and mental essences flowing within you.', style: AppText.sub, textAlign: TextAlign.center),
-        const SizedBox(height: 12),
-        _LogCycleSection(
-          category: LogData.flows,
-          sectionKey: _keyFor(LogData.flows),
-          selected: (o) => entry.flow.contains(o.name),
-          onTap: (o) => context.read<LoggingProvider>().toggleFlow(date, o.name),
+        // Pinned head: drag handle, date title with cancel/approve, subtitle.
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: Column(
+            children: [
+              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.line, borderRadius: BorderRadius.circular(2)))),
+              const SizedBox(height: 12),
+              _SheetHeader(date: date, original: _original, onCancel: _cancel, onApprove: _approve),
+              const SizedBox(height: 4),
+              Text('Select what you are experiencing today.', style: AppText.sub, textAlign: TextAlign.center),
+              const SizedBox(height: 12),
+            ],
+          ),
         ),
-        _LogCycleSection(
-          category: LogData.collectionMethods,
-          sectionKey: _keyFor(LogData.collectionMethods),
-          selected: (o) => entry.collection.contains(o.name),
-          onTap: (o) => context.read<LoggingProvider>().toggleCollection(date, o.name),
+        Expanded(
+          child: ListView(
+            key: _listKey,
+            controller: widget.scroll,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            children: [
+              for (var i = 0; i < sections.length; i++) ...[
+                sections[i],
+                if (i < sections.length - 1) Divider(color: AppColors.line, thickness: 1, height: 16),
+              ],
+              _LogCycleSlider(date: date, pain: entry.pain),
+              _TemperatureRow(date: date, temperature: entry.temperature),
+              const SizedBox(height: 8),
+              Text('Notes', style: AppText.sec),
+              const SizedBox(height: 8),
+              _NotesField(date: date, initialNotes: entry.notes),
+            ],
+          ),
         ),
-        _LogCycleSection(
-          category: LogData.painSymptoms,
-          sectionKey: _keyFor(LogData.painSymptoms),
-          selected: (o) => entry.symptoms.contains(o.name),
-          onTap: (o) => context.read<LoggingProvider>().toggleSymptom(date, o.name),
-        ),
-        _LogCycleSection(
-          category: LogData.digestion,
-          sectionKey: _keyFor(LogData.digestion),
-          selected: (o) => entry.digestion.contains(o.name),
-          onTap: (o) => context.read<LoggingProvider>().toggleDigestion(date, o.name),
-        ),
-        _LogCycleSection(
-          category: LogData.skinHair,
-          sectionKey: _keyFor(LogData.skinHair),
-          selected: (o) => entry.skinHair.contains(o.name),
-          onTap: (o) => context.read<LoggingProvider>().toggleSkinHair(date, o.name),
-        ),
-        _LogCycleSection(
-          category: LogData.moods,
-          sectionKey: _keyFor(LogData.moods),
-          selected: (o) => entry.moods.contains(o.name),
-          onTap: (o) => context.read<LoggingProvider>().toggleMood(date, o.name),
-        ),
-        _LogCycleSection(
-          category: LogData.cravings,
-          sectionKey: _keyFor(LogData.cravings),
-          selected: (o) => entry.cravings.contains(o.name),
-          onTap: (o) => context.read<LoggingProvider>().toggleCravings(date, o.name),
-        ),
-        _LogCycleSection(
-          category: LogData.discharge,
-          sectionKey: _keyFor(LogData.discharge),
-          selected: (o) => entry.discharge.contains(o.name),
-          onTap: (o) => context.read<LoggingProvider>().toggleDischarge(date, o.name),
-        ),
-        _LogCycleSection(category: LogData.sex, sectionKey: _keyFor(LogData.sex), selected: (o) => entry.sex.contains(o.name), onTap: (o) => context.read<LoggingProvider>().toggleSex(date, o.name)),
-        _LogCycleSection(
-          category: LogData.sleep,
-          sectionKey: _keyFor(LogData.sleep),
-          selected: (o) => entry.sleep.contains(o.name),
-          onTap: (o) => context.read<LoggingProvider>().toggleSleep(date, o.name),
-        ),
-        _LogCycleSlider(date: date, pain: entry.pain),
-        _TemperatureRow(date: date, temperature: entry.temperature),
-        const SizedBox(height: 8),
-        Text('Notes', style: AppText.sec),
-        const SizedBox(height: 8),
-        _NotesField(date: date, initialNotes: entry.notes),
       ],
     );
   }
 }
 
-/// One log-sheet category: sec title + 2-col multi-toggle chip grid.
+/// One log-sheet category: sec title + 2-col chip grid. Flow is the exception -
+/// its provider call is single-select (see [LoggingProvider.selectFlow]).
 class _LogCycleSection extends StatelessWidget {
   final LogCategory category;
   final GlobalKey? sectionKey;
@@ -339,7 +365,7 @@ class _NotesFieldState extends State<_NotesField> {
       style: AppText.sans(12.5, c: AppColors.ink),
       onChanged: (v) => context.read<LoggingProvider>().setNotes(widget.date, v),
       decoration: InputDecoration(
-        hintText: 'Whisper your thoughts, rituals, and reflections…',
+        hintText: 'Add any notes for this day…',
         hintStyle: AppText.sans(12.5, c: AppColors.placeholder),
         filled: true,
         fillColor: Colors.white,

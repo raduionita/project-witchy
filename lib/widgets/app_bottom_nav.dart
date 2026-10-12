@@ -11,7 +11,7 @@ class AppBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const items = [(AppIcons.moon, 'Today'), (AppIcons.cal, 'Calendar'), (AppIcons.chart, 'Insights'), (AppIcons.spark, 'Magic')];
+    const items = [(AppIcons.moon, 'Today'), (AppIcons.cal, 'Calendar'), (AppIcons.chart, 'Insights'), (AppIcons.spark, 'Articles')];
     return Container(
       height: 78,
       decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: AppColors.line))),

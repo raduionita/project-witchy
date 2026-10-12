@@ -7,7 +7,7 @@ import '../theme/app_icons.dart';
 class CycleOrb extends StatelessWidget {
   final String day;
   final String phase;
-  const CycleOrb({super.key, this.day = '14', this.phase = 'Full Moon Peak'});
+  const CycleOrb({super.key, this.day = '14', this.phase = 'Ovulation'});
 
   @override
   Widget build(BuildContext context) {

@@ -37,15 +37,15 @@ void main() {
     await tester.pumpWidget(await _buildApp());
     await tester.pumpAndSettle();
     expect(find.text('Witchy'), findsOneWidget);
-    expect(find.text('Awaken Your Power'), findsOneWidget);
-    expect(find.text('Track your cycle with magic'), findsOneWidget);
+    expect(find.text('Get Started'), findsOneWidget);
+    expect(find.text('Track your cycle and health'), findsOneWidget);
     expect(find.text('Sign In'), findsNothing);
   });
 
   testWidgets('Awaken opens the privacy gate; Accept needs all three consents', (WidgetTester tester) async {
     await tester.pumpWidget(await _buildApp());
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Awaken Your Power'));
+    await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
     expect(find.text('A Note on Privacy'), findsOneWidget);
 
@@ -61,41 +61,41 @@ void main() {
     await tester.tap(find.text('Accept'));
     await tester.pumpAndSettle();
     // Auth stays hidden: the gate hands over straight to onboarding.
-    expect(find.text('Set Your Rhythms'), findsOneWidget);
+    expect(find.text('Set Your Cycle'), findsOneWidget);
   });
 
   testWidgets('Refuse returns to the welcome screen', (WidgetTester tester) async {
     await tester.pumpWidget(await _buildApp());
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Awaken Your Power'));
+    await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Refuse'));
     await tester.pumpAndSettle();
     expect(find.text('Witchy'), findsOneWidget);
-    expect(find.text('Awaken Your Power'), findsOneWidget);
+    expect(find.text('Get Started'), findsOneWidget);
   });
 
   testWidgets('Saved consent skips the gate straight to onboarding', (WidgetTester tester) async {
     await tester.pumpWidget(await _buildApp(initial: {'witchy_privacy_accepted': true}));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Awaken Your Power'));
+    await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
-    expect(find.text('Set Your Rhythms'), findsOneWidget);
+    expect(find.text('Set Your Cycle'), findsOneWidget);
   });
 
-  testWidgets('Onboarding journey ready with default birth year', (WidgetTester tester) async {
+  testWidgets('Onboarding ready with default birth year', (WidgetTester tester) async {
     await tester.pumpWidget(await _buildApp(initial: {'witchy_privacy_accepted': true}));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Awaken Your Power'));
+    await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
-    expect(find.text('Set Your Rhythms'), findsOneWidget);
+    expect(find.text('Set Your Cycle'), findsOneWidget);
 
     // Default birth year (now − 25) is preselected, so the CTA is active immediately.
     expect(find.text('${DateTime.now().year - 25}'), findsWidgets);
 
-    await tester.tap(find.text('Begin the Journey'));
+    await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
-    expect(find.text('Sanctuary'), findsOneWidget);
+    expect(find.text('Today'), findsNWidgets(2));
     // Finishing onboarding marks the device as logged in (local session).
     final stored = await SharedPreferences.getInstance();
     expect(stored.getString('witchy_session'), isNotNull);
@@ -104,47 +104,48 @@ void main() {
   testWidgets('Tracking modes are multi-toggle and show together in Profile', (WidgetTester tester) async {
     await tester.pumpWidget(await _buildApp(initial: {'witchy_privacy_accepted': true}));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Awaken Your Power'));
+    await tester.tap(find.text('Get Started').first);
     await tester.pumpAndSettle();
     expect(find.text('What shall we track?'), findsOneWidget);
 
     // Pregnancy joins the default Cycle mode instead of replacing it.
     await tester.tap(find.text('Pregnancy'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Begin the Journey'));
+    await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
-    expect(find.text('Sanctuary'), findsOneWidget);
+    expect(find.text('Today'), findsNWidgets(2));
     // Cycle stays active, so the fertility predictions remain visible.
     expect(find.text('FERTILITY WINDOW'), findsOneWidget);
 
     await tester.tap(find.byType(IconButton).first);
     await tester.pumpAndSettle();
-    expect(find.text('Witch Profile'), findsOneWidget);
+    expect(find.text('Profile'), findsOneWidget);
     expect(find.text('Tracking Mode'), findsOneWidget);
     expect(find.text('Cycle, Pregnancy'), findsOneWidget);
-    // Pregnancy in the set exposes the gestation entry point and seeds the LMP.
-    expect(find.text('Gestation Spells'), findsOneWidget);
+    // Pregnancy in the set exposes the pregnancy tracker entry point.
+    expect(find.text('Pregnancy Tracker'), findsOneWidget);
 
     final stored = await SharedPreferences.getInstance();
     final modes = (jsonDecode(stored.getString('witchy_tracking_modes')!) as List<dynamic>).toSet();
     expect(modes, {'cycle', 'pregnancy'});
-    expect(stored.getString('witchy_pregnancy_lmp'), isNotNull);
+    // LMP is decoupled: onboarding never auto-seeds the pregnancy tracker.
+    expect(stored.getString('witchy_pregnancy_lmp'), isNull);
   });
 
-  testWidgets('Cycle mode keeps fertility visible and hides Gestation Spells', (WidgetTester tester) async {
+  testWidgets('Cycle mode keeps fertility visible and hides Pregnancy Tracker', (WidgetTester tester) async {
     await tester.pumpWidget(await _buildApp(initial: {'witchy_privacy_accepted': true}));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Awaken Your Power'));
+    await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Begin the Journey'));
+    await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
     // Default Cycle mode shows the fertility stat card (labels render uppercase).
     expect(find.text('FERTILITY WINDOW'), findsOneWidget);
 
     await tester.tap(find.byType(IconButton).first);
     await tester.pumpAndSettle();
-    expect(find.text('Witch Profile'), findsOneWidget);
-    expect(find.text('Gestation Spells'), findsNothing);
+    expect(find.text('Profile'), findsOneWidget);
+    expect(find.text('Pregnancy Tracker'), findsNothing);
   });
 
   testWidgets('Sign Out clears the session and shows identity first', (WidgetTester tester) async {
@@ -171,11 +172,11 @@ void main() {
     );
     await tester.pumpAndSettle();
     // Onboarded startup redirects welcome -> dashboard shell.
-    expect(find.text('Sanctuary'), findsOneWidget);
+    expect(find.text('Today'), findsNWidgets(2));
 
     await tester.tap(find.byType(IconButton).first);
     await tester.pumpAndSettle();
-    expect(find.text('Witch Profile'), findsOneWidget);
+    expect(find.text('Profile'), findsOneWidget);
     expect(find.text('Selene Moon'), findsOneWidget);
     expect(find.text('selene@moon.co'), findsOneWidget);
 
@@ -183,12 +184,16 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Sign Out'));
     await tester.pumpAndSettle();
+    // Confirm dialog spells out the consequences before signing out.
+    expect(find.text('Sign out?'), findsOneWidget);
+    await tester.tap(find.text('Sign Out').last);
+    await tester.pumpAndSettle();
 
     final stored = await SharedPreferences.getInstance();
     expect(stored.getString('witchy_session'), isNull);
     // Logged out: welcome stays put instead of redirecting to the dashboard.
-    expect(find.text('Awaken Your Power'), findsOneWidget);
-    expect(find.text('Sanctuary'), findsNothing);
+    expect(find.text('Get Started'), findsOneWidget);
+    expect(find.text('Today'), findsNothing);
   });
 
   testWidgets('Delete All Data wipes app prefs and lands on welcome', (WidgetTester tester) async {
@@ -216,11 +221,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Sanctuary'), findsOneWidget);
+    expect(find.text('Today'), findsNWidgets(2));
 
     await tester.tap(find.byType(IconButton).first);
     await tester.pumpAndSettle();
-    expect(find.text('Witch Profile'), findsOneWidget);
+    expect(find.text('Profile'), findsOneWidget);
 
     await tester.drag(find.byType(ListView), const Offset(0, -900));
     await tester.pumpAndSettle();
@@ -232,8 +237,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // Wiped: welcome stays put (not signed in, not onboarded).
-    expect(find.text('Awaken Your Power'), findsOneWidget);
-    expect(find.text('Sanctuary'), findsNothing);
+    expect(find.text('Get Started'), findsOneWidget);
+    expect(find.text('Today'), findsNothing);
 
     final stored = await SharedPreferences.getInstance();
     expect(stored.getKeys().where((k) => k.startsWith('witchy_')), isEmpty);

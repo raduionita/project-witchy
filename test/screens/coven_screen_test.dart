@@ -60,7 +60,21 @@ void main() {
   testWidgets('shows the empty state when the feed cannot be loaded', (WidgetTester tester) async {
     await _pumpFeed(tester, initial: {});
 
-    expect(find.text('The scroll is quiet'), findsOneWidget);
+    expect(find.text('No articles yet'), findsOneWidget);
     expect(find.textContaining('Pull to try again'), findsOneWidget);
+    // The local about card still gives the screen at least one entry.
+    expect(find.text('Witchy'), findsOneWidget);
+  });
+
+  testWidgets('local about card is always last and never opens an article', (WidgetTester tester) async {
+    final delegate = await _pumpFeed(tester);
+
+    expect(find.text('Witchy'), findsOneWidget);
+    final texts = tester.widgetList<Text>(find.byType(Text)).map((t) => t.data).toList();
+    expect(texts.indexOf('Witchy'), greaterThan(texts.indexOf('Herbs for Somatic Cramp Relief')));
+
+    await tester.tap(find.text('Witchy'));
+    await tester.pumpAndSettle();
+    expect(delegate.currentConfiguration, isNot(startsWith('/webview')));
   });
 }

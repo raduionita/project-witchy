@@ -5,6 +5,7 @@ import 'package:witchy/models/tracking_mode.dart';
 import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
+import 'package:witchy/services/cycle_calculator.dart';
 import 'package:witchy/services/prefs_service.dart';
 
 void main() {
@@ -96,7 +97,7 @@ void main() {
       expect(cycle.cycleDay(today: today), 10);
       expect(cycle.nextPeriodStart(today: today), DateTime(2026, 9, 29));
       expect(cycle.daysUntilPeriod(today: today), 19);
-      expect(cycle.phase(today: today).label, 'Waxing Glow');
+      expect(cycle.phase(today: today).label, 'Follicular');
     });
   });
 
@@ -167,6 +168,87 @@ void main() {
       final range = cycle.predictedRange(today: DateTime(2026, 9, 10));
       expect(range.earliest, DateTime(2026, 9, 30));
       expect(range.latest, DateTime(2026, 10, 7));
+    });
+  });
+
+  // Regression: a derived onboarding date landing in the future used to win over
+  // real logged history, which made the modular cycle math wrap backwards.
+  group('CycleProvider rejects future anchors', () {
+    DateTime day(int offset, [DateTime? base]) {
+      final b = base ?? DateTime.now();
+      return DateTime(b.year, b.month, b.day + offset);
+    }
+
+    test('a future stated date never beats real logged history', () {
+      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 26, bleedLength: 5, lastPeriodStart: day(30));
+      logging = LoggingProvider(prefs);
+      // Two completed 26-day cycles plus the current one, all in the past.
+      for (final startOffset in [-59, -33, -7]) {
+        for (var i = 0; i < 5; i++) {
+          logging.setFlow(day(startOffset + i), 'Medium');
+        }
+      }
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.effectiveLastStart, day(-7));
+      expect(cycle.effectiveCycleLength, 26);
+      expect(cycle.cycleDay(today: DateTime.now()), 8);
+      expect(cycle.nextPeriodStart(today: DateTime.now()), day(19));
+      expect(cycle.daysUntilPeriod(today: DateTime.now()), 19);
+    });
+
+    test('bleeding logged today counts as cycle day 1, not a wrapped-around day', () {
+      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 26, bleedLength: 5, lastPeriodStart: day(30));
+      logging = LoggingProvider(prefs);
+      logging.setFlow(DateTime.now(), 'Medium');
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.effectiveLastStart, DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
+      expect(cycle.cycleDay(today: DateTime.now()), 1);
+      expect(cycle.phase(today: DateTime.now()), CyclePhase.menstrual);
+    });
+  });
+
+  group('CycleProvider logged bleed days', () {
+    DateTime day(int offset) {
+      final b = DateTime.now();
+      return DateTime(b.year, b.month, b.day + offset);
+    }
+
+    test('a logged bleed day is always menstrual, never luteal', () {
+      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 26, bleedLength: 5, lastPeriodStart: day(-30));
+      logging = LoggingProvider(prefs);
+      logging.setFlow(day(-3), 'Light');
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.effectiveLastStart, day(-3));
+      expect(cycle.isPeriodDay(day(-3)), isTrue);
+      expect(cycle.phaseAt(day(-3)), CyclePhase.menstrual);
+      expect(cycle.bleedDayOf(day(-3)), 1);
+      expect(cycle.cycleDay(today: DateTime.now()), 4);
+    });
+
+    test('bleeding logged outside the predicted window still counts as a period day', () {
+      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 28, bleedLength: 5, lastPeriodStart: day(-20));
+      logging = LoggingProvider(prefs);
+      // Cycle day 19 - well past the 5-day predicted bleed window.
+      logging.setFlow(day(-2), 'Light');
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.bleedDayOf(day(-2)), 1);
+      expect(cycle.phaseAt(day(-2)), CyclePhase.menstrual);
+      expect(cycle.isPeriodDay(day(-2)), isTrue);
+    });
+  });
+
+  group('CycleProvider ovulation date consistency', () {
+    test('nextOvulationDate agrees with daysUntilOvulation once the peak has passed', () {
+      final today = DateTime.now();
+      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 28, bleedLength: 5, lastPeriodStart: DateTime(today.year, today.month, today.day - 20));
+      logging = LoggingProvider(prefs);
+      final cycle = CycleProvider(onboarding, logging);
+      // Cycle day 21, so the day-14 peak is already behind us.
+      expect(cycle.cycleDay(today: today), 21);
+      final days = cycle.daysUntilOvulation(today: today);
+      final date = cycle.nextOvulationDate(today: today);
+      expect(CycleCalculator.daysBetween(today, date), days);
+      expect(date.isAfter(today), isTrue);
     });
   });
 }

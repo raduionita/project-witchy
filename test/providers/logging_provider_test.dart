@@ -46,7 +46,7 @@ void main() {
     provider.toggleSex(day, 'Protected sex');
     provider.toggleSleep(day, 'Insomnia');
     provider.toggleDischarge(day, 'Creamy');
-    provider.toggleFlow(day, 'Light');
+    provider.selectFlow(day, 'Light');
     final entry = provider.peekDay(day)!;
     expect(entry.collection, {'Cup'});
     expect(entry.digestion, {'Nausea'});
@@ -59,9 +59,27 @@ void main() {
 
     // Toggle off removes again.
     provider.toggleSleep(day, 'Insomnia');
-    provider.toggleFlow(day, 'Light');
+    provider.selectFlow(day, 'Light');
     expect(provider.peekDay(day)!.sleep, isEmpty);
     expect(provider.peekDay(day)!.flow, isEmpty);
+  });
+
+  test('selectFlow keeps at most one level', () {
+    final day = DateTime(2026, 9, 20);
+    provider.selectFlow(day, 'Light');
+    provider.selectFlow(day, 'Heavy');
+    expect(provider.peekDay(day)!.flow, {'Heavy'});
+
+    provider.selectFlow(day, 'Spotting');
+    expect(provider.peekDay(day)!.flow, {'Spotting'});
+  });
+
+  test('setFlow replaces any previous level', () {
+    final day = DateTime(2026, 9, 20);
+    provider.selectFlow(day, 'Light');
+    provider.selectFlow(day, 'Medium');
+    provider.setFlow(day, 'Heavy');
+    expect(provider.peekDay(day)!.flow, {'Heavy'});
   });
 
   test('deleteDay removes the entry entirely', () async {

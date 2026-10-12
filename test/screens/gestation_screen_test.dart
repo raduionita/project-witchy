@@ -25,10 +25,10 @@ void main() {
 
   testWidgets('empty state prompts for the last period date without LMP', (tester) async {
     await pumpScreen(tester, await provider());
-    expect(find.text('Your gestation journey awaits'), findsOneWidget);
+    expect(find.text('Your pregnancy tracker is ready'), findsOneWidget);
     expect(find.text('Set last period date'), findsOneWidget);
     expect(find.textContaining('Week'), findsNothing);
-    expect(find.text('Spiritual Comparison'), findsNothing);
+    expect(find.text('This Week'), findsNothing);
   });
 
   testWidgets('seeded LMP renders computed week, countdown and content', (tester) async {
@@ -36,9 +36,9 @@ void main() {
     final lmp = DateTime(today.year, today.month, today.day).subtract(const Duration(days: 84));
     await pumpScreen(tester, await provider(lmp: lmp));
     expect(find.text('Week 12 (Day 0)'), findsOneWidget);
-    expect(find.text('196 days until arrival portal opens'), findsOneWidget);
+    expect(find.text('196 days until your due date'), findsOneWidget);
     expect(find.text('Apple Size'), findsOneWidget);
-    expect(find.text('Astral Gestation Tips'), findsOneWidget);
+    expect(find.text('Pregnancy Tips'), findsOneWidget);
     expect(find.text('Set last period date'), findsNothing);
     expect(find.text('Last bleeding phase'), findsOneWidget);
   });

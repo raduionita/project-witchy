@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/cycle_settings.dart';
 import '../models/tracking_mode.dart';
+import '../services/period_history.dart';
 import '../services/prefs_service.dart';
 
 class OnboardingProvider extends ChangeNotifier {
@@ -28,9 +29,18 @@ class OnboardingProvider extends ChangeNotifier {
   DateTime lastPeriodStart;
   DateTime? pickedDate;
 
+  /// Start dates of earlier periods entered during onboarding, newest first.
+  /// Persisted indirectly: `rhythms_screen` seeds them into the day-log store,
+  /// so `PeriodHistory` derives real cycle lengths from them.
+  final List<DateTime> previousPeriodStarts = [];
+
+  /// Fallback anchor when the user never picked a date. Never lands in the
+  /// future - a future "last period" date poisons every cycle calculation.
   static DateTime _derive(int day) {
     final now = DateTime.now();
-    return DateTime(now.year, now.month, day <= 28 ? day : 28);
+    final today = DateTime(now.year, now.month, now.day);
+    final candidate = DateTime(now.year, now.month, day <= 28 ? day : 28);
+    return candidate.isAfter(today) ? today : candidate;
   }
 
   CycleSettings get cycleSettings => CycleSettings(lastPeriodStart: lastPeriodStart, cycleLength: cycleLength, bleedLength: bleedLength);
@@ -80,6 +90,28 @@ class OnboardingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Records an earlier period start; duplicates are ignored and order stays newest-first.
+  void addPreviousPeriod(DateTime d) {
+    final day = DateTime(d.year, d.month, d.day);
+    if (previousPeriodStarts.contains(day)) return;
+    previousPeriodStarts.add(day);
+    previousPeriodStarts.sort((a, b) => b.compareTo(a));
+    notifyListeners();
+  }
+
+  void removePreviousPeriod(DateTime d) {
+    final day = DateTime(d.year, d.month, d.day);
+    previousPeriodStarts.removeWhere((e) => e == day);
+    notifyListeners();
+  }
+
+  /// Median cycle length implied by the entered dates; null until 2+ complete cycles are known.
+  int? deriveCycleLengthFromHistory() {
+    final starts = [...previousPeriodStarts, if (pickedDate != null) pickedDate!]..sort();
+    if (starts.length < 2) return null;
+    return PeriodHistory.median(PeriodHistory.cycleLengths(starts));
+  }
+
   void setCycle(int v) {
     cycleLength = v;
     notifyListeners();
@@ -91,8 +123,7 @@ class OnboardingProvider extends ChangeNotifier {
   }
 
   Future<void> finish() async {
-    final now = DateTime.now();
-    final last = pickedDate ?? DateTime(now.year, now.month, selectedDay <= 28 ? selectedDay : 28);
+    final last = pickedDate ?? _derive(selectedDay);
     lastPeriodStart = last;
     await _prefs.saveRhythms(cycleLength, bleedLength, last);
     await _prefs.setTrackingModes(trackingModes);
@@ -113,6 +144,7 @@ class OnboardingProvider extends ChangeNotifier {
     yearOfBirth = DateTime.now().year - 25;
     lastPeriodStart = _derive(17);
     pickedDate = null;
+    previousPeriodStarts.clear();
     notifyListeners();
   }
 }

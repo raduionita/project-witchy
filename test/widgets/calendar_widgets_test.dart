@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -63,6 +64,34 @@ void main() {
     for (final label in ['period', 'predicted', 'fertile', 'ovulation', 'logged']) {
       expect(find.text(label), findsOneWidget);
     }
+  });
+
+  group('calendar glyph palette', () {
+    String svg(String name) => File('assets/svgs/$name').readAsStringSync();
+
+    test('period and predicted period draw in red', () {
+      expect(svg('moon-period.svg'), contains('stroke="#C0392B"'));
+      expect(svg('moon-period-predicted.svg'), contains('stroke="#C0392B"'));
+      expect(svg('moon-period-predicted.svg'), contains('stroke-dasharray'));
+    });
+
+    test('fertile days draw in purple', () {
+      expect(svg('moon-fertile.svg'), contains('stroke="#7B2CBF"'));
+    });
+
+    test('ovulation draws in turquoise', () {
+      expect(svg('moon-ovulation.svg'), contains('stroke="#2A9D8F"'));
+    });
+
+    testWidgets('an ovulation day carries a turquoise marker dot', (tester) async {
+      final cells = MonthCells(month: DateTime(2026, 9, 1), cells: [const CalendarDayCell(day: 14, cycleDay: 14, isOvulation: true)]);
+      await tester.pumpWidget(MaterialApp(home: Scaffold(body: CycleCalendar(cells: cells))));
+      final hasTealDot = tester.widgetList<Container>(find.byType(Container)).any((c) {
+        final d = c.decoration;
+        return d is BoxDecoration && d.shape == BoxShape.circle && d.color == AppColors.teal;
+      });
+      expect(hasTealDot, isTrue);
+    });
   });
 
   group('showMonthPicker', () {

@@ -3,9 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../navigation/app_nav.dart';
-import '../models/tracking_mode.dart';
 import '../providers/auth_provider.dart';
-import '../providers/gestation_provider.dart';
 import '../providers/logging_provider.dart';
 import '../providers/onboarding_provider.dart';
 import '../theme/app_colors.dart';
@@ -41,12 +39,25 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
     if (!mounted) return;
     await context.read<AuthProvider>().markLocalSession();
     if (!mounted) return;
-    context.read<LoggingProvider>().setFlow(onboarding.lastPeriodStart, 'Medium');
-    if (onboarding.trackingModes.contains(TrackingMode.pregnancy)) {
-      final gestation = context.read<GestationProvider>();
-      await gestation.setLmp(onboarding.lastPeriodStart);
-      if (!mounted) return;
+    // Seed the picked start date and any earlier periods as real bleed spans so
+    // PeriodHistory derives true cycle lengths from day one.
+    final logging = context.read<LoggingProvider>();
+    final bleedLength = onboarding.bleedLength;
+    final today = DateTime.now();
+    void seed(DateTime start) {
+      if (start.isAfter(today)) return;
+      for (var i = 0; i < bleedLength; i++) {
+        logging.setFlow(DateTime(start.year, start.month, start.day + i), 'Medium');
+      }
     }
+
+    final picked = onboarding.pickedDate;
+    if (picked != null) seed(picked);
+    for (final previous in List<DateTime>.of(onboarding.previousPeriodStarts)) {
+      seed(previous);
+    }
+    // Pregnancy tracker stays decoupled: its LMP is set on the pregnancy screen
+    // itself, never auto-seeded from the cycle anchor.
     context.reset('/dashboard');
   }
 
@@ -60,20 +71,27 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _Header(),
+              Expanded(
+                child: ListView(
+                  children: [
+                    const _Header(),
+                    const SizedBox(height: 12),
+                    const _TrackingModeCard(),
+                    const SizedBox(height: 12),
+                    const _YearOfBirthCard(),
+                    const SizedBox(height: 12),
+                    _LastBleedDateCard(onTap: _pickDate),
+                    const SizedBox(height: 12),
+                    const _PastPeriodsCard(),
+                    const SizedBox(height: 12),
+                    const _CycleLengthCard(),
+                    const SizedBox(height: 12),
+                    const _BleedLengthCard(),
+                  ],
+                ),
+              ),
               const SizedBox(height: 12),
-              const _TrackingModeCard(),
-              const SizedBox(height: 12),
-              const _YearOfBirthCard(),
-              const SizedBox(height: 12),
-              _LastBleedDateCard(onTap: _pickDate),
-              const SizedBox(height: 12),
-              const _CycleLengthCard(),
-              const SizedBox(height: 12),
-              const _BleedLengthCard(),
-              const Spacer(),
               _JourneyButton(canFinish: canFinish, onComplete: _complete),
             ],
           ),
@@ -90,9 +108,9 @@ class _Header extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Set Your Rhythms', style: AppText.h2),
+        Text('Set Your Cycle', style: AppText.h2),
         const SizedBox(height: 5),
-        Text('Calibrate your lunar engine. When did your last bleeding phase commence?', style: AppText.sub),
+        Text('Set up your cycle. When did your last period start?', style: AppText.sub),
       ],
     );
   }
@@ -188,6 +206,80 @@ class _LastBleedDateCard extends StatelessWidget {
   }
 }
 
+/// Optional history of earlier period starts; seeding these makes predictions
+/// reflect the user's real cycle lengths instead of a guessed slider value.
+class _PastPeriodsCard extends StatelessWidget {
+  const _PastPeriodsCard();
+
+  Future<void> _add(BuildContext context) async {
+    final ob = context.read<OnboardingProvider>();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(DateTime.now().year - 2),
+      lastDate: DateTime.now(),
+    );
+    if (picked == null || !context.mounted) return;
+    ob.addPreviousPeriod(picked);
+    final derived = ob.deriveCycleLengthFromHistory();
+    if (derived != null) ob.setCycle(derived);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ob = context.watch<OnboardingProvider>();
+    final entries = ob.previousPeriodStarts;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Recent periods', style: AppText.secIn),
+          const SizedBox(height: 4),
+          Text(
+            'Add the start date of each earlier period. Two or more dates let us match your real cycle length.',
+            style: AppText.sans(10.5, c: AppColors.muted, h: 1.45),
+          ),
+          if (entries.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            for (final d in entries)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(DateFormat('MMMM d, yyyy').format(d), style: AppText.sans(11.5, w: FontWeight.w600, c: AppColors.ink)),
+                    IconButton(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      icon: FaIcon(FontAwesomeIcons.xmark, size: 12, color: AppColors.muted),
+                      tooltip: 'Remove',
+                      onPressed: () => context.read<OnboardingProvider>().removePreviousPeriod(d),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+          const SizedBox(height: 4),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => _add(context),
+              child: Row(
+                children: [
+                  FaIcon(FontAwesomeIcons.plus, size: 11, color: AppColors.pur),
+                  const SizedBox(width: 6),
+                  Text('+ Add another period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CycleLengthCard extends StatelessWidget {
   const _CycleLengthCard();
   @override
@@ -195,7 +287,7 @@ class _CycleLengthCard extends StatelessWidget {
     final ob = context.watch<OnboardingProvider>();
     return AppCard(
       child: AppSliderRow(
-        label: 'Cycle duration (stardust tides)',
+        label: 'Cycle length',
         value: '${ob.cycleLength} Days',
         min: 20,
         max: 40,
@@ -233,7 +325,7 @@ class _JourneyButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Opacity(
       opacity: canFinish ? 1 : 0.45,
-      child: AppButton(label: 'Begin the Journey', onTap: canFinish ? onComplete : null),
+      child: AppButton(label: 'Get Started', onTap: canFinish ? onComplete : null),
     );
   }
 }

@@ -79,9 +79,9 @@ class RecordsScreen extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: StatCard(label: '', value: avgCycle == null ? '—' : '${avgCycle.toStringAsFixed(1)} d', sub: 'Average Cycle')),
+            Expanded(child: StatCard(label: '', value: avgCycle == null ? '—' : '${avgCycle.toStringAsFixed(1)} d', sub: 'Average Cycle', onTap: () => context.go('/chart'))),
             const SizedBox(width: 12),
-            Expanded(child: StatCard(label: '', value: avgBleed == null ? '—' : '${avgBleed.toStringAsFixed(1)} d', sub: 'Average Bleed')),
+            Expanded(child: StatCard(label: '', value: avgBleed == null ? '—' : '${avgBleed.toStringAsFixed(1)} d', sub: 'Average Bleed', onTap: () => context.go('/bleeding'))),
           ],
         ),
         const SizedBox(height: 12),
@@ -91,11 +91,11 @@ class RecordsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Chronology of Bleeds', style: AppText.secIn),
+              Text('Period History', style: AppText.secIn),
               if (spans.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
-                  child: Text('Log a bleeding day and your chronology will bloom here.', style: AppText.sans(11.5, c: AppColors.muted)),
+                  child: Text('Log a bleeding day and your period history will appear here.', style: AppText.sans(11.5, c: AppColors.muted)),
                 )
               else
                 for (var i = 0; i < spans.length; i++) _BleedRow(span: spans[i], tag: _tagFor(cycle, spans, i)),

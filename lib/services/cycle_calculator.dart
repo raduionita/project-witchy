@@ -41,13 +41,16 @@ class CycleCalculator {
   static DateTime ovulationDay(DateTime lastStart, DateTime today, int cycleLength) =>
       _addDays(cycleStart(lastStart, today, cycleLength), ovulationCycleDay(cycleLength) - 1);
 
-  static int daysUntilOvulation(DateTime lastStart, DateTime today, int cycleLength) {
-    final len = _len(cycleLength);
+  /// Next ovulation that is still ahead of [today]; when this cycle's peak has
+  /// already passed it rolls into the following cycle, so the date always agrees
+  /// with [daysUntilOvulation].
+  static DateTime nextOvulationDay(DateTime lastStart, DateTime today, int cycleLength) {
     final ovu = ovulationDay(lastStart, today, cycleLength);
-    final until = daysBetween(today, ovu);
-    if (until >= 0) return until;
-    return daysBetween(today, _addDays(ovu, len));
+    return daysBetween(today, ovu) >= 0 ? ovu : _addDays(ovu, _len(cycleLength));
   }
+
+  static int daysUntilOvulation(DateTime lastStart, DateTime today, int cycleLength) =>
+      daysBetween(today, nextOvulationDay(lastStart, today, cycleLength));
 
   static int fertileStartCycleDay(int cycleLength) {
     final day = ovulationCycleDay(cycleLength) - 2;

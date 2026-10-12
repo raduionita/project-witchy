@@ -25,10 +25,10 @@ class AlertsScreen extends StatelessWidget {
   Widget _buildEmpty() => AppCard(
     child: Column(
       children: [
-        Text('No whispers yet', style: AppText.serif(13)),
+        Text('No alerts yet', style: AppText.serif(13)),
         const SizedBox(height: 6),
         Text(
-          'The cosmos is quiet right now. Alerts appear as your cycle nears a milestone.',
+          'Nothing new right now. Alerts appear as your cycle nears a milestone.',
           textAlign: TextAlign.center,
           style: AppText.sans(11, h: 1.5, c: AppColors.muted),
         ),
@@ -92,13 +92,13 @@ class AlertsScreen extends StatelessWidget {
     final alerts = provider.items;
     final now = DateTime.now();
     return Scaffold(
-      appBar: const AppTopBar(title: 'Celestial Alerts'),
+      appBar: const AppTopBar(title: 'Alerts'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
-          Text('Whispers Received', style: AppText.sec),
+          Text('Recent Alerts', style: AppText.sec),
           const SizedBox(height: 8),
-          Text('The cosmos whispers its reminders. Align your biological temple.', style: AppText.sub),
+          Text('Reminders for the days ahead, based on your cycle.', style: AppText.sub),
           const SizedBox(height: 12),
           if (alerts.isEmpty)
             _buildEmpty()

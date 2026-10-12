@@ -48,7 +48,7 @@ void main() {
     expect(find.text('Period Approaching b'), findsOneWidget);
     expect(find.text('2 h ago'), findsOneWidget);
     expect(find.text('3 h ago'), findsOneWidget);
-    expect(find.text('No whispers yet'), findsNothing);
+    expect(find.text('No alerts yet'), findsNothing);
   });
 
   testWidgets('tapping an alert marks it read', (tester) async {
@@ -66,7 +66,7 @@ void main() {
     final provider = AlertProvider(prefs);
     await pumpScreen(tester, provider);
 
-    expect(find.text('No whispers yet'), findsOneWidget);
+    expect(find.text('No alerts yet'), findsOneWidget);
     expect(find.text('Period Approaching'), findsNothing);
   });
 }

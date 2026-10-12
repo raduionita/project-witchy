@@ -18,17 +18,20 @@ class TrackingModeChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    final modes = TrackingMode.values;
+    return Row(
       children: [
-        for (final mode in TrackingMode.values)
-          AppChip(
-            label: mode.label,
-            icon: _icons[mode],
-            selected: selected.contains(mode),
-            onTap: () => onToggle(mode),
+        for (var i = 0; i < modes.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(
+            child: AppChip(
+              label: modes[i].label,
+              icon: _icons[modes[i]],
+              selected: selected.contains(modes[i]),
+              onTap: () => onToggle(modes[i]),
+            ),
           ),
+        ],
       ],
     );
   }

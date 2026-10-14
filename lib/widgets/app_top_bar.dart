@@ -12,7 +12,9 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   final FaIconData leading;
   final VoidCallback? onLeading;
   final bool badge;
-  const AppTopBar({super.key, required this.title, this.action, this.onAction, this.leading = AppIcons.back, this.onLeading, this.badge = false});
+  final String? leadingTooltip;
+  final String? actionTooltip;
+  const AppTopBar({super.key, required this.title, this.action, this.onAction, this.leading = AppIcons.back, this.onLeading, this.badge = false, this.leadingTooltip, this.actionTooltip});
 
   @override
   Size get preferredSize => const Size.fromHeight(50);
@@ -28,6 +30,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
           children: [
             IconButton(
               onPressed: onLeading ?? () => context.back(),
+              tooltip: leadingTooltip ?? (onLeading == null ? 'Back' : null),
               constraints: box,
               iconSize: AppIconSize.base,
               icon: FaIcon(leading, size: AppIconSize.base, color: AppColors.chipText),
@@ -36,6 +39,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
             if (action != null)
               IconButton(
                 onPressed: onAction,
+                tooltip: actionTooltip,
                 constraints: box,
                 iconSize: AppIconSize.base,
                 icon: Stack(

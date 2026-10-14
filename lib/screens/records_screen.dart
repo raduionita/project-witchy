@@ -5,8 +5,10 @@ import 'package:provider/provider.dart';
 import '../models/period_span.dart';
 import '../providers/cycle_provider.dart';
 import '../services/cycle_calculator.dart';
+import '../services/period_history.dart';
 import '../navigation/app_nav.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_dims.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/trend_bars.dart';
@@ -16,21 +18,27 @@ import '../widgets/app_tag.dart';
 class RecordsScreen extends StatelessWidget {
   const RecordsScreen({super.key});
 
-  static (String, bool) _tagFor(CycleProvider cycle, List<PeriodSpan> spans, int index) {
+  /// Short/Long vs a robust reference: median of the other observed cycles,
+  /// so one outlier (e.g. a 49-day cycle) does not drag its own tag threshold.
+  static (String, Color?, Color?) _tagFor(CycleProvider cycle, List<PeriodSpan> spans, int index) {
     // spans are newest-first; index 0 starts the cycle currently in progress.
-    if (index == 0) return ('Current', false);
+    if (index == 0) return ('Current', null, null);
     final span = spans[index];
     final newer = spans[index - 1];
     final cycleLength = CycleCalculator.daysBetween(span.start, newer.start);
-    final reference = cycle.effectiveCycleLength;
-    if (cycleLength < reference - 2) return ('Short', true);
-    if (cycleLength > reference + 2) return ('Long', true);
-    return ('On Time', false);
+    final others = [...cycle.observedCycleLengths];
+    // Remove one instance of this cycle's length (it may appear multiple times).
+    others.remove(cycleLength);
+    final reference = others.isNotEmpty ? PeriodHistory.median(others) ?? cycle.effectiveCycleLength : cycle.effectiveCycleLength;
+    if (cycleLength < reference - 2) return ('Short - $cycleLength days', AppColors.goldBg, AppColors.readableOn(AppColors.gold, AppColors.goldBg));
+    if (cycleLength > reference + 2) return ('Long - $cycleLength days', AppColors.pinkBg, AppColors.pinkDark);
+    return ('On Time - $cycleLength days', null, null);
   }
 
-  /// Cycle-length spread card: shortest vs longest observed cycles.
+  /// Cycle-length spread card: shortest vs longest observed cycles + status.
   Widget _buildIrregularityCard(CycleProvider cycle) {
     final spread = cycle.cycleSpread;
+    final irregular = (spread ?? 0) > 7;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,7 +60,10 @@ class RecordsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                AppTag('$spread ${spread == 1 ? 'Day' : 'Days'} variation'),
+                Tooltip(
+                  message: 'Variation is longest minus shortest. Above 7 days is marked Irregular.',
+                  child: AppTag.gold('${irregular ? 'Irregular' : 'Regular'} · $spread Days'),
+                ),
               ],
             ),
         ],
@@ -67,21 +78,40 @@ class RecordsScreen extends StatelessWidget {
     final avgCycle = cycle.meanCycleLength;
     final avgBleed = cycle.meanBleedLength;
     final observed = cycle.observedCycleLengths;
+    final starts = PeriodHistory.startsOf(cycle.bleeds);
     final trendValues = [for (final len in observed.skip(observed.length > 7 ? observed.length - 7 : 0)) len.toDouble()];
-    final trendLabels = [for (var i = 0; i < trendValues.length; i++) 'C${observed.length - trendValues.length + i + 1}'];
+    // Month label of the cycle start for each observed length.
+    final monthFmt = DateFormat('MMM');
+    final skip = observed.length - trendValues.length;
+    final trendLabels = [
+      for (var i = 0; i < trendValues.length; i++)
+        monthFmt.format(starts[skip + i]),
+    ];
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, AppDims.fabClearance),
       children: [
         GestureDetector(
           onTap: () => context.go('/chart'),
-          child: AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Cycle Trends', style: AppText.secIn), const SizedBox(height: 10), TrendBars(values: trendValues, labels: trendLabels)])),
+          child: AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [Text('Cycle Trends', style: AppText.secIn), Text('Days', style: AppText.sans(10, c: AppColors.muted))],
+                ),
+                const SizedBox(height: 10),
+                TrendBars(values: trendValues, labels: trendLabels),
+              ],
+            ),
+          ),
         ),
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: StatCard(label: '', value: avgCycle == null ? '—' : '${avgCycle.toStringAsFixed(1)} d', sub: 'Average Cycle', onTap: () => context.go('/chart'))),
+            Expanded(child: StatCard(label: '', value: avgCycle == null ? '—' : '${avgCycle.round()} days', sub: 'Average Cycle', onTap: () => context.go('/chart'))),
             const SizedBox(width: 12),
-            Expanded(child: StatCard(label: '', value: avgBleed == null ? '—' : '${avgBleed.toStringAsFixed(1)} d', sub: 'Average Bleed', onTap: () => context.go('/bleeding'))),
+            Expanded(child: StatCard(label: '', value: avgBleed == null ? '—' : '${avgBleed.round()} days', sub: 'Average Bleeding', onTap: () => context.go('/bleeding'))),
           ],
         ),
         const SizedBox(height: 12),
@@ -109,7 +139,7 @@ class RecordsScreen extends StatelessWidget {
 
 class _BleedRow extends StatelessWidget {
   final PeriodSpan span;
-  final (String, bool) tag;
+  final (String, Color?, Color?) tag;
   const _BleedRow({required this.span, required this.tag});
 
   @override
@@ -125,7 +155,8 @@ class _BleedRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [Text(range, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)), Text('${span.length} Days', style: AppText.sans(9.5, c: AppColors.muted))],
           ),
-          tag.$2 ? AppTag.pink(tag.$1) : AppTag(tag.$1),
+          const SizedBox(width: 8),
+          Flexible(child: Align(alignment: Alignment.centerRight, child: AppTag(tag.$1, bg: tag.$2, fg: tag.$3))),
         ],
       ),
     );

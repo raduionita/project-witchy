@@ -34,7 +34,7 @@ ThemeData buildAppTheme({Brightness brightness = Brightness.light}) {
       ),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.navBar,
       selectedItemColor: AppColors.pur,
       unselectedItemColor: AppColors.navInactive,
       type: BottomNavigationBarType.fixed,

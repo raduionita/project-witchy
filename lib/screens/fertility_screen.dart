@@ -46,7 +46,7 @@ class FertilityScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
           const SizedBox(height: 8),
-          CycleOrb(day: '$cycleDay', phase: ovuToday ? 'Peak Day' : 'Peak in $daysToOvu d'),
+          CycleOrb(day: '$cycleDay', phase: ovuToday ? 'Peak Day' : 'Peak in $daysToOvu Days', progress: cycleDay / cycle.effectiveCycleLength),
           const SizedBox(height: 12),
           Row(
             children: [

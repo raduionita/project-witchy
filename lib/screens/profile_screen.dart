@@ -17,6 +17,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_icons.dart';
 import '../widgets/settings_row.dart';
+import '../widgets/app_tag.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/app_avatar.dart';
 import '../widgets/app_button.dart';
@@ -39,7 +40,7 @@ class ProfileScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('What shall we track?', style: AppText.secIn),
+              Text('Tracking Modes', style: AppText.secIn),
               const SizedBox(height: 4),
               Text('Toggle every mode you track - they can all be active at once.', style: AppText.sans(11, c: AppColors.muted)),
               const SizedBox(height: 12),
@@ -54,6 +55,67 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _pickReminderTime(BuildContext context, int index) async {
+    final bells = context.read<RemindersProvider>();
+    final item = bells.items[index];
+    final parsed = _parseTime(item.time);
+    final picked = await showTimePicker(context: context, initialTime: parsed);
+    if (picked == null || !context.mounted) return;
+    final label = picked.hourOfPeriod == 0 ? 12 : picked.hourOfPeriod;
+    final suffix = picked.period == DayPeriod.am ? 'AM' : 'PM';
+    final formatted = '${label.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')} $suffix';
+    bells.setTime(index, formatted);
+    try {
+      final cycle = context.read<CycleProvider>();
+      await NotificationService.syncReminder(
+        bells.items[index],
+        predictedStart: cycle.nextPeriodStart(),
+        fertileStart: cycle.fertileWindowStart(),
+        bleedLength: cycle.bleedLength,
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update reminder: $e')));
+      }
+    }
+  }
+
+  static TimeOfDay _parseTime(String raw) {
+    final match = RegExp(r'(\d{1,2}):(\d{2})\s*(AM|PM)', caseSensitive: false).firstMatch(raw);
+    if (match == null) return const TimeOfDay(hour: 9, minute: 0);
+    var h = int.parse(match.group(1)!);
+    final m = int.parse(match.group(2)!);
+    final pm = match.group(3)!.toUpperCase() == 'PM';
+    if (pm && h != 12) h += 12;
+    if (!pm && h == 12) h = 0;
+    return TimeOfDay(hour: h, minute: m);
+  }
+
+  Future<void> _pickReminderFrequency(BuildContext context, int index) async {
+    const options = [
+      'Every day',
+      'Each bleed day',
+      'Window start',
+      '3 days prior',
+      'Hourly · 8 AM - 8 PM',
+    ];
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => SimpleDialog(
+        title: Text('Frequency', style: AppText.serif(15)),
+        children: [
+          for (final option in options)
+            SimpleDialogOption(
+              onPressed: () => Navigator.of(dialogContext).pop(option),
+              child: Text(option, style: AppText.sans(13, c: AppColors.ink)),
+            ),
+        ],
+      ),
+    );
+    if (selected == null || !context.mounted) return;
+    context.read<RemindersProvider>().setFrequency(index, selected);
   }
 
   Future<void> _confirmSignOut(BuildContext context) async {
@@ -174,6 +236,10 @@ class ProfileScreen extends StatelessWidget {
                         ? AppText.sans(9, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.2)
                         : AppText.sans(10, c: AppColors.muted),
               ),
+              if (email == null || email.isEmpty) ...[
+                const SizedBox(height: 4),
+                Text('Data stored on this device only', style: AppText.sans(10, c: AppColors.muted)),
+              ],
             ],
           ),
           const SizedBox(height: 12),
@@ -182,10 +248,23 @@ class ProfileScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Cycle Averages', style: AppText.secIn),
-                SettingsRow(label: 'Average Cycle Length', trailing: Text(meanCycle == null ? '—' : '${meanCycle.toStringAsFixed(0)} Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted)), first: true),
+                SettingsRow(
+                  label: 'Average Cycle Length',
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (cycle.isCycleLengthAuto) ...[
+                        AppTag.gold('Calculated'),
+                        const SizedBox(width: 6),
+                      ],
+                      Text(meanCycle == null ? '—' : '${meanCycle.round()} Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted)),
+                    ],
+                  ),
+                  first: true,
+                ),
                 SettingsRow(label: 'Bleeding Phase Length', trailing: Text('${cycle.bleedLength} Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted))),
                 SettingsRow(
-                  label: 'Tracking Mode',
+                  label: 'Tracking Modes',
                   trailing: MouseRegion(
                     cursor: SystemMouseCursors.click,
                     child: GestureDetector(
@@ -297,8 +376,26 @@ class ProfileScreen extends StatelessWidget {
                   if (bells.items[i].enabled) ...[
                     const SizedBox(height: 8),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [InfoPill(icon: AppIcons.clock, label: bells.items[i].time), InfoPill(icon: AppIcons.spark, label: bells.items[i].freq)],
+                      children: [
+                        // Hourly bells ignore the time field; show frequency only.
+                        if (!NotificationService.isHourly(bells.items[i])) ...[
+                          MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: () => _pickReminderTime(context, i),
+                              child: InfoPill(icon: AppIcons.clock, label: bells.items[i].time),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () => _pickReminderFrequency(context, i),
+                            child: InfoPill(icon: bells.items[i].icon, label: bells.items[i].freq),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ],
@@ -313,7 +410,7 @@ class ProfileScreen extends StatelessWidget {
                 Text('Session', style: AppText.secIn),
                 const SizedBox(height: 10),
                 AppButton(
-                  label: 'Sign Out',
+                  label: (email == null || email.isEmpty) ? 'Switch Account' : 'Sign Out',
                   onTap: () => _confirmSignOut(context),
                 ),
                 const SizedBox(height: 10),

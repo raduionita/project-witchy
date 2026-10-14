@@ -10,7 +10,7 @@ class AppTag extends StatelessWidget {
       : bg = bg ?? AppColors.lav,
         fg = fg ?? AppColors.purDark;
   factory AppTag.pink(String l) => AppTag(l, bg: AppColors.pinkBg, fg: AppColors.pinkDark);
-  factory AppTag.gold(String l) => AppTag(l, bg: const Color(0x29D9A036), fg: AppColors.gold);
+  factory AppTag.gold(String l) => AppTag(l, bg: AppColors.goldBg, fg: AppColors.readableOn(AppColors.gold, AppColors.goldBg));
 
   @override
   Widget build(BuildContext context) {

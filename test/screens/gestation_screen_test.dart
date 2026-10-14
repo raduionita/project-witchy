@@ -40,7 +40,7 @@ void main() {
     expect(find.text('Apple Size'), findsOneWidget);
     expect(find.text('Pregnancy Tips'), findsOneWidget);
     expect(find.text('Set last period date'), findsNothing);
-    expect(find.text('Last bleeding phase'), findsOneWidget);
+    expect(find.text('Last period'), findsOneWidget);
   });
 
   testWidgets('LMP row is tappable and keeps the screen alive', (tester) async {

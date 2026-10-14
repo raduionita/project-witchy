@@ -32,7 +32,7 @@ class NotificationService {
   static const List<int> _daytimeHours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
   /// Freq labels that resolve to absolute one-shot dates instead of a daily repeat.
-  static const Set<String> oneShotFreqs = {'Daily during peak', 'Window start', '3 days prior'};
+  static const Set<String> oneShotFreqs = {'Daily during peak', 'Each bleed day', 'Window start', '3 days prior'};
 
   /// How far one-shot ids are retracted around resync so stale bells disappear.
   static const int _oneShotCancelBack = 7;
@@ -77,6 +77,9 @@ class NotificationService {
 
   static bool isOneShotFreq(String freq) => oneShotFreqs.contains(freq);
 
+  /// Hourly bells: either the legacy time label or a freq that starts with Hourly.
+  static bool isHourly(ReminderItem item) => item.time.trim().toLowerCase() == 'hourly' || item.freq.trim().toLowerCase().startsWith('hourly');
+
   /// Pure mapping of bells to schedule specs; never calls the plugin.
   /// Cycle anchors drive the one-shot freqs; [now] is injectable for tests.
   static List<BellSpec> buildNotificationRequests(
@@ -90,7 +93,7 @@ class NotificationService {
     final specs = <BellSpec>[];
     for (final item in items) {
       if (!item.enabled) continue;
-      final minute = item.time.trim().toLowerCase() == 'hourly' ? 0 : _parseTime(item.time).$2;
+      final minute = isHourly(item) ? 0 : _parseTime(item.time).$2;
       if (isOneShotFreq(item.freq)) {
         final days = _oneShotDates(item.freq, today: today, predictedStart: predictedStart, fertileStart: fertileStart, bleedLength: bleedLength);
         if (days.isEmpty) continue;
@@ -129,7 +132,7 @@ class NotificationService {
     int? bleedLength,
   }) {
     final List<DateTime> raw;
-    if (freq == 'Daily during peak') {
+    if (freq == 'Daily during peak' || freq == 'Each bleed day') {
       if (predictedStart == null || bleedLength == null) return const [];
       raw = [for (var i = 0; i < bleedLength; i++) _dateOnly(predictedStart.add(Duration(days: i)))];
     } else if (freq == 'Window start') {
@@ -143,7 +146,7 @@ class NotificationService {
   }
 
   /// Fire hours for a bell: daytime window when 'Hourly', else its stated time.
-  static List<int> hoursFor(ReminderItem item) => item.time.trim().toLowerCase() == 'hourly' ? _daytimeHours : [_parseTime(item.time).$1];
+  static List<int> hoursFor(ReminderItem item) => isHourly(item) ? _daytimeHours : [_parseTime(item.time).$1];
 
   /// Deterministic per title+hour so schedule and cancel always target the same id.
   static int idAtHour(String title, int hour) => (idForTitle(title) + hour * 97) & 0x7fffffff;

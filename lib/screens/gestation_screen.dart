@@ -120,7 +120,7 @@ class GestationScreen extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Last bleeding phase', style: AppText.sans(11, c: AppColors.muted)),
+                  Text('Last period', style: AppText.sans(11, c: AppColors.muted)),
                   const SizedBox(height: 3),
                   Text(DateFormat('MMMM d, yyyy').format(g.lmpDate!), style: AppText.serif(14)),
                 ],

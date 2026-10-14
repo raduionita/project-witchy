@@ -61,7 +61,7 @@ void main() {
 
   testWidgets('CalendarLegend lists every marker type', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: Scaffold(body: CalendarLegend())));
-    for (final label in ['period', 'predicted', 'fertile', 'ovulation', 'logged']) {
+    for (final label in ['Period', 'Predicted', 'Fertile', 'Ovulation', 'Logged']) {
       expect(find.text(label), findsOneWidget);
     }
   });
@@ -180,7 +180,7 @@ void main() {
 
     await tester.tap(find.text('Calendar'));
     await tester.pumpAndSettle();
-    expect(find.text('predicted'), findsOneWidget);
+    expect(find.text('Predicted'), findsOneWidget);
 
     final now = DateTime.now();
     final monthLabel = DateFormat('MMMM yyyy').format(DateTime(now.year, now.month, 1));
@@ -190,5 +190,58 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('${now.year}'), findsOneWidget);
     expect(find.text('Jan'), findsOneWidget);
+  });
+
+  testWidgets('selected day entry pins above newer logs without duplicating', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'witchy_onboarded': true,
+      'witchy_privacy_accepted': true,
+      'witchy_session': jsonEncode({'method': 'local'}),
+    });
+    final semantics = tester.ensureSemantics();
+    final prefs = PrefsService();
+    final onboarding = await OnboardingProvider.load(prefs);
+    final logging = await LoggingProvider.load(prefs);
+    final now = DateTime.now();
+    final prev = DateTime(now.year, now.month - 1, 1);
+    final older = DateTime(prev.year, prev.month, 5);
+    final newer = DateTime(prev.year, prev.month, 20);
+    logging.setFlow(older, 'Medium');
+    logging.setFlow(newer, 'Medium');
+    await tester.pumpWidget(
+      App(
+        prefs: prefs,
+        auth: await AuthProvider.load(prefs),
+        onboarding: onboarding,
+        logging: logging,
+        settings: await SettingsProvider.load(prefs),
+        reminders: await RemindersProvider.load(prefs),
+        cycle: CycleProvider(onboarding, logging),
+        alerts: await AlertProvider.load(prefs),
+        gestation: await GestationProvider.load(prefs),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Calendar'));
+    await tester.pumpAndSettle();
+    // Navigate to the previous month where both seeded logs live.
+    await tester.tap(find.byIcon(Icons.chevron_left));
+    await tester.pumpAndSettle();
+
+    // Select the older day; a log sheet opens and is dismissed via the barrier.
+    // Cell labels carry suffixes (today/selected/logged), so match the weekday prefix.
+    final cellPrefix = RegExp('^${RegExp.escape(DateFormat('EEEE, MMMM d').format(older))}');
+    await tester.tap(find.bySemanticsLabel(cellPrefix));
+    await tester.pumpAndSettle();
+    semantics.dispose();
+    await tester.tapAt(const Offset(400, 80));
+    await tester.pumpAndSettle();
+
+    final olderStr = DateFormat('MMMM d, yyyy').format(older);
+    final newerStr = DateFormat('MMMM d, yyyy').format(newer);
+    expect(find.text(olderStr), findsOneWidget);
+    expect(find.text(newerStr), findsOneWidget);
+    expect(tester.getTopLeft(find.text(olderStr)).dy, lessThan(tester.getTopLeft(find.text(newerStr)).dy));
   });
 }

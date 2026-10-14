@@ -52,7 +52,7 @@ void main() {
     expect(find.text('Irregularity'), findsOneWidget);
     expect(find.text('28–35 Days'), findsOneWidget);
     expect(find.text('Shortest to longest cycle'), findsOneWidget);
-    expect(find.text('7 Days variation'), findsOneWidget);
+    expect(find.text('Regular · 7 Days'), findsOneWidget);
     expect(find.text('Log two completed cycles to see your spread.'), findsNothing);
   });
 }

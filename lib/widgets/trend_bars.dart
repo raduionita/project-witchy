@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
-/// Bar chart of observed cycle lengths. Renders an empty-state hint until
-/// at least two completed cycles are logged.
+/// Bar chart of observed cycle lengths (days). Zero-based scale so an
+/// outlier long cycle cannot visually flatten the rest. Renders an empty-state
+/// hint until at least two completed cycles are logged.
 class TrendBars extends StatelessWidget {
   final List<double> values;
   final List<String> labels;
@@ -21,18 +22,13 @@ class TrendBars extends StatelessWidget {
         ),
       );
     }
-    final lo = values.reduce((a, b) => a < b ? a : b);
     final hi = values.reduce((a, b) => a > b ? a : b);
-    final span = hi - lo;
-    // Pad the range so differing lengths stay visually distinguishable.
-    final pad = span < 2 ? 1.0 : span * 0.2;
-    final minY = span < 2 ? lo - 1 : lo - pad;
-    final maxY = span < 2 ? hi + 1 : hi + pad;
+    final maxY = hi + (hi * 0.12).clamp(1.0, 8.0);
     return SizedBox(
-      height: 112,
+      height: 128,
       child: BarChart(
         BarChartData(
-          minY: minY,
+          minY: 0,
           maxY: maxY,
           barGroups: [
             for (var i = 0; i < values.length; i++)
@@ -47,7 +43,17 @@ class TrendBars extends StatelessWidget {
           borderData: FlBorderData(show: false),
           barTouchData: const BarTouchData(enabled: false),
           titlesData: FlTitlesData(
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 18,
+                getTitlesWidget: (value, meta) {
+                  final i = value.toInt();
+                  if (i < 0 || i >= values.length) return const SizedBox.shrink();
+                  return Padding(padding: const EdgeInsets.only(bottom: 4), child: Text('${values[i].round()}', style: AppText.sans(9, w: FontWeight.w600, c: AppColors.ink)));
+                },
+              ),
+            ),
             rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             bottomTitles: AxisTitles(

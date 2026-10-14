@@ -28,7 +28,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final unread = context.watch<AlertProvider>().unreadCount > 0;
     return Scaffold(
-      appBar: AppTopBar(title: titles[index], leading: AppIcons.user, onLeading: () => context.go('/profile'), action: AppIcons.alerts, onAction: () => context.go('/alerts'), badge: unread),
+      appBar: AppTopBar(title: titles[index], leading: AppIcons.user, leadingTooltip: 'Profile', onLeading: () => context.go('/profile'), action: AppIcons.alerts, actionTooltip: 'Alerts', onAction: () => context.go('/alerts'), badge: unread),
       body: IndexedStack(index: index, children: const [SanctuaryScreen(), CycleScreen(), RecordsScreen(), CovenScreen()]),
       floatingActionButton:
           index == 3

@@ -46,7 +46,11 @@ class AlertProvider extends ChangeNotifier {
       if (!merged.any((a) => a.id == fresh.id)) merged.add(fresh);
     }
     merged.removeWhere((a) => a.eventDate.isBefore(today));
-    merged.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    // Upcoming events first; same-day ties break by newest generation time.
+    merged.sort((a, b) {
+      final byEvent = b.eventDate.compareTo(a.eventDate);
+      return byEvent != 0 ? byEvent : b.createdAt.compareTo(a.createdAt);
+    });
     final capped = merged.length > _maxItems ? merged.sublist(0, _maxItems) : merged;
 
     final before = [for (final a in _items) a.id];
@@ -77,6 +81,27 @@ class AlertProvider extends ChangeNotifier {
       notifyListeners();
       _save();
     }
+  }
+
+  void dismiss(String id) {
+    final before = _items.length;
+    _items.removeWhere((a) => a.id == id);
+    if (_items.length != before) {
+      notifyListeners();
+      _save();
+    }
+  }
+
+  /// Re-inserts a dismissed alert (undo), keeping event-date order.
+  void restore(AlertItem item) {
+    if (_items.any((a) => a.id == item.id)) return;
+    _items.add(item);
+    _items.sort((a, b) {
+      final byEvent = b.eventDate.compareTo(a.eventDate);
+      return byEvent != 0 ? byEvent : b.createdAt.compareTo(a.createdAt);
+    });
+    notifyListeners();
+    _save();
   }
 
   void _save() => _prefs.saveAlertItems(_items);

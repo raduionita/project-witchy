@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/models/day_log.dart';
@@ -146,6 +148,24 @@ void main() {
 
     final reloaded = await RemindersProvider.load(prefs);
     expect(reloaded.items[0].enabled, !initial);
+  });
+
+  test('RemindersProvider time and frequency survive reload', () async {
+    final reminders = await RemindersProvider.load(prefs);
+    reminders.setTime(1, '07:15 AM');
+    reminders.setFrequency(1, '3 days prior');
+    await pumpEventQueue();
+
+    final reloaded = await RemindersProvider.load(prefs);
+    expect(reloaded.items[1].time, '07:15 AM');
+    expect(reloaded.items[1].freq, '3 days prior');
+  });
+
+  test('legacy bool-only reminder states still load', () async {
+    final sp = await SharedPreferences.getInstance();
+    await sp.setString('witchy_reminders', jsonEncode({'Period Reminder': false}));
+    final reloaded = await RemindersProvider.load(prefs);
+    expect(reloaded.items.firstWhere((i) => i.title == 'Period Reminder').enabled, isFalse);
   });
 
   test('session save/restore/clear round-trip', () async {

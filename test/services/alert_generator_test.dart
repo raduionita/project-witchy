@@ -116,15 +116,11 @@ void main() {
       expect([for (final x in a) x.id], [for (final x in b) x.id]);
     });
 
-    test('perimenopause ovulation day fires the hedged window alert', () {
-      // Raw ovulation is start + 13 days but the peak alert gate is suppressed.
+    test('perimenopause-only mode emits no fertility alerts', () {
+      // Fertility alerts follow the same cycle-mode gate as the calendar.
       final s = buildPeri(now.subtract(const Duration(days: 13)));
-      expect(s.cycle.isOvulationDay(DateTime(2026, 10, 9)), isFalse);
       final out = AlertGenerator.generate(cycle: s.cycle, logging: s.logging, now: now);
-      final alert = out.where((a) => a.type == AlertType.fertileWindow).single;
-      expect(alert.title, 'Fertility Window');
-      expect(alert.body, contains('may open as early as today'));
-      expect(alert.id, 'fertile-2026-10-09');
+      expect(out.where((a) => a.type == AlertType.fertileWindow), isEmpty);
     });
 
     test('perimenopause stays quiet outside the raw ovulation day', () {

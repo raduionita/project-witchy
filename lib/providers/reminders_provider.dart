@@ -12,11 +12,17 @@ class RemindersProvider extends ChangeNotifier {
 
   static Future<RemindersProvider> load(PrefsService prefs) async {
     final items = MockData.reminders();
-    final states = await prefs.reminderStates();
-    if (states != null) {
+    final configs = await prefs.reminderConfigs();
+    if (configs != null) {
       for (final item in items) {
-        final enabled = states[item.title];
-        if (enabled != null) item.enabled = enabled;
+        final c = configs[item.title];
+        if (c is bool) {
+          item.enabled = c;
+        } else if (c is Map) {
+          item.enabled = (c['enabled'] as bool?) ?? item.enabled;
+          item.time = (c['time'] as String?) ?? item.time;
+          item.freq = (c['freq'] as String?) ?? item.freq;
+        }
       }
     }
     return RemindersProvider(prefs, items: items);
@@ -28,7 +34,22 @@ class RemindersProvider extends ChangeNotifier {
     _save();
   }
 
-  void _save() => _prefs.saveReminderStates({for (final item in items) item.title: item.enabled});
+  void setTime(int i, String time) {
+    items[i].time = time;
+    notifyListeners();
+    _save();
+  }
+
+  void setFrequency(int i, String freq) {
+    items[i].freq = freq;
+    notifyListeners();
+    _save();
+  }
+
+  void _save() => _prefs.saveReminderConfigs({
+        for (final item in items)
+          item.title: {'enabled': item.enabled, 'time': item.time, 'freq': item.freq},
+      });
 
   /// In-memory reset after Delete All Data (prefs already wiped).
   void resetToDefaults() {

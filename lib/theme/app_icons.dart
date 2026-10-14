@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 /// Mock icon scale from `resources/Qwen_html_*.html` (`.ic`, `.ic.s`, …).
@@ -22,8 +23,9 @@ abstract final class AppIcons {
   static const check = FontAwesomeIcons.check; // i-check (solid-only)
   static const plus = FontAwesomeIcons.plus; // i-plus (solid-only)
   static const back = FontAwesomeIcons.solidHandPointLeft; // i-cl (solid-only)
-  static const left = FontAwesomeIcons.chevronLeft; // i-cr (solid-only)
-  static const right = FontAwesomeIcons.chevronRight; // i-cr (solid-only)
+  // Material glyphs: FA chevron/chart/pregnancy render as tofu on web builds.
+  static const left = Icons.chevron_left;
+  static const right = Icons.chevron_right;
   static const arrow = FontAwesomeIcons.arrowLeft;
   static const gear = FontAwesomeIcons.gear; // i-gear (solid-only)
   static const cancel = FontAwesomeIcons.xmark; // sheet cancel (solid-only)
@@ -38,11 +40,12 @@ abstract final class AppIcons {
 
   // actions / content
   static const quill = FontAwesomeIcons.feather; // i-quill (solid-only); FAB uses assets/icons/quill.svg; FAB uses assets/icons/quill.svg
-  static const chart = FontAwesomeIcons.chartSimple; // i-chart (regular outline)
+  static const chart = Icons.insights; // i-chart (regular outline)
   static const pulse = FontAwesomeIcons.solidFaceSadTear; // i-pulse
   static const magic = FontAwesomeIcons.wandMagic; // i-magic (solid-only)
   static const heart = FontAwesomeIcons.solidHeart; // i-heart (regular outline)
   static const drop = FontAwesomeIcons.droplet; // i-drop (solid-only)
+  static const pregnancy = Icons.pregnant_woman;
   static const thermometer = FontAwesomeIcons.thermometer; // BBT reading
   static const note = FontAwesomeIcons.solidFileLines; // i-note (regular outline)
   static const leaf = FontAwesomeIcons.leaf; // i-leaf (solid-only)

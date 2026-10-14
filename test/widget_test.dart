@@ -120,7 +120,7 @@ void main() {
     await tester.tap(find.byType(IconButton).first);
     await tester.pumpAndSettle();
     expect(find.text('Profile'), findsOneWidget);
-    expect(find.text('Tracking Mode'), findsOneWidget);
+    expect(find.text('Tracking Modes'), findsOneWidget);
     expect(find.text('Cycle, Pregnancy'), findsOneWidget);
     // Pregnancy in the set exposes the pregnancy tracker entry point.
     expect(find.text('Pregnancy Tracker'), findsOneWidget);

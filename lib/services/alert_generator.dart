@@ -36,28 +36,36 @@ class AlertGenerator {
       );
     }
 
-    if (cycle.isOvulationDay(today)) {
-      out.add(
-        AlertItem(
-          id: 'fertile-${_dateKey(today)}',
-          type: AlertType.fertileWindow,
-          title: 'Fertility Window Peak',
-          body: 'Your fertility peaks today. High chance of ovulation.',
-          createdAt: now,
-          eventDate: today,
-        ),
-      );
-    } else if (cycle.isPerimenopause && cycle.ovulationDay(today: now) == today) {
-      out.add(
-        AlertItem(
-          id: 'fertile-${_dateKey(today)}',
-          type: AlertType.fertileWindow,
-          title: 'Fertility Window',
-          body: 'Your fertility window may open as early as today. Timing can shift in perimenopause.',
-          createdAt: now,
-          eventDate: today,
-        ),
-      );
+    // Fertility copy follows the same gated cycle logic as the calendar.
+    // Peak fires on ovulation day; window-start fires when the fertile range opens.
+    if (cycle.showFertilityPredictions) {
+      if (cycle.isOvulationDay(today)) {
+        out.add(
+          AlertItem(
+            id: 'fertile-${_dateKey(today)}',
+            type: AlertType.fertileWindow,
+            title: 'Fertility Window Peak',
+            body: cycle.isPerimenopause
+                ? 'Your fertility may peak around today. Timing can shift in perimenopause.'
+                : 'Your fertility peaks today. High chance of ovulation.',
+            createdAt: now,
+            eventDate: today,
+          ),
+        );
+      } else if (cycle.isFertileDay(today) && cycle.daysUntilOvulation(today: now) == 2) {
+        out.add(
+          AlertItem(
+            id: 'fertile-start-${_dateKey(today)}',
+            type: AlertType.fertileWindow,
+            title: 'Fertility Window',
+            body: cycle.isPerimenopause
+                ? 'Your fertile window may be open today. Timing can shift in perimenopause.'
+                : 'Your fertile window opens today. Odds of conception rise over the next few days.',
+            createdAt: now,
+            eventDate: today,
+          ),
+        );
+      }
     }
 
     if (now.hour >= 18 && !logging.hasLog(today)) {
@@ -89,8 +97,8 @@ class AlertGenerator {
       return AlertItem(
         id: 'moon-new-${_dateKey(today)}',
         type: AlertType.lunarMilestone,
-        title: 'Cycle Start',
-        body: 'A new cycle begins. A good day to reset your tracking.',
+        title: 'New Moon',
+        body: 'A new moon tonight - a gentle reset for your tracking rhythm.',
         createdAt: now,
         eventDate: today,
       );
@@ -99,8 +107,8 @@ class AlertGenerator {
       return AlertItem(
         id: 'moon-full-${_dateKey(today)}',
         type: AlertType.lunarMilestone,
-        title: 'Ovulation Window',
-        body: 'Ovulation is near. A good window to log symptoms and temperature.',
+        title: 'Full Moon',
+        body: 'Full moon tonight. A good evening to log symptoms and temperature.',
         createdAt: now,
         eventDate: today,
       );

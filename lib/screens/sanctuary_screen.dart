@@ -11,6 +11,7 @@ import '../providers/cycle_provider.dart';
 import '../providers/logging_provider.dart';
 import '../services/cycle_calculator.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_dims.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_icons.dart';
 import '../widgets/log_bottom_sheet.dart';
@@ -195,11 +196,12 @@ class SanctuaryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final now = DateTime.now();
+    final dayNum = cycle.cycleDay(today: now);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, AppDims.fabClearance),
       children: [
         const SizedBox(height: 8),
-        CycleOrb(day: '${cycle.cycleDay(today: now)}', phase: cycle.phase(today: now).label),
+        CycleOrb(day: '$dayNum', phase: cycle.phase(today: now).label, progress: dayNum / cycle.effectiveCycleLength),
         const SizedBox(height: 12),
         _buildStatsRow(context),
         const SizedBox(height: 12),

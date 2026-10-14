@@ -19,8 +19,10 @@ class StatCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label.toUpperCase(), style: AppText.sans(8.5, w: FontWeight.w700, c: AppColors.muted).copyWith(letterSpacing: 1.0)),
-        const SizedBox(height: 3),
+        if (label.isNotEmpty) ...[
+          Text(label.toUpperCase(), style: AppText.sans(8.5, w: FontWeight.w700, c: AppColors.muted).copyWith(letterSpacing: 1.0)),
+          const SizedBox(height: 3),
+        ],
         Text(value, style: AppText.serif(19, c: valueColor)),
         const SizedBox(height: 1),
         Text(sub, style: AppText.sans(10, c: AppColors.muted)),

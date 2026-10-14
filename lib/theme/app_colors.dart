@@ -22,16 +22,19 @@ abstract final class AppColors {
   static Color get fieldBg => _t(const Color(0xFFFAF6FD), const Color(0xFF2A0F45));
   static Color get sectionTitle => _t(const Color(0xFF3F2B52), const Color(0xFFD9C2EC));
   static Color get chipText => _t(const Color(0xFF5D4A70), const Color(0xFFC7B7D6));
-  static Color get navInactive => _t(const Color(0xFFA795B8), const Color(0xFF9B8DAA));
+  static Color get navInactive => _t(const Color(0xFF7A6A8C), const Color(0xFF9B8DAA));
   static Color get placeholder => _t(const Color(0xFFB4A6C2), const Color(0xFF6E5F7E));
   static Color get fertileBg => _t(const Color(0xFFEBDCF7), const Color(0xFF3A1A55));
   static Color get fertileText => _t(const Color(0xFF6B21A8), const Color(0xFFD8B4FE));
   static Color get pinkBg => _t(const Color(0xFFFCE7EF), const Color(0xFF3E1226));
-  static Color get pinkDark => _t(const Color(0xFFC2336B), const Color(0xFF7BA3FF));
+  static Color get pinkDark => _t(const Color(0xFFC2336B), const Color(0xFFFF7AA8));
   static Color get goldBg => _t(const Color(0xFFF8EED9), const Color(0xFF3D2E12));
   static Color get blueBg => _t(const Color(0xFFE3EEF9), const Color(0xFF16283F));
   static Color get tabBg => _t(const Color(0xFFEFE6F6), const Color(0xFF2E1145));
   static Color get tabText => _t(const Color(0xFF6B5B7D), const Color(0xFFC7B7D6));
+  static Color get navBar => _t(const Color(0xFFFFFFFF), const Color(0xFF26063F));
+  static Color get chipBg => _t(const Color(0xFFFFFFFF), const Color(0xFF321252));
+  static Color get pillBg => _t(const Color(0xFFF6EEFB), const Color(0xFF3A1A55));
 
   static const plum = Color(0xFF3B0A5E);
   static const plum2 = Color(0xFF26063F);

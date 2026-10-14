@@ -40,21 +40,27 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
     await context.read<AuthProvider>().markLocalSession();
     if (!mounted) return;
     // Seed the picked start date and any earlier periods as real bleed spans so
-    // PeriodHistory derives true cycle lengths from day one.
+    // PeriodHistory derives true cycle lengths from day one. Days are collected
+    // into a set first so overlapping spans never double-log a date.
     final logging = context.read<LoggingProvider>();
     final bleedLength = onboarding.bleedLength;
     final today = DateTime.now();
-    void seed(DateTime start) {
+    final days = <DateTime>{};
+    void collect(DateTime start) {
       if (start.isAfter(today)) return;
       for (var i = 0; i < bleedLength; i++) {
-        logging.setFlow(DateTime(start.year, start.month, start.day + i), 'Medium');
+        days.add(DateTime(start.year, start.month, start.day + i));
       }
     }
 
     final picked = onboarding.pickedDate;
-    if (picked != null) seed(picked);
+    if (picked != null) collect(picked);
     for (final previous in List<DateTime>.of(onboarding.previousPeriodStarts)) {
-      seed(previous);
+      collect(previous);
+    }
+    for (final day in days) {
+      if (day.isAfter(today)) continue;
+      logging.setFlow(day, 'Medium');
     }
     // Pregnancy tracker stays decoupled: its LMP is set on the pregnancy screen
     // itself, never auto-seeded from the cycle anchor.
@@ -88,6 +94,8 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
                     const _CycleLengthCard(),
                     const SizedBox(height: 12),
                     const _BleedLengthCard(),
+                    // Keep the last card clear of the sticky Get Started button.
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -135,7 +143,7 @@ class _TrackingModeCard extends StatelessWidget {
   }
 }
 
-/// Year-of-birth dropdown; preselected with the provider default (now − 25).
+/// Year-of-birth row; the dropdown shows the only year value (no duplicate label text).
 class _YearOfBirthCard extends StatelessWidget {
   const _YearOfBirthCard();
   @override
@@ -147,19 +155,12 @@ class _YearOfBirthCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Year of Birth', style: AppText.sans(11, c: AppColors.muted)),
-              const SizedBox(height: 3),
-              Text(year?.toString() ?? 'Select year', style: AppText.serif(14, c: year == null ? AppColors.placeholder : AppColors.ink)),
-            ],
-          ),
+          Text('Year of Birth', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)),
           DropdownButtonHideUnderline(
             child: DropdownButton<int>(
               value: year,
               isDense: true,
-              hint: Text('Year', style: AppText.sans(11, c: AppColors.placeholder)),
+              hint: Text('Select year', style: AppText.sans(12, c: AppColors.placeholder)),
               items: [
                 for (var y = nowYear; y >= nowYear - 100; y--)
                   DropdownMenuItem(value: y, child: Text('$y', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.ink))),
@@ -192,7 +193,7 @@ class _LastBleedDateCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Last bleeding phase', style: AppText.sans(11, c: AppColors.muted)),
+                  Text('Last period', style: AppText.sans(11, c: AppColors.muted)),
                   const SizedBox(height: 3),
                   Text(date == null ? 'Pick a date' : DateFormat('MMMM d, yyyy').format(date), style: AppText.serif(14, c: date == null ? AppColors.placeholder : AppColors.ink)),
                 ],
@@ -211,6 +212,10 @@ class _LastBleedDateCard extends StatelessWidget {
 class _PastPeriodsCard extends StatelessWidget {
   const _PastPeriodsCard();
 
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), behavior: SnackBarBehavior.floating));
+  }
+
   Future<void> _add(BuildContext context) async {
     final ob = context.read<OnboardingProvider>();
     final picked = await showDatePicker(
@@ -220,9 +225,29 @@ class _PastPeriodsCard extends StatelessWidget {
       lastDate: DateTime.now(),
     );
     if (picked == null || !context.mounted) return;
-    ob.addPreviousPeriod(picked);
+    if (!ob.addPreviousPeriod(picked)) {
+      _showError(context, ob.lastValidationError ?? 'Could not add that date.');
+      return;
+    }
     final derived = ob.deriveCycleLengthFromHistory();
-    if (derived != null) ob.setCycle(derived);
+    if (derived != null) ob.setCycle(derived, fromHistory: true);
+  }
+
+  Future<void> _edit(BuildContext context, DateTime existing) async {
+    final ob = context.read<OnboardingProvider>();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: existing,
+      firstDate: DateTime(DateTime.now().year - 2),
+      lastDate: DateTime.now(),
+    );
+    if (picked == null || !context.mounted) return;
+    if (!ob.replacePreviousPeriod(existing, picked)) {
+      _showError(context, ob.lastValidationError ?? 'Could not update that date.');
+      return;
+    }
+    final derived = ob.deriveCycleLengthFromHistory();
+    if (derived != null) ob.setCycle(derived, fromHistory: true);
   }
 
   @override
@@ -233,10 +258,16 @@ class _PastPeriodsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Recent periods', style: AppText.secIn),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Recent periods', style: AppText.secIn),
+              Text('${entries.length} of ${OnboardingProvider.maxPreviousPeriods}', style: AppText.sans(10, c: AppColors.muted)),
+            ],
+          ),
           const SizedBox(height: 4),
           Text(
-            'Add the start date of each earlier period. Two or more dates let us match your real cycle length.',
+            'Add the start date of each earlier period. Two or more dates let us match your real cycle length. Keep at least ${OnboardingProvider.minGapDays} days between dates.',
             style: AppText.sans(10.5, c: AppColors.muted, h: 1.45),
           ),
           if (entries.isNotEmpty) ...[
@@ -247,11 +278,19 @@ class _PastPeriodsCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(DateFormat('MMMM d, yyyy').format(d), style: AppText.sans(11.5, w: FontWeight.w600, c: AppColors.ink)),
+                    Expanded(
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () => _edit(context, d),
+                          child: Text(DateFormat('MMMM d, yyyy').format(d), style: AppText.sans(11.5, w: FontWeight.w600, c: AppColors.ink)),
+                        ),
+                      ),
+                    ),
                     IconButton(
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                       icon: FaIcon(FontAwesomeIcons.xmark, size: 12, color: AppColors.muted),
                       tooltip: 'Remove',
                       onPressed: () => context.read<OnboardingProvider>().removePreviousPeriod(d),
@@ -261,17 +300,13 @@ class _PastPeriodsCard extends StatelessWidget {
               ),
           ],
           const SizedBox(height: 4),
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () => _add(context),
-              child: Row(
-                children: [
-                  FaIcon(FontAwesomeIcons.plus, size: 11, color: AppColors.pur),
-                  const SizedBox(width: 6),
-                  Text('+ Add another period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
-                ],
-              ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => _add(context),
+              style: TextButton.styleFrom(foregroundColor: AppColors.pur, padding: const EdgeInsets.symmetric(horizontal: 4), minimumSize: const Size(48, 36), tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+              icon: FaIcon(FontAwesomeIcons.plus, size: 11, color: AppColors.pur),
+              label: Text('Add another period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
             ),
           ),
         ],
@@ -293,6 +328,7 @@ class _CycleLengthCard extends StatelessWidget {
         max: 40,
         current: ob.cycleLength.toDouble(),
         onChanged: (v) => context.read<OnboardingProvider>().setCycle(v.round()),
+        hint: ob.cycleLengthFromHistory ? 'Calculated from your dates - adjust freely' : null,
       ),
     );
   }

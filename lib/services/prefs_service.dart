@@ -115,13 +115,21 @@ class PrefsService {
     await p.remove('witchy_share_symptoms');
   }
 
-  Future<Map<String, bool>?> reminderStates() async {
+  /// Extended reminder persistence: enabled + time + frequency per title.
+  /// Older installs may hold a bool-only map under the same key; accept both.
+  Future<Map<String, dynamic>?> reminderConfigs() async {
     final raw = (await SharedPreferences.getInstance()).getString(_reminders);
     if (raw == null) return null;
-    return (jsonDecode(raw) as Map<String, dynamic>).map((key, value) => MapEntry(key, value as bool));
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) return Map<String, dynamic>.from(decoded);
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 
-  Future<void> saveReminderStates(Map<String, bool> states) async => (await SharedPreferences.getInstance()).setString(_reminders, jsonEncode(states));
+  Future<void> saveReminderConfigs(Map<String, Object> configs) async => (await SharedPreferences.getInstance()).setString(_reminders, jsonEncode(configs));
 
   Future<Map<String, String>?> session() async {
     final raw = (await SharedPreferences.getInstance()).getString(_session);

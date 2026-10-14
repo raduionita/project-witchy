@@ -10,6 +10,7 @@ import '../providers/cycle_provider.dart';
 import '../providers/logging_provider.dart';
 import '../services/calendar_fetcher.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_dims.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_icons.dart';
 import '../widgets/log_bottom_sheet.dart';
@@ -47,7 +48,13 @@ class _CycleScreenState extends State<CycleScreen> {
     final now = DateTime.now();
     setState(() {
       _month = DateTime(month.year, month.month, 1);
-      _selectedDay = now.year == month.year && now.month == month.month ? now.day : 1;
+      if (now.year == month.year && now.month == month.month) {
+        _selectedDay = now.day;
+      } else {
+        // Preserve the selected day across month navigation, clamped to the new month length.
+        final lastDay = DateTime(month.year, month.month + 1, 0).day;
+        _selectedDay = _selectedDay.clamp(1, lastDay);
+      }
     });
   }
 
@@ -106,7 +113,7 @@ class _CycleScreenState extends State<CycleScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              GestureDetector(onTap: () => _shiftMonth(-1), child: FaIcon(AppIcons.left, size: AppIconSize.head, color: AppColors.muted)),
+              GestureDetector(onTap: () => _shiftMonth(-1), child: Icon(AppIcons.left, size: AppIconSize.head, color: AppColors.muted)),
               MouseRegion(
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
@@ -116,12 +123,12 @@ class _CycleScreenState extends State<CycleScreen> {
                     children: [
                       Text(DateFormat('MMMM yyyy').format(_month), style: AppText.serif(13.5)),
                       const SizedBox(width: 6),
-                      FaIcon(AppIcons.right, size: AppIconSize.xs, color: AppColors.muted),
+                      Icon(AppIcons.right, size: AppIconSize.xs, color: AppColors.muted),
                     ],
                   ),
                 ),
               ),
-              GestureDetector(onTap: () => _shiftMonth(1), child: FaIcon(AppIcons.right, size: AppIconSize.head, color: AppColors.muted)),
+              GestureDetector(onTap: () => _shiftMonth(1), child: Icon(AppIcons.right, size: AppIconSize.head, color: AppColors.muted)),
             ],
           ),
           const SizedBox(height: 12),
@@ -144,9 +151,10 @@ class _CycleScreenState extends State<CycleScreen> {
     );
   }
 
-  /// Header mirroring Today's "Today's Log" + up to 10 newest flow-logged days.
+  /// Selected day pinned on top (when it has a flow log) + up to 10 newest flow-logged days.
   Widget _buildLoggedCard() {
     final cycle = context.watch<CycleProvider>();
+    final selectedDate = DateTime(_month.year, _month.month, _selectedDay);
     final recent =
         context
             .watch<LoggingProvider>()
@@ -155,9 +163,14 @@ class _CycleScreenState extends State<CycleScreen> {
             .where((e) => e.value.flow.isNotEmpty)
             .toList()
           ..sort((a, b) => b.key.compareTo(a.key));
-    final top = recent.take(10).toList();
+    final selectedIndex = recent.indexWhere((e) => e.key == selectedDate);
+    // Pin the selected day's entry on top when it has a flow log; fill the rest newest-first.
+    final selected = selectedIndex >= 0 ? recent.removeAt(selectedIndex) : null;
+    final top = [if (selected != null) selected, ...recent.take(selected != null ? 9 : 10)];
     final children = <Widget>[
       Text('Period logged', style: AppText.sec),
+      const SizedBox(height: 4),
+      Text('Selected: ${DateFormat('MMMM d, yyyy').format(selectedDate)}', style: AppText.sans(11, c: AppColors.muted)),
       const SizedBox(height: 8),
     ];
     if (top.isEmpty) {
@@ -261,7 +274,7 @@ class _CycleScreenState extends State<CycleScreen> {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, AppDims.fabClearance),
       children: [_buildCalendarCard(), const SizedBox(height: 12), _buildLoggedCard()],
     );
   }

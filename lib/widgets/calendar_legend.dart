@@ -7,35 +7,36 @@ import '../theme/app_text_styles.dart';
 class CalendarLegend extends StatelessWidget {
   const CalendarLegend({super.key});
 
-  static const _items = [('period', _LegendDot.solid), ('predicted', _LegendDot.outline), ('fertile', _LegendDot.fertile), ('ovulation', _LegendDot.ovulation), ('logged', _LegendDot.logged)];
+  static const _items = [('Period', _LegendKind.period), ('Predicted', _LegendKind.predicted), ('Fertile', _LegendKind.fertile), ('Ovulation', _LegendKind.ovulation), ('Logged', _LegendKind.logged)];
 
-  static String? _glyph(_LegendDot dot) => switch (dot) {
-    _LegendDot.solid => 'assets/svgs/moon-period.svg',
-    _LegendDot.outline => 'assets/svgs/moon-period-predicted.svg',
-    _LegendDot.fertile => 'assets/svgs/moon-fertile.svg',
-    _LegendDot.ovulation => 'assets/svgs/moon-ovulation.svg',
-    _LegendDot.logged => null,
+  static String? _glyph(_LegendKind kind) => switch (kind) {
+    _LegendKind.period => 'assets/svgs/moon-period.svg',
+    _LegendKind.predicted => 'assets/svgs/moon-period-predicted.svg',
+    _LegendKind.fertile => 'assets/svgs/moon-fertile.svg',
+    _LegendKind.ovulation => 'assets/svgs/moon-ovulation.svg',
+    _LegendKind.logged => null,
   };
 
-  Widget _legendItem(String label, _LegendDot dot) {
-    final glyph = _glyph(dot);
+  Widget _legendItem(String label, _LegendKind kind) {
+    final glyph = _glyph(kind);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (glyph != null)
           SvgPicture.asset(glyph, width: 16, height: 16, excludeFromSemantics: true)
         else
-          Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.blue)),
+          Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.blue)),
         const SizedBox(width: 5),
-        Text(label, style: AppText.sans(9, w: FontWeight.w500, c: AppColors.muted)),
+        Text(label, style: AppText.sans(10, w: FontWeight.w500, c: AppColors.chipText)),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(alignment: WrapAlignment.center, spacing: 12, runSpacing: 6, children: [for (final item in _items) _legendItem(item.$1, item.$2)]);
+    // Two rows of centered items; spacing leaves room for 3+2 wraps on narrow screens.
+    return Wrap(alignment: WrapAlignment.center, spacing: 14, runSpacing: 8, children: [for (final item in _items) _legendItem(item.$1, item.$2)]);
   }
 }
 
-enum _LegendDot { solid, outline, fertile, ovulation, logged }
+enum _LegendKind { period, predicted, fertile, ovulation, logged }

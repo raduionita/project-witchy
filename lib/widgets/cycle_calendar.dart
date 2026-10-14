@@ -68,6 +68,10 @@ class _CycleCalendarState extends State<CycleCalendar> {
   Widget _dayCell(CalendarDayCell cell) {
     final tappable = widget.onDayTap != null;
     final glyph = _glyph(cell);
+    // Moon glyphs carry light fills; dark-mode ink would vanish on them.
+    final onGlyph = glyph != null;
+    final dayColor = onGlyph ? const Color(0xFF2A0A3C) : AppColors.ink;
+    final subColor = onGlyph ? const Color(0xFF5D4A70) : AppColors.muted;
     return SizedBox(
       height: 54,
       child: Semantics(
@@ -84,16 +88,16 @@ class _CycleCalendarState extends State<CycleCalendar> {
                 if (cell.isToday)
                   SizedBox(width: 44, height: 44, child: DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.lav))),
                 if (glyph != null) SvgPicture.asset(glyph, width: 44, height: 44, excludeFromSemantics: true),
-                if (cell.isToday) _ring(AppColors.pur, 1.5),
-                if (cell.isSelected) _ring(AppColors.ink, 2),
+                if (cell.isToday && !cell.isSelected) _ring(AppColors.pur, 1.5),
+                if (cell.isSelected) _ring(AppColors.pur, 2),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       '${cell.day}',
-                      style: AppText.sans(15, w: cell.isToday ? FontWeight.w700 : FontWeight.w500, c: AppColors.ink),
+                      style: AppText.sans(15, w: cell.isToday || cell.isSelected ? FontWeight.w700 : FontWeight.w500, c: dayColor),
                     ),
-                    Text('${cell.cycleDay}', style: AppText.sans(11, w: FontWeight.w500, c: AppColors.muted)),
+                    Text('${cell.cycleDay}', style: AppText.sans(10.5, w: FontWeight.w500, c: subColor)),
                   ],
                 ),
                 Positioned(
@@ -104,9 +108,9 @@ class _CycleCalendarState extends State<CycleCalendar> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (cell.isOvulation) Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.teal)),
+                        if (cell.isOvulation) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.teal)),
                         if (cell.isOvulation && cell.isLogged) const SizedBox(width: 3),
-                        if (cell.isLogged) Container(width: 6, height: 6, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.blue)),
+                        if (cell.isLogged) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.blue)),
                       ],
                     ),
                   ),
@@ -129,9 +133,16 @@ class _CycleCalendarState extends State<CycleCalendar> {
   @override
   Widget build(BuildContext context) {
     final all = widget.cells.cells;
+    // Hide a trailing week that is entirely next-month padding.
+    var end = all.length;
+    if (end >= 14) {
+      final lastWeek = all.sublist(end - 7);
+      if (lastWeek.every((c) => !c.inMonth)) end -= 7;
+    }
     final rows = <Widget>[];
-    for (var i = 0; i < all.length; i += 7) {
-      rows.add(_weekRow(all.sublist(i, (i + 7).clamp(0, all.length)), i + 7 >= all.length));
+    for (var i = 0; i < end; i += 7) {
+      final chunk = all.sublist(i, (i + 7).clamp(0, end));
+      rows.add(_weekRow(chunk, i + 7 >= end));
     }
     return Column(
       children: [

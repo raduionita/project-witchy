@@ -4,8 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class ReminderItem {
   final String title;
   final String subtitle;
-  final String time;
-  final String freq;
+  String time;
+  String freq;
   final FaIconData icon;
   final Color badgeBg;
   final Color badgeFg;

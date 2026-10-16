@@ -11,6 +11,7 @@ import '../theme/app_text_styles.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_button.dart';
+import '../widgets/disclaimer_text.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/log_bottom_sheet.dart';
 
@@ -21,8 +22,13 @@ class ChartScreen extends StatelessWidget {
 
   static const int _windowDays = 30;
 
-  ({List<FlSpot> spots, List<List<FlSpot>> segments, double? preShift, double? postShift, int? ovulationX}) _series(List<({DateTime date, double temp})> readings, DateTime start, DateTime? ovulationDay) {
-    if (readings.isEmpty) return (spots: [], segments: [], preShift: null, postShift: null, ovulationX: null);
+  ({List<FlSpot> spots, List<List<FlSpot>> segments, double? preShift, double? postShift, int? ovulationX, bool ovulationConfirmed}) _series(
+    List<({DateTime date, double temp})> readings,
+    DateTime start,
+    DateTime? ovulationDay, {
+    bool confirmed = false,
+  }) {
+    if (readings.isEmpty) return (spots: [], segments: [], preShift: null, postShift: null, ovulationX: null, ovulationConfirmed: false);
     // Split into runs of consecutive days so unlogged days render as gaps.
     final segments = <List<FlSpot>>[];
     var current = <FlSpot>[];
@@ -44,7 +50,7 @@ class ChartScreen extends StatelessWidget {
       if (before.isNotEmpty) pre = before.reduce((a, b) => a + b) / before.length;
       if (after.isNotEmpty) post = after.reduce((a, b) => a + b) / after.length;
     }
-    return (spots: segments.expand((s) => s).toList(), segments: segments, preShift: pre, postShift: post, ovulationX: ovulationX);
+    return (spots: segments.expand((s) => s).toList(), segments: segments, preShift: pre, postShift: post, ovulationX: ovulationX, ovulationConfirmed: confirmed);
   }
 
   Widget _emptyPrompt(BuildContext context) {
@@ -75,9 +81,17 @@ class ChartScreen extends StatelessWidget {
       readings.add((date: day, temp: temp));
     }
     readings.sort((a, b) => a.date.compareTo(b.date));
-    final ovulationDay = cycle.showFertilityPredictions ? cycle.ovulationDay(today: today) : null;
-    final inWindow = ovulationDay != null && !ovulationDay.isBefore(start) && !ovulationDay.isAfter(DateTime(today.year, today.month, today.day));
-    final series = _series(readings, start, inWindow ? ovulationDay : null);
+    final endOfToday = DateTime(today.year, today.month, today.day);
+    bool inWindow(DateTime day) => !day.isBefore(start) && !day.isAfter(endOfToday);
+    final confirmedDay = cycle.confirmedOvulationDate;
+    final predictedDay = cycle.showFertilityPredictions ? cycle.ovulationDay(today: today) : null;
+    // BBT-confirmed ovulation wins over the arithmetic prediction.
+    final markerDay = confirmedDay != null && inWindow(confirmedDay)
+        ? confirmedDay
+        : (predictedDay != null && inWindow(predictedDay) ? predictedDay : null);
+    final markerConfirmed = markerDay != null && markerDay == confirmedDay;
+    final markerLabel = markerConfirmed ? 'Confirmed ovulation' : 'Predicted ovulation';
+    final series = _series(readings, start, markerDay, confirmed: markerConfirmed);
 
     return Scaffold(
       appBar: const AppTopBar(title: 'BBT Chart'),
@@ -94,6 +108,16 @@ class ChartScreen extends StatelessWidget {
                   Text('Biphasic Temperature Shift', style: AppText.secIn),
                   const SizedBox(height: 10),
                   _BbtPlot(series: series, start: start, today: today),
+                  if (series.ovulationX != null) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Container(width: 18, decoration: BoxDecoration(border: Border(top: BorderSide(color: series.ovulationConfirmed ? AppColors.gold : AppColors.muted, width: 2)))),
+                        const SizedBox(width: 6),
+                        Text(markerLabel, style: AppText.sans(10.5, c: AppColors.muted)),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -124,6 +148,8 @@ class ChartScreen extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            const DisclaimerText(),
           ],
         ],
       ),
@@ -133,7 +159,7 @@ class ChartScreen extends StatelessWidget {
 
 /// Line chart plot of the temperature series with the ovulation marker.
 class _BbtPlot extends StatelessWidget {
-  final ({List<FlSpot> spots, List<List<FlSpot>> segments, double? preShift, double? postShift, int? ovulationX}) series;
+  final ({List<FlSpot> spots, List<List<FlSpot>> segments, double? preShift, double? postShift, int? ovulationX, bool ovulationConfirmed}) series;
   final DateTime start;
   final DateTime today;
   const _BbtPlot({required this.series, required this.start, required this.today});
@@ -173,10 +199,15 @@ class _BbtPlot extends StatelessWidget {
                   verticalLines: [
                     VerticalLine(
                       x: ovulationX.toDouble(),
-                      color: AppColors.gold,
+                      color: series.ovulationConfirmed ? AppColors.gold : AppColors.muted,
                       strokeWidth: 1.5,
                       dashArray: const [4, 4],
-                      label: VerticalLineLabel(show: true, labelResolver: (_) => 'Ovulation', style: AppText.sans(8.5, c: AppColors.gold), padding: const EdgeInsets.only(bottom: 6)),
+                      label: VerticalLineLabel(
+                        show: true,
+                        labelResolver: (_) => series.ovulationConfirmed ? 'Confirmed ovulation' : 'Predicted ovulation',
+                        style: AppText.sans(8.5, c: series.ovulationConfirmed ? AppColors.gold : AppColors.muted),
+                        padding: const EdgeInsets.only(bottom: 6),
+                      ),
                     ),
                   ],
                 ),

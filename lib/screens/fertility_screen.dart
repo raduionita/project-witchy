@@ -3,18 +3,49 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/cycle_provider.dart';
+import '../navigation/app_nav.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/app_button.dart';
 import '../widgets/cycle_orb.dart';
+import '../widgets/disclaimer_text.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/app_card.dart';
 
 class FertilityScreen extends StatelessWidget {
   const FertilityScreen({super.key});
+
+  /// Placeholder while a dated pregnancy suppresses predictions; the route
+  /// stays reachable so deep links and the Today card never break.
+  Widget _buildPausedCard(BuildContext context) {
+    return AppCard(
+      dark: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Predictions paused', style: AppText.serif(13.5, c: Colors.white)),
+          const SizedBox(height: 8),
+          Text(
+            'Pregnancy tracking is active, so fertility predictions are paused. They resume automatically once pregnancy mode is off.',
+            style: AppText.sans(11.5, c: AppColors.insightText, h: 1.55),
+          ),
+          const SizedBox(height: 12),
+          AppButton(label: 'Open Pregnancy Tracker', onTap: () => context.go('/pregnancy')),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
+    if (cycle.pregnancyActive) {
+      return Scaffold(
+        appBar: const AppTopBar(title: 'Fertility Window'),
+        body: ListView(padding: const EdgeInsets.fromLTRB(16, 6, 16, 14), children: [const SizedBox(height: 8), _buildPausedCard(context)]),
+      );
+    }
     final now = DateTime.now();
     final cycleDay = cycle.cycleDay(today: now);
     final ovuToday = cycle.ovulationToday;
@@ -83,6 +114,8 @@ class FertilityScreen extends StatelessWidget {
               ),
             ),
           ],
+          const SizedBox(height: 16),
+          const DisclaimerText(),
         ],
       ),
     );

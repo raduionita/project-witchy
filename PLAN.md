@@ -90,7 +90,7 @@ test/
 
 > Old Phases 4 + 7 (minus onboarding) + 9: Navigator 2.0 + fl_chart (mandated rules), shell wiring, calendar/dashboard/records with Flo-style parity.
 
-### App framework
+#### App framework
 
 - [x] **2.1** Add `fl_chart` to `pubspec.yaml`.
 - [x] **2.2** Navigator 2.0: `RouteInformationParser<String>` + `RouterDelegate` (stack of route names → `Navigator(pages:)`); replace all `pushNamed` / `pop` / `pushReplacementNamed` / `pushNamedAndRemoveUntil` call sites (~20, incl. `AppTopBar` back) with `context.go()` / `context.back()` / `context.reset()` helpers; preserve `/library/<slug>` dynamic segment + unknown-slug fallback; shell-tab routes stay `MainScreen(initialIndex:)`; web deep links work.
@@ -99,7 +99,7 @@ test/
 - [x] **2.5** Shell bottom nav wired to real screens (`Sanctuary` / `CycleMap` / `Records` / `Coven` + log FAB); `CycleProvider` provided in `main.dart` (1.4).
 - [x] **2.6** Boot navigation: splash post-frame redirect (`onboarded → /dashboard`) + onboarding `finish()` → `reset('/dashboard')` — no separate router bootstrap needed.
 
-### Screens & calendar
+#### Screens & calendar
 
 - [x] **2.7** `CycleCalendar` rebuilt — fixed 6-row / 42-cell Monday-first grid over `MonthCells`, ovulation day marker (pink dot), predicted (outline) vs logged-bleed (solid) styling, horizontal swipe month navigation alongside the arrows, per-cell click cursor.
 - [~] **2.8** Logging flow — done differently: `LogBottomSheet` (flow / mood / symptom / notes chips) instead of spec'd "LogPeriodSheet + LoggingScreen". **Completed**: `RecordsScreen` shows real data — bleed chronology (range, length, On Time / Short / Long / Current tags vs effective cycle length) + average cycle/bleed from `CycleProvider`, with an empty state for no data.
@@ -135,7 +135,7 @@ test/
 
 > Old Phases 5 + 10: scheduled notifications + profile identity, then Settings/Reminders folded into the Profile screen.
 
-### Notifications & identity
+#### Notifications & identity
 
 - [x] **4.1** Add `flutter_local_notifications` + `timezone` / `flutter_timezone`; Android: core-library desugaring in `android/app/build.gradle.kts`, `POST_NOTIFICATIONS` manifest entry; iOS: `requestAuthorization` flow.
 - [x] **4.2** `lib/services/notification_service.dart` — init + schedule/cancel per bell (`zonedSchedule`, daily at configured time, `matchDateTimeComponents: time`); pure `buildNotificationRequests()` extracted for testability.
@@ -143,7 +143,7 @@ test/
 - [x] **4.4** Profile identity: header shows `AuthIdentity` display name/email (fallback to placeholder), **Sign Out** button → `auth.signOut()` → reset stack to `/`.
 - [x] **4.5** Tests: `buildNotificationRequests` unit test; sign-out widget test.
 
-### Profile consolidation
+#### Profile consolidation
 
 - [x] **4.6** `ProfileScreen` rework — top-bar action `AppIcons.gear → AppIcons.alerts` (`go('/alerts')`); dropped the `Notification Preferences → Manage` and `Appearance → Manage` links (Lunar Alignments = stats only, Apothecary keeps Gestation + Bond).
 - [x] **4.7** New **App Settings** `AppCard` — `Receive Lunar Notifications` switch (`setLunar` + `NotificationService.syncPeriodPrediction` with `CycleProvider.nextPeriodStart()`) and `Dark Magic Mode` switch (`setDark`), ported from the old SettingsScreen.
@@ -168,10 +168,6 @@ test/
 - [x] **5.7** Docs — PLAN.md (this section), DESIGN.md → v1.7.0 (emblem PNG + native launch splash), v1.8.0 (Screen 19 app-splash preview, §4.1 route row, nav tree `/splash`), v1.8.2 (mask + tint).
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (81/81 final suite) · `flutter build apk --debug` ✅ · `flutter build web` ✅
-
-### Phases 6-13 - Production Readiness (open)
-
-> Audit-driven finishing work: replace every mocked surface with real data (or remove it), add the tracking modes, then harden for store release. Scope decisions locked with the product owner: Coven becomes a remote article feed (Library removed), Binding removed, auth stays hidden as-is, onboarding gains Cycle / Pregnancy / Perimenopause tracking chips, BBT gets real temperature capture, alerts become locally generated, dark mode gets a real theme.
 
 ### Phase 6 - Article Feed & Feature Removal (done)
 
@@ -285,8 +281,11 @@ test/
 
 > Out of scope (flagged): Google/Apple sign-in activation (hidden), real couples/backend sync, Coven posting, sovereign-blood screen from MOCK.html (not in DESIGN.md), localization, analytics/crash reporting.
 
+---
 
-### Fixes 1 - 2026.10.09 (done)
+## Fixes 1
+
+### Phase 1 - 2026.10.09 (done)
 
 - [x] theme -> dark vs light: should start as light (default) - use toggle in profile -> settings
 - [x] rhythyms -> button: should mark user as logged-in and continue to main screen 
@@ -296,7 +295,7 @@ test/
 - [x] rhythyms - tracking mode: should be a multi-toggle - the app MUST allow tracking all modes (cycle, pregnancy, perimenopause) simultaneously on the same interface (calendar, records, sanctuary, fertility, alert)
 - [x] app: app icon needed - should be the same as the one in the splash screen - use images in @resources/
  
-### Fixes 2 - 2026.10.12 (done)
+### Phase 2 - 2026.10.12 (done)
 
 - [x] rythyms -> tracking: widget/card should be full width - icons neede to be visible when a chip is selected (now backgroundh has the same color as the selected chip = bad contrast) - `TrackingModeChips` now `Row` + `Expanded` (chips fill the card); `AppChip._icon` selected color fixed: uses `onColor(active)` fg instead of the chip background (icons visible on selected chips; benefits every chip incl. log sheet)
 - [x] profile -> session: the buttons need a confirm dialog/drawer - the dialog should explain the consequences of each action - added `_confirmSignOut` dialog (explains: back to welcome, logs/settings stay on device, can sign back in); `Delete All Data` already had `_confirmDeleteData` (explains erasure + not undoable); Sign Out button now wired through the dialog; test updated (confirm tap)
@@ -306,7 +305,7 @@ test/
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 195/195 passing.
 
-### Fixes 3 - 2026.10.12 (done)
+### Phase 3 - 2026.10.12 (done)
 
 Feedback batch from debug/ screenshots (Issues 1-7 + icon audit). Product name "Witchy", moon glyphs and plum/gold visuals kept; all user-facing copy neutralized to health terminology. Routes, pref keys, enum JSON values, class/file/method names unchanged for stability.
 
@@ -323,10 +322,53 @@ Feedback batch from debug/ screenshots (Issues 1-7 + icon audit). Product name "
 Gates: `flutter analyze` = No issues found, `flutter test` = 194/194 passing.
 
 
-### Fixes 3
+### Phase 4 - Prediction engine MVP (done 2026.10.15)
 
-- [ ] 
+Algorithm analysis vs Flo/Clue (local-only, no cloud ML - compete on honest rolling statistics + signal integration, not neural nets). MVP = engine correctness + surgical edits to existing screens. Flo-parity decision: pregnancy suppresses BOTH period and fertility predictions, triggered when pregnancy mode is in the set AND gestation has an LMP (mode-only would blank a fresh user who never entered LMP; gap state gets a setup-nudge card). Precedence: pregnancy-suppression > peri-range > normal. Moon-milestone alerts stay in pregnancy mode (lunar events, not cycle predictions). New pref keys use `witchy_` prefix so Delete All Data wipes them. Adapted to commit 2026.10.14 (fertile-start alert, onboarding 20..40 clamps + minGap 15, Records Irregular > 7, alert dismiss/undo, CycleOrb progress).
+
+A - engine:
+- [x] **A4** BBT personal luteal (most isolated - do first) - `lib/services/bbt_analyzer.dart` (BbtAnalyzer: >= 10 temps °C, 3-day sustained mean rise >= 0.3 C over 6-day baseline with >= 4 baseline / >= 2 post readings, every post reading above baseline mean, 6-day dedup gap; outputs `confirmedOvulation` = day before rise, `personalLutealLength` = median ovulation-to-next-bleed clamped 10..18, recomputed from logs each time, no pref key). `CycleCalculator` ovulation/fertility functions take `{int lutealLength = 14}` (defaults preserve behavior); `CycleProvider` exposes `detectedLutealLength`/`confirmedOvulationDate`/`lutealLength` (personal ?? 14) and threads it through all 9 call sites + `CalendarFetcher.forMonth(lutealLength:)` + `cycle_screen`. Signal precedence BBT > OPK > arithmetic. Tests: `test/services/bbt_analyzer_test.dart` (8 cases: empty, <10, flat, sustained rise, spike rejection, luteal measure, clamp, null-skip). Gates: analyze clean, 214/214.
+- [x] **A1** fertile window science - `CycleCalculator.fertileStartCycleDay` ovu-2 -> ovu-5, `fertileEndCycleDay` ovu+2 -> ovu+1 (single-point change: calendar, stats, alerts flow through the provider getters). Uncertainty pad `u` each side: `u = observed<3 ? 2 : (spreadRecent>7 ? min(spreadRecent~/2, 4) : 0)`, total width capped at 14 days. Rewrite `AlertGenerator` fertile-start condition (id `fertile-start-{date}`) to fire at the new window start; peak alert unchanged on ovulation day. Invariant tests: window always contains ovulation, L in 21..40
+- [x] **A2** rolling statistics - new pure `lib/services/cycle_stats.dart` built from `PeriodHistory` spans: `medianRecent` (last 6), `medianWindow` (last 12), `spreadRecent` (last 6, null when < 2), `longestRecent`; respects onboarding clamps (20..40). `CycleProvider` delegates `effectiveCycleLength`/`observedCycleLengths`/`cycleSpread` to it (call sites unchanged where possible). Verify `rhythms_screen` history seeding covers the pre-log case before adding any new seeding. Bleed length stays slider-only (Fixes 3 deviation kept). Records keeps all-time shortest/longest display; Irregular/Regular status moves to `spreadRecent` (one ancient outlier no longer flags forever). Pin `PeriodHistory.median` even-count rounding in tests
+- [x] **A3** late / missed handling - late 1-5 -> `late-dN-{date}` alert inside the generator (id rolls daily, yesterday's pruned by eventDate cleanup), exclusive vs `period-dN`. Late > longestRecent+5 -> `predictionsConfident=false`: hides fertility/peak alerts AND calendar predicted dots, Today shows "cycle running long - log to re-anchor". Late > longestRecent+10 -> stop projection: `predictedRange`/`nextPeriodStart` become nullable; add null branches in calendar fetcher, sanctuary, records, notification resync (`syncPeriodPrediction` already nullable-safe)
+- [x] **A6** range promotion - `predictedRange()` for all modes; Today single-day only when `spreadRecent` < 2, else earliest-latest range (Peri forces range + wording). Keep `CycleOrb(progress:)` params intact
+- [x] **A5** pregnancy dating + suppression - GestationProvider: keep Naegele LMP+280, add Parikh alternative when cycleLength != 28, manual EDD override (`witchy_pregnancy_edd_override` + provenance label + clear-override). Suppression = pregnancy in set + LMP present: `showFertilityPredictions` false, period countdown/late/period-day alerts hidden (fertility alerts already flag-gated per 10.14). Gap state (mode on, no LMP): Today setup-nudge card linking `/pregnancy`. `/fertility` route kept with "predictions paused" placeholder. F6 widget test unchanged ({cycle,pregnancy} without LMP still shows fertility - correct); add provider-level suppression tests + nudge test. Audit reminder prediction-dependence; resync/cancel notifications on suppression
+
+B - screens (surgical edits, no new screens):
+- [x] **B1** disclaimers - "Predictions are estimates - not a contraceptive and not medical advice." on Today, Fertility, Pregnancy, Chart (AppText/AppColors tokens, light + dark)
+- [x] **B2** Today states - late + uncertain copy, variable-cycle range line for non-peri (A6), pregnancy setup-nudge card (A5)
+- [x] **B3** Pregnancy screen - due-date override picker + "Due date: LMP / doctor" provenance + Parikh alternative when cycle != 28 (done inside A5)
+- [x] **B4** OPK - `DayLog.ovulationTest` (additive `positive`/`negative`/null JSON, legacy-safe), log-sheet row inside Fixes 2 pinned-head/divider structure; positive -> provisional ovulation tomorrow + `opk-positive-{date}` alert (provider-level one-shot) + feeds A4 luteal stats (BBT wins conflicts)
+- [x] **B5** Chart marker - BBT-confirmed ovulation dot (confirmed vs predicted) + legend update
+- [x] **B6** alerts - period-day-of one-shot at provider level (`items.any(id == 'period-today-{key}')` check before insert - generator is pure and cannot dedup); ids stable under `dismiss()`/`restore()`; read current alerts_screen dismiss/undo UI first
+- [x] **B7** tests - window invariants + fertile-start timing, rolling stats (aging-out, clamps, median rounding, seeds), late thresholds + undo interplay, suppression combos ({cycle}, {cycle,pregnancy}+LMP, {cycle,peri}, {pregnancy}+LMP, {peri}, mode-no-LMP gap, LMP-no-mode), peri range, OPK round-trip, disclaimer presence. Baseline reconciled at 274 (was 195/194). Fixtures need `witchy_session` + `witchy_onboarded`
+- [x] **B8** docs - DESIGN.md prediction-model section + bump from current 1.9.8; tick this section; backlog stays open
+
+Gates per phase: `flutter analyze` · `flutter test` · `flutter build apk --debug`.
+
+Gates: `flutter analyze` = No issues found, `flutter test` = 277/277 passing, `flutter build apk --debug` = ✓.
+
+### Phase 5
+
+- [ ] onboarding -> tracker type card: the 3 chips should expand to occupy the whole width - make their width equal (with/3) + gaps between them - the icon + text must not wrap, the end of the word should get cut off by the chip
 
 --- 
 
 ## Milestone 2 - TBD
+
+Backlog - later updates (bigger gaps, NOT MVP) - needs proper structuring
+- [ ] PMS prediction (onset stats last 6 cycles, calendar dots, start alert)
+- [ ] Cycle insight report on period start (length, vs range, top symptoms)
+- [ ] Perimenopause depth: dedicated symptom category, Perimenopause Score questionnaire, STRAW+10 stage estimate (yearOfBirth), amenorrhea counter, peri content
+- [ ] Symptom-pattern learning (mood/symptom correlations)
+- [ ] Conception depth: OPK trends, fluid auto-annotation, DOT-style validated timing (research spike)
+- [ ] Pregnancy depth: kick count, weight, weekly notifications, contraction timer, postpartum
+- [ ] Wearables: HealthKit / Health Connect BBT+HRV sync
+- [ ] Bulk cycle backfill (Clue quick-log cold start)
+- [ ] Full mode-matrix regression suite (8 mode subsets x 6 surfaces)
+- [ ] Age 45+ variability priors (Flo 19M-user study) once peri metrics exist
+- [ ] Symptom checker: OUT OF SCOPE (clinical validation + regulatory risk) - educational content only
+
+---
+
+## Fixes 2 - TBD

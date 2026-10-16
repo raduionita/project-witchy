@@ -17,6 +17,11 @@ class CalendarFetcher {
     bool showFertility = true,
     DateTime? predictedStart,
     DateTime? predictedEnd,
+    int lutealLength = 14,
+    int pad = 0,
+    // False once the cycle runs long (see CycleProvider.predictionsConfident):
+    // predicted period/fertile/ovulation dots hide until a new bleed re-anchors.
+    bool predictionsConfident = true,
   }) {
     final now = today ?? DateTime.now();
     final todayDate = DateTime(now.year, now.month, now.day);
@@ -43,10 +48,10 @@ class CalendarFetcher {
           day: day,
           cycleDay: CycleCalculator.cycleDay(lastStart, date, cycleLength),
           isToday: date == todayDate,
-          isPredictedPeriod: predicted,
+          isPredictedPeriod: predicted && predictionsConfident,
           isLoggedBleed: log != null && log.flow.isNotEmpty,
-          isFertile: showFertility && CycleCalculator.isFertileDay(lastStart, date, cycleLength),
-          isOvulation: showFertility && CycleCalculator.isOvulationDay(lastStart, date, cycleLength),
+          isFertile: showFertility && predictionsConfident && CycleCalculator.isFertileDay(lastStart, date, cycleLength, lutealLength: lutealLength, pad: pad),
+          isOvulation: showFertility && predictionsConfident && CycleCalculator.isOvulationDay(lastStart, date, cycleLength, lutealLength: lutealLength),
           isLogged: log != null,
           isSelected: selectedDay == day,
         ),

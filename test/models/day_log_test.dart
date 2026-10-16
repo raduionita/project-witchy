@@ -17,6 +17,7 @@ void main() {
       pain: 8.5,
       temperature: 36.7,
       notes: 'Full moon entry.',
+      ovulationTest: 'positive',
     );
 
     final restored = DayLog.fromJson(original.toJson());
@@ -34,6 +35,7 @@ void main() {
     expect(restored.pain, original.pain);
     expect(restored.temperature, 36.7);
     expect(restored.notes, original.notes);
+    expect(restored.ovulationTest, 'positive');
   });
 
   test('DayLog.fromJson falls back to defaults on empty json', () {
@@ -52,6 +54,7 @@ void main() {
     expect(log.pain, 6);
     expect(log.temperature, isNull);
     expect(log.notes, isEmpty);
+    expect(log.ovulationTest, isNull);
   });
 
   test('DayLog.fromJson loads pre-expansion payload without new keys', () {

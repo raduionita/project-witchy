@@ -58,9 +58,35 @@ void main() {
       expect(CycleCalculator.ovulationCycleDay(20), 6);
     });
 
-    test('fertile window spans cycle days 12–16 for 28-day cycle', () {
-      expect(CycleCalculator.fertileStartCycleDay(28), 12);
-      expect(CycleCalculator.fertileEndCycleDay(28), 16);
+    test('fertile window spans cycle days 9-15 for 28-day cycle', () {
+      expect(CycleCalculator.fertileStartCycleDay(28), 9);
+      expect(CycleCalculator.fertileEndCycleDay(28), 15);
+    });
+
+    test('uncertainty pad widens the window symmetrically and caps width at 14', () {
+      expect(CycleCalculator.fertileStartCycleDay(28, pad: 2), 7);
+      expect(CycleCalculator.fertileEndCycleDay(28, pad: 2), 17);
+      // Full pad on a 28-day cycle would span 15 days; capped to 14.
+      expect(CycleCalculator.fertileStartCycleDay(28, pad: 4), 5);
+      expect(CycleCalculator.fertileEndCycleDay(28, pad: 4), 18);
+      // Start never drops below day 1.
+      expect(CycleCalculator.fertileStartCycleDay(21, pad: 4), 1);
+    });
+
+    test('window always contains ovulation and stays within 14 days', () {
+      for (var length = 21; length <= 40; length++) {
+        for (final luteal in [10, 14, 18]) {
+          for (final pad in [0, 2, 4]) {
+            final ovu = CycleCalculator.ovulationCycleDay(length, lutealLength: luteal);
+            final start = CycleCalculator.fertileStartCycleDay(length, lutealLength: luteal, pad: pad);
+            final end = CycleCalculator.fertileEndCycleDay(length, lutealLength: luteal, pad: pad);
+            expect(start, greaterThanOrEqualTo(1), reason: 'L$length l$luteal p$pad');
+            expect(start, lessThanOrEqualTo(ovu), reason: 'L$length l$luteal p$pad');
+            expect(end, greaterThanOrEqualTo(ovu), reason: 'L$length l$luteal p$pad');
+            expect(end - start + 1, lessThanOrEqualTo(14), reason: 'L$length l$luteal p$pad');
+          }
+        }
+      }
     });
 
     test('ovulation date and days until ovulation', () {
@@ -75,8 +101,10 @@ void main() {
       expect(CycleCalculator.isPeriodDay(lastStart, DateTime(2026, 10, 4), 28, 5), isFalse);
       expect(CycleCalculator.isPeriodDay(lastStart, DateTime(2026, 10, 27), 28, 5), isTrue);
       expect(CycleCalculator.isPeriodDay(lastStart, DateTime(2026, 10, 28), 28, 5), isTrue);
+      expect(CycleCalculator.isFertileDay(lastStart, DateTime(2026, 9, 9), 28), isTrue);
       expect(CycleCalculator.isFertileDay(lastStart, DateTime(2026, 9, 13), 28), isTrue);
-      expect(CycleCalculator.isFertileDay(lastStart, DateTime(2026, 9, 16), 28), isTrue);
+      expect(CycleCalculator.isFertileDay(lastStart, DateTime(2026, 9, 15), 28), isTrue);
+      expect(CycleCalculator.isFertileDay(lastStart, DateTime(2026, 9, 16), 28), isFalse);
       expect(CycleCalculator.isFertileDay(lastStart, DateTime(2026, 9, 17), 28), isFalse);
       expect(CycleCalculator.isOvulationDay(lastStart, DateTime(2026, 9, 14), 28), isTrue);
     });
@@ -121,13 +149,13 @@ void main() {
 
     test('fertileDaysInMonth marks window days', () {
       final fertileDays = CycleCalculator.fertileDaysInMonth(lastStart, DateTime(2026, 9), 28);
-      expect(fertileDays, {12, 13, 14, 15, 16});
+      expect(fertileDays, {9, 10, 11, 12, 13, 14, 15});
     });
 
     test('month helper handles short months', () {
       final periodDays = CycleCalculator.periodDaysInMonth(DateTime(2026, 2, 1), DateTime(2026, 2), 28, 5);
       expect(periodDays, {1, 2, 3, 4, 5});
-      expect(CycleCalculator.fertileDaysInMonth(DateTime(2026, 2, 1), DateTime(2026, 2), 28), {12, 13, 14, 15, 16});
+      expect(CycleCalculator.fertileDaysInMonth(DateTime(2026, 2, 1), DateTime(2026, 2), 28), {9, 10, 11, 12, 13, 14, 15});
     });
   });
 }

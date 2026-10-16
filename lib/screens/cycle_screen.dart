@@ -104,6 +104,9 @@ class _CycleScreenState extends State<CycleScreen> {
       showFertility: cycle.showFertilityPredictions,
       predictedStart: range?.earliest,
       predictedEnd: range?.latest,
+      lutealLength: cycle.lutealLength,
+      pad: cycle.uncertaintyPad,
+      predictionsConfident: cycle.predictionsConfident(),
     );
     final daysLate = cycle.daysLate();
     final showStatusRow = daysLate > 0 || !_isCurrentMonth;

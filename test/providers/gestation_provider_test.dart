@@ -84,4 +84,55 @@ void main() {
     expect(reloaded.lmpDate, DateTime(2026, 6, 15));
     expect(reloaded.hasLmp, isTrue);
   });
+
+  group('pregnancy dating (A5)', () {
+    test('Parikh shifts Naegele by cycle minus 28', () {
+      final g = GestationProvider(prefs, lmpDate: DateTime(2026, 1, 6));
+      // Compared via add() like the Naegele test: DST-safe across zones.
+      expect(g.dueDateNaegele, DateTime(2026, 1, 6).add(const Duration(days: 280)));
+      expect(g.dueDateParikh(35), DateTime(2026, 1, 6).add(const Duration(days: 287)));
+      expect(g.dueDateParikh(28), g.dueDateNaegele);
+      expect(g.dueDate, g.dueDateNaegele);
+      expect(g.dueDateSource, 'LMP');
+    });
+
+    test('doctor override wins and reports its source', () async {
+      final g = GestationProvider(prefs, lmpDate: DateTime(2026, 1, 6));
+      await g.setEddOverride(DateTime(2026, 10, 20, 9, 45));
+      expect(g.eddOverride, DateTime(2026, 10, 20));
+      expect(g.dueDate, DateTime(2026, 10, 20));
+      expect(g.dueDateSource, 'doctor');
+    });
+
+    test('clearing the override restores LMP dating', () async {
+      final g = GestationProvider(prefs, lmpDate: DateTime(2026, 1, 6));
+      await g.setEddOverride(DateTime(2026, 10, 20));
+      await g.setEddOverride(null);
+      expect(g.eddOverride, isNull);
+      expect(g.dueDate, g.dueDateNaegele);
+      expect(g.dueDateSource, 'LMP');
+    });
+
+    test('override re-anchors gestational age', () {
+      final today = DateTime(2026, 10, 9);
+      final g = GestationProvider(prefs, lmpDate: DateTime(2026, 1, 6), eddOverride: DateTime(2026, 10, 20));
+      // 11 days out from the doctor date means day 269.
+      expect(g.days(today: today), 269);
+      expect(g.week(today: today), 38);
+      expect(g.daysRemaining(today: today), 11);
+    });
+
+    test('override persists across reload and clears with Delete All Data keys', () async {
+      final g = GestationProvider(prefs);
+      await g.setLmp(DateTime(2026, 1, 6));
+      await g.setEddOverride(DateTime(2026, 10, 20));
+      final reloaded = await GestationProvider.load(prefs);
+      expect(reloaded.eddOverride, DateTime(2026, 10, 20));
+      expect(reloaded.dueDateSource, 'doctor');
+      await prefs.clearAllData();
+      final wiped = await GestationProvider.load(prefs);
+      expect(wiped.eddOverride, isNull);
+      expect(wiped.lmpDate, isNull);
+    });
+  });
 }

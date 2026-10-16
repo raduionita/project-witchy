@@ -24,6 +24,7 @@ class PrefsService {
   static const _trackingModes = 'witchy_tracking_modes';
   static const _alerts = 'witchy_alerts';
   static const _pregnancyLmp = 'witchy_pregnancy_lmp';
+  static const _pregnancyEdd = 'witchy_pregnancy_edd_override';
 
   Future<bool> isPrivacyAccepted() async => (await SharedPreferences.getInstance()).getBool(_privacyAccepted) ?? false;
   Future<void> setPrivacyAccepted() async => (await SharedPreferences.getInstance()).setBool(_privacyAccepted, true);
@@ -107,6 +108,21 @@ class PrefsService {
   }
 
   Future<void> setLmpDate(DateTime date) async => (await SharedPreferences.getInstance()).setString(_pregnancyLmp, date.toIso8601String());
+
+  Future<DateTime?> eddOverride() async {
+    final raw = (await SharedPreferences.getInstance()).getString(_pregnancyEdd);
+    return raw == null ? null : DateTime.tryParse(raw);
+  }
+
+  /// Null clears the override and restores LMP-based dating.
+  Future<void> setEddOverride(DateTime? date) async {
+    final p = await SharedPreferences.getInstance();
+    if (date == null) {
+      await p.remove(_pregnancyEdd);
+    } else {
+      await p.setString(_pregnancyEdd, date.toIso8601String());
+    }
+  }
 
   Future<void> clearLegacyBindingFlags() async {
     final p = await SharedPreferences.getInstance();

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../models/alert_item.dart';
+import '../models/alert_type.dart';
 import '../services/alert_generator.dart';
 import '../services/prefs_service.dart';
 import 'cycle_provider.dart';
@@ -44,6 +45,39 @@ class AlertProvider extends ChangeNotifier {
     final merged = <AlertItem>[..._items];
     for (final fresh in AlertGenerator.generate(cycle: cycle, logging: logging, now: t)) {
       if (!merged.any((a) => a.id == fresh.id)) merged.add(fresh);
+    }
+    // One-shots live here (not in the pure generator): they fire once per
+    // stable id and are never re-emitted under a different id.
+    final entry = logging.peekDay(today);
+    if (entry?.ovulationTest == 'positive' &&
+        cycle.showFertilityPredictions &&
+        cycle.predictionsConfident(today: t) &&
+        !merged.any((a) => a.id == 'opk-positive-${LoggingProvider.keyFor(today)}')) {
+      merged.add(
+        AlertItem(
+          id: 'opk-positive-${LoggingProvider.keyFor(today)}',
+          type: AlertType.fertileWindow,
+          title: 'Positive Ovulation Test',
+          body: 'Ovulation is likely tomorrow. Timing is most favorable now.',
+          createdAt: t,
+          eventDate: today,
+        ),
+      );
+    }
+    if (entry != null &&
+        entry.flow.isNotEmpty &&
+        !cycle.pregnancyActive &&
+        !merged.any((a) => a.id == 'period-today-${LoggingProvider.keyFor(today)}')) {
+      merged.add(
+        AlertItem(
+          id: 'period-today-${LoggingProvider.keyFor(today)}',
+          type: AlertType.periodPredicted,
+          title: 'Period Started',
+          body: 'Period started today - log it to refine predictions.',
+          createdAt: t,
+          eventDate: today,
+        ),
+      );
     }
     merged.removeWhere((a) => a.eventDate.isBefore(today));
     // Upcoming events first; same-day ties break by newest generation time.

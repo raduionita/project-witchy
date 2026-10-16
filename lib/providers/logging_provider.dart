@@ -91,6 +91,13 @@ class LoggingProvider extends ChangeNotifier {
     _save();
   }
 
+  /// Ovulation test result: 'positive' / 'negative' / null (cleared).
+  void setOvulationTest(DateTime d, String? v) {
+    day(d).ovulationTest = v;
+    notifyListeners();
+    _save();
+  }
+
   void setNotes(DateTime d, String v) {
     day(d).notes = v;
     notifyListeners();

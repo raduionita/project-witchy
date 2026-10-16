@@ -28,7 +28,16 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final unread = context.watch<AlertProvider>().unreadCount > 0;
     return Scaffold(
-      appBar: AppTopBar(title: titles[index], leading: AppIcons.user, leadingTooltip: 'Profile', onLeading: () => context.go('/profile'), action: AppIcons.alerts, actionTooltip: 'Alerts', onAction: () => context.go('/alerts'), badge: unread),
+      appBar: AppTopBar(
+        title: titles[index],
+        leading: AppIcons.user,
+        leadingTooltip: 'Profile',
+        onLeading: () => context.go('/profile'),
+        action: AppIcons.alerts,
+        actionTooltip: 'Alerts',
+        onAction: () => context.go('/alerts'),
+        badge: unread,
+      ),
       body: IndexedStack(index: index, children: const [SanctuaryScreen(), CycleScreen(), RecordsScreen(), CovenScreen()]),
       floatingActionButton:
           index == 3
@@ -37,7 +46,7 @@ class _MainScreenState extends State<MainScreen> {
                 heroTag: 'main_log_fab',
                 onPressed: () => showLogSheet(context, DateTime.now()),
                 backgroundColor: Colors.transparent,
-                hoverColor: AppColors.plum2,
+                hoverColor: Colors.transparent,
                 focusElevation: 0,
                 hoverElevation: 0,
                 highlightElevation: 0,
@@ -46,7 +55,12 @@ class _MainScreenState extends State<MainScreen> {
                   width: 50,
                   height: 50,
                   alignment: Alignment.center,
-                  decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.plumGradient, border: Border.fromBorderSide(BorderSide(color: AppColors.gold, width: 1.5)), boxShadow: [AppColors.primaryShadow]),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: AppColors.plumGradient,
+                    border: Border.fromBorderSide(BorderSide(color: AppColors.gold, width: 1.5)),
+                    boxShadow: [AppColors.primaryShadow],
+                  ),
                   child: const FaIcon(AppIcons.quill, size: AppIconSize.base, color: AppColors.gold),
                 ),
               ),

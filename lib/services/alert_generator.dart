@@ -21,8 +21,25 @@ class AlertGenerator {
     final out = <AlertItem>[];
 
     final days = cycle.daysUntilPeriod(today: now);
-    if (days == 1 || days == 2) {
-      final start = cycle.nextPeriodStart(today: now);
+    final late = cycle.daysLate(today: now);
+    // Null once the projection has stopped: no period countdown then.
+    // A dated pregnancy suppresses the whole period block (late + countdown);
+    // moon milestones below still fire.
+    final start = cycle.nextPeriodStart(today: now);
+    if (!cycle.pregnancyActive && late >= 1 && late <= 5) {
+      // A few days late gets its own alert, exclusive with the period-dN
+      // countdown below (the modular count wraps once the due date passes).
+      out.add(
+        AlertItem(
+          id: 'late-d$late-${_dateKey(today)}',
+          type: AlertType.periodPredicted,
+          title: 'Period Late',
+          body: 'Your period is $late ${late == 1 ? 'day' : 'days'} late. Log it once flow starts to re-anchor predictions.',
+          createdAt: now,
+          eventDate: today,
+        ),
+      );
+    } else if (!cycle.pregnancyActive && start != null && (days == 1 || days == 2)) {
       out.add(
         AlertItem(
           id: 'period-d$days-${_dateKey(start)}',
@@ -37,8 +54,10 @@ class AlertGenerator {
     }
 
     // Fertility copy follows the same gated cycle logic as the calendar.
-    // Peak fires on ovulation day; window-start fires when the fertile range opens.
-    if (cycle.showFertilityPredictions) {
+    // Peak fires on ovulation day; window-start fires on the first fertile day.
+    // Both hide once the cycle runs long enough to lose confidence.
+    if (cycle.showFertilityPredictions && cycle.predictionsConfident(today: now)) {
+      final yesterday = today.subtract(const Duration(days: 1));
       if (cycle.isOvulationDay(today)) {
         out.add(
           AlertItem(
@@ -52,7 +71,7 @@ class AlertGenerator {
             eventDate: today,
           ),
         );
-      } else if (cycle.isFertileDay(today) && cycle.daysUntilOvulation(today: now) == 2) {
+      } else if (cycle.isFertileDay(today) && !cycle.isFertileDay(yesterday)) {
         out.add(
           AlertItem(
             id: 'fertile-start-${_dateKey(today)}',

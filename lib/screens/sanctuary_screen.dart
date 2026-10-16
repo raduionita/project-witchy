@@ -20,6 +20,7 @@ import '../widgets/stat_card.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
 import '../widgets/cycle_orb.dart';
+import '../widgets/disclaimer_text.dart';
 import '../widgets/icon_badge.dart';
 
 class SanctuaryScreen extends StatelessWidget {
@@ -52,7 +53,7 @@ class SanctuaryScreen extends StatelessWidget {
   Widget _buildStatsRow(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final now = DateTime.now();
-    final nextStart = cycle.nextPeriodStart(today: now);
+    final DateTime? nextStart = cycle.nextPeriodStart(today: now);
     final daysUntil = cycle.daysUntilPeriod(today: now);
     final ovuToday = cycle.ovulationToday;
     final fertileNow = cycle.fertileToday;
@@ -69,19 +70,43 @@ class SanctuaryScreen extends StatelessWidget {
             : fertileNow
             ? 'Ovulation nears'
             : '${DateFormat('MMM d').format(cycle.nextOvulationDate(today: now))} · predicted';
-    String bleedValue = '$daysUntil Days';
-    String bleedSub = '${DateFormat('MMM d').format(nextStart)} · predicted';
-    if (cycle.isPerimenopause) {
-      final range = cycle.predictedRange(today: now);
+    String bleedValue;
+    String bleedSub;
+    // Null once the projection has stopped: nudge a fresh log instead of
+    // showing a stale countdown.
+    final range = cycle.predictedRange(today: now);
+    final late = cycle.daysLate(today: now);
+    if (nextStart == null || range == null) {
+      bleedValue = 'Log to update';
+      bleedSub = 'cycle running long - log to re-anchor';
+    } else if (late > 0) {
+      bleedValue = '$late ${late == 1 ? 'Day' : 'Days'} Late';
+      bleedSub = 'log your period to re-anchor';
+    } else if (cycle.showPeriodRange) {
       final todayDate = DateTime(now.year, now.month, now.day);
       final dMin = CycleCalculator.daysBetween(todayDate, range.earliest);
       final dMax = CycleCalculator.daysBetween(todayDate, range.latest);
       bleedValue = dMin == dMax ? '$dMin Days' : '$dMin–$dMax Days';
       bleedSub = '${DateFormat('MMM d').format(range.earliest)} – ${DateFormat('MMM d').format(range.latest)} · range';
+    } else {
+      bleedValue = '$daysUntil Days';
+      bleedSub = '${DateFormat('MMM d').format(nextStart)} · predicted';
+    }
+    // Pregnancy states repurpose the countdown card: active suppresses the
+    // period countdown (links the tracker instead), gap state nudges setup.
+    VoidCallback bleedTap = () => context.go('/bleeding');
+    if (cycle.pregnancyActive) {
+      bleedValue = 'Pregnancy';
+      bleedSub = 'open Pregnancy Tracker';
+      bleedTap = () => context.go('/pregnancy');
+    } else if (cycle.pregnancyModeOn) {
+      bleedValue = 'Set up tracker';
+      bleedSub = 'add dates in Pregnancy Tracker';
+      bleedTap = () => context.go('/pregnancy');
     }
     return Row(
       children: [
-        Expanded(child: StatCard(label: 'Bleeding In', value: bleedValue, sub: bleedSub, onTap: () => context.go('/bleeding'))),
+        Expanded(child: StatCard(label: 'Bleeding In', value: bleedValue, sub: bleedSub, onTap: bleedTap)),
         if (cycle.showFertilityPredictions) ...[
           const SizedBox(width: 12),
           Expanded(child: StatCard(label: 'Fertility Window', value: value, sub: sub, valueColor: AppColors.pink, onTap: () => context.go('/fertility'))),
@@ -208,6 +233,8 @@ class SanctuaryScreen extends StatelessWidget {
         _buildTodaysMagicSection(context),
         const SizedBox(height: 12),
         _buildAstralInsightCard(context),
+        const SizedBox(height: 16),
+        const DisclaimerText(),
       ],
     );
   }

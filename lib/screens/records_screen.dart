@@ -61,7 +61,7 @@ class RecordsScreen extends StatelessWidget {
                   ),
                 ),
                 Tooltip(
-                  message: 'Variation is longest minus shortest. Above 7 days is marked Irregular.',
+                  message: 'Variation is longest minus shortest over your last 6 cycles. Above 7 days is marked Irregular.',
                   child: AppTag.gold('${irregular ? 'Irregular' : 'Regular'} · $spread Days'),
                 ),
               ],
@@ -75,7 +75,7 @@ class RecordsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final spans = [...cycle.bleeds].reversed.toList();
-    final avgCycle = cycle.meanCycleLength;
+    final avgCycle = cycle.medianRecentCycleLength;
     final avgBleed = cycle.meanBleedLength;
     final observed = cycle.observedCycleLengths;
     final starts = PeriodHistory.startsOf(cycle.bleeds);
@@ -109,7 +109,7 @@ class RecordsScreen extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: StatCard(label: '', value: avgCycle == null ? '—' : '${avgCycle.round()} days', sub: 'Average Cycle', onTap: () => context.go('/chart'))),
+            Expanded(child: StatCard(label: '', value: avgCycle == null ? '—' : '$avgCycle days', sub: 'Average Cycle', onTap: () => context.go('/chart'))),
             const SizedBox(width: 12),
             Expanded(child: StatCard(label: '', value: avgBleed == null ? '—' : '${avgBleed.round()} days', sub: 'Average Bleeding', onTap: () => context.go('/bleeding'))),
           ],

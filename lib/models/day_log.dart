@@ -12,6 +12,7 @@ class DayLog {
   double pain;
   double? temperature;
   String notes;
+  String? ovulationTest;
   DayLog({
     Set<String>? flow,
     Set<String>? collection,
@@ -26,6 +27,7 @@ class DayLog {
     this.pain = 6,
     this.temperature,
     this.notes = '',
+    this.ovulationTest,
   }) : flow = flow ?? {},
        collection = collection ?? {},
        symptoms = symptoms ?? {},
@@ -51,6 +53,7 @@ class DayLog {
     'pain': pain,
     'temperature': temperature,
     'notes': notes,
+    'ovulationTest': ovulationTest,
   };
 
   /// Deep copy — mutating the copy never affects the original entry.
@@ -79,5 +82,6 @@ class DayLog {
     pain: (json['pain'] as num?)?.toDouble() ?? 6,
     temperature: (json['temperature'] as num?)?.toDouble(),
     notes: json['notes'] as String? ?? '',
+    ovulationTest: json['ovulationTest'] as String?,
   );
 }

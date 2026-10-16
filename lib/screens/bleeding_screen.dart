@@ -24,16 +24,26 @@ class BleedingScreen extends StatelessWidget {
   Widget _buildStatsRow(CycleProvider cycle) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final next = cycle.nextPeriodStart(today: now);
+    final DateTime? next = cycle.nextPeriodStart(today: now);
     final daysUntil = cycle.daysUntilPeriod(today: now);
-    String bleedValue = daysUntil <= 0 ? 'Today' : 'In $daysUntil Days';
-    String bleedSub = '${DateFormat('MMM d').format(next)} · predicted';
-    if (cycle.isPerimenopause) {
-      final range = cycle.predictedRange(today: now);
+    String bleedValue;
+    String bleedSub;
+    final range = cycle.predictedRange(today: now);
+    final late = cycle.daysLate(today: now);
+    if (next == null || range == null) {
+      bleedValue = 'Log to update';
+      bleedSub = 'cycle running long - log to re-anchor';
+    } else if (late > 0) {
+      bleedValue = '$late ${late == 1 ? 'Day' : 'Days'} Late';
+      bleedSub = 'log your period to re-anchor';
+    } else if (cycle.showPeriodRange) {
       final dMin = CycleCalculator.daysBetween(today, range.earliest);
       final dMax = CycleCalculator.daysBetween(today, range.latest);
       bleedValue = dMin == dMax ? '$dMin Days' : '$dMin–$dMax Days';
       bleedSub = '${DateFormat('MMM d').format(range.earliest)} – ${DateFormat('MMM d').format(range.latest)} · range';
+    } else {
+      bleedValue = daysUntil <= 0 ? 'Today' : 'In $daysUntil Days';
+      bleedSub = '${DateFormat('MMM d').format(next)} · predicted';
     }
     final avgBleed = cycle.meanBleedLength;
     return Row(
@@ -65,7 +75,10 @@ class BleedingScreen extends StatelessWidget {
     } else if (expected) {
       detail = 'Your cycle predicts a bleed starting today. Log it once flow starts.';
     } else {
-      detail = 'Next bleed predicted for ${DateFormat('MMMM d').format(cycle.nextPeriodStart(today: now))}.';
+      final DateTime? next = cycle.nextPeriodStart(today: now);
+      detail = next == null
+          ? 'Your cycle is running long. Log flow once it starts to re-anchor predictions.'
+          : 'Next bleed predicted for ${DateFormat('MMMM d').format(next)}.';
     }
     return AppCard(
       child: Column(

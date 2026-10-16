@@ -61,4 +61,19 @@ void main() {
     expect(find.textContaining('Logged as bleed day'), findsOneWidget);
     expect(find.text('Recent Periods'), findsOneWidget);
   });
+
+  testWidgets('late but projecting shows Days Late instead of Today', (tester) async {
+    final today = DateTime.now();
+    final midnight = DateTime(today.year, today.month, today.day);
+    final last = DateTime(midnight.year, midnight.month, midnight.day - 30);
+    onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 28, bleedLength: 5, lastPeriodStart: last);
+    logging = LoggingProvider(prefs);
+    logging.setFlow(DateTime(last.year, last.month, last.day - 28), 'Medium');
+    logging.setFlow(last, 'Medium');
+    cycle = CycleProvider(onboarding, logging);
+    await pumpBleeding(tester);
+
+    expect(find.text('2 Days Late'), findsOneWidget);
+    expect(find.text('log your period to re-anchor'), findsOneWidget);
+  });
 }

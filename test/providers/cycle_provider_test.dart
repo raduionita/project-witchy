@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/models/cycle_phase.dart';
 import 'package:witchy/models/tracking_mode.dart';
 import 'package:witchy/providers/cycle_provider.dart';
+import 'package:witchy/providers/gestation_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/services/cycle_calculator.dart';
@@ -68,6 +69,77 @@ void main() {
     });
   });
 
+  group('CycleProvider fertile window (A1)', () {
+    test('sparse history widens the window with pad 2', () {
+      buildSources(lastStart: DateTime(2026, 9, 1), cycleLength: 28);
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.uncertaintyPad, 2);
+      expect(cycle.fertileStartCycleDay, 7);
+      expect(cycle.fertileEndCycleDay, 17);
+      expect(cycle.fertileWindowStart(today: DateTime(2026, 9, 20)), DateTime(2026, 9, 7));
+      // Day 7 was follicular under the old ovu-2 bounds; now it opens the window.
+      expect(cycle.phaseAt(DateTime(2026, 9, 7)), CyclePhase.fertile);
+    });
+
+    test('three steady observed cycles remove the pad', () {
+      buildSources(lastStart: DateTime(2026, 9, 24), cycleLength: 40);
+      for (final start in [DateTime(2026, 7, 2), DateTime(2026, 7, 30), DateTime(2026, 8, 27), DateTime(2026, 9, 24)]) {
+        logging.setFlow(start, 'Medium');
+      }
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.observedCycleLengths, [28, 28, 28]);
+      expect(cycle.uncertaintyPad, 0);
+      expect(cycle.fertileStartCycleDay, 9);
+      expect(cycle.fertileEndCycleDay, 15);
+    });
+
+    test('irregular history pads with half the spread', () {
+      buildSources(lastStart: DateTime(2026, 11, 21), cycleLength: 40);
+      for (final start in [DateTime(2026, 9, 1), DateTime(2026, 9, 25), DateTime(2026, 10, 19), DateTime(2026, 11, 21)]) {
+        logging.setFlow(start, 'Medium');
+      }
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.observedCycleLengths, [24, 24, 33]);
+      expect(cycle.uncertaintyPad, 4);
+    });
+
+    test('pad caps at 4 for very irregular history', () {
+      buildSources(lastStart: DateTime(2026, 11, 20), cycleLength: 40);
+      for (final start in [DateTime(2026, 9, 1), DateTime(2026, 9, 21), DateTime(2026, 10, 11), DateTime(2026, 11, 20)]) {
+        logging.setFlow(start, 'Medium');
+      }
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.observedCycleLengths, [20, 20, 40]);
+      expect(cycle.uncertaintyPad, 4);
+    });
+  });
+
+  group('CycleProvider rolling statistics (A2)', () {
+    test('ancient outliers age out of predictions and status', () {
+      // Two ancient 45-day cycles followed by twelve steady 28-day cycles.
+      buildSources(lastStart: DateTime(2026, 9, 24), cycleLength: 40);
+      var start = DateTime(2025, 6, 1);
+      final starts = <DateTime>[];
+      for (final gap in [45, 45, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28]) {
+        starts.add(start);
+        start = DateTime(start.year, start.month, start.day + gap);
+      }
+      for (final s in starts) {
+        logging.setFlow(s, 'Medium');
+      }
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.observedCycleLengths, hasLength(14));
+      // Prediction basis is the last-12 median: steady 28s only.
+      expect(cycle.effectiveCycleLength, 28);
+      expect(cycle.medianRecentCycleLength, 28);
+      // Status uses the last-6 spread: regular despite the ancient 45s.
+      expect(cycle.cycleSpread, 0);
+      // All-time display still shows the full range.
+      expect(cycle.shortestCycleLength, 28);
+      expect(cycle.longestCycleLength, 45);
+    });
+  });
+
   group('CycleProvider reactivity', () {
     test('notifies and recomputes when logging changes', () {
       buildSources();
@@ -97,7 +169,9 @@ void main() {
       expect(cycle.cycleDay(today: today), 10);
       expect(cycle.nextPeriodStart(today: today), DateTime(2026, 9, 29));
       expect(cycle.daysUntilPeriod(today: today), 19);
-      expect(cycle.phase(today: today).label, 'Follicular');
+      // Sparse history pads the window to days 7-17, so day 10 is fertile.
+      expect(cycle.phase(today: today).label, 'Fertile Window');
+      expect(cycle.phase(today: DateTime(2026, 9, 6)).label, 'Follicular');
     });
   });
 
@@ -147,7 +221,8 @@ void main() {
       expect(cycle.longestCycleLength, 40);
       expect(cycle.cycleSpread, isNull);
       final range = cycle.predictedRange(today: DateTime(2026, 9, 10));
-      expect(range.earliest, DateTime(2026, 10, 11));
+      expect(range, isNotNull);
+      expect(range!.earliest, DateTime(2026, 10, 11));
       expect(range.latest, DateTime(2026, 10, 11));
     });
 
@@ -166,8 +241,130 @@ void main() {
       expect(cycle.longestCycleLength, 35);
       expect(cycle.cycleSpread, 7);
       final range = cycle.predictedRange(today: DateTime(2026, 9, 10));
-      expect(range.earliest, DateTime(2026, 9, 30));
+      expect(range, isNotNull);
+      expect(range!.earliest, DateTime(2026, 9, 30));
       expect(range.latest, DateTime(2026, 10, 7));
+    });
+  });
+
+  group('CycleProvider late handling (A3)', () {
+    void seedTwo28s(DateTime last) {
+      buildSources(lastStart: last, cycleLength: 28);
+      for (final start in [last.subtract(const Duration(days: 56)), last.subtract(const Duration(days: 28)), last]) {
+        logging.setFlow(start, 'Medium');
+      }
+    }
+
+    test('late exactly longest+5 stays confident and projecting', () {
+      final today = DateTime(2026, 10, 9);
+      seedTwo28s(today.subtract(const Duration(days: 61)));
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.daysLate(today: today), 33);
+      expect(cycle.longestRecentCycleLength, 28);
+      expect(cycle.predictionsConfident(today: today), isTrue);
+      expect(cycle.projectionStopped(today: today), isFalse);
+      expect(cycle.nextPeriodStart(today: today), isNotNull);
+      expect(cycle.predictedRange(today: today), isNotNull);
+    });
+
+    test('late past longest+5 loses confidence but keeps projecting', () {
+      final today = DateTime(2026, 10, 9);
+      seedTwo28s(today.subtract(const Duration(days: 62)));
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.daysLate(today: today), 34);
+      expect(cycle.predictionsConfident(today: today), isFalse);
+      expect(cycle.projectionStopped(today: today), isFalse);
+      expect(cycle.nextPeriodStart(today: today), isNotNull);
+    });
+
+    test('late exactly longest+10 still projects (strict boundary)', () {
+      final today = DateTime(2026, 10, 9);
+      seedTwo28s(today.subtract(const Duration(days: 66)));
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.daysLate(today: today), 38);
+      expect(cycle.projectionStopped(today: today), isFalse);
+    });
+
+    test('late past longest+10 stops the projection', () {
+      final today = DateTime(2026, 10, 9);
+      seedTwo28s(today.subtract(const Duration(days: 67)));
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.daysLate(today: today), 39);
+      expect(cycle.predictionsConfident(today: today), isFalse);
+      expect(cycle.projectionStopped(today: today), isTrue);
+      expect(cycle.nextPeriodStart(today: today), isNull);
+      expect(cycle.predictedRange(today: today), isNull);
+    });
+
+    test('longest recent falls back to the effective length without history', () {
+      buildSources();
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.longestRecentCycleLength, 40);
+    });
+  });
+
+  group('CycleProvider range promotion (A6)', () {
+    void seedGaps(DateTime last, List<int> gapsOldestFirst) {
+      buildSources(lastStart: last, cycleLength: 28);
+      // Forward calendar-day seeding (DST-safe): anchor so the final start is `last`.
+      final total = gapsOldestFirst.fold(0, (a, b) => a + b);
+      var start = DateTime(last.year, last.month, last.day - total);
+      for (final gap in [...gapsOldestFirst, 0]) {
+        logging.setFlow(start, 'Medium');
+        start = DateTime(start.year, start.month, start.day + gap);
+      }
+    }
+
+    test('ancient outliers age out of predictedRange but stay on Records', () {
+      final last = DateTime(2026, 9, 24);
+      seedGaps(last, [45, 45, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28]);
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.observedCycleLengths, hasLength(14));
+      expect(cycle.longestCycleLength, 45);
+      expect(cycle.shortestCycleLength, 28);
+      final today = DateTime(2026, 10, 10);
+      final range = cycle.predictedRange(today: today);
+      expect(range, isNotNull);
+      expect(range!.earliest, range.latest);
+      expect(range.earliest, cycle.nextPeriodStart(today: today));
+      expect(cycle.showPeriodRange, isFalse);
+    });
+
+    test('recent variation widens the range and flips the Today flag', () {
+      final last = DateTime(2026, 9, 2);
+      seedGaps(last, [28, 35]);
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.cycleSpread, 7);
+      expect(cycle.showPeriodRange, isTrue);
+      final range = cycle.predictedRange(today: DateTime(2026, 9, 10));
+      expect(range, isNotNull);
+      expect(range!.earliest, DateTime(2026, 9, 30));
+      expect(range.latest, DateTime(2026, 10, 7));
+    });
+
+    test('steady cycles keep the single-day countdown', () {
+      final last = DateTime(2026, 9, 24);
+      seedGaps(last, [28, 28]);
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.cycleSpread, 0);
+      expect(cycle.showPeriodRange, isFalse);
+      final range = cycle.predictedRange(today: DateTime(2026, 10, 10));
+      expect(range, isNotNull);
+      expect(range!.earliest, range.latest);
+    });
+
+    test('no history collapses the range except in perimenopause', () {
+      buildSources();
+      var cycle = CycleProvider(onboarding, logging);
+      expect(cycle.showPeriodRange, isFalse);
+      final range = cycle.predictedRange(today: DateTime(2026, 10, 10));
+      expect(range, isNotNull);
+      expect(range!.earliest, range.latest);
+
+      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 28, bleedLength: 5, lastPeriodStart: DateTime(2026, 9, 24), trackingModes: {TrackingMode.perimenopause});
+      logging = LoggingProvider(prefs);
+      cycle = CycleProvider(onboarding, logging);
+      expect(cycle.showPeriodRange, isTrue);
     });
   });
 
@@ -249,6 +446,117 @@ void main() {
       final date = cycle.nextOvulationDate(today: today);
       expect(CycleCalculator.daysBetween(today, date), days);
       expect(date.isAfter(today), isTrue);
+    });
+  });
+
+  group('CycleProvider pregnancy suppression (A5)', () {
+    ({CycleProvider cycle, GestationProvider gestation}) buildSuppressed({required Set<TrackingMode> modes, DateTime? lmp}) {
+      final ob = OnboardingProvider(
+        prefs,
+        onboarded: true,
+        cycleLength: 28,
+        bleedLength: 5,
+        lastPeriodStart: DateTime(2026, 9, 13),
+        trackingModes: modes,
+      );
+      final log = LoggingProvider(prefs);
+      final gest = GestationProvider(prefs, lmpDate: lmp);
+      return (cycle: CycleProvider(ob, log, gestation: gest), gestation: gest);
+    }
+
+    test('mode plus LMP suppresses fertility predictions', () {
+      final s = buildSuppressed(modes: {TrackingMode.cycle, TrackingMode.pregnancy}, lmp: DateTime(2026, 8, 1));
+      expect(s.cycle.pregnancyModeOn, isTrue);
+      expect(s.cycle.pregnancyActive, isTrue);
+      expect(s.cycle.showFertilityPredictions, isFalse);
+      expect(s.cycle.fertileWindowStart(), isNull);
+    });
+
+    test('mode without LMP keeps predictions (gap state, F6 parity)', () {
+      final s = buildSuppressed(modes: {TrackingMode.cycle, TrackingMode.pregnancy});
+      expect(s.cycle.pregnancyModeOn, isTrue);
+      expect(s.cycle.pregnancyActive, isFalse);
+      expect(s.cycle.showFertilityPredictions, isTrue);
+    });
+
+    test('LMP without pregnancy mode changes nothing', () {
+      final s = buildSuppressed(modes: {TrackingMode.cycle}, lmp: DateTime(2026, 8, 1));
+      expect(s.cycle.pregnancyModeOn, isFalse);
+      expect(s.cycle.pregnancyActive, isFalse);
+      expect(s.cycle.showFertilityPredictions, isTrue);
+    });
+
+    test('no gestation provider means no suppression', () {
+      buildSources();
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.pregnancyActive, isFalse);
+    });
+
+    test('setting the LMP flips suppression live', () async {
+      final s = buildSuppressed(modes: {TrackingMode.cycle, TrackingMode.pregnancy});
+      var notified = 0;
+      s.cycle.addListener(() => notified++);
+      expect(s.cycle.pregnancyActive, isFalse);
+      await s.gestation.setLmp(DateTime(2026, 8, 1));
+      expect(s.cycle.pregnancyActive, isTrue);
+      expect(s.cycle.showFertilityPredictions, isFalse);
+      expect(notified, greaterThan(0));
+    });
+
+    test('pregnancy-only mode with LMP suppresses fertility too', () {
+      final s = buildSuppressed(modes: {TrackingMode.pregnancy}, lmp: DateTime(2026, 8, 1));
+      expect(s.cycle.pregnancyModeOn, isTrue);
+      expect(s.cycle.pregnancyActive, isTrue);
+      expect(s.cycle.showFertilityPredictions, isFalse);
+      expect(s.cycle.fertileWindowStart(), isNull);
+    });
+
+    test('cycle plus peri keeps fertility and forces the range', () {
+      final s = buildSuppressed(modes: {TrackingMode.cycle, TrackingMode.perimenopause});
+      expect(s.cycle.pregnancyActive, isFalse);
+      expect(s.cycle.showFertilityPredictions, isTrue);
+      expect(s.cycle.showPeriodRange, isTrue);
+    });
+  });
+
+  group('CycleProvider OPK indication (B4)', () {
+    void seedTwentyEight() {
+      buildSources(lastStart: DateTime(2026, 1, 1), cycleLength: 28);
+      logging.setFlow(DateTime(2026, 1, 1), 'Medium');
+      logging.setFlow(DateTime(2026, 1, 29), 'Medium');
+    }
+
+    test('latest positive implies ovulation tomorrow and feeds luteal stats', () {
+      seedTwentyEight();
+      logging.setOvulationTest(DateTime(2026, 1, 14), 'positive');
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.opkIndicatedOvulationDate, DateTime(2026, 1, 15));
+      expect(cycle.confirmedOvulationDate, isNull);
+      expect(cycle.detectedLutealLength, 14);
+      expect(cycle.lutealLength, 14);
+    });
+
+    test('no positive test leaves OPK indication null', () {
+      seedTwentyEight();
+      logging.setOvulationTest(DateTime(2026, 1, 14), 'negative');
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.opkIndicatedOvulationDate, isNull);
+      expect(cycle.detectedLutealLength, isNull);
+    });
+
+    test('BBT wins over a conflicting OPK-implied length', () {
+      seedTwentyEight();
+      for (var d = 10; d <= 15; d++) {
+        logging.setTemperature(DateTime(2026, 1, d), 36.4);
+      }
+      for (var d = 16; d <= 19; d++) {
+        logging.setTemperature(DateTime(2026, 1, d), 36.8);
+      }
+      logging.setOvulationTest(DateTime(2026, 1, 10), 'positive');
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.confirmedOvulationDate, DateTime(2026, 1, 15));
+      expect(cycle.opkIndicatedOvulationDate, DateTime(2026, 1, 11));
+      expect(cycle.detectedLutealLength, 14);
     });
   });
 }

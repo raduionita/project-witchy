@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/models/tracking_mode.dart';
 import 'package:witchy/navigation/app_router_delegate.dart';
 import 'package:witchy/providers/auth_provider.dart';
+import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/providers/gestation_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
@@ -21,6 +22,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = PrefsService();
     final onboarding = OnboardingProvider(prefs, onboarded: onboarded, trackingModes: modes);
+    final logging = LoggingProvider(prefs);
     final delegate = AppRouterDelegate()..reset('/pregnancy');
     await tester.pumpWidget(
       MultiProvider(
@@ -28,7 +30,8 @@ void main() {
           Provider<PrefsService>.value(value: prefs),
           ChangeNotifierProvider<AuthProvider>.value(value: AuthProvider(prefs)),
           ChangeNotifierProvider<OnboardingProvider>.value(value: onboarding),
-          ChangeNotifierProvider<LoggingProvider>.value(value: LoggingProvider(prefs)),
+          ChangeNotifierProvider<LoggingProvider>.value(value: logging),
+          ChangeNotifierProvider<CycleProvider>.value(value: CycleProvider(onboarding, logging)),
           ChangeNotifierProvider<GestationProvider>.value(value: GestationProvider(prefs)),
         ],
         // Render the delegate's pages directly - MaterialApp.router would

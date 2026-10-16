@@ -181,6 +181,7 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
               ],
               _LogCycleSlider(date: date, pain: entry.pain),
               _TemperatureRow(date: date, temperature: entry.temperature),
+              _OvulationTestRow(date: date, ovulationTest: entry.ovulationTest),
               const SizedBox(height: 8),
               Text('Notes', style: AppText.sec),
               const SizedBox(height: 8),
@@ -303,6 +304,68 @@ class _TemperatureRow extends StatelessWidget {
             value: t.clamp(_min, _max),
             onChanged: (v) => provider.setTemperature(date, double.parse(v.toStringAsFixed(1))),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Ovulation test result: null = unlogged, otherwise positive/negative.
+/// Tapping the active result clears it back to unlogged.
+class _OvulationTestRow extends StatelessWidget {
+  final DateTime date;
+  final String? ovulationTest;
+  const _OvulationTestRow({required this.date, required this.ovulationTest});
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.read<LoggingProvider>();
+    const label = 'Ovulation Test';
+    final status = switch (ovulationTest) {
+      'positive' => 'Positive',
+      'negative' => 'Negative',
+      _ => 'Not logged',
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: AppText.sec),
+            Row(
+              children: [
+                Text(status, style: AppText.serif(13.5, c: ovulationTest == 'positive' ? AppColors.pink : AppColors.muted)),
+                if (ovulationTest != null) ...[
+                  const SizedBox(width: 4),
+                  IconButton(
+                    constraints: const BoxConstraints(minWidth: 24, minHeight: 24, maxWidth: 24, maxHeight: 24),
+                    padding: EdgeInsets.zero,
+                    iconSize: 14,
+                    tooltip: 'Clear result',
+                    onPressed: () => provider.setOvulationTest(date, null),
+                    icon: FaIcon(AppIcons.cancel, size: 14, color: AppColors.muted),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            AppChip(
+              label: 'Positive',
+              selected: ovulationTest == 'positive',
+              onTap: () => provider.setOvulationTest(date, ovulationTest == 'positive' ? null : 'positive'),
+            ),
+            const SizedBox(width: 8),
+            AppChip(
+              label: 'Negative',
+              selected: ovulationTest == 'negative',
+              onTap: () => provider.setOvulationTest(date, ovulationTest == 'negative' ? null : 'negative'),
+            ),
+          ],
         ),
       ],
     );

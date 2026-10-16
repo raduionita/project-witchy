@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../common/gestation_content.dart';
+import '../providers/cycle_provider.dart';
 import '../providers/gestation_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -12,6 +13,7 @@ import '../widgets/app_top_bar.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
+import '../widgets/disclaimer_text.dart';
 
 class GestationScreen extends StatelessWidget {
   const GestationScreen({super.key});
@@ -25,6 +27,52 @@ class GestationScreen extends StatelessWidget {
       lastDate: DateTime.now(),
     );
     if (picked != null && context.mounted) await provider.setLmp(picked);
+  }
+
+  Future<void> _pickEddOverride(BuildContext context) async {
+    final provider = context.read<GestationProvider>();
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: provider.eddOverride ?? provider.dueDate ?? now,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 300)),
+    );
+    if (picked != null && context.mounted) await provider.setEddOverride(picked);
+  }
+
+  /// Effective due date with provenance, Parikh alternative for non-28-day
+  /// cycles, and override editing (tap to set, button to clear back to LMP).
+  Widget _buildDueDateCard(BuildContext context, GestationProvider g, int cycleLength) {
+    final due = g.dueDate!;
+    final parikh = cycleLength != 28 && g.eddOverride == null ? g.dueDateParikh(cycleLength) : null;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Due date: ${g.dueDateSource == 'doctor' ? 'doctor-set' : 'LMP'}', style: AppText.sans(11, c: AppColors.muted)),
+          const SizedBox(height: 3),
+          Text(DateFormat('MMMM d, yyyy').format(due), style: AppText.serif(14)),
+          if (parikh != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Parikh estimate for a $cycleLength-day cycle: ${DateFormat('MMMM d, yyyy').format(parikh)}.',
+              style: AppText.sans(11.5, h: 1.55, c: AppColors.muted),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: AppButton(label: g.eddOverride == null ? 'Set doctor due date' : 'Change doctor due date', onTap: () => _pickEddOverride(context))),
+              if (g.eddOverride != null) ...[
+                const SizedBox(width: 10),
+                TextButton(onPressed: () => g.setEddOverride(null), child: const Text('Use LMP date')),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   String _remainingCopy(GestationProvider g) {
@@ -136,6 +184,7 @@ class GestationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final g = context.watch<GestationProvider>();
+    final cycleLength = context.watch<CycleProvider>().effectiveCycleLength;
     return Scaffold(
       appBar: const AppTopBar(title: 'Pregnancy Tracker', action: AppIcons.heart),
       body: ListView(
@@ -146,11 +195,15 @@ class GestationScreen extends StatelessWidget {
           else ...[
             _buildHero(g),
             const SizedBox(height: 12),
+            _buildDueDateCard(context, g, cycleLength),
+            const SizedBox(height: 12),
             _buildComparison(g),
             const SizedBox(height: 12),
             _buildTips(g),
             const SizedBox(height: 12),
             _buildLmpRow(context, g),
+            const SizedBox(height: 16),
+            const DisclaimerText(),
           ],
         ],
       ),

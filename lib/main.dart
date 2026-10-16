@@ -26,13 +26,14 @@ Future<void> main() async {
   final reminders = await RemindersProvider.load(prefs);
   final alerts = await AlertProvider.load(prefs);
   final gestation = await GestationProvider.load(prefs);
-  final cycle = CycleProvider(onboarding, logging);
+  final cycle = CycleProvider(onboarding, logging, gestation: gestation);
   alerts.bind(cycle, logging);
   try {
     await NotificationService.init();
     await NotificationService.syncPeriodPrediction(
       enabled: settings.lunarNotifications,
-      predictedStart: cycle.nextPeriodStart(),
+      // A dated pregnancy cancels the period countdown notification.
+      predictedStart: cycle.pregnancyActive ? null : cycle.nextPeriodStart(),
     );
   } catch (e) {
     debugPrint('Notification startup failed: $e');
@@ -40,7 +41,7 @@ Future<void> main() async {
   void resync() {
     NotificationService.syncAll(
       reminders.items,
-      predictedStart: cycle.nextPeriodStart(),
+      predictedStart: cycle.pregnancyActive ? null : cycle.nextPeriodStart(),
       fertileStart: cycle.fertileWindowStart(),
       bleedLength: cycle.bleedLength,
     ).catchError((e) => debugPrint('Notification resync failed: $e'));

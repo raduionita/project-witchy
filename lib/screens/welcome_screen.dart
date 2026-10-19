@@ -23,7 +23,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final auth = context.read<AuthProvider>();
-      if (auth.signedIn && context.read<OnboardingProvider>().onboarded) context.go('/dashboard');
+      if (auth.signedIn && context.read<OnboardingProvider>().onboarded) context.go('/today');
     });
   }
 

@@ -18,8 +18,8 @@ import '../widgets/trend_bars.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
 
-class RecordsScreen extends StatelessWidget {
-  const RecordsScreen({super.key});
+class InsightsScreen extends StatelessWidget {
+  const InsightsScreen({super.key});
 
   /// Short/Long vs a robust reference: median of the other observed cycles,
   /// so one outlier (e.g. a 49-day cycle) does not drag its own tag threshold.
@@ -129,7 +129,7 @@ class RecordsScreen extends StatelessWidget {
           children: [
             Expanded(child: StatCard(label: '', value: avgCycle == null ? '-' : '$avgCycle days', sub: 'Average Cycle', onTap: () => context.go('/chart'))),
             const SizedBox(width: 12),
-            Expanded(child: StatCard(label: '', value: avgBleed == null ? '-' : '${avgBleed.round()} days', sub: 'Average Bleeding', onTap: () => context.go('/bleeding'))),
+            Expanded(child: StatCard(label: '', value: avgBleed == null ? '-' : '${avgBleed.round()} days', sub: 'Average Bleeding', onTap: () => context.go('/bleed-history'))),
           ],
         ),
         const SizedBox(height: 12),

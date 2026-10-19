@@ -4,15 +4,15 @@ import 'package:provider/provider.dart';
 import '../models/tracking_mode.dart';
 import '../providers/onboarding_provider.dart';
 import '../screens/alerts_screen.dart';
-import '../screens/bleeding_screen.dart';
+import '../screens/bleed_history_screen.dart';
 import '../screens/chart_screen.dart';
 import '../screens/fertility_screen.dart';
-import '../screens/gestation_screen.dart';
+import '../screens/pregnancy_screen.dart';
 import '../screens/join_screen.dart';
 import '../screens/main_screen.dart';
 import '../screens/privacy_screen.dart';
 import '../screens/profile_screen.dart';
-import '../screens/rhythms_screen.dart';
+import '../screens/onboarding_screen.dart';
 import '../screens/splash_screen.dart';
 import '../screens/welcome_screen.dart';
 import '../screens/webview_screen.dart';
@@ -20,7 +20,7 @@ import '../screens/webview_screen.dart';
 class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopNavigatorRouterDelegateMixin<String> {
   AppRouterDelegate();
 
-  static const Set<String> shellRoutes = {'/dashboard', '/calendar', '/insights', '/coven'};
+  static const Set<String> shellRoutes = {'/today', '/calendar', '/insights', '/articles'};
 
   @override
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -52,8 +52,8 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
   void back() {
     if (_stack.length > 1) {
       _stack.removeLast();
-    } else if (_stack.first != '/dashboard') {
-      _stack = ['/dashboard'];
+    } else if (_stack.first != '/today') {
+      _stack = ['/today'];
     } else {
       return;
     }
@@ -109,14 +109,14 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
       case '/privacy':
         return const PrivacyScreen();
       case '/onboarding':
-        return const RhythmsScreen();
-      case '/dashboard':
+        return const OnboardingScreen();
+      case '/today':
         return const MainScreen(initialIndex: 0);
       case '/calendar':
         return const MainScreen(initialIndex: 1);
       case '/insights':
         return const MainScreen(initialIndex: 2);
-      case '/coven':
+      case '/articles':
         return const MainScreen(initialIndex: 3);
       case '/profile':
         return const ProfileScreen();
@@ -124,13 +124,13 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
         return const AlertsScreen();
       case '/fertility':
         return const FertilityScreen();
-      case '/bleeding':
-        return const BleedingScreen();
+      case '/bleed-history':
+        return const BleedHistoryScreen();
       case '/pregnancy': {
         // Gated: only when pregnancy tracking is on and onboarding is done.
         final ob = context.read<OnboardingProvider>();
         if (!ob.onboarded || !ob.trackingModes.contains(TrackingMode.pregnancy)) return const WelcomeScreen();
-        return const GestationScreen();
+        return const PregnancyScreen();
       }
       case '/chart':
         return const ChartScreen();

@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
-import 'package:witchy/screens/records_screen.dart';
+import 'package:witchy/screens/insights_screen.dart';
 import 'package:witchy/services/prefs_service.dart';
 
 void main() {
@@ -22,7 +22,7 @@ void main() {
     cycle = CycleProvider(onboarding, logging);
   });
 
-  Future<void> pumpRecords(WidgetTester tester) async {
+  Future<void> pumpInsights(WidgetTester tester) async {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -31,14 +31,14 @@ void main() {
           ChangeNotifierProvider<LoggingProvider>.value(value: logging),
           ChangeNotifierProvider<CycleProvider>.value(value: cycle),
         ],
-        child: const MaterialApp(home: RecordsScreen()),
+        child: const MaterialApp(home: InsightsScreen()),
       ),
     );
     await tester.pumpAndSettle();
   }
 
   testWidgets('irregularity shows the empty state until two cycles are logged', (tester) async {
-    await pumpRecords(tester);
+    await pumpInsights(tester);
     expect(find.text('Irregularity'), findsOneWidget);
     expect(find.text('Log two completed cycles to see your spread.'), findsOneWidget);
     expect(find.textContaining('variation'), findsNothing);
@@ -50,7 +50,7 @@ void main() {
       // Two days: a single flow day counts as spotting, not as a period.
       logging.setFlow(DateTime(start.year, start.month, start.day + 1), 'Light');
     }
-    await pumpRecords(tester);
+    await pumpInsights(tester);
     expect(find.text('Irregularity'), findsOneWidget);
     expect(find.text('28–35 Days'), findsOneWidget);
     expect(find.text('Shortest to longest cycle'), findsOneWidget);

@@ -25,8 +25,8 @@ import '../widgets/cycle_orb.dart';
 import '../widgets/disclaimer_text.dart';
 import '../widgets/icon_badge.dart';
 
-class SanctuaryScreen extends StatelessWidget {
-  const SanctuaryScreen({super.key});
+class TodayScreen extends StatelessWidget {
+  const TodayScreen({super.key});
 
   static const _glyphPeriod = 'assets/svgs/moon-period.svg';
   static const _glyphPeriodPredicted = 'assets/svgs/moon-period-predicted.svg';
@@ -96,7 +96,7 @@ class SanctuaryScreen extends StatelessWidget {
     }
     // Pregnancy states repurpose the countdown card: active suppresses the
     // period countdown (links the tracker instead), gap state nudges setup.
-    VoidCallback bleedTap = () => context.go('/bleeding');
+    VoidCallback bleedTap = () => context.go('/bleed-history');
     if (cycle.pregnancyActive) {
       bleedValue = 'Pregnancy';
       bleedSub = 'open Pregnancy Tracker';

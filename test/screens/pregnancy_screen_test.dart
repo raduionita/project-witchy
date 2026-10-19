@@ -6,7 +6,7 @@ import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/providers/gestation_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
-import 'package:witchy/screens/gestation_screen.dart';
+import 'package:witchy/screens/pregnancy_screen.dart';
 import 'package:witchy/services/prefs_service.dart';
 
 void main() {
@@ -27,7 +27,7 @@ void main() {
           ChangeNotifierProvider<GestationProvider>.value(value: gestation),
           ChangeNotifierProvider<CycleProvider>.value(value: cycle),
         ],
-        child: const MaterialApp(home: GestationScreen()),
+        child: const MaterialApp(home: PregnancyScreen()),
       ),
     );
     await tester.pumpAndSettle();

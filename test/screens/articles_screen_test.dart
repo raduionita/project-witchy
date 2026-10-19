@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/navigation/app_router_delegate.dart';
 import 'package:witchy/navigation/app_router_scope.dart';
-import 'package:witchy/screens/coven_screen.dart';
+import 'package:witchy/screens/articles_screen.dart';
 import 'package:witchy/services/feed_service.dart';
 import 'package:witchy/services/prefs_service.dart';
 
@@ -24,7 +24,7 @@ Future<AppRouterDelegate> _pumpFeed(WidgetTester tester, {Map<String, Object>? i
       providers: [Provider<PrefsService>.value(value: prefs)],
       child: AppRouterScope(
         delegate: delegate,
-        child: MaterialApp(home: CovenScreen(feed: FeedService(prefs))),
+        child: MaterialApp(home: ArticlesScreen(feed: FeedService(prefs))),
       ),
     ),
   );

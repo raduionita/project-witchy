@@ -46,7 +46,7 @@ class OnboardingProvider extends ChangeNotifier {
   bool cycleLengthFromHistory = false;
 
   /// Start dates of earlier periods entered during onboarding, newest first.
-  /// Persisted indirectly: `rhythms_screen` seeds them into the day-log store,
+  /// Persisted indirectly: `onboarding_screen` seeds them into the day-log store,
   /// so `PeriodHistory` derives real cycle lengths from them.
   final List<DateTime> previousPeriodStarts = [];
 

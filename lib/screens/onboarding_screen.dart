@@ -18,14 +18,14 @@ import '../widgets/app_slider_row.dart';
 import '../widgets/number_entry_dialog.dart';
 import '../widgets/tracking_mode_chip.dart';
 
-class RhythmsScreen extends StatefulWidget {
-  const RhythmsScreen({super.key});
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
 
   @override
-  State<RhythmsScreen> createState() => _RhythmsScreenState();
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _RhythmsScreenState extends State<RhythmsScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _pickDate() async {
     final ob = context.read<OnboardingProvider>();
     final picked = await showDatePicker(
@@ -63,7 +63,7 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
     }
     // Pregnancy tracker stays decoupled: its LMP is set on the pregnancy screen
     // itself, never auto-seeded from the cycle anchor.
-    context.reset('/dashboard');
+    context.reset('/today');
   }
 
   @override

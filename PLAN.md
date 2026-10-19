@@ -348,9 +348,9 @@ Gates per phase: `flutter analyze` · `flutter test` · `flutter build apk --deb
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 277/277 passing, `flutter build apk --debug` = ✓.
 
-### Phase 5 - 2026.10.19
+### Phase 5 - 2026.10.19 (done)
 
-The "Fixes 2" feedback batch. Phases A to F below are all landed and gated, so nothing is left open.
+The "Fixes 1" feedback batch. Phases A to F below are all landed and gated, so nothing is left open.
 
 A - Prediction engine truth + goal framing (done)
 - [x] **1.1** Fertile window is the fixed biological span: ovulation minus 5 through ovulation plus 1 = 7 days (cycle days 9-15 on a 28-day cycle, 8-14 on a 27-day cycle). The `pad` parameter was removed from `CycleCalculator` (`fertileStartCycleDay`, `fertileEndCycleDay`, `isFertileDay`, `phaseAt`, `phase`, `fertileDaysInMonth`) and from `CalendarFetcher` and the calendar call site. Uncertainty is copy only now, driven by `CycleProvider.uncertaintyPad` ("Timing is estimated and may shift by up to N days.").
@@ -400,13 +400,9 @@ F - Phase 5 polish (done)
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 323/323 passing, `flutter build apk --debug` = ✓.
 
-**Open (carried forward)**
-
-- Nothing. The "Fixes 2" batch is complete: items 2.6 and 2.7 plus the Phase 5 polish are all done and gated.
-
 ### Phase 6 - WIP
 
-- [x] onboarding -> tracker type card: the 3 chips expand to equal widths ((width - gaps) / 3) in one row; a long word is clipped at the chip edge instead of wrapping - done, see Phase 5 bullet 5.4
+- [~] onboarding -> tracker type card: recheck: the 3 chips expand to equal widths ((width - gaps) / 3) in one row; a long word is clipped at the chip edge instead of wrapping - done, see Phase 5 bullet 5.4
 
 --- 
 
@@ -428,3 +424,25 @@ Backlog - later updates (bigger gaps, NOT MVP) - needs proper structuring
 ---
 
 ## Fixes 2 - WIP
+
+### Screen rename - 2026.10.19 (done)
+
+Seven screens were named after implementation vocabulary or the wrong concept, so the file you open never told you the screen you get. Every name now matches the title on the bar and the route in `app_router_delegate.dart`, which is what the route table in DESIGN.md already used.
+
+| Was (file / class) | Now (file / class) | Title / route |
+| --- | --- | --- |
+| `rhythms_screen.dart` / `RhythmsScreen` | `onboarding_screen.dart` / `OnboardingScreen` | Set Your Cycle, `/onboarding` |
+| `sanctuary_screen.dart` / `SanctuaryScreen` | `today_screen.dart` / `TodayScreen` | Today, `/dashboard` -> `/today` |
+| `cycle_screen.dart` / `CycleScreen` | `calendar_screen.dart` / `CalendarScreen` | Calendar, `/calendar` |
+| `records_screen.dart` / `RecordsScreen` | `insights_screen.dart` / `InsightsScreen` | Insights, `/insights` |
+| `coven_screen.dart` / `CovenScreen` | `articles_screen.dart` / `ArticlesScreen` | Articles, `/coven` -> `/articles` |
+| `gestation_screen.dart` / `GestationScreen` | `pregnancy_screen.dart` / `PregnancyScreen` | Pregnancy Tracker, `/pregnancy` |
+| `bleeding_screen.dart` / `BleedingScreen` | `bleed_history_screen.dart` / `BleedHistoryScreen` | Bleed History, `/bleeding` -> `/bleed-history` |
+
+- `rhythms` and `coven` were product metaphors that appear nowhere in the UI; `sanctuary` was the old name of the Today tab; `records` held Insights; `cycle` held the Calendar (and collided with `CycleProvider`); `gestation` showed the Pregnancy Tracker; `bleeding` showed the bleed log.
+- Three routes moved with their screens: `/dashboard` -> `/today`, `/coven` -> `/articles`, `/bleeding` -> `/bleed-history`. `shellRoutes` is now `{/today, /calendar, /insights, /articles}`, the router's `back()` fallback is `/today`, and `/onboarding`, `/calendar`, `/insights`, `/pregnancy`, `/chart`, `/fertility`, `/profile`, `/alerts`, `/privacy` were already accurate and are unchanged.
+- The five mirroring tests were renamed with their screens (`test/screens/today_screen_test.dart`, `insights_`, `articles_`, `pregnancy_`, `bleed_history_`), private `State` classes follow the new names (`_OnboardingScreenState`, `_CalendarScreenState`, `_ArticlesScreenState`), and stale prose in comments and test helper names was updated (`pumpSanctuary` -> `pumpToday`, `pumpRecords` -> `pumpInsights`).
+- Kept deliberately, because they name data rather than a screen: `OnboardingProvider.persistRhythms` / `PrefsService.saveRhythms` (they persist the cycle and bleed values), `GestationProvider` / `gestation_content.dart` / `GestationContent` (the pregnancy provider and its content model), and `CycleProvider` / `lib/widgets/cycle_calendar.dart`, which were never related to the old `cycle_screen.dart`.
+- Docs: DESIGN.md was swept for the same terms (route table, route tree, screen headings, private-widget lists, app-bar fallbacks, the CycleStats note), so no old route or class name survives outside this log's historical entries.
+
+Gates: `flutter analyze` = No issues found, `flutter test` = 323/323 passing, `flutter build apk --debug` = built.

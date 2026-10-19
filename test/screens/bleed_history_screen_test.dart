@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
-import 'package:witchy/screens/bleeding_screen.dart';
+import 'package:witchy/screens/bleed_history_screen.dart';
 import 'package:witchy/services/prefs_service.dart';
 
 void main() {
@@ -31,7 +31,7 @@ void main() {
           ChangeNotifierProvider<LoggingProvider>.value(value: logging),
           ChangeNotifierProvider<CycleProvider>.value(value: cycle),
         ],
-        child: const MaterialApp(home: BleedingScreen()),
+        child: const MaterialApp(home: BleedHistoryScreen()),
       ),
     );
     await tester.pumpAndSettle();

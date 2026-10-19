@@ -15,8 +15,8 @@ import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
 import '../widgets/disclaimer_text.dart';
 
-class GestationScreen extends StatelessWidget {
-  const GestationScreen({super.key});
+class PregnancyScreen extends StatelessWidget {
+  const PregnancyScreen({super.key});
 
   Future<void> _pickLmp(BuildContext context) async {
     final provider = context.read<GestationProvider>();

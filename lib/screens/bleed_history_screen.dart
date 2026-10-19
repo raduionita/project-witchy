@@ -17,10 +17,10 @@ import '../widgets/app_top_bar.dart';
 import '../widgets/log_bottom_sheet.dart';
 import '../widgets/stat_card.dart';
 
-/// Bleeding detail page behind Today's "Bleeding In" and Records'
+/// Bleeding detail page behind Today's "Bleeding In" and Insights'
 /// "Average Bleed" stat cards: countdown, today's status, and the flow log.
-class BleedingScreen extends StatelessWidget {
-  const BleedingScreen({super.key});
+class BleedHistoryScreen extends StatelessWidget {
+  const BleedHistoryScreen({super.key});
 
   /// Countdown + average duration duo at the top of the page.
   Widget _buildStatsRow(CycleProvider cycle) {

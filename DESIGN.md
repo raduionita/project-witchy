@@ -120,8 +120,8 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 
 ### 3.3 Navigation Patterns
 
-- Bottom nav: 4 tabs `Today/Calendar/Insights/Articles` (`AppBottomNav`), pur active + 18×2.5 underline; Articles icon `auto_awesome` → `CovenScreen` tab; labels frozen. Log is a bottom drawer (`showLogSheet`), not a tab.
-- App bar: `AppTopBar` 50px, serif 16.5 centered; shell tabs: **leading `person_outline` → `/profile`**, **action bell `notifications_outlined` → `/alerts`**; all pushed screens default **leading `arrowLeft`** (pop, `/dashboard` fallback) and `/profile` now uses that default rather than overriding it. The trailing slot is always reserved (a 34px `SizedBox` stands in when there is no action), so an action-less bar keeps its title optically centred.
+- Bottom nav: 4 tabs `Today/Calendar/Insights/Articles` (`AppBottomNav`), pur active + 18×2.5 underline; Articles icon `auto_awesome` → `ArticlesScreen` tab; labels frozen. Log is a bottom drawer (`showLogSheet`), not a tab.
+- App bar: `AppTopBar` 50px, serif 16.5 centered; shell tabs: **leading `person_outline` → `/profile`**, **action bell `notifications_outlined` → `/alerts`**; all pushed screens default **leading `arrowLeft`** (pop, `/today` fallback) and `/profile` now uses that default rather than overriding it. The trailing slot is always reserved (a 34px `SizedBox` stands in when there is no action), so an action-less bar keeps its title optically centred.
 - Pushes: Today Flow/Mood/Pain/Sleep QA → log bottom sheet (today, auto-scrolled and briefly highlighted at that category when off-screen); Peak card → `/fertility`; CycleMap day tap → log bottom sheet (that date); trends + CycleMap cards → `/chart`; feed article tap → `/webview?title&url` (same mechanism as legal pages); Profile gestation → `/pregnancy`; Profile top-bar alerts → `/alerts` (settings + reminders now inline in Profile).
 - No legacy aliases: every route in `main.dart` is canonical and reachable (see §4.2).
 
@@ -144,19 +144,19 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 
 | User Journey Phase | Core Screen (title frozen) | Route | Connected / Sub-Screens | Dynamic Routing & Behavior |
 | :--- | :--- | :--- | :--- | :--- |
-| Entry | Welcome | `/` | → `/privacy`, `/onboarding`, `/dashboard` | CTA `Get Started` → `/privacy` first run, straight to `/onboarding` once consented (auth screen exists at `/auth` but stays hidden); returning onboarded users auto-redirect `/dashboard` |
+| Entry | Welcome | `/` | → `/privacy`, `/onboarding`, `/today` | CTA `Get Started` → `/privacy` first run, straight to `/onboarding` once consented (auth screen exists at `/auth` but stays hidden); returning onboarded users auto-redirect `/today` |
 | Entry | A Note on Privacy (gate) | `/privacy` | → `/webview`, `/`, `/onboarding` | 3 checkbox rows (Terms / Privacy Policy / Safe Space) → in-app webview; Refuse → `/`, Accept (all checked) → saves `witchy_privacy_accepted` + `/onboarding` |
 | Entry | Join Witchy | `/auth` | → `/onboarding` | Bottom stack: Continue with Google / Continue with Apple / Skip for now — all `reset` to `/onboarding` (local session, errors → SnackBar) |
-| Onboarding | Set Your Cycle | `/onboarding` | → `/dashboard` | Tracking mode chips (multi-toggle, default `{Cycle}`, all three can be active at once), Year of Birth dropdown (defaults to now − 25, so CTA active from first frame), last-bleed date picker, 28d/5d sliders; `Get Started` → persist + log first day → shell |
-| Home | Today | `/dashboard` (shell 0) | → `/fertility`, log sheet | Orb day 14 Ovulation; Bleeding In 14d/Nov 10 (Perimenopause: earliest-latest window `dMin-dMax Days` + `d MMM - d MMM · range` sub, no single-day claim); Peak Today → fertility (fertility stat card hidden outside Cycle mode); `Today's Log` QA (Flow/Mood/Pain/Sleep, LogData icons) → log sheet today scrolled to category; day-detail card (glyph + phase + Cycle Day badge + flow/mood rows → log sheet; Perimenopause softens the note to `Period may start any day now` for d-1/d-2) |
-| Home | Calendar | `/calendar` (shell 1) | → log sheet, month picker | Oct 2026 grid (today ring, dimmed adjacent days, cycle-day micro-labels, legend row); Perimenopause replaces arithmetic predictions with the `CalendarFetcher` predicted window (whole possible bleed range marked, fertile/ovulation glyphs hidden); day tap → log bottom sheet; month label → month/year picker sheet; late pill + Today chip when late/off-month; detail card with status tag, tappable rows, clear-day confirm (`/chart` now via Records → Trends) |
+| Onboarding | Set Your Cycle | `/onboarding` | → `/today` | Tracking mode chips (multi-toggle, default `{Cycle}`, all three can be active at once), Year of Birth dropdown (defaults to now − 25, so CTA active from first frame), last-bleed date picker, 28d/5d sliders; `Get Started` → persist + log first day → shell |
+| Home | Today | `/today` (shell 0) | → `/fertility`, log sheet | Orb day 14 Ovulation; Bleeding In 14d/Nov 10 (Perimenopause: earliest-latest window `dMin-dMax Days` + `d MMM - d MMM · range` sub, no single-day claim); Peak Today → fertility (fertility stat card hidden outside Cycle mode); `Today's Log` QA (Flow/Mood/Pain/Sleep, LogData icons) → log sheet today scrolled to category; day-detail card (glyph + phase + Cycle Day badge + flow/mood rows → log sheet; Perimenopause softens the note to `Period may start any day now` for d-1/d-2) |
+| Home | Calendar | `/calendar` (shell 1) | → log sheet, month picker | Oct 2026 grid (today ring, dimmed adjacent days, cycle-day micro-labels, legend row); Perimenopause replaces arithmetic predictions with the `CalendarFetcher` predicted window (whole possible bleed range marked, fertile/ovulation glyphs hidden); day tap → log bottom sheet; month label → month/year picker sheet; late pill + Today chip when late/off-month; detail card with status tag, tappable rows, clear-day confirm (`/chart` now via Insights → Trends) |
 | Log | Log sheet | bottom drawer (no route) | — | `showLogSheet(date)`; 10 categories in `lib/common/log_data.dart` (all multi-toggle 2-col); per-date state in `LoggingProvider` (`DayLog` map); entries = calendar day tap, Today QA |
 | Home | Insights | `/insights` (shell 2) | → `/chart` | `TrendBars` of observed cycle lengths (last 7, `C1..Cn` labels, empty state < 2 cycles), 28.4d/5.2d, `Irregularity` card (shortest-longest spread + `N Days variation` tag, empty state < 2 cycles), chronology Sept/Aug/July tags; trends card tap → chart |
 | Home | Profile | `/profile` (pushed, not a tab) | → `/alerts`, `/pregnancy` | Avatar G, LOCAL · CYCLE TRACKING; `App Settings` card (lunar + dark switches), `Reminders` card (5 inline bell rows, live count, pills when ON); `Pregnancy Tracker → View` row only in Pregnancy mode |
-| Community | Articles | `/coven` (shell 3, Articles tab) | → `/webview?title&url` | Remote article feed from `https://qvonyx.com/witchy/articles.xml` (`FeedService`, PrefsService cache, pull-to-refresh); article cards = `AppTag` category + pubDate + serif title + excerpt; tap → in-app webview; loading/empty states; no title/tabs/FAB of its own (shell tab title stays) |
+| Community | Articles | `/articles` (shell 3, Articles tab) | → `/webview?title&url` | Remote article feed from `https://qvonyx.com/witchy/articles.xml` (`FeedService`, PrefsService cache, pull-to-refresh); article cards = `AppTag` category + pubDate + serif title + excerpt; tap → in-app webview; loading/empty states; no title/tabs/FAB of its own (shell tab title stays) |
 | Pregnancy | Pregnancy Tracker | `/pregnancy` | — | Computed from its own persisted LMP (`GestationProvider`, not the cycle anchor): Week/Day, gold progress, countdown, bucketed size/tips content; empty state seeds the date; route gated to Pregnancy mode + onboarded |
 | Alerts | Alerts | `/alerts` | — | `Recent Alerts` inbox from `AlertProvider` (generated + persisted, unread dot on the bells); Perimenopause swaps the peak alert for the hedged `may open as early as today` wording; entry = bell top-right on shell tabs and Profile |
-| Insights | BBT & Ovulation Chart | `/chart` | — | fl_chart `LineChart` of the last 30 days of logged temperatures (gaps for unlogged days, dashed gold ovulation marker) + real pre-shift/post-shift `StatCard`s; empty state → log sheet prompt; entries = Records trends card |
+| Insights | BBT & Ovulation Chart | `/chart` | — | fl_chart `LineChart` of the last 30 days of logged temperatures (gaps for unlogged days, dashed gold ovulation marker) + real pre-shift/post-shift `StatCard`s; empty state → log sheet prompt; entries = Insights trends card |
 | Fertility | Fertility Window | `/fertility` | — | Status-driven chance duo (`Peak` / `High` / `Medium` / `Low` with the ovulation date as sub) + fixed 7-day `Window` duo + goal-aware tips (`TTC Tips` / `Cycle notes` / `Fertility notes` with a not-contraception caveat) + `Next Peak` card once the peak is behind us, orb caption `Peak Day` / `Peak in N Days` / `Peak passed`; entry = Today Peak card (Cycle mode only - `CycleProvider.showFertilityPredictions` also gates calendar glyphs, BBT ovulation marker and fertile alerts) |
 | App | App Splash Preview | `/splash` (direct only) | — | In-app preview of the native launch splash: full plum screen, gold cat-moon at 25% of the smaller axis; no in-app entry (link/button), no redirect |
 
@@ -167,10 +167,10 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
   - /privacy → /webview?title&url
   - /auth
   - /onboarding
-- /dashboard (MainScreen shell: Today / Calendar / Insights / Articles tabs)
+- /today (MainScreen shell: Today / Calendar / Insights / Articles tabs)
   - /calendar (Cycle Map tab)
-  - /insights (Records tab)
-  - /coven (Articles tab - article feed)
+  - /insights (Insights tab)
+  - /articles (Articles tab - article feed)
   - /chart
   - log bottom sheet (opened from FAB or day/QA taps)
 - /profile → /alerts, /pregnancy
@@ -178,7 +178,7 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 - /fertility
 - /webview?title&url (legal pages + feed articles)
 - /splash (direct only; no in-app link)
-Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in place; sheet dismisses down.
+Back rule: pushed screens pop (fallback `/today`); shell tabs switch in place; sheet dismisses down.
 ```
 
 ---
@@ -190,7 +190,7 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Hero Emblem:** `AppEmblem` circular emblem (`132x132pt`) — `#EFE2F8` outer disc, radial core (`#4A1170 → #2A0740`) with gold cat-moon (stencil `assets/images/cat-moon-mask-512.png` tinted `color: AppColors.gold` + `BlendMode.srcIn`, `cacheWidth: 256`, sized `0.36 * size`), centered in expanded upper half.
   - **Title Section:** Brand name `"Witchy"` (`type-display-l`, 34/800), tagline `"Track your cycle and health"` (12, muted).
   - **Bottom Action:** Single CTA `"Get Started"` (`AppButton`); reads `PrefsService.isPrivacyAccepted()` → unconsented goes `/privacy`, consented goes `/auth`. Foot padding `20/30`. No Sign In link (auth lives on Join).
-  - **Returning Users:** If `OnboardingProvider.onboarded`, auto-redirect to `/dashboard` (post-frame).
+  - **Returning Users:** If `OnboardingProvider.onboarded`, auto-redirect to `/today` (post-frame).
   - **Native Launch Splash:** `flutter_native_splash` — plum `#3B0A5E` full-screen + gold `assets/images/cat-moon-gold-512.png`; logo = **25% of the smaller viewport axis**. Android is static dp: logo bitmaps hand-sized to `90dp × density` (25% on 360dp phones; Android 12 `windowSplashScreen*` cap 288dp); iOS `LaunchScreen.storyboard` logo box = `0.25 × min(width, height)` (priority-encoded min constraints, `scaleAspectFit`); web `<img>` uses `width: min(25vw, 25vh)`. ⚠ These hand-edits are **overwritten by `dart run flutter_native_splash:create`** — re-apply after any config change.
 
 ### Screen 02: A Note on Privacy (`/privacy`)
@@ -219,15 +219,15 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Date Card:** Tappable `AppCard` — `"Last bleeding phase"` + serif date (`Pick a date` placeholder) + calendar icon → native `showDatePicker` (past dates only).
   - **Slider Cards:** Two `AppCard`s hosting `AppSliderRow` — `"Cycle length"` (`15–60`, default `28 Days`), `"Bleeding phase length"` (`2–10`, default `5 Days`). The cycle range is deliberately wide so a long PCOS / perimenopause cycle can be stated honestly instead of being clamped to the middle, and every value can be typed through `NumberEntryDialog`.
   - **Recent Periods Card:** `AppCard` `"Recent periods"` with an `N of 6 earlier periods` counter. The description switches with the list: `"Add at least one earlier period to calculate your cycle length. Keep at least 15 days between dates."` when empty, `"Tap a date to change it, or a length to change how many days that period lasted."` once rows exist. Every row is a 44dp touch target: the date cell (pencil glyph, tooltip `Edit date`) opens the date picker via `replacePreviousPeriod`, the length cell (`5 days` + pencil, tooltip `Edit length`) opens `NumberEntryDialog` (2–10 days) via `setPreviousPeriodDuration`, and a trailing `xmark` removes the row behind an undo SnackBar (`Removed <date>` / `Undo` → `OnboardingProvider.restorePreviousPeriod`, which puts the date back with the length it had and skips revalidation). A rejected add or replace renders `lastValidationError` inline above the list inside `Semantics(liveRegion: true)` instead of as a toast, and clears on the next successful edit. Each accepted change re-derives the slider value (`setCycle(derived, fromHistory: true)`).
-  - **Bottom Action:** Spacer-pinned `"Get Started"` (active from the first frame — default year is preselected; `Opacity 0.45` only if `yearOfBirth` were ever null) → `finish()` (saves rhythms + year + first-day `DayLog` `Medium`) → `reset('/dashboard')`.
+  - **Bottom Action:** Spacer-pinned `"Get Started"` (active from the first frame — default year is preselected; `Opacity 0.45` only if `yearOfBirth` were ever null) → `finish()` (saves rhythms + year + first-day `DayLog` `Medium`) → `reset('/today')`.
 
-### Screen 05: Today (`/dashboard`)
+### Screen 05: Today (`/today`)
 
 - **Purpose:** The core home screen; provides instant visibility into current cycle day, fertile status, hormone phase, and daily health insights.
 - **Layout Structure:**
   - **Cycle Orb:** `CycleOrb` — `172pt` radial (`#4A1170 → #2A0740`) in the segmented ring (pink period days, pur fertile window, neutral track, gold today dot at `N% through`) + `"CYCLE DAY"` gold caps + serif `14` + `"Ovulation"` + the `Period / Fertile / Today` legend. Lengths come from `effectiveCycleLength` and `meanBleedLength` (falling back to `bleedLength`), so the arc follows the same numbers as the stat duo.
   - **Stat Duo:** `Bleeding In / 14 Days / Nov 10 · predicted` + pink `Fertility Window / Peak Today / High chance` (tap → `/fertility`). The fertility card is status-driven from this cycle's ovulation date (`CycleProvider.fertilityStatus`): `Peak Today / High chance`, `Window Open / Ovulation nears`, `Window Closing / Ovulation passed`, `Peak Passed / next peak <d MMM>`, `In N Days / <d MMM> · window opens`. Variable cycles show the `CycleProvider.predictedRange()` window (`dMin–dMax Days`, sub `d MMM – d MMM · range`; collapses to `N Days` when spread < 2); Perimenopause always forces the range + range wording and hides the fertility card. Pregnancy active (mode + LMP): card becomes `Pregnancy / open Pregnancy Tracker` (→ `/pregnancy`); pregnancy mode without LMP: `Set up tracker / add dates in Pregnancy Tracker`. Late but still projecting: `N Day(s) Late / log your period to re-anchor`; projection stopped: `Log to update / cycle running long - log to re-anchor`.
-  - **Section Split:** each section below lives in its own private widget inside `sanctuary_screen.dart` (`_StatsRow`, `_TodaysMagicSection`, `_AstralInsightCard`, `_FertilityPeakCard`, `_InsightRow`).
+  - **Section Split:** each section below lives in its own private widget inside `today_screen.dart` (`_StatsRow`, `_TodaysMagicSection`, `_AstralInsightCard`, `_FertilityPeakCard`, `_InsightRow`).
   - **Quick Actions:** `"Today's Log"` label + 4 `QuickAction` tiles — icons from `LogCategory.icon` in `LogData` (Flow droplet / Mood heart / Pain fire / Sleep moon); a tile with entries logged today renders the `filled` state (solid `AppColors.pur` bg, white label, white icon badge) and reports what was logged in a 9pt line under the label (`Medium`, `Happy +1`, `Cramps`, `Good sleep`), falling back to `Not logged` so all four keep one height (`lib/common/log_summary.dart` `summarizeLogSet`); all → `showLogSheet(context, today, scrollTo: category)`, sheet scrolls and flashes the section only when it isn't fully visible.
   - **Day Detail Card:** light `AppCard` per `mock-calendar.html` `.detail` — 56px moon glyph (phase + predicted-period variants), serif date, phase line, `Period may start tomorrow` note when `daysUntilPeriod == 1` (Perimenopause: `Period may start any day now` on d-1/d-2), `Period Day N`/`Cycle Day N` badge, then **four** tappable rows (flow, mood, `N mood`, symptoms, sleep) each opening the matching log-sheet section with a `No ... logged yet` fallback (no `/library` link).
 
@@ -264,12 +264,12 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 
 - **Purpose:** Advanced clinical-grade BBT graphing to visually confirm ovulation via biphasic temperature shifts.
 - **Layout Structure:**
-  - **App Bar:** `AppTopBar("BBT Chart")`, back pops (fallback `/dashboard`).
+  - **App Bar:** `AppTopBar("BBT Chart")`, back pops (fallback `/today`).
   - **Empty State:** no logged temperatures → `AppCard` with `"No temperatures yet"` + guidance copy + `AppButton("Log your temperature")` → `showLogSheet(today)`; plot and stats hidden.
   - **Shift Card:** `"Biphasic Temperature Shift"` + fl_chart `LineChart` (172pt) of the last 30 calendar days — x = day index from window start (bottom titles `d MMM` every ~quarter window), y = °C with 0.5 steps snapped to half-degrees, pur 2pt polyline with dots (dots at <= 16 points), **gaps** rendered by splitting consecutive-day runs into separate `LineChartBarData` segments; ovulation marker (when inside the window): BBT-confirmed date (`CycleProvider.confirmedOvulationDate`) wins over the predicted day (`CycleCalculator.ovulationDay`) = dashed gold `VerticalLine` + gold `"Confirmed ovulation"` label + legend row, else dashed muted line + `"Predicted ovulation"`.
   - **Average Duo:** `StatCard`s computed from readings — `Pre-shift average` (mean °C before the ovulation marker) and `Post-shift rise` (`post - pre`, `+0.0°`); `—` when either side has no readings.
   - **Explainer Card:** Dark card — serif `"How to read this"` + 11.5/1.55 lav body on three-morning sustained rise.
-  - **Entries:** Records trends card (month picker replaced the old CycleMap month-card jump). Full keypad deferred.
+  - **Entries:** Insights trends card (month picker replaced the old CycleMap month-card jump). Full keypad deferred.
 
 ### Screen 10: Fertility Window (`/fertility`)
 
@@ -308,7 +308,7 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 
 - **Purpose:** Identity + alignments hub; owns app settings and amulet bells inline (settings/reminders screens removed in Phase 4).
 - **Layout Structure:**
-  - **App Bar:** `"Profile"` — back top-left → home (fallback `/dashboard`), **alerts top-right** (`AppIcons.alerts`, same as shell) → `/alerts`.
+  - **App Bar:** `"Profile"` — back top-left → home (fallback `/today`), **alerts top-right** (`AppIcons.alerts`, same as shell) → `/alerts`.
   - **Identity Header:** `AppAvatar` G `84pt` (white ring + gold halo), serif `"Guest"` (18pt), gold caps `"LOCAL · CYCLE TRACKING"`, gold star.
   - **Cycle Averages Card:** Live values from `CycleProvider` - `Average Cycle Length` = `meanCycleLength` (`—` until 2 observed cycles) and `Bleeding Phase Length` = `bleedLength` + `Tracking Mode` row (pur underline label = active modes joined with `, `) → bottom sheet with the same 3 `TrackingModeChips`; tapping a chip toggles it via `OnboardingProvider.toggleTrackingMode` (multi-select, the sheet stays open, >= 1 mode always kept). Both value rows are tappable (pur underlined values) → `Cycle Basics` bottom sheet with two `AppSliderRow`s (`Cycle length` 15-60, `Bleeding phase length` 2-10) held as a local draft and saved via `OnboardingProvider.setCycle`/`setBleed` + `persistRhythms()` (so base rhythms stay editable after onboarding).
   - **Pregnancy Settings Card:** `Pregnancy Tracker → View` (→ `/pregnancy`) - card rendered only when `trackingModes` contains `TrackingMode.pregnancy`.
@@ -330,7 +330,7 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Empty State:** "`"No alerts yet"` card - "Nothing new right now. Alerts appear as your cycle nears a milestone."`
   - **Entry:** Bell top-right on the shell tabs and the Profile top bar shows a pink unread dot while `unreadCount > 0`.
 
-### Screen 17: Articles (`/coven`)
+### Screen 17: Articles (`/articles`)
 
 - **Purpose:** Remote wisdom feed - RSS-style article list served from `https://qvonyx.com/witchy/articles.xml`; each entry opens in the in-app webview.
 - **Layout Structure:**
@@ -357,7 +357,7 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 - **Purpose:** Local-only prediction math behind every date the UI shows. No cloud, no ML - honest rolling statistics + logged-signal integration. Code: `lib/services/cycle_calculator.dart` (pure date math), `lib/services/cycle_stats.dart` (rolling medians), `lib/services/bbt_analyzer.dart` (biphasic shift), `lib/providers/cycle_provider.dart` (reactive surface).
 - **Fertile window:** fixed biological span - ovulation day minus 5 through ovulation day plus 1 (sperm 5 d, egg 1 d) = 7 days (cycle days 9-15 on a 28-day cycle, 8-14 on a 27-day cycle). Uncertainty never widens the window; it is copy only, driven by `CycleProvider.uncertaintyPad` (`2` with < 3 observed cycles, `0` when recent spread <= 7, else `min(spread ~/ 2, 4)`). Ovulation = predicted next start minus luteal length (personal when detected, else 14). `CycleProvider.fertilityStatus` derives the single shared state from the ovulation date: `beforeWindow` -> `windowOpen` -> `peakToday` (ovulation day) -> `windowClosing` (ovu+1) -> `passed`; Today + Fertility render from it, so no screen can claim "ovulation nears" after the peak. `ovulationDateThisCycle` names the current cycle's peak even when it is already behind us, while `nextOvulationDate` keeps rolling forward for "next peak" copy.
 - **Spotting rule:** spans shorter than `PeriodHistory.minSpanDays` (2 consecutive flow days) are spotting, never a period. `PeriodHistory.periods` feeds cycle lengths, the anchor, BBT bleed baselines, OPK luteal gaps and `meanBleedLength`; `PeriodHistory.spotting` isolates the short spans for display. A lone flow day therefore never restarts a cycle, shifts the anchor or inflates Average Bleed.
-- **Rolling statistics (`CycleStats`):** averages over the last 6 observed cycles, predictions over the last 12 (median estimator, lengths clamped 15-60, mirroring `OnboardingProvider.min/maxCycleLength`); spread/shortest/longest over the last 6; ancient outliers age out of predictions but stay on the Records all-time display. Seeded by onboarding history (rhythms seeds previous periods as assumed spans of the entered duration, wiped and re-seeded on every onboarding run, and promoted to real logs the moment the user edits a day) + logged bleeds. Bleed length stays slider-only.
+- **Rolling statistics (`CycleStats`):** averages over the last 6 observed cycles, predictions over the last 12 (median estimator, lengths clamped 15-60, mirroring `OnboardingProvider.min/maxCycleLength`); spread/shortest/longest over the last 6; ancient outliers age out of predictions but stay on the Insights all-time display. Seeded by onboarding history (rhythms seeds previous periods as assumed spans of the entered duration, wiped and re-seeded on every onboarding run, and promoted to real logs the moment the user edits a day) + logged bleeds. Bleed length stays slider-only.
 - **Personal luteal:** BBT-confirmed ovulation (10+ readings, 3-day sustained mean rise >= 0.3 C over a 6-day baseline) beats OPK-indicated (latest positive + 1 day, luteal from implied gaps), which beats arithmetic 14. Clamped 10-18.
 - **Late / confidence:** late 1-5 d → `Period Late` alert; late > longest + 5 → `predictionsConfident = false` (fertility UI + alerts hidden, "running long" copy); late > longest + 10 → projection stops (`nextPeriodStart`/`predictedRange` null → `Log to update`) until a new bleed is logged.
 - **Range display:** single day only when recent spread < 2, else earliest-latest range; Perimenopause always forces range + range wording.

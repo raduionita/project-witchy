@@ -23,13 +23,13 @@ import '../widgets/month_picker_sheet.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
 
-class CycleScreen extends StatefulWidget {
-  const CycleScreen({super.key});
+class CalendarScreen extends StatefulWidget {
+  const CalendarScreen({super.key});
   @override
-  State<CycleScreen> createState() => _CycleScreenState();
+  State<CalendarScreen> createState() => _CalendarScreenState();
 }
 
-class _CycleScreenState extends State<CycleScreen> {
+class _CalendarScreenState extends State<CalendarScreen> {
   static const _glyphPeriod = 'assets/svgs/moon-period.svg';
   static const _glyphPeriodPredicted = 'assets/svgs/moon-period-predicted.svg';
   static const _glyphFertile = 'assets/svgs/moon-fertile.svg';

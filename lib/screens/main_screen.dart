@@ -8,10 +8,10 @@ import '../theme/app_icons.dart';
 import '../widgets/log_bottom_sheet.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/app_bottom_nav.dart';
-import 'coven_screen.dart';
-import 'cycle_screen.dart';
-import 'records_screen.dart';
-import 'sanctuary_screen.dart';
+import 'articles_screen.dart';
+import 'calendar_screen.dart';
+import 'insights_screen.dart';
+import 'today_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final int initialIndex;
@@ -38,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
         onAction: () => context.go('/alerts'),
         badge: unread,
       ),
-      body: IndexedStack(index: index, children: const [SanctuaryScreen(), CycleScreen(), RecordsScreen(), CovenScreen()]),
+      body: IndexedStack(index: index, children: const [TodayScreen(), CalendarScreen(), InsightsScreen(), ArticlesScreen()]),
       floatingActionButton:
           index == 3
               ? null

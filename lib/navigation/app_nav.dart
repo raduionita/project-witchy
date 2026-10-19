@@ -9,7 +9,7 @@ extension AppNav on BuildContext {
   /// Forward navigation; shell routes switch the root stack entry instead of pushing.
   void go(String path) => _router.go(path);
 
-  /// Pops the stack; at a single-entry stack falls back to the dashboard root.
+  /// Pops the stack; at a single-entry stack falls back to the Today root.
   void back() => _router.back();
 
   /// Pops the stack, or resets to [fallback] when there is nothing beneath.

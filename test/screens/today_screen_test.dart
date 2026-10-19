@@ -7,11 +7,11 @@ import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/providers/gestation_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
-import 'package:witchy/screens/sanctuary_screen.dart';
+import 'package:witchy/screens/today_screen.dart';
 import 'package:witchy/services/prefs_service.dart';
 
 void main() {
-  Future<void> pumpSanctuary(
+  Future<void> pumpToday(
     WidgetTester tester, {
     required TrackingMode mode,
     Set<TrackingMode>? modes,
@@ -45,14 +45,14 @@ void main() {
           ChangeNotifierProvider<LoggingProvider>.value(value: logging),
           ChangeNotifierProvider<CycleProvider>.value(value: cycle),
         ],
-        child: const MaterialApp(home: SanctuaryScreen()),
+        child: const MaterialApp(home: TodayScreen()),
       ),
     );
     await tester.pumpAndSettle();
   }
 
   testWidgets('perimenopause shows a bleeding window and hides the fertility card', (tester) async {
-    await pumpSanctuary(tester, mode: TrackingMode.perimenopause);
+    await pumpToday(tester, mode: TrackingMode.perimenopause);
     expect(find.text('BLEEDING IN'), findsOneWidget);
     expect(find.text('FERTILITY WINDOW'), findsNothing);
     // No observed history: single-day window still rendered with range sub.
@@ -61,7 +61,7 @@ void main() {
   });
 
   testWidgets('cycle mode keeps the single-day countdown and fertility card', (tester) async {
-    await pumpSanctuary(tester, mode: TrackingMode.cycle);
+    await pumpToday(tester, mode: TrackingMode.cycle);
     expect(find.text('FERTILITY WINDOW'), findsOneWidget);
     expect(find.textContaining('· predicted'), findsWidgets);
     expect(find.textContaining('· range'), findsNothing);
@@ -70,14 +70,14 @@ void main() {
   testWidgets('cycle mode with variable history shows the earliest-latest range', (tester) async {
     final now = DateTime.now();
     final last = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 13));
-    await pumpSanctuary(tester, mode: TrackingMode.cycle, seedStarts: [last.subtract(const Duration(days: 63)), last.subtract(const Duration(days: 28)), last]);
+    await pumpToday(tester, mode: TrackingMode.cycle, seedStarts: [last.subtract(const Duration(days: 63)), last.subtract(const Duration(days: 28)), last]);
     expect(find.text('FERTILITY WINDOW'), findsOneWidget);
     expect(find.textContaining('· range'), findsOneWidget);
     expect(find.textContaining('· predicted'), findsNothing);
   });
 
   testWidgets('pregnancy gap state shows the setup nudge', (tester) async {
-    await pumpSanctuary(tester, mode: TrackingMode.cycle, modes: {TrackingMode.cycle, TrackingMode.pregnancy});
+    await pumpToday(tester, mode: TrackingMode.cycle, modes: {TrackingMode.cycle, TrackingMode.pregnancy});
     expect(find.text('Set up tracker'), findsOneWidget);
     expect(find.text('add dates in Pregnancy Tracker'), findsOneWidget);
     // Cycle predictions still run until dates are entered.
@@ -85,7 +85,7 @@ void main() {
   });
 
   testWidgets('dated pregnancy replaces the countdown and hides fertility', (tester) async {
-    await pumpSanctuary(
+    await pumpToday(
       tester,
       mode: TrackingMode.cycle,
       modes: {TrackingMode.cycle, TrackingMode.pregnancy},
@@ -97,7 +97,7 @@ void main() {
   });
 
   testWidgets('shows the medical disclaimer under predictions', (tester) async {
-    await pumpSanctuary(tester, mode: TrackingMode.cycle);
+    await pumpToday(tester, mode: TrackingMode.cycle);
     // The disclaimer sits at the very bottom of the scroll view.
     await tester.dragUntilVisible(
       find.text('Predictions are estimates - not a contraceptive and not medical advice.'),
@@ -110,7 +110,7 @@ void main() {
   testWidgets('late but projecting shows Days Late on the countdown', (tester) async {
     final now = DateTime.now();
     final last = DateTime(now.year, now.month, now.day - 30);
-    await pumpSanctuary(
+    await pumpToday(
       tester,
       mode: TrackingMode.cycle,
       lastPeriodStart: last,

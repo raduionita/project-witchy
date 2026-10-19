@@ -173,7 +173,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    // Onboarded startup redirects welcome -> dashboard shell.
+    // Onboarded startup redirects welcome -> Today shell.
     // Header, log summary card and the orb legend all say 'Today'.
     expect(find.text('Today'), findsNWidgets(3));
 
@@ -194,7 +194,7 @@ void main() {
 
     final stored = await SharedPreferences.getInstance();
     expect(stored.getString('witchy_session'), isNull);
-    // Logged out: welcome stays put instead of redirecting to the dashboard.
+    // Logged out: welcome stays put instead of redirecting to the Today tab.
     expect(find.text('Get Started'), findsOneWidget);
     expect(find.text('Today'), findsNothing);
   });

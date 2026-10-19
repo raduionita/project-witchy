@@ -345,7 +345,7 @@ void main() {
       }
     }
 
-    test('ancient outliers age out of predictedRange but stay on Records', () {
+    test('ancient outliers age out of predictedRange but stay on Insights', () {
       final last = DateTime(2026, 9, 24);
       seedGaps(last, [45, 45, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28]);
       final cycle = CycleProvider(onboarding, logging);

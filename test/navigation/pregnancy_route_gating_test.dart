@@ -9,7 +9,7 @@ import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/providers/gestation_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
-import 'package:witchy/screens/gestation_screen.dart';
+import 'package:witchy/screens/pregnancy_screen.dart';
 import 'package:witchy/screens/welcome_screen.dart';
 import 'package:witchy/services/prefs_service.dart';
 
@@ -45,20 +45,20 @@ void main() {
   group('pregnancy route gating', () {
     testWidgets('renders the tracker when onboarded with pregnancy mode', (tester) async {
       await pumpAtPregnancyRoute(tester, onboarded: true, modes: {TrackingMode.pregnancy});
-      expect(find.byType(GestationScreen), findsOneWidget);
+      expect(find.byType(PregnancyScreen), findsOneWidget);
       expect(find.byType(WelcomeScreen), findsNothing);
     });
 
     testWidgets('falls back to welcome when pregnancy mode is off', (tester) async {
       await pumpAtPregnancyRoute(tester, onboarded: true, modes: {TrackingMode.cycle});
       expect(find.byType(WelcomeScreen), findsOneWidget);
-      expect(find.byType(GestationScreen), findsNothing);
+      expect(find.byType(PregnancyScreen), findsNothing);
     });
 
     testWidgets('falls back to welcome before onboarding is finished', (tester) async {
       await pumpAtPregnancyRoute(tester, onboarded: false, modes: {TrackingMode.pregnancy});
       expect(find.byType(WelcomeScreen), findsOneWidget);
-      expect(find.byType(GestationScreen), findsNothing);
+      expect(find.byType(PregnancyScreen), findsNothing);
     });
   });
 }

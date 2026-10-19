@@ -14,15 +14,15 @@ import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
 import '../widgets/empty_state.dart';
 
-class CovenScreen extends StatefulWidget {
+class ArticlesScreen extends StatefulWidget {
   final FeedService? feed;
-  const CovenScreen({super.key, this.feed});
+  const ArticlesScreen({super.key, this.feed});
 
   @override
-  State<CovenScreen> createState() => _CovenScreenState();
+  State<ArticlesScreen> createState() => _ArticlesScreenState();
 }
 
-class _CovenScreenState extends State<CovenScreen> {
+class _ArticlesScreenState extends State<ArticlesScreen> {
   List<Article>? _articles;
   bool _loading = true;
 

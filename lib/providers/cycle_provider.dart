@@ -181,7 +181,7 @@ class CycleProvider extends ChangeNotifier {
   /// Records irregularity status and the fertile-window uncertainty pad.
   int? get cycleSpread => stats.spreadRecent;
 
-  /// Median of the last 6 observed cycles; feeds the Records average display.
+  /// Median of the last 6 observed cycles; feeds the Insights average display.
   int? get medianRecentCycleLength => stats.medianRecent;
 
   /// Uncertainty in days shown as copy (for example "may shift by 2 days").

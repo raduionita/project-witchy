@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import '../common/legal_links.dart';
 import '../navigation/app_nav.dart';
 import '../models/cycle_goal.dart';
 import '../models/reminder_item.dart';
@@ -265,7 +266,7 @@ class ProfileScreen extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text('Delete all data?', style: AppText.serif(16)),
         content: Text(
-          'This erases every log, setting and session on this device. It cannot be undone.',
+          'This removes every cycle log, saved setting, reminder and sign-in on this device. Witchy keeps no copy anywhere else, so it cannot be undone.',
           style: AppText.sans(13, c: AppColors.body),
         ),
         actions: [
@@ -539,6 +540,32 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  /// Plain-language answer to "where is my data and who sees it", with the one
+  /// next step that matters when someone is worried: read the policy.
+  Widget _buildDataCard(BuildContext context) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Data', style: AppText.secIn),
+          SettingsRow(
+            label: 'Where it lives',
+            first: true,
+            trailing: Text('On this device', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.muted)),
+          ),
+          SettingsRow(label: 'Shared with', trailing: Text('No one', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.muted))),
+          SettingsRow(
+            label: 'Your privacy policy',
+            trailing: _buildTapTarget(
+              onTap: () => context.go(LegalLinks.route('Privacy Policy', LegalLinks.privacy)),
+              child: Text('Read', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSessionCard(BuildContext context) {
     return AppCard(
       child: Column(
@@ -596,6 +623,8 @@ class ProfileScreen extends StatelessWidget {
           _buildAppSettingsCard(context),
           const SizedBox(height: 12),
           _buildRemindersCard(context),
+          const SizedBox(height: 12),
+          _buildDataCard(context),
           const SizedBox(height: 12),
           _buildSessionCard(context),
           const SizedBox(height: 12),

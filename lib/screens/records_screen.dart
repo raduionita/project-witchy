@@ -9,7 +9,10 @@ import '../services/period_history.dart';
 import '../navigation/app_nav.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_dims.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_text_styles.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/log_bottom_sheet.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/trend_bars.dart';
 import '../widgets/app_card.dart';
@@ -71,6 +74,21 @@ class RecordsScreen extends StatelessWidget {
     );
   }
 
+  /// Hero empty state for a brand-new tracker: states the two-cycle
+  /// requirement and gives one clear next step instead of four grey
+  /// placeholders. The preview cards below stay so the user can see what will
+  /// fill in.
+  Widget _buildNeedsDataState(BuildContext context) {
+    return EmptyState(
+      icon: AppIcons.cal,
+      title: 'No cycles yet',
+      message: 'Insights build from your bleeding days. Two completed cycles unlock your trends, averages and cycle spread.',
+      actionLabel: 'Log your period',
+      onAction: () => showLogSheet(context, DateTime.now()),
+      compact: true,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
@@ -90,6 +108,7 @@ class RecordsScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, AppDims.fabClearance),
       children: [
+        if (spans.isEmpty) ...[_buildNeedsDataState(context), const SizedBox(height: 16)],
         GestureDetector(
           onTap: () => context.go('/chart'),
           child: AppCard(
@@ -109,9 +128,9 @@ class RecordsScreen extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: StatCard(label: '', value: avgCycle == null ? '—' : '$avgCycle days', sub: 'Average Cycle', onTap: () => context.go('/chart'))),
+            Expanded(child: StatCard(label: '', value: avgCycle == null ? '-' : '$avgCycle days', sub: 'Average Cycle', onTap: () => context.go('/chart'))),
             const SizedBox(width: 12),
-            Expanded(child: StatCard(label: '', value: avgBleed == null ? '—' : '${avgBleed.round()} days', sub: 'Average Bleeding', onTap: () => context.go('/bleeding'))),
+            Expanded(child: StatCard(label: '', value: avgBleed == null ? '-' : '${avgBleed.round()} days', sub: 'Average Bleeding', onTap: () => context.go('/bleeding'))),
           ],
         ),
         const SizedBox(height: 12),

@@ -5,6 +5,16 @@ import 'package:xml/xml.dart';
 import '../models/article.dart';
 import 'prefs_service.dart';
 
+/// One feed read: the articles plus whether they are the saved copy because
+/// the network request failed. [stale] stays false for the normal offline-first
+/// path (a cold start served straight from the cache) so no warning appears
+/// until a refresh has actually failed.
+class FeedResult {
+  final List<Article> articles;
+  final bool stale;
+  const FeedResult(this.articles, {this.stale = false});
+}
+
 class FeedService {
   FeedService(this._prefs, {http.Client? client}) : _client = client ?? http.Client();
 
@@ -14,20 +24,23 @@ class FeedService {
   static const feedUrl = 'https://qvonyx.com/witchy/articles.xml';
   static const _timeout = Duration(seconds: 12);
 
-  Future<List<Article>> load({bool refresh = false}) async {
+  Future<List<Article>> load({bool refresh = false}) async => (await loadResult(refresh: refresh)).articles;
+
+  /// Loads the feed, reporting whether the result is a stale cached copy.
+  Future<FeedResult> loadResult({bool refresh = false}) async {
     if (!refresh) {
       final cached = await _prefs.feedCache();
-      if (cached != null && cached.isNotEmpty) return cached;
+      if (cached != null && cached.isNotEmpty) return FeedResult(cached);
     }
     try {
       final response = await _client.get(Uri.parse(feedUrl)).timeout(_timeout);
       if (response.statusCode != 200) throw http.ClientException('Feed status ${response.statusCode}');
       final items = parseFeed(response.body);
       await _prefs.saveFeedCache(items);
-      return items;
+      return FeedResult(items);
     } catch (_) {
       final cached = await _prefs.feedCache();
-      if (cached != null && cached.isNotEmpty) return cached;
+      if (cached != null && cached.isNotEmpty) return FeedResult(cached, stale: true);
       rethrow;
     }
   }

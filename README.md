@@ -33,6 +33,32 @@ Witchy is a comprehensive health tracking application designed to help you under
 
 ---
 
+## Content Feed Deployment
+
+The Articles tab reads one RSS feed:
+
+```
+https://qvonyx.com/witchy/articles.xml
+```
+
+Native builds fetch it directly. **Web builds cannot**: the browser applies CORS to
+that fetch, and the feed currently sends no `Access-Control-Allow-Origin` header, so
+the request is blocked before the app ever sees the response. Fix it on the server
+with either of these:
+
+- Send the header with the feed response, for example
+  `Access-Control-Allow-Origin: https://witchy.qvonyx.com` (use `*` only when the
+  feed carries nothing user-specific), plus `Access-Control-Allow-Methods: GET`
+- Serve the feed from the same origin as the web build (for example
+  `https://witchy.qvonyx.com/witchy/articles.xml`) so no CORS check applies
+
+Neither change is needed for the Android and iOS builds. Until one of them lands the
+app degrades gracefully rather than failing: it falls back to the last cached copy of
+the feed and shows an "Offline - showing saved articles" banner, and offers a retry
+action when no cache exists yet.
+
+---
+
 ## Important Disclaimers
 
 - Witchy is **not a diagnostic tool** and should not replace professional medical advice

@@ -350,7 +350,7 @@ Gates: `flutter analyze` = No issues found, `flutter test` = 277/277 passing, `f
 
 ### Phase 5 - 2026.10.19
 
-The "Fixes 2" feedback batch. Phases 1 and 2 below are landed and gated; everything still to do is listed under "Open" so nothing is silently dropped.
+The "Fixes 2" feedback batch. Phases 1 to 4 below are landed and gated; everything still to do is listed under "Open" so nothing is silently dropped.
 
 A - Prediction engine truth + goal framing (done)
 - [x] **1.1** Fertile window is the fixed biological span: ovulation minus 5 through ovulation plus 1 = 7 days (cycle days 9-15 on a 28-day cycle, 8-14 on a 27-day cycle). The `pad` parameter was removed from `CycleCalculator` (`fertileStartCycleDay`, `fertileEndCycleDay`, `isFertileDay`, `phaseAt`, `phase`, `fertileDaysInMonth`) and from `CalendarFetcher` and the calendar call site. Uncertainty is copy only now, driven by `CycleProvider.uncertaintyPad` ("Timing is estimated and may shift by up to N days.").
@@ -377,13 +377,18 @@ C - Log sheet, logging states and dark mode (done)
 - [x] **3.6** Dark mode: `quick_action.dart`, `month_picker_sheet.dart`, `app_text_field.dart`, the log sheet header and notes field, `privacy_screen.dart` and `app_emblem.dart` (new `AppColors.emblemBg` token) stopped hardcoding `Colors.white` / literal hex surfaces. `buildAppTheme` gained shared input, switch, checkbox, dialog, snack bar, slider, divider, bottom-sheet and text-button themes so one-off sheets and dialogs stay on the token palette in both brightnesses.
 - [x] **3.7** Tests: new `test/widgets/log_bottom_sheet_test.dart` (collection gating, discard confirm, scroll-to-category), `test/widgets/quick_action_test.dart`, `test/common/log_summary_test.dart`; `logging_provider_test` gained the collection-clearing cases; `app_theme_test` now covers the new sub-themes and `emblemBg`; the sanctuary disclaimer test scrolls first because the taller summary card pushed it below the fold.
 
-Gates: `flutter analyze` = No issues found, `flutter test` = 297/297 passing, `flutter build apk --debug` = ✓.
+D - Insights, articles resilience and copy (done)
+- [x] **4.1** Articles resilience. `FeedService` gained `FeedResult` (articles plus a `stale` flag) and `loadResult({refresh})`, with `load()` kept as a thin delegate. `coven_screen.dart` now shows a skeleton of three placeholder cards while the first load is in flight (no more bare spinner), an explicit error state when a refresh fails with nothing to show ("Could not be loaded. Check your connection, then try again." plus a `Try again` action), and a gold "Offline - showing saved articles, so a few may be out of date." banner with a `Refresh` tap when a refresh fails but the cached copy is still on screen. A failed load never blanks out the articles the user is reading.
+- [x] **4.2** The web CORS cause is documented in `README.md` (`## Content Feed Deployment`): `https://qvonyx.com/witchy/articles.xml` sends no `Access-Control-Allow-Origin`, so the browser blocks the fetch from `https://witchy.qvonyx.com`; fix it by sending `Access-Control-Allow-Origin` for the web origin (or serving the feed same-origin). Native builds are unaffected and the app now degrades gracefully either way.
+- [x] **4.3** Insights empty state. `RecordsScreen` shows a hero `EmptyState` above the preview cards whenever no period spans exist: "No cycles yet" / "Insights build from your bleeding days. Two completed cycles unlock your trends, averages and cycle spread." with a `Log your period` button wired to the log sheet. The preview cards stay so the user can see what will fill in. The two `Average Cycle` / `Average Bleeding` placeholders use a hyphen instead of an em dash.
+- [x] **4.4** New shared `lib/widgets/empty_state.dart` (`EmptyState` - icon badge, title, message, optional action). `AppButton` now wraps its label in a `Flexible`, so a long label truncates rather than overflowing when the button is width-capped. Profile gained a `Data` card covering "Where it lives" (On this device), "Shared with" (No one) and a "Your privacy policy" link into the in-app policy, and the delete-data dialog now spells out that the wipe is complete and irreversible.
+
+Gates: `flutter analyze` = No issues found, `flutter test` = 303/303 passing, `flutter build apk --debug` = ✓.
 
 **Open (carried forward)**
 
 - [ ] **2.6** Onboarding period editor UI upgrade: per-row duration control (2-10 days, via `durationFor` / `setPreviousPeriodDuration`), visible pencil edit affordance with a tooltip and one date style, 44px touch targets, an undo SnackBar on removal, the inline `lastValidationError` under the offending row (`Semantics(liveRegion: true)`) with the toast demoted, and the copy "N of 6 earlier periods" plus "Add at least one earlier period to calculate your cycle length".
 - [ ] **2.7** Cycle-length slider: tap the value to type a number; decide on 15-60 versus keeping 20-40 with an "irregular" toggle.
-- [ ] **Phase 4** - articles resilience (deployment note for `Access-Control-Allow-Origin` on `https://qvonyx.com/witchy/articles.xml` or a same-origin feed, plus a loading skeleton, an explicit error state with a Try again action and a cached-articles fallback banner), Insights empty-state copy (the two-cycle requirement plus a logging CTA), Profile data-management copy, and empty states with next-step CTAs (`widgets/empty_state.dart`).
 - [ ] **Phase 5** - polish: `AppTopBar` always reserving the trailing slot and using a standard back arrow, FAB clearance padding on scrollables (keep the FAB, no auto-hide), cycle-orb period and fertile segments plus a legend, one shared date-format helper, tracking-mode chips equal width in one row, and replacing the bleeding screen's duplicate "Not bleeding today" line with last-period or cycle info.
 
 ### Phase 6 - WIP

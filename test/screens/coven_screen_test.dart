@@ -61,7 +61,8 @@ void main() {
     await _pumpFeed(tester, initial: {});
 
     expect(find.text('No articles yet'), findsOneWidget);
-    expect(find.textContaining('Pull to try again'), findsOneWidget);
+    expect(find.textContaining('Articles could not be loaded'), findsOneWidget);
+    expect(find.text('Try again'), findsOneWidget);
     // The local about card still gives the screen at least one entry.
     expect(find.text('Witchy'), findsOneWidget);
   });

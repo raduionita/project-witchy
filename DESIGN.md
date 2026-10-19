@@ -122,6 +122,12 @@ Playfair Display (display/serif) + Inter (sans). Code: `lib/theme/app_text_style
 - Pushes: Today Flow/Mood/Pain/Sleep QA → log bottom sheet (today, auto-scrolled and briefly highlighted at that category when off-screen); Peak card → `/fertility`; CycleMap day tap → log bottom sheet (that date); trends + CycleMap cards → `/chart`; feed article tap → `/webview?title&url` (same mechanism as legal pages); Profile gestation → `/pregnancy`; Profile top-bar alerts → `/alerts` (settings + reminders now inline in Profile).
 - No legacy aliases: every route in `main.dart` is canonical and reachable (see §4.2).
 
+### 3.4 Shared Empty States
+
+- **Component:** `EmptyState({icon, title, message, actionLabel, onAction, compact})` in `lib/widgets/empty_state.dart` - 44dp `IconBadge`, serif `AppText.h2` title, muted `AppText.sub` message, and an optional action rendered as a width-capped (220dp) `AppButton`; `compact` drops the outer padding when the caller's scrollable already spaces its own children.
+- **Rule:** every screen that can run out of content uses it, so an empty screen always states why and offers one next step instead of a dead end - Articles (`No articles yet` + `Try again`), Insights (`No cycles yet` + `Log your period`).
+- **Resilience:** `AppButton` ellipsises its label (`Flexible` + `TextOverflow.ellipsis`) so a narrow, width-capped button never overflows its row.
+
 ---
 
 ## 4. Screen-by-Screen UI/UX Specifications
@@ -239,6 +245,7 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 
 - **Purpose:** Longitudinal analysis of cycle regularity, period duration variation, and luteal phase stability.
 - **Layout Structure:**
+  - **Empty State (no period spans):** hero `EmptyState` above the preview cards - `"No cycles yet"` / `"Insights build from your bleeding days. Two completed cycles unlock your trends, averages and cycle spread."` plus a `Log your period` button opening the log sheet. The four cards below stay visible so the user can see what will fill in.
   - **Trends Card:** `"Stardust Cycle Trends"` + `TrendBars(values, labels)` (112pt, real observed cycle lengths from `CycleProvider.observedCycleLengths`, last 7 capped, pur-gradient bars, `C1..Cn` labels, padded y-range so 1-day differences stay visible); under 2 completed cycles → centered muted `"Log two completed cycles to grow your trends."` empty state; tap → `/chart`.
   - **Average Duo:** Centered `StatCard`s — `28 d / Average Cycle` (median of the last 6 observed lengths, `CycleProvider.medianRecentCycleLength`), `5.2 d / Average Bleed`.
   - **Irregularity Card:** `"Irregularity"` + `shortest–longest Days` serif value, `Shortest to longest cycle` sub and `N Days variation` `AppTag` (spread from `CycleProvider.cycleSpread`, i.e. longest minus shortest of the last 6 observed lengths; the shortest–longest display row stays all-time); under 2 completed cycles → muted `"Log two completed cycles to see your spread."` empty state. Most meaningful in Perimenopause mode but always visible.
@@ -298,7 +305,8 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
   - **Pregnancy Settings Card:** `Pregnancy Tracker → View` (→ `/pregnancy`) - card rendered only when `trackingModes` contains `TrackingMode.pregnancy`.
   - **App Settings Card (new):** `SettingsRow` switches — `Cycle Notifications` (ON, `setLunar` + awaited `NotificationService.syncPeriodPrediction` with the period anchor nulled while a pregnancy is active, failure surfaced as SnackBar), `Dark Mode` (OFF, `setDark`, now drives the real dark theme) and `Your goal` (pur underlined `Goal` label → `showModalBottomSheet<CycleGoal>` with the same 3 goal chips → `SettingsProvider.setGoal`), owned by `SettingsProvider`.
   - **Reminders Card:** `"Reminders"` header + live `"X of N reminders active"` (`N = RemindersProvider.items.length`) + inline bell rows (hairline dividers): `IconBadge` + serif title + muted subtitle + pur `Switch` (`toggle` + awaited `NotificationService.syncReminder` with cycle anchors, failure → SnackBar); when ON, `InfoPill` pair (clock time / spark freq) below the row. Bell `freq` now drives scheduling: `Every day`/`Daytime` repeat daily (hourly fans out 08:00-20:00), `Daily during peak` fires once per predicted bleed day, `Window start` once at fertile-window start, `3 days prior` once at predicted start minus 3; bells re-sync whenever cycle data or reminders change, and editing the time or frequency pill persists the value and resyncs that bell immediately (failure → SnackBar).
-  - **Session Card:** `AppButton("Sign Out")` → clears session, `reset('/')` (welcome requires signed-in, so sign-out stays on the first screen); below it a `DangerButton("Delete All Data")` (`AppColors.danger` `#8B1E2F` bg, white label) - confirm dialog (`Delete all data?`) → wipes every `witchy_*` pref, resets all providers in memory, resyncs notifications, lands on welcome.
+  - **Session Card:** `AppButton("Sign Out")` → clears session, `reset('/')` (welcome requires signed-in, so sign-out stays on the first screen); below it a `DangerButton("Delete All Data")` (`AppColors.danger` `#8B1E2F` bg, white label) - confirm dialog (`Delete all data?` / "This removes every cycle log, saved setting, reminder and sign-in on this device. Witchy keeps no copy anywhere else, so it cannot be undone.") → wipes every `witchy_*` pref, resets all providers in memory, resyncs notifications, lands on welcome.
+  - **Data Card (new):** `SettingsRow`s - `Where it lives` (`On this device`), `Shared with` (`No one`, both muted 11/600) and `Your privacy policy` (pur underline `Read` → `LegalLinks.route('Privacy Policy', LegalLinks.privacy)`, the same in-app webview the privacy gate uses).
   - **Footer:** Centered `"Witchy / Version <package_info_plus>"` (9.5, placeholder; single-sourced from pubspec).
 
 ### Screen 16: Alerts (`/alerts`)
@@ -318,7 +326,9 @@ Back rule: pushed screens pop (fallback `/dashboard`); shell tabs switch in plac
 - **Purpose:** Remote wisdom feed - RSS-style article list served from `https://qvonyx.com/witchy/articles.xml`; each entry opens in the in-app webview.
 - **Layout Structure:**
   - **No own title/tabs/FAB.** Rendered as the shell's 4th tab (shell app bar keeps the `Articles` title).
-  - **Data:** `FeedService` fetches + parses `<item>` entries (title, link, description with HTML stripped, pubDate, category - default `GUIDE`); payload cached in `PrefsService` (`witchy_feed_cache`) for offline; pull-to-refresh refetches; network failure falls back to cache, empty cache shows the `"No articles yet"` empty state.
+  - **Data:** `FeedService.loadResult` returns `FeedResult(articles, stale)`; `load()` stays a thin delegate. A fresh fetch caches to `PrefsService` (`witchy_feed_cache`); a failed fetch returns the cache with `stale: true`; with no cache it rethrows.
+  - **States:** a three-card skeleton (instead of a bare spinner) while the first load is in flight; a failed load with nothing cached shows `EmptyState("No articles yet")` - `"Articles could not be loaded. Check your connection, then try again."` - with a `Try again` action calling `_load(refresh: true)`; a failed load with cached articles shows a gold `Offline - showing saved articles, so a few may be out of date.` banner with a pur `Refresh` tap. A failed refresh never blanks the articles already on screen; pull-to-refresh always refetches.
+  - **CORS:** web builds are blocked because `https://qvonyx.com/witchy/articles.xml` sends no `Access-Control-Allow-Origin`; the server-side fix is documented in `README.md` (`## Content Feed Deployment`). Native builds are unaffected.
   - **Article Cards:** `AppCard` per item - `AppTag(category)` + muted `d MMM yyyy` pubDate row, serif 14 title, muted 10.5 excerpt (3-line ellipsis); tap → `context.go('/webview?title=<enc>&url=<enc>')`.
 
 ### Screen 18: Removed (`/binding`)

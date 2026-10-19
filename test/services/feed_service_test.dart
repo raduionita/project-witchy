@@ -104,5 +104,34 @@ void main() {
       final client = MockClient((_) async => http.Response('', 503));
       await expectLater(FeedService(prefs, client: client).load(), throwsA(isA<Exception>()));
     });
+
+    test('loadResult marks a cached copy stale when the refresh fails', () async {
+      await prefs.saveFeedCache(FeedService.parseFeed(_fixtureXml));
+      final client = MockClient((_) async => http.Response('', 503));
+
+      final result = await FeedService(prefs, client: client).loadResult(refresh: true);
+
+      expect(result.articles, hasLength(2));
+      expect(result.stale, isTrue);
+    });
+
+    test('loadResult is fresh after a successful fetch', () async {
+      final client = MockClient((_) async => http.Response(_fixtureXml, 200));
+
+      final result = await FeedService(prefs, client: client).loadResult(refresh: true);
+
+      expect(result.articles, hasLength(2));
+      expect(result.stale, isFalse);
+    });
+
+    test('loadResult is not stale when a cold start is served from the cache', () async {
+      await prefs.saveFeedCache(FeedService.parseFeed(_fixtureXml));
+      final client = MockClient((_) async => http.Response('', 503));
+
+      final result = await FeedService(prefs, client: client).loadResult();
+
+      expect(result.articles, hasLength(2));
+      expect(result.stale, isFalse);
+    });
   });
 }

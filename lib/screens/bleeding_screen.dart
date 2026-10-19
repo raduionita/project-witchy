@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../common/date_format.dart';
 import '../common/log_data.dart';
 import '../models/period_span.dart';
 import '../providers/cycle_provider.dart';
@@ -42,10 +42,10 @@ class BleedingScreen extends StatelessWidget {
       final dMin = CycleCalculator.daysBetween(today, range.earliest);
       final dMax = CycleCalculator.daysBetween(today, range.latest);
       bleedValue = dMin == dMax ? '$dMin Days' : '$dMin–$dMax Days';
-      bleedSub = '${DateFormat('MMM d').format(range.earliest)} – ${DateFormat('MMM d').format(range.latest)} · range';
+      bleedSub = '${AppDate.range(range.earliest, range.latest)} · range';
     } else {
       bleedValue = daysUntil <= 0 ? 'Today' : 'In $daysUntil Days';
-      bleedSub = '${DateFormat('MMM d').format(next)} · predicted';
+      bleedSub = '${AppDate.short(next)} · predicted';
     }
     final avgBleed = cycle.meanBleedLength;
     return Row(
@@ -77,10 +77,12 @@ class BleedingScreen extends StatelessWidget {
     } else if (expected) {
       detail = 'Your cycle predicts a bleed starting today. Log it once flow starts.';
     } else {
-      final DateTime? next = cycle.nextPeriodStart(today: now);
-      detail = next == null
-          ? 'Your cycle is running long. Log flow once it starts to re-anchor predictions.'
-          : 'Next bleed predicted for ${DateFormat('MMMM d').format(next)}.';
+      // The stats row above already carries the next-bleed countdown, so this
+      // line answers the other question: where the user is in the cycle now.
+      final day = cycle.cycleDay(today: now);
+      detail = cycle.projectionStopped(today: now)
+          ? 'Cycle day $day. Predictions pause until you log your next period.'
+          : 'Cycle day $day, counted from your last period start on ${AppDate.short(cycle.effectiveLastStart)}.';
     }
     return AppCard(
       child: Column(
@@ -165,7 +167,7 @@ class _BleedRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final range = '${DateFormat('MMM d').format(span.start)} – ${DateFormat('MMM d').format(span.end)}';
+    final range = AppDate.range(span.start, span.end);
     // Days seeded from onboarding history are estimates until logged by hand;
     // spans under the period threshold are spotting, never a real period.
     final estimated = context.watch<LoggingProvider>().peekDay(span.start)?.assumed ?? false;
@@ -212,7 +214,7 @@ class _FlowRow extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(DateFormat('EEEE, MMM d').format(date), style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)),
+              Text(AppDate.weekdayShort(date), style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)),
               Text(flow.join(', '), style: AppText.sans(10.5, c: AppColors.red)),
             ],
           ),

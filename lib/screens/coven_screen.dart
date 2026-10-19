@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../common/date_format.dart';
 import '../models/article.dart';
 import '../navigation/app_nav.dart';
 import '../services/feed_service.dart';
@@ -73,7 +73,7 @@ class _CovenScreenState extends State<CovenScreen> {
 
   String _formatDate(DateTime? date) {
     if (date == null) return '';
-    return DateFormat('d MMM yyyy').format(date.toLocal());
+    return AppDate.dayMonthYear(date.toLocal());
   }
 
   /// Static placeholder blocks that match the shape of an article card, shown

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../common/date_format.dart';
 import '../models/alert_item.dart';
 import '../navigation/app_nav.dart';
 import '../providers/alert_provider.dart';
@@ -20,7 +20,7 @@ class AlertsScreen extends StatelessWidget {
     if (diff.inHours < 1) return '${diff.inMinutes} min ago';
     if (diff.inDays < 1) return '${diff.inHours} h ago';
     if (diff.inDays == 1) return 'yesterday';
-    return DateFormat('d MMM').format(t);
+    return AppDate.dayMonth(t);
   }
 
   Widget _buildEmpty() => AppCard(
@@ -88,7 +88,7 @@ class AlertsScreen extends StatelessWidget {
                                 : AppText.serif(12.5, c: AppColors.muted),
                           ),
                         ),
-                        Text(DateFormat('MMM d').format(a.eventDate), style: AppText.sans(9, w: FontWeight.w600, c: unread ? AppColors.pur : AppColors.muted)),
+                        Text(AppDate.short(a.eventDate), style: AppText.sans(9, w: FontWeight.w600, c: unread ? AppColors.pur : AppColors.muted)),
                       ],
                     ),
                     const SizedBox(height: 4),

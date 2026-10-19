@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../common/date_format.dart';
 import '../models/cycle_goal.dart';
 import '../models/fertility_status.dart';
 import '../providers/cycle_provider.dart';
@@ -106,9 +106,9 @@ class FertilityScreen extends StatelessWidget {
     final cycleDay = cycle.cycleDay(today: now);
     final status = cycle.fertilityStatus(today: now);
     final daysToOvu = cycle.daysUntilOvulation(today: now);
-    final peakLabel = DateFormat('MMM d').format(cycle.ovulationDateThisCycle(today: now));
-    final nextPeakLabel = DateFormat('MMM d').format(cycle.nextOvulationDate(today: now));
-    final windowOpensLabel = DateFormat('MMM d').format(cycle.ovulationDateThisCycle(today: now).subtract(const Duration(days: 5)));
+    final peakLabel = AppDate.short(cycle.ovulationDateThisCycle(today: now));
+    final nextPeakLabel = AppDate.short(cycle.nextOvulationDate(today: now));
+    final windowOpensLabel = AppDate.short(cycle.ovulationDateThisCycle(today: now).subtract(const Duration(days: 5)));
     final ovuCycleDay = cycle.ovulationCycleDay;
     final windowStart = cycle.fertileStartCycleDay;
     final windowEnd = cycle.fertileEndCycleDay;
@@ -131,7 +131,15 @@ class FertilityScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
           const SizedBox(height: 8),
-          CycleOrb(day: '$cycleDay', phase: _orbPhase(status, daysToOvu), progress: cycleDay / cycle.effectiveCycleLength),
+          CycleOrb(
+            day: '$cycleDay',
+            phase: _orbPhase(status, daysToOvu),
+            progress: cycleDay / cycle.effectiveCycleLength,
+            cycleLength: cycle.effectiveCycleLength,
+            bleedLength: cycle.meanBleedLength?.round() ?? cycle.bleedLength,
+            fertileStartDay: windowStart,
+            fertileEndDay: windowEnd,
+          ),
           const SizedBox(height: 12),
           Row(
             children: [

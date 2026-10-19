@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../common/date_format.dart';
 import '../common/gestation_content.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/gestation_provider.dart';
@@ -52,11 +52,11 @@ class GestationScreen extends StatelessWidget {
         children: [
           Text('Due date: ${g.dueDateSource == 'doctor' ? 'doctor-set' : 'LMP'}', style: AppText.sans(11, c: AppColors.muted)),
           const SizedBox(height: 3),
-          Text(DateFormat('MMMM d, yyyy').format(due), style: AppText.serif(14)),
+          Text(AppDate.long(due), style: AppText.serif(14)),
           if (parikh != null) ...[
             const SizedBox(height: 6),
             Text(
-              'Parikh estimate for a $cycleLength-day cycle: ${DateFormat('MMMM d, yyyy').format(parikh)}.',
+              'Parikh estimate for a $cycleLength-day cycle: ${AppDate.long(parikh)}.',
               style: AppText.sans(11.5, h: 1.55, c: AppColors.muted),
             ),
           ],
@@ -117,7 +117,7 @@ class GestationScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(_remainingCopy(g), style: AppText.sans(10.5, c: AppColors.orbSub)),
           const SizedBox(height: 3),
-          Text('Due ${DateFormat('MMM d, yyyy').format(due)} · T${g.trimester()} Trimester', style: AppText.sans(9.5, c: AppColors.placeholder)),
+          Text('Due ${AppDate.shortYear(due)} · T${g.trimester()} Trimester', style: AppText.sans(9.5, c: AppColors.placeholder)),
         ],
       ),
     );
@@ -170,7 +170,7 @@ class GestationScreen extends StatelessWidget {
                 children: [
                   Text('Last period', style: AppText.sans(11, c: AppColors.muted)),
                   const SizedBox(height: 3),
-                  Text(DateFormat('MMMM d, yyyy').format(g.lmpDate!), style: AppText.serif(14)),
+                  Text(AppDate.long(g.lmpDate!), style: AppText.serif(14)),
                 ],
               ),
               FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),

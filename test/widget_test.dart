@@ -95,7 +95,8 @@ void main() {
 
     await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
-    expect(find.text('Today'), findsNWidgets(2));
+    // Header, log summary card and the orb legend all say 'Today'.
+    expect(find.text('Today'), findsNWidgets(3));
     // Finishing onboarding marks the device as logged in (local session).
     final stored = await SharedPreferences.getInstance();
     expect(stored.getString('witchy_session'), isNotNull);
@@ -113,7 +114,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
-    expect(find.text('Today'), findsNWidgets(2));
+    // Header, log summary card and the orb legend all say 'Today'.
+    expect(find.text('Today'), findsNWidgets(3));
     // Cycle stays active, so the fertility predictions remain visible.
     expect(find.text('FERTILITY WINDOW'), findsOneWidget);
 
@@ -172,7 +174,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     // Onboarded startup redirects welcome -> dashboard shell.
-    expect(find.text('Today'), findsNWidgets(2));
+    // Header, log summary card and the orb legend all say 'Today'.
+    expect(find.text('Today'), findsNWidgets(3));
 
     await tester.tap(find.byType(IconButton).first);
     await tester.pumpAndSettle();
@@ -221,7 +224,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Today'), findsNWidgets(2));
+    // Header, log summary card and the orb legend all say 'Today'.
+    expect(find.text('Today'), findsNWidgets(3));
 
     await tester.tap(find.byType(IconButton).first);
     await tester.pumpAndSettle();

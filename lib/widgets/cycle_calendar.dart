@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:intl/intl.dart';
 
+import '../common/date_format.dart';
 import '../models/calendar_day_cell.dart';
 import '../models/month_cells.dart';
 import '../theme/app_colors.dart';
@@ -28,7 +28,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
     final leading = first.weekday - 1;
     final index = widget.cells.cells.indexOf(cell);
     final date = DateTime(first.year, first.month, 1 + index - leading);
-    final parts = [DateFormat('EEEE, MMMM d').format(date)];
+    final parts = [AppDate.weekdayLong(date)];
     if (!cell.inMonth) return '${parts.first}, outside this month';
     if (cell.isToday) parts.add('today');
     if (cell.isSelected) parts.add('selected');

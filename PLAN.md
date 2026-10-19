@@ -350,7 +350,7 @@ Gates: `flutter analyze` = No issues found, `flutter test` = 277/277 passing, `f
 
 ### Phase 5 - 2026.10.19
 
-The "Fixes 2" feedback batch. Phases 1 to 4 below are landed and gated; everything still to do is listed under "Open" so nothing is silently dropped.
+The "Fixes 2" feedback batch. Phases A to F below are all landed and gated, so nothing is left open.
 
 A - Prediction engine truth + goal framing (done)
 - [x] **1.1** Fertile window is the fixed biological span: ovulation minus 5 through ovulation plus 1 = 7 days (cycle days 9-15 on a 28-day cycle, 8-14 on a 27-day cycle). The `pad` parameter was removed from `CycleCalculator` (`fertileStartCycleDay`, `fertileEndCycleDay`, `isFertileDay`, `phaseAt`, `phase`, `fertileDaysInMonth`) and from `CalendarFetcher` and the calendar call site. Uncertainty is copy only now, driven by `CycleProvider.uncertaintyPad` ("Timing is estimated and may shift by up to N days.").
@@ -389,15 +389,24 @@ E - Onboarding period editor and slider typing (done)
 - [x] **2.6** Earlier-period rows are fully editable in place. Each row is a 44px touch target: the date opens the date picker and a new length control ("5 days") opens the shared `NumberEntryDialog` (2-10 days, clamped) wired to `setPreviousPeriodDuration`. Both cells carry a pencil glyph and a tooltip ("Edit date" / "Edit length"). Removing a row offers an undo SnackBar ("Removed <date>" / `Undo`) backed by the new `OnboardingProvider.restorePreviousPeriod`, which puts the date back with the length it had and skips revalidation because the date was accepted moments ago. Validation failures are no longer transient toasts: the reason renders inline above the list in a `Semantics(liveRegion: true)` banner and clears on the next successful edit. The counter reads "N of 6 earlier periods" and the empty-state copy is "Add at least one earlier period to calculate your cycle length. Keep at least 15 days between dates."
 - [x] **2.7** Cycle-length slider range decision: **15-60 days**, no separate "irregular" mode. The medically typical 21-35 sits inside it, and long cycles (PCOS, perimenopause - a mode the app already ships) can be stated honestly instead of being silently clamped to 40. `OnboardingProvider.min/maxCycleLength` and the mirrored `CycleStats.minLength/maxLength` both moved to 15/60, so onboarding, the Profile "Cycle Basics" sheet and the prediction clamps agree. Every `AppSliderRow` value is now tappable and opens the shared `NumberEntryDialog` (new `lib/widgets/number_entry_dialog.dart`: a number field plus -/+ steppers, both held inside min..max), so an exact number can be typed instead of hunting for a thumb position on a 45-step track; that covers cycle length, bleeding phase length, the Profile sheet and the log sheet's pain slider.
 
-Gates: `flutter analyze` = No issues found, `flutter test` = 313/313 passing, `flutter build apk --debug` = ✓.
+F - Phase 5 polish (done)
+- [x] **5.1** `AppTopBar` reserves its trailing slot unconditionally (a 34px `SizedBox` stands in when there is no action) so an action-less bar keeps its title optically centred, and the default leading icon is now the standard `arrowLeft` instead of the hand-pointing glyph. Profile no longer overrides the leading icon or the back handler, so it behaves like every other pushed screen.
+- [x] **5.2** `lib/common/date_format.dart` (`AppDate`) is the single source of truth for dates the UI shows: `long`, `monthDay`, `short`, `shortYear`, `dayMonth`, `dayMonthYear`, `monthYear`, `monthShort`, `weekdayLong`, `weekdayShort` and `range`. Eleven screens/widgets dropped their ad-hoc `DateFormat(...)` literals (and the now-unused `intl` import), so the same value can no longer drift between screens. `FeedService` keeps its RFC-822 pattern, which parses the feed rather than formatting text.
+- [x] **5.3** `CycleOrb` now draws the cycle instead of a single progress arc: the ring is a hard-edged `SweepGradient` with the period days in pink and the fertile window (ovulation -5 through +1) in purple over a neutral track, a gold dot rides the ring at today's progress, the centre adds "N% through", and a legend (Period / Fertile / Today) sits below. Sanctuary and Fertility feed it the real lengths, so the arc matches the predictions, and a `Semantics` label spells out the day, phase, both day ranges and the progress.
+- [x] **5.4** Tracking modes are one row of equal-width chips: `AppChip` gained `singleLine`, which clips a long label at the chip edge instead of wrapping it, so "Perimenopause" can no longer make its chip taller than its siblings.
+- [x] **5.5** The bleeding screen's Today card no longer repeats the next-bleed countdown the stats row above already shows. When the user is not bleeding it says where they are instead: "Cycle day N, counted from your last period start on <Sep 10>.", or "Cycle day N. Predictions pause until you log your next period." once predictions stop.
+- [x] **5.6** FAB clearance was verified rather than re-implemented: `AppDims.fabClearance` (96) is already the bottom padding of every tab scrollable that sits behind the floating log button (Today, Calendar, Insights), and the button is only hidden on the Articles tab, so the last card is never covered.
+- [x] **5.7** Tests: new `test/common/date_format_test.dart` (every pattern, single-digit days, the range en dash), `test/widgets/cycle_orb_test.dart` (period/fertile/track colours, day, phase, progress, legend, `showLegend: false`, the semantics label) and `test/widgets/tracking_mode_chip_test.dart` (three equal-width chips on one line, all labels present, tap reporting, clipping). `widget_test.dart`'s dashboard-landing checks now expect three "Today" labels because the orb legend adds one.
+
+Gates: `flutter analyze` = No issues found, `flutter test` = 323/323 passing, `flutter build apk --debug` = ✓.
 
 **Open (carried forward)**
 
-- [ ] **Phase 5** - polish: `AppTopBar` always reserving the trailing slot and using a standard back arrow, FAB clearance padding on scrollables (keep the FAB, no auto-hide), cycle-orb period and fertile segments plus a legend, one shared date-format helper, tracking-mode chips equal width in one row, and replacing the bleeding screen's duplicate "Not bleeding today" line with last-period or cycle info.
+- Nothing. The "Fixes 2" batch is complete: items 2.6 and 2.7 plus the Phase 5 polish are all done and gated.
 
 ### Phase 6 - WIP
 
-- [ ] onboarding -> tracker type card: the 3 chips should expand to occupy the whole width - make their width equal (with/3) + gaps between them - the icon + text must not wrap, the end of the word should get cut off by the chip
+- [x] onboarding -> tracker type card: the 3 chips expand to equal widths ((width - gaps) / 3) in one row; a long word is clipped at the chip edge instead of wrapping - done, see Phase 5 bullet 5.4
 
 --- 
 

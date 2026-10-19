@@ -1,8 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../common/date_format.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/logging_provider.dart';
 import '../services/cycle_calculator.dart';
@@ -229,7 +229,7 @@ class _BbtPlot extends StatelessWidget {
                 interval: dayCount > 0 ? (dayCount / 4).ceilToDouble() : null,
                 getTitlesWidget: (value, meta) {
                   final date = start.add(Duration(days: value.toInt()));
-                  return Padding(padding: const EdgeInsets.only(top: 7), child: Text(DateFormat('d MMM').format(date), style: AppText.sans(8.5, c: AppColors.muted)));
+                  return Padding(padding: const EdgeInsets.only(top: 7), child: Text(AppDate.dayMonth(date), style: AppText.sans(8.5, c: AppColors.muted)));
                 },
               ),
             ),

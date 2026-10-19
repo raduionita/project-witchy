@@ -12,7 +12,11 @@ class AppChip extends StatelessWidget {
   final bool selected;
   final Color? selectedColor;
   final VoidCallback onTap;
-  const AppChip({super.key, required this.label, this.icon, this.iconColor, this.iconCount = 1, this.selected = false, this.selectedColor, required this.onTap});
+
+  /// Holds the label to one clipped line. Used by the equal-width tracking
+  /// chips, where a wrapped label would make one chip taller than its siblings.
+  final bool singleLine;
+  const AppChip({super.key, required this.label, this.icon, this.iconColor, this.iconCount = 1, this.selected = false, this.selectedColor, this.singleLine = false, required this.onTap});
 
   Widget _icon(Color active, Color fg) {
     final color = selected ? fg : (iconColor ?? AppColors.pur);
@@ -39,7 +43,16 @@ class AppChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[_icon(active, fg), const SizedBox(width: 5)],
-            Flexible(child: Text(label, textAlign: TextAlign.center, maxLines: 2, style: AppText.sans(12.5, w: FontWeight.w500, c: selected ? fg : AppColors.chipText))),
+            Flexible(
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: singleLine ? 1 : 2,
+                softWrap: !singleLine,
+                overflow: singleLine ? TextOverflow.clip : null,
+                style: AppText.sans(12.5, w: FontWeight.w500, c: selected ? fg : AppColors.chipText),
+              ),
+            ),
           ],
         ),
       ),

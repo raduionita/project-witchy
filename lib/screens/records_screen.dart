@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../common/date_format.dart';
 import '../models/period_span.dart';
 import '../providers/cycle_provider.dart';
 import '../services/cycle_calculator.dart';
@@ -99,11 +99,10 @@ class RecordsScreen extends StatelessWidget {
     final starts = PeriodHistory.startsOf(cycle.bleeds);
     final trendValues = [for (final len in observed.skip(observed.length > 7 ? observed.length - 7 : 0)) len.toDouble()];
     // Month label of the cycle start for each observed length.
-    final monthFmt = DateFormat('MMM');
     final skip = observed.length - trendValues.length;
     final trendLabels = [
       for (var i = 0; i < trendValues.length; i++)
-        monthFmt.format(starts[skip + i]),
+        AppDate.monthShort(starts[skip + i]),
     ];
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, AppDims.fabClearance),
@@ -163,7 +162,7 @@ class _BleedRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final range = '${DateFormat('MMM d').format(span.start)} – ${DateFormat('MMM d').format(span.end)}';
+    final range = AppDate.range(span.start, span.end);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 9),
       decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),

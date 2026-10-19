@@ -603,8 +603,6 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppTopBar(
         title: 'Profile',
-        leading: AppIcons.back,
-        onLeading: () => context.back(),
         action: AppIcons.alerts,
         onAction: () => context.go('/alerts'),
         badge: context.watch<AlertProvider>().unreadCount > 0,

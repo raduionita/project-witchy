@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../common/date_format.dart';
 import '../common/log_data.dart';
 import '../common/log_summary.dart';
 import '../models/cycle_phase.dart';
@@ -125,7 +125,7 @@ class _CycleScreenState extends State<CycleScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(DateFormat('MMMM yyyy').format(_month), style: AppText.serif(13.5)),
+                      Text(AppDate.monthYear(_month), style: AppText.serif(13.5)),
                       const SizedBox(width: 6),
                       Icon(AppIcons.right, size: AppIconSize.xs, color: AppColors.muted),
                     ],
@@ -174,7 +174,7 @@ class _CycleScreenState extends State<CycleScreen> {
     final children = <Widget>[
       Text('Period logged', style: AppText.sec),
       const SizedBox(height: 4),
-      Text('Selected: ${DateFormat('MMMM d, yyyy').format(selectedDate)}', style: AppText.sans(11, c: AppColors.muted)),
+      Text('Selected: ${AppDate.long(selectedDate)}', style: AppText.sans(11, c: AppColors.muted)),
       const SizedBox(height: 8),
     ];
     if (top.isEmpty) {
@@ -237,7 +237,7 @@ class _CycleScreenState extends State<CycleScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(DateFormat('MMMM d, yyyy').format(date), style: AppText.serif(13.5, c: Colors.white)),
+                        Text(AppDate.long(date), style: AppText.serif(13.5, c: Colors.white)),
                         const SizedBox(height: 2),
                         Text(phase.phaseName, style: AppText.sans(12, c: Colors.white70)),
                       ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../common/date_format.dart';
 import '../models/cycle_goal.dart';
 import '../navigation/app_nav.dart';
 import '../providers/auth_provider.dart';
@@ -236,7 +236,7 @@ class _LastBleedDateCard extends StatelessWidget {
                 children: [
                   Text('Last period', style: AppText.sans(11, c: AppColors.muted)),
                   const SizedBox(height: 3),
-                  Text(date == null ? 'Pick a date' : DateFormat('MMMM d, yyyy').format(date), style: AppText.serif(14, c: date == null ? AppColors.placeholder : AppColors.ink)),
+                  Text(date == null ? 'Pick a date' : AppDate.long(date), style: AppText.serif(14, c: date == null ? AppColors.placeholder : AppColors.ink)),
                 ],
               ),
               FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),
@@ -307,7 +307,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
     final ob = context.read<OnboardingProvider>();
     final days = await showDialog<int>(
       context: context,
-      builder: (_) => NumberEntryDialog(title: 'Period length', initial: ob.durationFor(start), min: 2, max: 10, hint: 'How many days the period starting ${DateFormat('MMM d').format(start)} lasted.'),
+      builder: (_) => NumberEntryDialog(title: 'Period length', initial: ob.durationFor(start), min: 2, max: 10, hint: 'How many days the period starting ${AppDate.short(start)} lasted.'),
     );
     if (days == null) return;
     ob.setPreviousPeriodDuration(start, days);
@@ -321,7 +321,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
     setState(() => _error = null);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Removed ${DateFormat('MMMM d, yyyy').format(start)}'),
+        content: Text('Removed ${AppDate.long(start)}'),
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: 'Undo',
@@ -357,7 +357,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Flexible(child: Text(DateFormat('MMMM d, yyyy').format(d), style: AppText.sans(11.5, w: FontWeight.w600, c: AppColors.ink), overflow: TextOverflow.ellipsis)),
+                  Flexible(child: Text(AppDate.long(d), style: AppText.sans(11.5, w: FontWeight.w600, c: AppColors.ink), overflow: TextOverflow.ellipsis)),
                   const SizedBox(width: 6),
                   FaIcon(FontAwesomeIcons.pen, size: 10, color: AppColors.muted),
                 ],

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../common/date_format.dart';
 import '../common/log_data.dart';
 import '../common/log_summary.dart';
 import '../models/cycle_phase.dart';
@@ -53,8 +53,8 @@ class SanctuaryScreen extends StatelessWidget {
   /// Stat-card copy for the fertility window, derived from the ovulation date so
   /// the card never claims "ovulation nears" once the peak has passed.
   (String, String) _fertilityCopy(CycleProvider cycle, DateTime now) {
-    final next = DateFormat('MMM d').format(cycle.nextOvulationDate(today: now));
-    final opens = DateFormat('MMM d').format(cycle.ovulationDateThisCycle(today: now).subtract(const Duration(days: 5)));
+    final next = AppDate.short(cycle.nextOvulationDate(today: now));
+    final opens = AppDate.short(cycle.ovulationDateThisCycle(today: now).subtract(const Duration(days: 5)));
     return switch (cycle.fertilityStatus(today: now)) {
       FertilityStatus.peakToday => ('Peak Today', 'High chance'),
       FertilityStatus.windowOpen => ('Window Open', 'Ovulation nears'),
@@ -89,10 +89,10 @@ class SanctuaryScreen extends StatelessWidget {
       final dMin = CycleCalculator.daysBetween(todayDate, range.earliest);
       final dMax = CycleCalculator.daysBetween(todayDate, range.latest);
       bleedValue = dMin == dMax ? '$dMin Days' : '$dMin–$dMax Days';
-      bleedSub = '${DateFormat('MMM d').format(range.earliest)} – ${DateFormat('MMM d').format(range.latest)} · range';
+      bleedSub = '${AppDate.range(range.earliest, range.latest)} · range';
     } else {
       bleedValue = '$daysUntil Days';
-      bleedSub = '${DateFormat('MMM d').format(nextStart)} · predicted';
+      bleedSub = '${AppDate.short(nextStart)} · predicted';
     }
     // Pregnancy states repurpose the countdown card: active suppresses the
     // period countdown (links the tracker instead), gap state nudges setup.
@@ -208,7 +208,7 @@ class SanctuaryScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(DateFormat('MMMM d, yyyy').format(today), style: AppText.serif(13.5, c: Colors.white)),
+                        Text(AppDate.long(today), style: AppText.serif(13.5, c: Colors.white)),
                         const SizedBox(height: 2),
                         Text(phase.phaseName, style: AppText.sans(12, c: Colors.white70)),
                         if (soonNote) ...[const SizedBox(height: 2), Text(soonText, style: AppText.sans(12, w: FontWeight.w700, c: AppColors.pinkDark))],
@@ -246,11 +246,20 @@ class SanctuaryScreen extends StatelessWidget {
     final cycle = context.watch<CycleProvider>();
     final now = DateTime.now();
     final dayNum = cycle.cycleDay(today: now);
+    final bleedDays = cycle.meanBleedLength?.round() ?? cycle.bleedLength;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, AppDims.fabClearance),
       children: [
         const SizedBox(height: 8),
-        CycleOrb(day: '$dayNum', phase: cycle.phase(today: now).label, progress: dayNum / cycle.effectiveCycleLength),
+        CycleOrb(
+          day: '$dayNum',
+          phase: cycle.phase(today: now).label,
+          progress: dayNum / cycle.effectiveCycleLength,
+          cycleLength: cycle.effectiveCycleLength,
+          bleedLength: bleedDays,
+          fertileStartDay: cycle.fertileStartCycleDay,
+          fertileEndDay: cycle.fertileEndCycleDay,
+        ),
         const SizedBox(height: 12),
         _buildStatsRow(context),
         const SizedBox(height: 12),

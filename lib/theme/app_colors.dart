@@ -36,6 +36,9 @@ abstract final class AppColors {
   static Color get chipBg => _t(const Color(0xFFFFFFFF), const Color(0xFF321252));
   static Color get pillBg => _t(const Color(0xFFF6EEFB), const Color(0xFF3A1A55));
 
+  /// Halo behind the app emblem on the splash and welcome screens.
+  static Color get emblemBg => _t(const Color(0xFFEFE2F8), const Color(0xFF2E1145));
+
   static const plum = Color(0xFF3B0A5E);
   static const plum2 = Color(0xFF26063F);
   static const gold = Color(0xFFD9A036);

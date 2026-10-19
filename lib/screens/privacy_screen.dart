@@ -180,7 +180,7 @@ class _OutlineButton extends StatelessWidget {
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.line)),
+        decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(14), border: Border.all(color: AppColors.line)),
         child: Text(label, textAlign: TextAlign.center, style: AppText.sans(13.5, w: FontWeight.w600, c: AppColors.ink)),
       ),
     );

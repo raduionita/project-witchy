@@ -36,23 +36,23 @@ abstract final class LogData {
   ], icon: FontAwesomeIcons.droplet, color: AppColors.red);
 
   static LogCategory get collectionMethods => LogCategory('Collection method', [
-    LogOption('Tampon'),
-    LogOption('Pad'),
-    LogOption('Cup'),
-    LogOption('Period underwear'),
-  ], color: AppColors.blue);
+    LogOption('Tampon', icon: FontAwesomeIcons.syringe),
+    LogOption('Pad', icon: FontAwesomeIcons.noteSticky),
+    LogOption('Cup', icon: FontAwesomeIcons.mugHot),
+    LogOption('Period underwear', icon: FontAwesomeIcons.shirt),
+  ], icon: FontAwesomeIcons.boxOpen, color: AppColors.blue);
 
   static LogCategory get painSymptoms => LogCategory('Pain and body symptoms', [
     LogOption('Cramps', icon: FontAwesomeIcons.fire, color: AppColors.pink),
-    LogOption('Abdominal pain'),
+    LogOption('Abdominal pain', icon: FontAwesomeIcons.user),
     LogOption('Headache', icon: FontAwesomeIcons.brain),
-    LogOption('Migraine'),
+    LogOption('Migraine', icon: FontAwesomeIcons.faceGrimace, color: AppColors.pinkDark),
     LogOption('Backache', icon: FontAwesomeIcons.bone),
-    LogOption('Joint pain', icon: FontAwesomeIcons.bone),
+    LogOption('Joint pain', icon: FontAwesomeIcons.crutch),
     LogOption('Ovulation pain', icon: FontAwesomeIcons.egg, color: AppColors.pink),
     LogOption('Tender breasts', icon: FontAwesomeIcons.heart, color: AppColors.pink),
-    LogOption('Swelling'),
-    LogOption('Bloating'),
+    LogOption('Swelling', icon: FontAwesomeIcons.upRightAndDownLeftFromCenter),
+    LogOption('Bloating', icon: FontAwesomeIcons.wind),
     LogOption('Fatigue', icon: FontAwesomeIcons.faceTired, color: AppColors.gold),
     LogOption('Dizziness', icon: FontAwesomeIcons.faceDizzy, color: AppColors.gold),
     LogOption('Hot flashes', icon: FontAwesomeIcons.fire, color: AppColors.pinkDark),
@@ -62,20 +62,20 @@ abstract final class LogData {
   static LogCategory get digestion => LogCategory('Digestion and stool', [
     LogOption('Normal stool', icon: FontAwesomeIcons.circleCheck, color: AppColors.green),
     LogOption('Nausea', icon: FontAwesomeIcons.faceFrownOpen),
-    LogOption('Constipation'),
+    LogOption('Constipation', icon: FontAwesomeIcons.ban),
     LogOption('Diarrhea', icon: FontAwesomeIcons.dropletSlash, color: AppColors.blue),
-    LogOption('Gas'),
-    LogOption('Stool changes'),
+    LogOption('Gas', icon: FontAwesomeIcons.cloud),
+    LogOption('Stool changes', icon: FontAwesomeIcons.arrowsRotate),
   ], color: AppColors.green);
 
   static LogCategory get skinHair => LogCategory('Skin and hair', [
-    LogOption('Acne'),
+    LogOption('Acne', icon: FontAwesomeIcons.braille),
     LogOption('Oily skin', icon: FontAwesomeIcons.droplet, color: AppColors.gold),
-    LogOption('Dry skin'),
+    LogOption('Dry skin', icon: FontAwesomeIcons.sun),
     LogOption('Good skin', icon: FontAwesomeIcons.faceSmile, color: AppColors.green),
     LogOption('Hair changes', icon: FontAwesomeIcons.scissors),
     LogOption('Oily hair', icon: FontAwesomeIcons.droplet, color: AppColors.gold),
-    LogOption('Dry hair'),
+    LogOption('Dry hair', icon: FontAwesomeIcons.wind),
   ], color: AppColors.teal);
 
   static LogCategory get moods => LogCategory('Mood and emotions', [
@@ -89,8 +89,8 @@ abstract final class LogData {
     LogOption('Anxious', icon: FontAwesomeIcons.faceFrownOpen),
     LogOption('Irritable', icon: FontAwesomeIcons.faceAngry, color: AppColors.pink),
     LogOption('Mood swings', icon: FontAwesomeIcons.faceDizzy),
-    LogOption('Guilty'),
-    LogOption('Self-critical'),
+    LogOption('Guilty', icon: FontAwesomeIcons.faceGrinBeamSweat),
+    LogOption('Self-critical', icon: FontAwesomeIcons.thumbsDown),
     LogOption('Obsessive thoughts', icon: FontAwesomeIcons.brain),
     LogOption('Apathetic', icon: FontAwesomeIcons.faceMeh),
     LogOption('Confused', icon: FontAwesomeIcons.faceMehBlank),
@@ -99,7 +99,7 @@ abstract final class LogData {
 
   static LogCategory get cravings => LogCategory('Cravings and appetite', [
     LogOption('Sweet cravings', icon: FontAwesomeIcons.cookie, color: AppColors.pink),
-    LogOption('Salty cravings'),
+    LogOption('Salty cravings', icon: FontAwesomeIcons.bowlFood),
     LogOption('Carb cravings', icon: FontAwesomeIcons.pizzaSlice, color: AppColors.gold),
     LogOption('Chocolate cravings', icon: FontAwesomeIcons.iceCream, color: AppColors.pink),
     LogOption('Increased appetite', icon: FontAwesomeIcons.arrowTrendUp, color: AppColors.green),
@@ -107,7 +107,7 @@ abstract final class LogData {
   ], color: AppColors.brown);
 
   static LogCategory get discharge => LogCategory('Vaginal discharge and cervical fluid', [
-    LogOption('None or dry'),
+    LogOption('None or dry', icon: FontAwesomeIcons.ban),
     LogOption('Sticky', icon: FontAwesomeIcons.droplet, color: AppColors.gold),
     LogOption('Creamy', icon: FontAwesomeIcons.droplet, color: AppColors.gold),
     LogOption('Watery', icon: FontAwesomeIcons.droplet, color: AppColors.blue),
@@ -120,7 +120,7 @@ abstract final class LogData {
     LogOption('Unprotected sex', icon: FontAwesomeIcons.shieldHalved, color: AppColors.pink),
     LogOption('High sex drive', icon: FontAwesomeIcons.fire, color: AppColors.pink),
     LogOption('Low sex drive', icon: FontAwesomeIcons.snowflake, color: AppColors.blue),
-    LogOption('Masturbation'),
+    LogOption('Masturbation', icon: FontAwesomeIcons.hand),
     LogOption('Orgasm', icon: FontAwesomeIcons.faceGrinStars, color: AppColors.gold),
   ], color: AppColors.pink);
 

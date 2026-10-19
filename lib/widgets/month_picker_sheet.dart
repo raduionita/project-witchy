@@ -72,7 +72,7 @@ class _MonthPickerSheetState extends State<MonthPickerSheet> {
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.line)),
+          decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.line)),
           child: Icon(icon, size: 18, color: AppColors.pur),
         ),
       ),
@@ -88,7 +88,7 @@ class _MonthPickerSheetState extends State<MonthPickerSheet> {
         child: Container(
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? AppColors.pur : Colors.white,
+            color: selected ? AppColors.pur : AppColors.card,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: selected ? AppColors.pur : AppColors.line),
           ),

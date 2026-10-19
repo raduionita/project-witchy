@@ -18,7 +18,7 @@ class AppTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (label != null) ...[Padding(padding: const EdgeInsets.only(left: 2, bottom: 6), child: Text(label!, style: AppText.sans(10.5, w: FontWeight.w600, c: const Color(0xFF4D3B52))))],
+        if (label != null) ...[Padding(padding: const EdgeInsets.only(left: 2, bottom: 6), child: Text(label!, style: AppText.sans(10.5, w: FontWeight.w600, c: AppColors.sectionTitle)))],
         TextField(
           controller: controller,
           obscureText: obscure,
@@ -27,7 +27,7 @@ class AppTextField extends StatelessWidget {
             hintText: hint,
             hintStyle: AppText.sans(12.5, c: AppColors.placeholder),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.fieldBg,
             contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12).copyWith(left: lead != null ? 36 : 12),
             prefixIcon: lead != null ? FaIcon(lead, size: AppIconSize.sm, color: AppColors.muted) : null,
             prefixIconConstraints: const BoxConstraints(minWidth: 36, minHeight: 20),

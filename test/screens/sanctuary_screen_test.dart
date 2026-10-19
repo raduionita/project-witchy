@@ -98,6 +98,12 @@ void main() {
 
   testWidgets('shows the medical disclaimer under predictions', (tester) async {
     await pumpSanctuary(tester, mode: TrackingMode.cycle);
+    // The disclaimer sits at the very bottom of the scroll view.
+    await tester.dragUntilVisible(
+      find.text('Predictions are estimates - not a contraceptive and not medical advice.'),
+      find.byType(ListView),
+      const Offset(0, -200),
+    );
     expect(find.text('Predictions are estimates - not a contraceptive and not medical advice.'), findsOneWidget);
   });
 

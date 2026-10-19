@@ -4,6 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../common/log_data.dart';
+import '../common/log_summary.dart';
 import '../models/cycle_phase.dart';
 import '../models/day_log.dart';
 import '../providers/cycle_provider.dart';
@@ -247,7 +249,11 @@ class _CycleScreenState extends State<CycleScreen> {
               const SizedBox(height: 14),
               _buildEntryRow(AppIcons.drop, entry.flow.isEmpty ? 'No flow logged yet' : '${entry.flow.join(', ')} bleed flow intensity'),
               const SizedBox(height: 8),
-              _buildEntryRow(AppIcons.heart, entry.moods.isEmpty ? 'No mood logged yet' : '${entry.moods.first} mood'),
+              _buildEntryRow(AppIcons.heart, entry.moods.isEmpty ? 'No mood logged yet' : '${summarizeLogSet(entry.moods)} mood'),
+              const SizedBox(height: 8),
+              _buildEntryRow(LogData.painSymptoms.icon ?? AppIcons.pulse, entry.symptoms.isEmpty ? 'No symptoms logged yet' : summarizeLogSet(entry.symptoms)),
+              const SizedBox(height: 8),
+              _buildEntryRow(LogData.sleep.icon ?? AppIcons.moon, entry.sleep.isEmpty ? 'No sleep logged yet' : summarizeLogSet(entry.sleep)),
               if (selected) ...[
                 const SizedBox(height: 10),
                 MouseRegion(

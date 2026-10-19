@@ -33,4 +33,22 @@ void main() {
     expect(AppColors.line, const Color(0xFF3E2A54));
     AppColors.dark = false;
   });
+
+  testWidgets('shared component theming follows the token palette', (tester) async {
+    final light = buildAppTheme();
+    await tester.pumpWidget(MaterialApp(theme: light));
+    expect(light.dialogTheme.backgroundColor, const Color(0xFFFFFFFF));
+    expect(light.bottomSheetTheme.backgroundColor, const Color(0xFFFAF7FC));
+    expect(light.inputDecorationTheme.fillColor, AppColors.fieldBg);
+    expect(AppColors.emblemBg, const Color(0xFFEFE2F8));
+
+    final dark = buildAppTheme(brightness: Brightness.dark);
+    await tester.pumpWidget(MaterialApp(theme: dark));
+    expect(dark.dialogTheme.backgroundColor, const Color(0xFF26063F));
+    expect(dark.bottomSheetTheme.backgroundColor, const Color(0xFF1B0A2A));
+    expect(dark.snackBarTheme.backgroundColor, AppColors.lav2);
+    expect(AppColors.emblemBg, const Color(0xFF2E1145));
+
+    buildAppTheme();
+  });
 }

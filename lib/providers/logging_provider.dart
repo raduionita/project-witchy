@@ -83,11 +83,15 @@ class LoggingProvider extends ChangeNotifier {
   }
 
   /// Log-sheet flow: one level at a time. Tapping the active level clears it.
+  /// Clearing the last level also drops the collection method(s): a method is
+  /// only meaningful while there is bleeding to collect.
   void selectFlow(DateTime d, String v) {
-    final flow = day(d).flow;
+    final entry = day(d);
+    final flow = entry.flow;
     final onlyThis = flow.length == 1 && flow.contains(v);
     flow.clear();
     if (!onlyThis) flow.add(v);
+    if (flow.isEmpty) entry.collection.clear();
     notifyListeners();
     _save();
   }

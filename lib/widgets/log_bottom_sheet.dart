@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -48,15 +50,24 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
   final GlobalKey _listKey = GlobalKey();
   int _scrollRetries = 0;
 
+  /// Flashes the requested category for a moment when the sheet opens at it.
+  bool _highlight = false;
+
   @override
   void initState() {
     super.initState();
     _original = context.read<LoggingProvider>().peekDay(widget.date)?.copy();
     if (widget.scrollTo != null) {
       _targetKey = GlobalKey();
-      // Wait out the sheet's entrance animation, then position the content.
+      // Wait out the sheet's entrance animation, then position the content and
+      // flash the category so the jump is explained rather than jarring.
       Future<void>.delayed(const Duration(milliseconds: 350), () {
-        if (mounted) _scheduleScroll();
+        if (!mounted) return;
+        setState(() => _highlight = true);
+        _scheduleScroll();
+        Future<void>.delayed(const Duration(milliseconds: 1400), () {
+          if (mounted) setState(() => _highlight = false);
+        });
       });
     }
   }
@@ -84,9 +95,33 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
 
   GlobalKey? _keyFor(LogCategory category) => widget.scrollTo?.title == category.title ? _targetKey : null;
 
+  /// True when the day's entry differs from the snapshot taken on open, so the
+  /// close button knows it has edits to warn about.
+  bool get _isDirty =>
+      jsonEncode((context.read<LoggingProvider>().peekDay(widget.date) ?? DayLog()).toJson()) != jsonEncode((_original ?? DayLog()).toJson());
+
   void _cancel() {
     context.read<LoggingProvider>().restoreDay(widget.date, _original);
     Navigator.of(context).pop();
+  }
+
+  /// Cancel, confirming first when the day has unsaved edits.
+  Future<void> _confirmCancel() async {
+    if (!_isDirty) return _cancel();
+    final discard = await showDialog<bool>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            backgroundColor: AppColors.card,
+            title: Text('Discard changes?', style: AppText.serif(17)),
+            content: Text('Your edits for this day will not be saved.', style: AppText.sans(12.5, c: AppColors.body)),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text('Keep editing', style: AppText.sans(12.5, w: FontWeight.w600, c: AppColors.muted))),
+              TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text('Discard', style: AppText.sans(12.5, w: FontWeight.w600, c: AppColors.red))),
+            ],
+          ),
+    );
+    if (discard == true && mounted) _cancel();
   }
 
   void _approve() => Navigator.of(context).pop();
@@ -100,55 +135,73 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
       _LogCycleSection(
         category: LogData.flows,
         sectionKey: _keyFor(LogData.flows),
+        highlight: _highlight,
         selected: (o) => entry.flow.contains(o.name),
         onTap: (o) => context.read<LoggingProvider>().selectFlow(date, o.name),
       ),
-      _LogCycleSection(
-        category: LogData.collectionMethods,
-        sectionKey: _keyFor(LogData.collectionMethods),
-        selected: (o) => entry.collection.contains(o.name),
-        onTap: (o) => context.read<LoggingProvider>().toggleCollection(date, o.name),
-      ),
+      // Collection method only makes sense while a flow level is logged, so it
+      // stays hidden (and is cleared) until bleeding is recorded.
+      if (entry.flow.isNotEmpty)
+        _LogCycleSection(
+          category: LogData.collectionMethods,
+          sectionKey: _keyFor(LogData.collectionMethods),
+          highlight: _highlight,
+          selected: (o) => entry.collection.contains(o.name),
+          onTap: (o) => context.read<LoggingProvider>().toggleCollection(date, o.name),
+        ),
       _LogCycleSection(
         category: LogData.painSymptoms,
         sectionKey: _keyFor(LogData.painSymptoms),
+        highlight: _highlight,
         selected: (o) => entry.symptoms.contains(o.name),
         onTap: (o) => context.read<LoggingProvider>().toggleSymptom(date, o.name),
       ),
       _LogCycleSection(
         category: LogData.digestion,
         sectionKey: _keyFor(LogData.digestion),
+        highlight: _highlight,
         selected: (o) => entry.digestion.contains(o.name),
         onTap: (o) => context.read<LoggingProvider>().toggleDigestion(date, o.name),
       ),
       _LogCycleSection(
         category: LogData.skinHair,
         sectionKey: _keyFor(LogData.skinHair),
+        highlight: _highlight,
         selected: (o) => entry.skinHair.contains(o.name),
         onTap: (o) => context.read<LoggingProvider>().toggleSkinHair(date, o.name),
       ),
       _LogCycleSection(
         category: LogData.moods,
         sectionKey: _keyFor(LogData.moods),
+        highlight: _highlight,
         selected: (o) => entry.moods.contains(o.name),
         onTap: (o) => context.read<LoggingProvider>().toggleMood(date, o.name),
       ),
       _LogCycleSection(
         category: LogData.cravings,
         sectionKey: _keyFor(LogData.cravings),
+        highlight: _highlight,
         selected: (o) => entry.cravings.contains(o.name),
         onTap: (o) => context.read<LoggingProvider>().toggleCravings(date, o.name),
       ),
       _LogCycleSection(
         category: LogData.discharge,
         sectionKey: _keyFor(LogData.discharge),
+        highlight: _highlight,
         selected: (o) => entry.discharge.contains(o.name),
         onTap: (o) => context.read<LoggingProvider>().toggleDischarge(date, o.name),
       ),
-      _LogCycleSection(category: LogData.sex, sectionKey: _keyFor(LogData.sex), selected: (o) => entry.sex.contains(o.name), onTap: (o) => context.read<LoggingProvider>().toggleSex(date, o.name)),
+      _LogCycleSection(
+        category: LogData.sex,
+        sectionKey: _keyFor(LogData.sex),
+        highlight: _highlight,
+        selected: (o) => entry.sex.contains(o.name),
+        onTap: (o) => context.read<LoggingProvider>().toggleSex(date, o.name),
+      ),
       _LogCycleSection(
         category: LogData.sleep,
         sectionKey: _keyFor(LogData.sleep),
+        highlight: _highlight,
         selected: (o) => entry.sleep.contains(o.name),
         onTap: (o) => context.read<LoggingProvider>().toggleSleep(date, o.name),
       ),
@@ -162,7 +215,7 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
             children: [
               Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.line, borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 12),
-              _SheetHeader(date: date, original: _original, onCancel: _cancel, onApprove: _approve),
+              _SheetHeader(date: date, dirty: _isDirty, onCancel: _confirmCancel, onApprove: _approve),
               const SizedBox(height: 4),
               Text('Select what you are experiencing today.', style: AppText.sub, textAlign: TextAlign.center),
               const SizedBox(height: 12),
@@ -170,23 +223,28 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
           ),
         ),
         Expanded(
-          child: ListView(
+          // Eager build: the sheet is short enough that keeping every section
+          // in the tree costs little, and it lets the open-at-category jump
+          // find its target even when it starts far off screen.
+          child: SingleChildScrollView(
             key: _listKey,
             controller: widget.scroll,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-            children: [
-              for (var i = 0; i < sections.length; i++) ...[
-                sections[i],
-                if (i < sections.length - 1) Divider(color: AppColors.line, thickness: 1, height: 16),
+            child: Column(
+              children: [
+                for (var i = 0; i < sections.length; i++) ...[
+                  sections[i],
+                  if (i < sections.length - 1) Divider(color: AppColors.line, thickness: 1, height: 16),
+                ],
+                _LogCycleSlider(date: date, pain: entry.pain),
+                _TemperatureRow(date: date, temperature: entry.temperature),
+                _OvulationTestRow(date: date, ovulationTest: entry.ovulationTest),
+                const SizedBox(height: 8),
+                Text('Notes', style: AppText.sec),
+                const SizedBox(height: 8),
+                _NotesField(date: date, initialNotes: entry.notes),
               ],
-              _LogCycleSlider(date: date, pain: entry.pain),
-              _TemperatureRow(date: date, temperature: entry.temperature),
-              _OvulationTestRow(date: date, ovulationTest: entry.ovulationTest),
-              const SizedBox(height: 8),
-              Text('Notes', style: AppText.sec),
-              const SizedBox(height: 8),
-              _NotesField(date: date, initialNotes: entry.notes),
-            ],
+            ),
           ),
         ),
       ],
@@ -199,20 +257,37 @@ class _LogBottomSheetState extends State<LogBottomSheet> {
 class _LogCycleSection extends StatelessWidget {
   final LogCategory category;
   final GlobalKey? sectionKey;
+
+  /// True while this section is the one the sheet was opened at, so it can
+  /// flash a tinted outline instead of silently scrolling into view.
+  final bool highlight;
   final bool Function(LogOption) selected;
   final void Function(LogOption) onTap;
-  const _LogCycleSection({required this.category, this.sectionKey, required this.selected, required this.onTap});
+  const _LogCycleSection({required this.category, this.sectionKey, this.highlight = false, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.readableOn(category.color ?? AppColors.pur, AppColors.bg);
-    return Padding(
+    final accent = category.color ?? AppColors.pur;
+    // Option icons carry the category hue; the title uses the neutral
+    // section-title token so vivid accents never fight the heading.
+    final iconColor = AppColors.readableOn(accent, AppColors.bg);
+    // Only the section the sheet was opened at owns a key, so this is that one.
+    final active = highlight && sectionKey != null;
+    return AnimatedContainer(
       key: sectionKey,
-      padding: const EdgeInsets.only(bottom: 12),
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOut,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: active ? accent.withValues(alpha: 0.12) : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: active ? accent.withValues(alpha: 0.5) : Colors.transparent, width: 1.5),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(category.title, style: AppText.sec.copyWith(color: color)),
+          Text(category.title, style: AppText.sec),
           const SizedBox(height: 8),
           GridView.count(
             crossAxisCount: 2,
@@ -223,7 +298,7 @@ class _LogCycleSection extends StatelessWidget {
             childAspectRatio: 4.8,
             children: [
               for (final o in category.options)
-                AppChip(label: o.name, icon: o.icon, iconColor: color, iconCount: o.iconCount, selected: selected(o), selectedColor: category.color ?? AppColors.pur, onTap: () => onTap(o)),
+                AppChip(label: o.name, icon: o.icon, iconColor: iconColor, iconCount: o.iconCount, selected: selected(o), selectedColor: accent, onTap: () => onTap(o)),
             ],
           ),
         ],
@@ -374,29 +449,48 @@ class _OvulationTestRow extends StatelessWidget {
 
 class _SheetHeader extends StatelessWidget {
   final DateTime date;
-  final DayLog? original;
+
+  /// True when the day has unsaved edits, so Save is emphasised and Cancel
+  /// knows to confirm before discarding.
+  final bool dirty;
   final VoidCallback onCancel;
   final VoidCallback onApprove;
-  const _SheetHeader({required this.date, required this.original, required this.onCancel, required this.onApprove});
+  const _SheetHeader({required this.date, required this.dirty, required this.onCancel, required this.onApprove});
 
   static const _box = BoxConstraints(minWidth: 34, minHeight: 34, maxWidth: 34, maxHeight: 34);
 
-  Widget _circleButton({required FaIconData icon, required Color color, required VoidCallback onPressed}) {
-    return IconButton(
-      constraints: _box,
-      style: IconButton.styleFrom(backgroundColor: Colors.white, shape: const CircleBorder()),
-      onPressed: onPressed,
-      icon: FaIcon(icon, size: AppIconSize.base, color: color),
+  /// Round icon button with its action label underneath, so Cancel and Save
+  /// read as actions rather than bare glyphs.
+  Widget _circleButton({required FaIconData icon, required Color color, required String label, required VoidCallback onPressed, bool emphasis = false}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          constraints: _box,
+          style: IconButton.styleFrom(backgroundColor: emphasis ? color : AppColors.card, shape: const CircleBorder()),
+          tooltip: label,
+          onPressed: onPressed,
+          icon: FaIcon(icon, size: AppIconSize.base, color: emphasis ? Colors.white : color),
+        ),
+        const SizedBox(height: 2),
+        Text(label, style: AppText.sans(9.5, w: FontWeight.w600, c: emphasis ? color : AppColors.muted)),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _circleButton(icon: AppIcons.cancel, color: AppColors.red, onPressed: onCancel),
-        Expanded(child: Text('${kMonths[date.month - 1]} ${date.day}, ${date.year}', textAlign: TextAlign.center, style: AppText.serif(17))),
-        _circleButton(icon: AppIcons.approve, color: AppColors.green, onPressed: onApprove),
+        _circleButton(icon: AppIcons.cancel, color: AppColors.red, label: 'Cancel', onPressed: onCancel),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text('${kMonths[date.month - 1]} ${date.day}, ${date.year}', textAlign: TextAlign.center, style: AppText.serif(17)),
+          ),
+        ),
+        _circleButton(icon: AppIcons.approve, color: AppColors.green, label: 'Save', onPressed: onApprove, emphasis: dirty),
       ],
     );
   }
@@ -431,7 +525,7 @@ class _NotesFieldState extends State<_NotesField> {
         hintText: 'Add any notes for this day…',
         hintStyle: AppText.sans(12.5, c: AppColors.placeholder),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.fieldBg,
         contentPadding: const EdgeInsets.all(12),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.line)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.pur)),

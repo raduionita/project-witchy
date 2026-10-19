@@ -138,4 +138,25 @@ void main() {
     expect(provider.hasLog(day), isFalse);
     expect(provider.peekDay(day), isNull);
   });
+
+  test('clearing the flow also drops the collection method', () {
+    final day = DateTime(2026, 9, 20);
+    provider.selectFlow(day, 'Medium');
+    provider.toggleCollection(day, 'Cup');
+    expect(provider.peekDay(day)!.collection, {'Cup'});
+
+    // Tapping the active level again clears the flow and the orphaned method.
+    provider.selectFlow(day, 'Medium');
+    expect(provider.peekDay(day)!.flow, isEmpty);
+    expect(provider.peekDay(day)!.collection, isEmpty);
+  });
+
+  test('switching the flow level keeps the collection method', () {
+    final day = DateTime(2026, 9, 20);
+    provider.selectFlow(day, 'Medium');
+    provider.toggleCollection(day, 'Pad');
+    provider.selectFlow(day, 'Heavy');
+    expect(provider.peekDay(day)!.flow, {'Heavy'});
+    expect(provider.peekDay(day)!.collection, {'Pad'});
+  });
 }

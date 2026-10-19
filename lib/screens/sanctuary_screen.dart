@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../common/log_data.dart';
+import '../common/log_summary.dart';
 import '../models/cycle_phase.dart';
 import '../models/fertility_status.dart';
 import '../navigation/app_nav.dart';
@@ -117,11 +118,19 @@ class SanctuaryScreen extends StatelessWidget {
   }
 
   /// Quick-action tiles; each opens the log sheet focused on its category.
-  /// Tiles whose category already has entries logged today render solid purple.
+  /// Tiles whose category already has entries logged today render solid purple
+  /// and report the logged value underneath the label.
   Widget _buildTodaysMagicSection(BuildContext context) {
     final entry = context.watch<LoggingProvider>().peekDay(DateTime.now());
-    Widget tile(LogCategory category, String label, bool hasEntry) =>
-        Expanded(child: QuickAction(icon: category.icon ?? AppIcons.drop, label: label, filled: hasEntry, onTap: () => showLogSheet(context, DateTime.now(), scrollTo: category)));
+    Widget tile(LogCategory category, String label, Set<String> values) => Expanded(
+      child: QuickAction(
+        icon: category.icon ?? AppIcons.drop,
+        label: label,
+        value: summarizeLogSet(values),
+        filled: values.isNotEmpty,
+        onTap: () => showLogSheet(context, DateTime.now(), scrollTo: category),
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -129,13 +138,13 @@ class SanctuaryScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Row(
           children: [
-            tile(LogData.flows, 'Flow', entry?.flow.isNotEmpty ?? false),
+            tile(LogData.flows, 'Flow', entry?.flow ?? const <String>{}),
             const SizedBox(width: 10),
-            tile(LogData.moods, 'Mood', entry?.moods.isNotEmpty ?? false),
+            tile(LogData.moods, 'Mood', entry?.moods ?? const <String>{}),
             const SizedBox(width: 10),
-            tile(LogData.painSymptoms, 'Pain', entry?.symptoms.isNotEmpty ?? false),
+            tile(LogData.painSymptoms, 'Pain', entry?.symptoms ?? const <String>{}),
             const SizedBox(width: 10),
-            tile(LogData.sleep, 'Sleep', entry?.sleep.isNotEmpty ?? false),
+            tile(LogData.sleep, 'Sleep', entry?.sleep ?? const <String>{}),
           ],
         ),
       ],
@@ -174,6 +183,8 @@ class SanctuaryScreen extends StatelessWidget {
     final entry = log.peekDay(now);
     final flow = entry?.flow ?? const <String>{};
     final moods = entry?.moods ?? const <String>{};
+    final symptoms = entry?.symptoms ?? const <String>{};
+    final sleep = entry?.sleep ?? const <String>{};
     final logged = flow.isNotEmpty;
     final bleedDay = periodDay ? cycle.bleedDayOf(today) : 0;
     final daysUntil = cycle.daysUntilPeriod(today: now);
@@ -210,7 +221,19 @@ class SanctuaryScreen extends StatelessWidget {
               const SizedBox(height: 14),
               _buildInsightRow(AppIcons.drop, logged ? '${flow.join(', ')} bleed flow intensity' : 'No flow logged yet', () => showLogSheet(context, now, scrollTo: LogData.flows)),
               const SizedBox(height: 8),
-              _buildInsightRow(AppIcons.heart, moods.isEmpty ? 'No mood logged yet' : '${moods.first} mood', () => showLogSheet(context, now, scrollTo: LogData.moods)),
+              _buildInsightRow(AppIcons.heart, moods.isEmpty ? 'No mood logged yet' : '${summarizeLogSet(moods)} mood', () => showLogSheet(context, now, scrollTo: LogData.moods)),
+              const SizedBox(height: 8),
+              _buildInsightRow(
+                LogData.painSymptoms.icon ?? AppIcons.pulse,
+                symptoms.isEmpty ? 'No symptoms logged yet' : summarizeLogSet(symptoms),
+                () => showLogSheet(context, now, scrollTo: LogData.painSymptoms),
+              ),
+              const SizedBox(height: 8),
+              _buildInsightRow(
+                LogData.sleep.icon ?? AppIcons.moon,
+                sleep.isEmpty ? 'No sleep logged yet' : summarizeLogSet(sleep),
+                () => showLogSheet(context, now, scrollTo: LogData.sleep),
+              ),
             ],
           ),
         ),

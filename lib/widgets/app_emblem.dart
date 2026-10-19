@@ -11,7 +11,7 @@ class AppEmblem extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFEFE2F8)),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.emblemBg),
       alignment: Alignment.center,
       child: Container(
         width: size * 0.727,

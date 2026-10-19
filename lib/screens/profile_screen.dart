@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../navigation/app_nav.dart';
+import '../models/reminder_item.dart';
 import '../models/tracking_mode.dart';
 import '../providers/alert_provider.dart';
 import '../providers/auth_provider.dart';
@@ -17,6 +18,8 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_icons.dart';
 import '../widgets/settings_row.dart';
+import '../widgets/app_glyph.dart';
+import '../widgets/app_slider_row.dart';
 import '../widgets/app_tag.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/app_avatar.dart';
@@ -29,6 +32,12 @@ import '../widgets/tracking_mode_chip.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  /// Resolved once - the screen rebuilds on every watched provider change.
+  static final Future<PackageInfo> _packageInfo = PackageInfo.fromPlatform();
+
+  /// Period anchor for notification scheduling; null while a pregnancy is active.
+  static DateTime? _periodStart(CycleProvider cycle) => cycle.pregnancyActive ? null : cycle.nextPeriodStart();
 
   void _openTrackingSheet(BuildContext context) {
     showModalBottomSheet(
@@ -57,6 +66,65 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  /// Edits the base cycle and bleeding lengths, then persists them; the sheet
+  /// keeps a local draft so a dismissed sheet changes nothing.
+  Future<void> _openRhythmSheet(BuildContext context) async {
+    final onboarding = context.read<OnboardingProvider>();
+    var cycleLength = onboarding.cycleLength;
+    var bleedLength = onboarding.bleedLength;
+    final saved = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (builderContext, setSheetState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Cycle Basics', style: AppText.secIn),
+                const SizedBox(height: 4),
+                Text('Base values seed predictions until your logged cycles take over.', style: AppText.sans(11, c: AppColors.muted)),
+                const SizedBox(height: 12),
+                AppSliderRow(
+                  label: 'Cycle length',
+                  value: '$cycleLength Days',
+                  min: OnboardingProvider.minCycleLength.toDouble(),
+                  max: OnboardingProvider.maxCycleLength.toDouble(),
+                  current: cycleLength.toDouble(),
+                  onChanged: (v) => setSheetState(() => cycleLength = v.round()),
+                ),
+                const SizedBox(height: 4),
+                AppSliderRow(
+                  label: 'Bleeding phase length',
+                  value: '$bleedLength Days',
+                  min: 2,
+                  max: 10,
+                  current: bleedLength.toDouble(),
+                  onChanged: (v) => setSheetState(() => bleedLength = v.round()),
+                ),
+                const SizedBox(height: 14),
+                AppButton(
+                  label: 'Save',
+                  onTap: () async {
+                    onboarding.setCycle(cycleLength);
+                    onboarding.setBleed(bleedLength);
+                    await onboarding.persistRhythms();
+                    if (sheetContext.mounted) Navigator.of(sheetContext).pop(true);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (saved == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cycle basics updated')));
+    }
+  }
+
   Future<void> _pickReminderTime(BuildContext context, int index) async {
     final bells = context.read<RemindersProvider>();
     final item = bells.items[index];
@@ -71,7 +139,7 @@ class ProfileScreen extends StatelessWidget {
       final cycle = context.read<CycleProvider>();
       await NotificationService.syncReminder(
         bells.items[index],
-        predictedStart: cycle.nextPeriodStart(),
+        predictedStart: _periodStart(cycle),
         fertileStart: cycle.fertileWindowStart(),
         bleedLength: cycle.bleedLength,
       );
@@ -115,7 +183,21 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
     if (selected == null || !context.mounted) return;
-    context.read<RemindersProvider>().setFrequency(index, selected);
+    final bells = context.read<RemindersProvider>();
+    bells.setFrequency(index, selected);
+    try {
+      final cycle = context.read<CycleProvider>();
+      await NotificationService.syncReminder(
+        bells.items[index],
+        predictedStart: _periodStart(cycle),
+        fertileStart: cycle.fertileWindowStart(),
+        bleedLength: cycle.bleedLength,
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update reminder: $e')));
+      }
+    }
   }
 
   Future<void> _confirmSignOut(BuildContext context) async {
@@ -172,13 +254,10 @@ class ProfileScreen extends StatelessWidget {
     await prefs.clearAllData();
 
     try {
-      await NotificationService.syncPeriodPrediction(
-        enabled: settings.lunarNotifications,
-        predictedStart: cycle.nextPeriodStart(),
-      );
+      await NotificationService.syncPeriodPrediction(enabled: settings.lunarNotifications, predictedStart: _periodStart(cycle));
       await NotificationService.syncAll(
         reminders.items,
-        predictedStart: cycle.nextPeriodStart(),
+        predictedStart: _periodStart(cycle),
         fertileStart: cycle.fertileWindowStart(),
         bleedLength: cycle.bleedLength,
       );
@@ -189,18 +268,19 @@ class ProfileScreen extends StatelessWidget {
     if (context.mounted) context.reset('/');
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final bells = context.watch<RemindersProvider>();
-    final activeBells = bells.items.where((r) => r.enabled).length;
-    final cycle = context.watch<CycleProvider>();
-    final meanCycle = cycle.meanCycleLength;
-    final settings = context.watch<SettingsProvider>();
+  Widget _buildTapTarget({required VoidCallback onTap, required Widget child}) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap, child: child),
+    );
+  }
+
+  Widget _buildIdentityHeader(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final onboarding = context.watch<OnboardingProvider>();
     final name = auth.identity?.name?.trim();
     final displayName = (name == null || name.isEmpty) ? 'Guest' : name;
     final email = auth.identity?.email?.trim();
+    final local = email == null || email.isEmpty;
     final initials =
         (name == null || name.isEmpty)
             ? 'G'
@@ -211,6 +291,242 @@ class ProfileScreen extends StatelessWidget {
                 .take(2)
                 .join()
                 .toUpperCase();
+    return Column(
+      children: [
+        AppAvatar(initials: initials, big: true),
+        const SizedBox(height: 6),
+        Text(displayName, style: AppText.serif(18)),
+        const SizedBox(height: 2),
+        if (local)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('LOCAL · CYCLE TRACKING', style: AppText.sans(9, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.2)),
+              const SizedBox(width: 5),
+              AppGlyph(AppIcons.star, size: 9, color: AppColors.gold),
+            ],
+          )
+        else
+          Text(email, style: AppText.sans(10, c: AppColors.muted)),
+        if (local) ...[
+          const SizedBox(height: 4),
+          Text('Data stored on this device only', style: AppText.sans(10, c: AppColors.muted)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildEditableRow({required String label, required String value, required VoidCallback onTap, Widget? tag, bool first = false}) {
+    return _buildTapTarget(
+      onTap: onTap,
+      child: SettingsRow(
+        label: label,
+        first: first,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (tag != null) ...[tag, const SizedBox(width: 6)],
+            Text(value, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCycleAveragesCard(BuildContext context) {
+    final cycle = context.watch<CycleProvider>();
+    final onboarding = context.watch<OnboardingProvider>();
+    final meanCycle = cycle.meanCycleLength;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Cycle Averages', style: AppText.secIn),
+          _buildEditableRow(
+            label: 'Average Cycle Length',
+            value: meanCycle == null ? '—' : '${meanCycle.round()} Days',
+            tag: cycle.isCycleLengthAuto ? AppTag.gold('Calculated') : null,
+            onTap: () => _openRhythmSheet(context),
+            first: true,
+          ),
+          _buildEditableRow(label: 'Bleeding Phase Length', value: '${cycle.bleedLength} Days', onTap: () => _openRhythmSheet(context)),
+          SettingsRow(
+            label: 'Tracking Modes',
+            trailing: _buildTapTarget(
+              onTap: () => _openTrackingSheet(context),
+              child: Text(
+                onboarding.trackingModes.map((m) => m.label).join(', '),
+                style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPregnancyCard(BuildContext context) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Pregnancy Settings', style: AppText.secIn),
+          SettingsRow(
+            label: 'Pregnancy Tracker',
+            trailing: _buildTapTarget(
+              onTap: () => context.go('/pregnancy'),
+              child: Text('View', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)),
+            ),
+            first: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppSettingsCard(BuildContext context) {
+    final settings = context.watch<SettingsProvider>();
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('App Settings', style: AppText.secIn),
+          SettingsRow(
+            label: 'Cycle Notifications',
+            trailing: Switch(
+              value: settings.lunarNotifications,
+              activeThumbColor: AppColors.pur,
+              onChanged: (v) async {
+                context.read<SettingsProvider>().setLunar(v);
+                final cycle = context.read<CycleProvider>();
+                try {
+                  await NotificationService.syncPeriodPrediction(enabled: v, predictedStart: _periodStart(cycle));
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update notifications: $e')));
+                  }
+                }
+              },
+            ),
+            first: true,
+          ),
+          SettingsRow(
+            label: 'Dark Mode',
+            trailing: Switch(value: settings.darkMode, activeThumbColor: AppColors.pur, onChanged: (v) => context.read<SettingsProvider>().setDark(v)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRemindersCard(BuildContext context) {
+    final bells = context.watch<RemindersProvider>();
+    final activeBells = bells.items.where((r) => r.enabled).length;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Reminders', style: AppText.secIn),
+          const SizedBox(height: 4),
+          Text('$activeBells of ${bells.items.length} reminders active', style: AppText.sans(11.5, c: AppColors.muted)),
+          const SizedBox(height: 8),
+          for (var i = 0; i < bells.items.length; i++) ...[
+            if (i > 0) Divider(height: 12, color: AppColors.line),
+            _buildReminderRow(context, bells.items[i], i),
+            if (bells.items[i].enabled) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  // Hourly bells ignore the time field; show frequency only.
+                  if (!NotificationService.isHourly(bells.items[i])) ...[
+                    _buildTapTarget(
+                      onTap: () => _pickReminderTime(context, i),
+                      child: InfoPill(icon: AppIcons.clock, label: bells.items[i].time),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  _buildTapTarget(
+                    onTap: () => _pickReminderFrequency(context, i),
+                    child: InfoPill(icon: bells.items[i].icon, label: bells.items[i].freq),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReminderRow(BuildContext context, ReminderItem item, int index) {
+    return Row(
+      children: [
+        IconBadge(icon: item.icon, bg: item.badgeBg, fg: item.badgeFg),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [Text(item.title, style: AppText.serif(12.5)), Text(item.subtitle, style: AppText.sans(9.5, c: AppColors.muted))],
+          ),
+        ),
+        Switch(
+          value: item.enabled,
+          activeThumbColor: AppColors.pur,
+          onChanged: (v) async {
+            context.read<RemindersProvider>().toggle(index, v);
+            final cycle = context.read<CycleProvider>();
+            try {
+              await NotificationService.syncReminder(
+                item,
+                predictedStart: _periodStart(cycle),
+                fertileStart: cycle.fertileWindowStart(),
+                bleedLength: cycle.bleedLength,
+              );
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update reminder: $e')));
+              }
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSessionCard(BuildContext context) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Session', style: AppText.secIn),
+          const SizedBox(height: 10),
+          AppButton(label: 'Sign Out', onTap: () => _confirmSignOut(context)),
+          const SizedBox(height: 10),
+          DangerButton(label: 'Delete All Data', onTap: () => _confirmDeleteData(context)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return Center(
+      child: FutureBuilder<PackageInfo>(
+        future: _packageInfo,
+        builder: (context, snap) {
+          final version = snap.data?.version ?? '1.0.0';
+          return Text(
+            'Witchy\nVersion $version',
+            textAlign: TextAlign.center,
+            style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final onboarding = context.watch<OnboardingProvider>();
     return Scaffold(
       appBar: AppTopBar(
         title: 'Profile',
@@ -223,215 +539,21 @@ class ProfileScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
-          Column(
-            children: [
-              AppAvatar(initials: initials, big: true),
-              const SizedBox(height: 6),
-              Text(displayName, style: AppText.serif(18)),
-              const SizedBox(height: 2),
-              Text(
-                (email == null || email.isEmpty) ? 'LOCAL · CYCLE TRACKING' : email,
-                style:
-                    (email == null || email.isEmpty)
-                        ? AppText.sans(9, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.2)
-                        : AppText.sans(10, c: AppColors.muted),
-              ),
-              if (email == null || email.isEmpty) ...[
-                const SizedBox(height: 4),
-                Text('Data stored on this device only', style: AppText.sans(10, c: AppColors.muted)),
-              ],
-            ],
-          ),
+          _buildIdentityHeader(context),
           const SizedBox(height: 12),
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Cycle Averages', style: AppText.secIn),
-                SettingsRow(
-                  label: 'Average Cycle Length',
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (cycle.isCycleLengthAuto) ...[
-                        AppTag.gold('Calculated'),
-                        const SizedBox(width: 6),
-                      ],
-                      Text(meanCycle == null ? '—' : '${meanCycle.round()} Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted)),
-                    ],
-                  ),
-                  first: true,
-                ),
-                SettingsRow(label: 'Bleeding Phase Length', trailing: Text('${cycle.bleedLength} Days', style: AppText.sans(12, w: FontWeight.w600, c: AppColors.muted))),
-                SettingsRow(
-                  label: 'Tracking Modes',
-                  trailing: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: () => _openTrackingSheet(context),
-                      child: Text(
-                        onboarding.trackingModes.map((m) => m.label).join(', '),
-                        style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildCycleAveragesCard(context),
           const SizedBox(height: 12),
           if (onboarding.trackingModes.contains(TrackingMode.pregnancy)) ...[
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Pregnancy Settings', style: AppText.secIn),
-                  SettingsRow(
-                    label: 'Pregnancy Tracker',
-                    trailing: MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(onTap: () => context.go('/pregnancy'), child: Text('View', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)))),
-                    first: true,
-                  ),
-                ],
-              ),
-            ),
+            _buildPregnancyCard(context),
             const SizedBox(height: 12),
           ],
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('App Settings', style: AppText.secIn),
-                SettingsRow(
-                  label: 'Cycle Notifications',
-                  trailing: Switch(
-                    value: settings.lunarNotifications,
-                    activeThumbColor: const Color(0xFF7B2CBF),
-                    onChanged: (v) async {
-                      context.read<SettingsProvider>().setLunar(v);
-                      final cycle = context.read<CycleProvider>();
-                      try {
-                        await NotificationService.syncPeriodPrediction(
-                          enabled: v,
-                          predictedStart: cycle.nextPeriodStart(),
-                        );
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update notifications: $e')));
-                        }
-                      }
-                    },
-                  ),
-                  first: true,
-                ),
-                SettingsRow(
-                  label: 'Dark Mode',
-                  trailing: Switch(value: settings.darkMode, activeThumbColor: const Color(0xFF7B2CBF), onChanged: (v) => context.read<SettingsProvider>().setDark(v)),
-                ),
-              ],
-            ),
-          ),
+          _buildAppSettingsCard(context),
           const SizedBox(height: 12),
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Reminders', style: AppText.secIn),
-                const SizedBox(height: 4),
-                Text('$activeBells of ${bells.items.length} reminders active', style: AppText.sans(11.5, c: AppColors.muted)),
-                const SizedBox(height: 8),
-                for (var i = 0; i < bells.items.length; i++) ...[
-                  if (i > 0) Divider(height: 12, color: AppColors.line),
-                  Row(
-                    children: [
-                      IconBadge(icon: bells.items[i].icon, bg: bells.items[i].badgeBg, fg: bells.items[i].badgeFg),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [Text(bells.items[i].title, style: AppText.serif(12.5)), Text(bells.items[i].subtitle, style: AppText.sans(9.5, c: AppColors.muted))],
-                        ),
-                      ),
-                      Switch(
-                        value: bells.items[i].enabled,
-                        activeThumbColor: AppColors.pur,
-                        onChanged: (v) async {
-                          context.read<RemindersProvider>().toggle(i, v);
-                          final cycle = context.read<CycleProvider>();
-                          try {
-                            await NotificationService.syncReminder(
-                              bells.items[i],
-                              predictedStart: cycle.nextPeriodStart(),
-                              fertileStart: cycle.fertileWindowStart(),
-                              bleedLength: cycle.bleedLength,
-                            );
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update reminder: $e')));
-                            }
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  if (bells.items[i].enabled) ...[
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        // Hourly bells ignore the time field; show frequency only.
-                        if (!NotificationService.isHourly(bells.items[i])) ...[
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTap: () => _pickReminderTime(context, i),
-                              child: InfoPill(icon: AppIcons.clock, label: bells.items[i].time),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                        MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: () => _pickReminderFrequency(context, i),
-                            child: InfoPill(icon: bells.items[i].icon, label: bells.items[i].freq),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ],
-            ),
-          ),
+          _buildRemindersCard(context),
           const SizedBox(height: 12),
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Session', style: AppText.secIn),
-                const SizedBox(height: 10),
-                AppButton(
-                  label: (email == null || email.isEmpty) ? 'Switch Account' : 'Sign Out',
-                  onTap: () => _confirmSignOut(context),
-                ),
-                const SizedBox(height: 10),
-                DangerButton(label: 'Delete All Data', onTap: () => _confirmDeleteData(context)),
-              ],
-            ),
-          ),
+          _buildSessionCard(context),
           const SizedBox(height: 12),
-          Center(
-            child: FutureBuilder<PackageInfo>(
-              future: PackageInfo.fromPlatform(),
-              builder: (context, snap) {
-                final version = snap.data?.version ?? '1.0.0';
-                return Text(
-                  'Witchy\nVersion $version',
-                  textAlign: TextAlign.center,
-                  style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6),
-                );
-              },
-            ),
-          ),
+          _buildFooter(),
         ],
       ),
     );

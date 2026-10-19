@@ -348,13 +348,15 @@ Gates per phase: `flutter analyze` · `flutter test` · `flutter build apk --deb
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 277/277 passing, `flutter build apk --debug` = ✓.
 
-### Phase 5
+### Phase 5 - 2026.10.19
+
+### Phase 6 - WIP
 
 - [ ] onboarding -> tracker type card: the 3 chips should expand to occupy the whole width - make their width equal (with/3) + gaps between them - the icon + text must not wrap, the end of the word should get cut off by the chip
 
 --- 
 
-## Milestone 2 - TBD
+## Milestone 2 - WIP
 
 Backlog - later updates (bigger gaps, NOT MVP) - needs proper structuring
 - [ ] PMS prediction (onset stats last 6 cycles, calendar dots, start alert)
@@ -371,4 +373,4 @@ Backlog - later updates (bigger gaps, NOT MVP) - needs proper structuring
 
 ---
 
-## Fixes 2 - TBD
+## Fixes 2 - WIP

@@ -186,6 +186,10 @@ class OnboardingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Persists the current rhythm values without touching onboarding state;
+  /// used when the cycle/bleed lengths are edited after onboarding.
+  Future<void> persistRhythms() => _prefs.saveRhythms(cycleLength, bleedLength, lastPeriodStart);
+
   Future<void> finish() async {
     final last = pickedDate ?? _derive(selectedDay);
     lastPeriodStart = last;

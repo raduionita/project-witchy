@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -72,5 +74,44 @@ void main() {
     await tester.scrollUntilVisible(find.textContaining('Version'), 400);
     expect(find.textContaining('Version 1.2.4'), findsNothing);
     expect(find.textContaining('Version'), findsOneWidget);
+  });
+
+  testWidgets('guest session offers Sign Out, not Switch Account', (tester) async {
+    await pumpProfile(tester);
+    await tester.scrollUntilVisible(find.text('Sign Out'), 400);
+    expect(find.text('Sign Out'), findsOneWidget);
+    expect(find.text('Switch Account'), findsNothing);
+  });
+
+  testWidgets('editing cycle basics persists and updates the card', (tester) async {
+    await pumpProfile(tester);
+    await tester.tap(find.text('Bleeding Phase Length'));
+    await tester.pumpAndSettle();
+    expect(find.text('Cycle Basics'), findsOneWidget);
+    // The second slider is the bleeding phase length; step it up by one day.
+    await tester.tap(find.byIcon(Icons.add_circle_outline).last);
+    await tester.pumpAndSettle();
+    expect(find.text('6 Days'), findsOneWidget);
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(find.text('Cycle Basics'), findsNothing);
+    expect(find.text('6 Days'), findsOneWidget);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getInt('witchy_bleed_len'), 6);
+  });
+
+  testWidgets('changing a reminder frequency updates the pill and persists', (tester) async {
+    await pumpProfile(tester);
+    await tester.ensureVisible(find.text('Each bleed day'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Each bleed day'));
+    await tester.pumpAndSettle();
+    expect(find.text('Frequency'), findsOneWidget);
+    await tester.tap(find.descendant(of: find.byType(SimpleDialog), matching: find.text('Every day')));
+    await tester.pumpAndSettle();
+    expect(find.text('Each bleed day'), findsNothing);
+    final prefs = await SharedPreferences.getInstance();
+    final configs = jsonDecode(prefs.getString('witchy_reminders')!) as Map<String, dynamic>;
+    expect((configs['Period Reminder'] as Map<String, dynamic>)['freq'], 'Every day');
   });
 }

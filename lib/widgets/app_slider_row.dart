@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import 'number_entry_dialog.dart';
 
 class AppSliderRow extends StatelessWidget {
   final String label;
@@ -19,12 +20,48 @@ class AppSliderRow extends StatelessWidget {
     if (next != current) onChanged(next);
   }
 
+  /// Types an exact value instead of hunting for a thumb position; the entered
+  /// number is clamped into the range the same way the steppers are.
+  Future<void> _type(BuildContext context) async {
+    final entered = await showDialog<int>(
+      context: context,
+      builder: (_) => NumberEntryDialog(title: label, initial: current.round(), min: min.round(), max: max.round(), hint: hint),
+    );
+    if (entered == null) return;
+    final next = entered.toDouble().clamp(min, max);
+    if (next != current) onChanged(next);
+  }
+
+  Widget _buildValue(BuildContext context) {
+    return Tooltip(
+      message: 'Tap to type a number',
+      child: InkWell(
+        onTap: () => _type(context),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(value, style: AppText.serif(13.5, c: AppColors.pur)),
+              const SizedBox(width: 5),
+              Icon(Icons.edit_outlined, size: 11, color: AppColors.pur),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final divisions = (max - min).round();
     return Column(
       children: [
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label, style: AppText.sec), Text(value, style: AppText.serif(13.5, c: AppColors.pur))]),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Flexible(child: Text(label, style: AppText.sec, overflow: TextOverflow.ellipsis)), _buildValue(context)],
+        ),
         Row(
           children: [
             IconButton(

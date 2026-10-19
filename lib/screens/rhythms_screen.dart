@@ -15,6 +15,7 @@ import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_chip.dart';
 import '../widgets/app_slider_row.dart';
+import '../widgets/number_entry_dialog.dart';
 import '../widgets/tracking_mode_chip.dart';
 
 class RhythmsScreen extends StatefulWidget {
@@ -249,14 +250,26 @@ class _LastBleedDateCard extends StatelessWidget {
 
 /// Optional history of earlier period starts; seeding these makes predictions
 /// reflect the user's real cycle lengths instead of a guessed slider value.
-class _PastPeriodsCard extends StatelessWidget {
+class _PastPeriodsCard extends StatefulWidget {
   const _PastPeriodsCard();
 
-  void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), behavior: SnackBarBehavior.floating));
+  @override
+  State<_PastPeriodsCard> createState() => _PastPeriodsCardState();
+}
+
+class _PastPeriodsCardState extends State<_PastPeriodsCard> {
+  /// Reason the last add/edit failed. Kept on screen instead of in a SnackBar
+  /// so the user can read it while fixing the date.
+  String? _error;
+
+  /// Moves the slider onto the length the entered dates imply; leaves a manual
+  /// value alone until 2+ starts exist.
+  void _applyDerivedLength(OnboardingProvider ob) {
+    final derived = ob.deriveCycleLengthFromHistory();
+    if (derived != null) ob.setCycle(derived, fromHistory: true);
   }
 
-  Future<void> _add(BuildContext context) async {
+  Future<void> _add() async {
     final ob = context.read<OnboardingProvider>();
     final picked = await showDatePicker(
       context: context,
@@ -264,16 +277,16 @@ class _PastPeriodsCard extends StatelessWidget {
       firstDate: DateTime(DateTime.now().year - 2),
       lastDate: DateTime.now(),
     );
-    if (picked == null || !context.mounted) return;
+    if (picked == null || !mounted) return;
     if (!ob.addPreviousPeriod(picked)) {
-      _showError(context, ob.lastValidationError ?? 'Could not add that date.');
+      setState(() => _error = ob.lastValidationError ?? 'Could not add that date.');
       return;
     }
-    final derived = ob.deriveCycleLengthFromHistory();
-    if (derived != null) ob.setCycle(derived, fromHistory: true);
+    setState(() => _error = null);
+    _applyDerivedLength(ob);
   }
 
-  Future<void> _edit(BuildContext context, DateTime existing) async {
+  Future<void> _editDate(DateTime existing) async {
     final ob = context.read<OnboardingProvider>();
     final picked = await showDatePicker(
       context: context,
@@ -281,19 +294,142 @@ class _PastPeriodsCard extends StatelessWidget {
       firstDate: DateTime(DateTime.now().year - 2),
       lastDate: DateTime.now(),
     );
-    if (picked == null || !context.mounted) return;
+    if (picked == null || !mounted) return;
     if (!ob.replacePreviousPeriod(existing, picked)) {
-      _showError(context, ob.lastValidationError ?? 'Could not update that date.');
+      setState(() => _error = ob.lastValidationError ?? 'Could not update that date.');
       return;
     }
-    final derived = ob.deriveCycleLengthFromHistory();
-    if (derived != null) ob.setCycle(derived, fromHistory: true);
+    setState(() => _error = null);
+    _applyDerivedLength(ob);
+  }
+
+  Future<void> _editLength(DateTime start) async {
+    final ob = context.read<OnboardingProvider>();
+    final days = await showDialog<int>(
+      context: context,
+      builder: (_) => NumberEntryDialog(title: 'Period length', initial: ob.durationFor(start), min: 2, max: 10, hint: 'How many days the period starting ${DateFormat('MMM d').format(start)} lasted.'),
+    );
+    if (days == null) return;
+    ob.setPreviousPeriodDuration(start, days);
+  }
+
+  /// Removes a row and offers an undo that also restores its length.
+  void _remove(DateTime start) {
+    final ob = context.read<OnboardingProvider>();
+    final days = ob.durationFor(start);
+    ob.removePreviousPeriod(start);
+    setState(() => _error = null);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Removed ${DateFormat('MMMM d, yyyy').format(start)}'),
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            ob.restorePreviousPeriod(start, duration: days);
+            _applyDerivedLength(ob);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTapTarget({required VoidCallback onTap, required String tooltip, required Widget child}) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Align(alignment: Alignment.centerLeft, child: child)),
+      ),
+    );
+  }
+
+  Widget _buildRow(OnboardingProvider ob, DateTime d) {
+    return SizedBox(
+      height: 44,
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildTapTarget(
+              onTap: () => _editDate(d),
+              tooltip: 'Edit date',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(child: Text(DateFormat('MMMM d, yyyy').format(d), style: AppText.sans(11.5, w: FontWeight.w600, c: AppColors.ink), overflow: TextOverflow.ellipsis)),
+                  const SizedBox(width: 6),
+                  FaIcon(FontAwesomeIcons.pen, size: 10, color: AppColors.muted),
+                ],
+              ),
+            ),
+          ),
+          _buildTapTarget(
+            onTap: () => _editLength(d),
+            tooltip: 'Edit length',
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('${ob.durationFor(d)} days', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur)),
+                const SizedBox(width: 5),
+                FaIcon(FontAwesomeIcons.pen, size: 9, color: AppColors.pur),
+              ],
+            ),
+          ),
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            icon: FaIcon(FontAwesomeIcons.xmark, size: 12, color: AppColors.muted),
+            tooltip: 'Remove',
+            onPressed: () => _remove(d),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildError(String message) {
+    return Semantics(
+      liveRegion: true,
+      container: true,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.danger.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.danger.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const FaIcon(FontAwesomeIcons.circleExclamation, size: 11, color: AppColors.danger),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message, style: AppText.sans(10.5, c: AppColors.danger, h: 1.35))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddButton() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: TextButton.icon(
+        onPressed: _add,
+        style: TextButton.styleFrom(foregroundColor: AppColors.pur, padding: const EdgeInsets.symmetric(horizontal: 4), minimumSize: const Size(48, 36), tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+        icon: FaIcon(FontAwesomeIcons.plus, size: 11, color: AppColors.pur),
+        label: Text('Add another period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final ob = context.watch<OnboardingProvider>();
     final entries = ob.previousPeriodStarts;
+    final error = _error;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,53 +438,23 @@ class _PastPeriodsCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Recent periods', style: AppText.secIn),
-              Text('${entries.length} of ${OnboardingProvider.maxPreviousPeriods}', style: AppText.sans(10, c: AppColors.muted)),
+              Flexible(child: Text('${entries.length} of ${OnboardingProvider.maxPreviousPeriods} earlier periods', style: AppText.sans(10, c: AppColors.muted), textAlign: TextAlign.right)),
             ],
           ),
           const SizedBox(height: 4),
           Text(
-            'Add the start date of each earlier period. Two or more dates let us match your real cycle length. Keep at least ${OnboardingProvider.minGapDays} days between dates.',
+            entries.isEmpty
+                ? 'Add at least one earlier period to calculate your cycle length. Keep at least ${OnboardingProvider.minGapDays} days between dates.'
+                : 'Tap a date to change it, or a length to change how many days that period lasted.',
             style: AppText.sans(10.5, c: AppColors.muted, h: 1.45),
           ),
+          if (error != null) ...[const SizedBox(height: 8), _buildError(error)],
           if (entries.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            for (final d in entries)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          onTap: () => _edit(context, d),
-                          child: Text(DateFormat('MMMM d, yyyy').format(d), style: AppText.sans(11.5, w: FontWeight.w600, c: AppColors.ink)),
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                      icon: FaIcon(FontAwesomeIcons.xmark, size: 12, color: AppColors.muted),
-                      tooltip: 'Remove',
-                      onPressed: () => context.read<OnboardingProvider>().removePreviousPeriod(d),
-                    ),
-                  ],
-                ),
-              ),
+            const SizedBox(height: 4),
+            for (final d in entries) _buildRow(ob, d),
           ],
           const SizedBox(height: 4),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: TextButton.icon(
-              onPressed: () => _add(context),
-              style: TextButton.styleFrom(foregroundColor: AppColors.pur, padding: const EdgeInsets.symmetric(horizontal: 4), minimumSize: const Size(48, 36), tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-              icon: FaIcon(FontAwesomeIcons.plus, size: 11, color: AppColors.pur),
-              label: Text('Add another period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
-            ),
-          ),
+          _buildAddButton(),
         ],
       ),
     );
@@ -364,8 +470,8 @@ class _CycleLengthCard extends StatelessWidget {
       child: AppSliderRow(
         label: 'Cycle length',
         value: '${ob.cycleLength} Days',
-        min: 20,
-        max: 40,
+        min: OnboardingProvider.minCycleLength.toDouble(),
+        max: OnboardingProvider.maxCycleLength.toDouble(),
         current: ob.cycleLength.toDouble(),
         onChanged: (v) => context.read<OnboardingProvider>().setCycle(v.round()),
         hint: ob.cycleLengthFromHistory ? 'Calculated from your dates - adjust freely' : null,

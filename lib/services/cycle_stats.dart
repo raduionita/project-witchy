@@ -18,8 +18,8 @@ class CycleStats {
   static const int windowCount = 12;
 
   /// Slider-range clamp, mirroring OnboardingProvider.min/maxCycleLength.
-  static const int minLength = 20;
-  static const int maxLength = 40;
+  static const int minLength = 15;
+  static const int maxLength = 60;
 
   /// Last-[recentCount] lengths (or everything when fewer), oldest first.
   List<int> get recent => lengths.length <= recentCount ? List.of(lengths) : lengths.sublist(lengths.length - recentCount);

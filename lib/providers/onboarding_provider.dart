@@ -26,8 +26,8 @@ class OnboardingProvider extends ChangeNotifier {
   /// Cap on earlier-period rows so the onboarding list stays scannable.
   static const int maxPreviousPeriods = 6;
 
-  static const int minCycleLength = 20;
-  static const int maxCycleLength = 40;
+  static const int minCycleLength = 15;
+  static const int maxCycleLength = 60;
 
   /// Reason the most recent add/replace attempt failed, for the UI to show.
   String? lastValidationError;
@@ -181,6 +181,19 @@ class OnboardingProvider extends ChangeNotifier {
     final day = _day(d);
     previousPeriodStarts.removeWhere((e) => e == day);
     previousPeriodDurations.remove(day);
+    notifyListeners();
+  }
+
+  /// Puts back a period that was removed by mistake (the undo action). Skips
+  /// validation because the date was accepted a moment ago, and restores the
+  /// length the row carried so undo is truly lossless.
+  void restorePreviousPeriod(DateTime d, {int? duration}) {
+    final day = _day(d);
+    if (previousPeriodStarts.any((e) => e == day)) return;
+    previousPeriodStarts.add(day);
+    previousPeriodDurations[day] = (duration ?? bleedLength).clamp(2, 10);
+    previousPeriodStarts.sort((a, b) => b.compareTo(a));
+    lastValidationError = null;
     notifyListeners();
   }
 

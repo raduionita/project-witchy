@@ -39,8 +39,8 @@ void main() {
     test('spread uses the last 6 and clamps the median to the slider range', () {
       expect(const CycleStats([24, 24, 33]).spreadRecent, 9);
       expect(const CycleStats([28]).spreadRecent, isNull);
-      expect(const CycleStats([15, 15]).medianRecent, 20);
-      expect(const CycleStats([50, 50]).medianWindow, 40);
+      expect(const CycleStats([10, 10]).medianRecent, CycleStats.minLength);
+      expect(const CycleStats([90, 90]).medianWindow, CycleStats.maxLength);
     });
   });
 }

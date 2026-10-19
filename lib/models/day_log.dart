@@ -13,6 +13,11 @@ class DayLog {
   double? temperature;
   String notes;
   String? ovulationTest;
+
+  /// True for spans seeded from onboarding history rather than logged by hand.
+  /// Assumed days carry an 'Estimated' tag and stay out of the statistics until
+  /// the user edits the day themselves.
+  bool assumed;
   DayLog({
     Set<String>? flow,
     Set<String>? collection,
@@ -28,6 +33,7 @@ class DayLog {
     this.temperature,
     this.notes = '',
     this.ovulationTest,
+    this.assumed = false,
   }) : flow = flow ?? {},
        collection = collection ?? {},
        symptoms = symptoms ?? {},
@@ -54,6 +60,7 @@ class DayLog {
     'temperature': temperature,
     'notes': notes,
     'ovulationTest': ovulationTest,
+    'assumed': assumed,
   };
 
   /// Deep copy — mutating the copy never affects the original entry.
@@ -83,5 +90,6 @@ class DayLog {
     temperature: (json['temperature'] as num?)?.toDouble(),
     notes: json['notes'] as String? ?? '',
     ovulationTest: json['ovulationTest'] as String?,
+    assumed: json['assumed'] as bool? ?? false,
   );
 }

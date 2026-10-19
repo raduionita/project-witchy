@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/cycle_phase.dart';
 import '../models/day_log.dart';
+import '../models/fertility_status.dart';
 import '../models/period_span.dart';
 import '../models/tracking_mode.dart';
 import '../services/bbt_analyzer.dart';
@@ -106,8 +107,11 @@ class CycleProvider extends ChangeNotifier {
   DateTime _resolveAnchor() {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    // Only true period spans anchor the cycle; a lone flow day is spotting and
+    // must not move the anchor or the modular arithmetic with it.
+    final periodStarts = PeriodHistory.startsOf(bleeds);
     final candidates = <DateTime>[
-      if (bleeds.isNotEmpty) bleeds.last.start,
+      if (periodStarts.isNotEmpty) periodStarts.last,
       _onboarding.lastPeriodStart,
     ];
     DateTime? anchor;
@@ -180,9 +184,9 @@ class CycleProvider extends ChangeNotifier {
   /// Median of the last 6 observed cycles; feeds the Records average display.
   int? get medianRecentCycleLength => stats.medianRecent;
 
-  /// Uncertainty pad (days) added on each side of the fertile window: sparse
-  /// history gets a wide window, steady history gets none, irregular history
-  /// gets half its spread (capped). A2 migrates this onto CycleStats.
+  /// Uncertainty in days shown as copy (for example "may shift by 2 days").
+  /// It no longer widens the fertile window itself - the window is the
+  /// biological ovu-5 .. ovu+1 range.
   int get uncertaintyPad {
     if (observedCycleLengths.length < 3) return 2;
     final spread = cycleSpread ?? 0;
@@ -228,7 +232,7 @@ class CycleProvider extends ChangeNotifier {
   /// the pure-arithmetic cycle position would place it in another phase.
   CyclePhase phaseAt(DateTime date) {
     if (hasLoggedBleedOn(date)) return CyclePhase.menstrual;
-    return CycleCalculator.phaseAt(effectiveLastStart, date, effectiveCycleLength, bleedLength, lutealLength: lutealLength, pad: uncertaintyPad);
+    return CycleCalculator.phaseAt(effectiveLastStart, date, effectiveCycleLength, bleedLength, lutealLength: lutealLength);
   }
 
   CyclePhase phase({DateTime? today}) => phaseAt(today ?? DateTime.now());
@@ -250,11 +254,36 @@ class CycleProvider extends ChangeNotifier {
     lutealLength: lutealLength,
   );
 
-  /// First day of the fertile window (ovulation minus 5 plus the uncertainty
-  /// pad); null when fertility predictions are off.
-  DateTime? fertileWindowStart({DateTime? today}) => showFertilityPredictions
-      ? ovulationDay(today: today).subtract(Duration(days: 5 + uncertaintyPad))
-      : null;
+  /// First day of the fertile window (ovulation minus 5); null when fertility
+  /// predictions are off.
+  DateTime? fertileWindowStart({DateTime? today}) =>
+      showFertilityPredictions ? ovulationDay(today: today).subtract(const Duration(days: 5)) : null;
+
+  /// Last day of the fertile window (ovulation plus 1); null when fertility
+  /// predictions are off.
+  DateTime? fertileWindowEnd({DateTime? today}) =>
+      showFertilityPredictions ? ovulationDay(today: today).add(const Duration(days: 1)) : null;
+
+  /// This cycle's ovulation date. Unlike [nextOvulationDate] it never rolls
+  /// forward, so a peak that already passed can still be named.
+  DateTime ovulationDateThisCycle({DateTime? today}) => ovulationDay(today: today);
+
+  /// Where today sits relative to this cycle's ovulation. Deriving copy from the
+  /// ovulation date keeps the window from claiming "ovulation nears" after the
+  /// peak has passed.
+  FertilityStatus fertilityStatus({DateTime? today}) {
+    final now = DateTime.now();
+    final date = today ?? now;
+    final day = DateTime(date.year, date.month, date.day);
+    final peak = CycleCalculator.ovulationDay(effectiveLastStart, day, effectiveCycleLength, lutealLength: lutealLength);
+    final daysToPeak = CycleCalculator.daysBetween(day, peak);
+    final cycleDay = CycleCalculator.cycleDay(effectiveLastStart, day, effectiveCycleLength);
+    if (daysToPeak > 0) {
+      return cycleDay >= fertileStartCycleDay ? FertilityStatus.windowOpen : FertilityStatus.beforeWindow;
+    }
+    if (daysToPeak == 0) return FertilityStatus.peakToday;
+    return cycleDay <= fertileEndCycleDay ? FertilityStatus.windowClosing : FertilityStatus.passed;
+  }
 
   int daysUntilOvulation({DateTime? today}) => CycleCalculator.daysUntilOvulation(
     effectiveLastStart,
@@ -287,7 +316,7 @@ class CycleProvider extends ChangeNotifier {
 
   bool isFertileDay(DateTime date) =>
       showFertilityPredictions &&
-      CycleCalculator.isFertileDay(effectiveLastStart, date, effectiveCycleLength, lutealLength: lutealLength, pad: uncertaintyPad);
+      CycleCalculator.isFertileDay(effectiveLastStart, date, effectiveCycleLength, lutealLength: lutealLength);
 
   bool isOvulationDay(DateTime date) =>
       showFertilityPredictions &&
@@ -299,11 +328,11 @@ class CycleProvider extends ChangeNotifier {
 
   int get ovulationCycleDay => CycleCalculator.ovulationCycleDay(effectiveCycleLength, lutealLength: lutealLength);
 
-  int get fertileStartCycleDay => CycleCalculator.fertileStartCycleDay(effectiveCycleLength, lutealLength: lutealLength, pad: uncertaintyPad);
+  int get fertileStartCycleDay => CycleCalculator.fertileStartCycleDay(effectiveCycleLength, lutealLength: lutealLength);
 
-  int get fertileEndCycleDay => CycleCalculator.fertileEndCycleDay(effectiveCycleLength, lutealLength: lutealLength, pad: uncertaintyPad);
+  int get fertileEndCycleDay => CycleCalculator.fertileEndCycleDay(effectiveCycleLength, lutealLength: lutealLength);
 
   double? get meanCycleLength => PeriodHistory.mean(observedCycleLengths);
 
-  double? get meanBleedLength => PeriodHistory.mean([for (final s in bleeds) s.length]);
+  double? get meanBleedLength => PeriodHistory.mean([for (final s in PeriodHistory.periods(bleeds)) s.length]);
 }

@@ -7,10 +7,12 @@ import '../models/period_span.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/logging_provider.dart';
 import '../services/cycle_calculator.dart';
+import '../services/period_history.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_tag.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/log_bottom_sheet.dart';
 import '../widgets/stat_card.dart';
@@ -164,14 +166,28 @@ class _BleedRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final range = '${DateFormat('MMM d').format(span.start)} – ${DateFormat('MMM d').format(span.end)}';
+    // Days seeded from onboarding history are estimates until logged by hand;
+    // spans under the period threshold are spotting, never a real period.
+    final estimated = context.watch<LoggingProvider>().peekDay(span.start)?.assumed ?? false;
+    final spotting = span.length < PeriodHistory.minSpanDays;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 9),
       decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(range, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)),
-          Text('${span.length} Days', style: AppText.sans(10.5, c: AppColors.muted)),
+          Expanded(
+            child: Row(
+              children: [
+                Flexible(child: Text(range, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink))),
+                if (estimated) ...[
+                  const SizedBox(width: 8),
+                  AppTag('Estimated'),
+                ],
+              ],
+            ),
+          ),
+          Text(spotting ? 'Spotting' : '${span.length} Days', style: AppText.sans(10.5, c: AppColors.muted)),
         ],
       ),
     );

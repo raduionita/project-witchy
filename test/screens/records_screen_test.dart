@@ -47,6 +47,8 @@ void main() {
   testWidgets('two observed cycles render the shortest-to-longest spread', (tester) async {
     for (final start in [DateTime(2026, 7, 1), DateTime(2026, 7, 29), DateTime(2026, 9, 2)]) {
       logging.setFlow(start, 'Medium');
+      // Two days: a single flow day counts as spotting, not as a period.
+      logging.setFlow(DateTime(start.year, start.month, start.day + 1), 'Light');
     }
     await pumpRecords(tester);
     expect(find.text('Irregularity'), findsOneWidget);

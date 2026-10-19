@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/models/cycle_phase.dart';
+import 'package:witchy/models/fertility_status.dart';
 import 'package:witchy/models/tracking_mode.dart';
 import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/providers/gestation_provider.dart';
@@ -24,6 +25,13 @@ void main() {
     logging = LoggingProvider(prefs);
   }
 
+  /// Logs a two-day bleed. A single flow day counts as spotting, so every
+  /// period-start fixture needs at least PeriodHistory.minSpanDays days.
+  void logPeriod(DateTime start, [String flow = 'Medium']) {
+    logging.setFlow(start, flow);
+    logging.setFlow(DateTime(start.year, start.month, start.day + 1), 'Light');
+  }
+
   group('CycleProvider adaptation', () {
     test('no logs falls back to onboarding settings', () {
       buildSources();
@@ -37,21 +45,20 @@ void main() {
 
     test('single observed cycle keeps settings length but adopts logged start', () {
       buildSources();
-      logging.setFlow(DateTime(2026, 8, 16), 'Heavy');
-      logging.setFlow(DateTime(2026, 8, 17), 'Light');
-      logging.setFlow(DateTime(2026, 9, 14), 'Heavy');
+      logPeriod(DateTime(2026, 8, 16), 'Heavy');
+      logPeriod(DateTime(2026, 9, 14), 'Heavy');
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.bleeds, hasLength(2));
       expect(cycle.effectiveCycleLength, 40);
       expect(cycle.effectiveLastStart, DateTime(2026, 9, 14));
       expect(cycle.meanCycleLength, 29.0);
-      expect(cycle.meanBleedLength, 1.5);
+      expect(cycle.meanBleedLength, 2.0);
     });
 
     test('two observed cycles override length with median and adopt latest start', () {
       buildSources();
       for (final start in [DateTime(2026, 7, 30), DateTime(2026, 8, 27), DateTime(2026, 9, 24)]) {
-        logging.setFlow(start, 'Medium');
+        logPeriod(start);
         logging.setFlow(DateTime(start.year, start.month, start.day + 1), 'Light');
       }
       final cycle = CycleProvider(onboarding, logging);
@@ -63,28 +70,30 @@ void main() {
 
     test('logged start older than stated start keeps the stated one', () {
       buildSources();
-      logging.setFlow(DateTime(2026, 8, 16), 'Heavy');
+      logPeriod(DateTime(2026, 8, 16), 'Heavy');
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.effectiveLastStart, DateTime(2026, 9, 1));
     });
   });
 
   group('CycleProvider fertile window (A1)', () {
-    test('sparse history widens the window with pad 2', () {
+    test('window is ovulation minus 5 through ovulation plus 1', () {
+      // Uncertainty is copy, not window width: sparse history still shows 7 days.
       buildSources(lastStart: DateTime(2026, 9, 1), cycleLength: 28);
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.uncertaintyPad, 2);
-      expect(cycle.fertileStartCycleDay, 7);
-      expect(cycle.fertileEndCycleDay, 17);
-      expect(cycle.fertileWindowStart(today: DateTime(2026, 9, 20)), DateTime(2026, 9, 7));
-      // Day 7 was follicular under the old ovu-2 bounds; now it opens the window.
-      expect(cycle.phaseAt(DateTime(2026, 9, 7)), CyclePhase.fertile);
+      expect(cycle.fertileStartCycleDay, 9);
+      expect(cycle.fertileEndCycleDay, 15);
+      expect(cycle.fertileWindowStart(today: DateTime(2026, 9, 20)), DateTime(2026, 9, 9));
+      expect(cycle.fertileWindowEnd(today: DateTime(2026, 9, 20)), DateTime(2026, 9, 15));
+      expect(cycle.phaseAt(DateTime(2026, 9, 9)), CyclePhase.fertile);
+      expect(cycle.phaseAt(DateTime(2026, 9, 8)), CyclePhase.follicular);
     });
 
-    test('three steady observed cycles remove the pad', () {
+    test('steady history keeps the same 7-day window with no uncertainty copy', () {
       buildSources(lastStart: DateTime(2026, 9, 24), cycleLength: 40);
       for (final start in [DateTime(2026, 7, 2), DateTime(2026, 7, 30), DateTime(2026, 8, 27), DateTime(2026, 9, 24)]) {
-        logging.setFlow(start, 'Medium');
+        logPeriod(start);
       }
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.observedCycleLengths, [28, 28, 28]);
@@ -93,24 +102,44 @@ void main() {
       expect(cycle.fertileEndCycleDay, 15);
     });
 
-    test('irregular history pads with half the spread', () {
+    test('irregular history pads only the copy, never the window', () {
       buildSources(lastStart: DateTime(2026, 11, 21), cycleLength: 40);
       for (final start in [DateTime(2026, 9, 1), DateTime(2026, 9, 25), DateTime(2026, 10, 19), DateTime(2026, 11, 21)]) {
-        logging.setFlow(start, 'Medium');
+        logPeriod(start);
       }
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.observedCycleLengths, [24, 24, 33]);
       expect(cycle.uncertaintyPad, 4);
+      expect(cycle.fertileEndCycleDay - cycle.fertileStartCycleDay + 1, 7);
     });
 
-    test('pad caps at 4 for very irregular history', () {
+    test('irregular pads cap at 4 and the window stays 7 days', () {
       buildSources(lastStart: DateTime(2026, 11, 20), cycleLength: 40);
       for (final start in [DateTime(2026, 9, 1), DateTime(2026, 9, 21), DateTime(2026, 10, 11), DateTime(2026, 11, 20)]) {
-        logging.setFlow(start, 'Medium');
+        logPeriod(start);
       }
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.observedCycleLengths, [20, 20, 40]);
       expect(cycle.uncertaintyPad, 4);
+      expect(cycle.fertileEndCycleDay - cycle.fertileStartCycleDay + 1, 7);
+    });
+
+    test('status moves before window -> open -> peak -> closing -> passed', () {
+      // Anchor Oct 2 2026 with a 27-day cycle: ovulation day 13 = Oct 14,
+      // window days 8-14 = Oct 9-15, next peak Nov 10.
+      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 27, bleedLength: 5, lastPeriodStart: DateTime(2026, 10, 2));
+      logging = LoggingProvider(prefs);
+      final cycle = CycleProvider(onboarding, logging);
+      FertilityStatus at(DateTime day) => cycle.fertilityStatus(today: day);
+      expect(at(DateTime(2026, 10, 8)), FertilityStatus.beforeWindow);
+      expect(at(DateTime(2026, 10, 9)), FertilityStatus.windowOpen);
+      expect(at(DateTime(2026, 10, 14)), FertilityStatus.peakToday);
+      expect(at(DateTime(2026, 10, 15)), FertilityStatus.windowClosing);
+      expect(at(DateTime(2026, 10, 17)), FertilityStatus.passed);
+      expect(cycle.ovulationDateThisCycle(today: DateTime(2026, 10, 17)), DateTime(2026, 10, 14));
+      expect(cycle.fertileWindowStart(today: DateTime(2026, 10, 17)), DateTime(2026, 10, 9));
+      expect(cycle.fertileWindowEnd(today: DateTime(2026, 10, 17)), DateTime(2026, 10, 15));
+      expect(cycle.nextOvulationDate(today: DateTime(2026, 10, 17)), DateTime(2026, 11, 10));
     });
   });
 
@@ -125,7 +154,7 @@ void main() {
         start = DateTime(start.year, start.month, start.day + gap);
       }
       for (final s in starts) {
-        logging.setFlow(s, 'Medium');
+        logPeriod(s);
       }
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.observedCycleLengths, hasLength(14));
@@ -146,8 +175,9 @@ void main() {
       final cycle = CycleProvider(onboarding, logging);
       var notified = 0;
       cycle.addListener(() => notified++);
-      logging.setFlow(DateTime(2026, 9, 14), 'Heavy');
-      expect(notified, 1);
+      logPeriod(DateTime(2026, 9, 14), 'Heavy');
+      // Two flow entries (the start and its second day) mean two notifications.
+      expect(notified, 2);
       expect(cycle.bleeds, hasLength(1));
       expect(cycle.effectiveLastStart, DateTime(2026, 9, 14));
     });
@@ -169,7 +199,7 @@ void main() {
       expect(cycle.cycleDay(today: today), 10);
       expect(cycle.nextPeriodStart(today: today), DateTime(2026, 9, 29));
       expect(cycle.daysUntilPeriod(today: today), 19);
-      // Sparse history pads the window to days 7-17, so day 10 is fertile.
+      // The window is fixed at days 9-15, so day 10 is fertile.
       expect(cycle.phase(today: today).label, 'Fertile Window');
       expect(cycle.phase(today: DateTime(2026, 9, 6)).label, 'Follicular');
     });
@@ -183,7 +213,7 @@ void main() {
       expect(cycle.daysLate(today: DateTime(2026, 9, 29)), 0);
       expect(cycle.daysLate(today: DateTime(2026, 10, 1)), 2);
       expect(cycle.daysLate(today: DateTime(2026, 10, 2)), 3);
-      logging.setFlow(DateTime(2026, 10, 1), 'Medium');
+      logPeriod(DateTime(2026, 10, 1));
       expect(cycle.effectiveLastStart, DateTime(2026, 10, 1));
       expect(cycle.daysLate(today: DateTime(2026, 10, 3)), 0);
     });
@@ -231,7 +261,7 @@ void main() {
       logging = LoggingProvider(prefs);
       // 28-day then 35-day observed cycles ending at Sep 2.
       for (final start in [DateTime(2026, 7, 1), DateTime(2026, 7, 29), DateTime(2026, 9, 2)]) {
-        logging.setFlow(start, 'Medium');
+        logPeriod(start);
       }
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.isPerimenopause, isTrue);
@@ -251,7 +281,7 @@ void main() {
     void seedTwo28s(DateTime last) {
       buildSources(lastStart: last, cycleLength: 28);
       for (final start in [last.subtract(const Duration(days: 56)), last.subtract(const Duration(days: 28)), last]) {
-        logging.setFlow(start, 'Medium');
+        logPeriod(start);
       }
     }
 
@@ -310,7 +340,7 @@ void main() {
       final total = gapsOldestFirst.fold(0, (a, b) => a + b);
       var start = DateTime(last.year, last.month, last.day - total);
       for (final gap in [...gapsOldestFirst, 0]) {
-        logging.setFlow(start, 'Medium');
+        logPeriod(start);
         start = DateTime(start.year, start.month, start.day + gap);
       }
     }
@@ -413,7 +443,7 @@ void main() {
     test('a logged bleed day is always menstrual, never luteal', () {
       onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 26, bleedLength: 5, lastPeriodStart: day(-30));
       logging = LoggingProvider(prefs);
-      logging.setFlow(day(-3), 'Light');
+      logPeriod(day(-3), 'Light');
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.effectiveLastStart, day(-3));
       expect(cycle.isPeriodDay(day(-3)), isTrue);
@@ -522,8 +552,8 @@ void main() {
   group('CycleProvider OPK indication (B4)', () {
     void seedTwentyEight() {
       buildSources(lastStart: DateTime(2026, 1, 1), cycleLength: 28);
-      logging.setFlow(DateTime(2026, 1, 1), 'Medium');
-      logging.setFlow(DateTime(2026, 1, 29), 'Medium');
+      logPeriod(DateTime(2026, 1, 1));
+      logPeriod(DateTime(2026, 1, 29));
     }
 
     test('latest positive implies ovulation tomorrow and feeds luteal stats', () {
@@ -557,6 +587,32 @@ void main() {
       expect(cycle.confirmedOvulationDate, DateTime(2026, 1, 15));
       expect(cycle.opkIndicatedOvulationDate, DateTime(2026, 1, 11));
       expect(cycle.detectedLutealLength, 14);
+    });
+  });
+
+  group('CycleProvider spotting rule', () {
+    test('a lone flow day never starts a period or moves the anchor', () {
+      buildSources(lastStart: DateTime(2026, 9, 1), cycleLength: 28);
+      logPeriod(DateTime(2026, 8, 16), 'Heavy');
+      final before = CycleProvider(onboarding, logging);
+      final anchor = before.effectiveLastStart;
+      final lengths = before.observedCycleLengths;
+      // Cycle day 16: past the fixed window, but a lone flow day is spotting.
+      logging.setFlow(DateTime(2026, 9, 16), 'Light');
+      final after = CycleProvider(onboarding, logging);
+      expect(after.bleeds, hasLength(2));
+      expect(after.effectiveLastStart, anchor);
+      expect(after.observedCycleLengths, lengths);
+      expect(after.fertilityStatus(today: DateTime(2026, 9, 16)), FertilityStatus.passed);
+    });
+
+    test('mean bleed length ignores spotting spans', () {
+      buildSources(lastStart: DateTime(2026, 9, 1), cycleLength: 28);
+      logPeriod(DateTime(2026, 8, 16), 'Heavy');
+      logging.setFlow(DateTime(2026, 9, 16), 'Light');
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.bleeds, hasLength(2));
+      expect(cycle.meanBleedLength, 2.0);
     });
   });
 }

@@ -39,10 +39,47 @@ class LoggingProvider extends ChangeNotifier {
   }
 
   /// Replace-style flow set: single-select screens (blood volume, onboarding seed).
+  /// Writing flow by hand clears the [DayLog.assumed] flag: the day is the
+  /// user's own record from here on.
   void setFlow(DateTime d, String v) {
-    day(d).flow..clear()..add(v);
+    final entry = day(d);
+    entry.flow
+      ..clear()
+      ..add(v);
+    entry.assumed = false;
     notifyListeners();
     _save();
+  }
+
+  /// Seeds an onboarding-history span: every day is stored with [DayLog.assumed]
+  /// so history can label it 'Estimated' instead of pretending it was logged.
+  void seedAssumedSpan(DateTime start, int days, String flow) {
+    if (days < 1) return;
+    for (var i = 0; i < days; i++) {
+      final date = DateTime(start.year, start.month, start.day + i);
+      final entry = day(date);
+      entry.flow
+        ..clear()
+        ..add(flow);
+      entry.assumed = true;
+    }
+    notifyListeners();
+    _save();
+  }
+
+  /// Removes every assumed (onboarding-seeded) day and returns how many went.
+  /// Called before re-seeding so an earlier run can never leave a phantom
+  /// period behind.
+  int wipeAssumed() {
+    final keys = [for (final e in _days.entries) if (e.value.assumed) e.key];
+    for (final key in keys) {
+      _days.remove(key);
+    }
+    if (keys.isNotEmpty) {
+      notifyListeners();
+      _save();
+    }
+    return keys.length;
   }
 
   /// Log-sheet flow: one level at a time. Tapping the active level clears it.

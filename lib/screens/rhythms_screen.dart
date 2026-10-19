@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../models/cycle_goal.dart';
 import '../navigation/app_nav.dart';
 import '../providers/auth_provider.dart';
 import '../providers/logging_provider.dart';
 import '../providers/onboarding_provider.dart';
+import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_icons.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_chip.dart';
 import '../widgets/app_slider_row.dart';
 import '../widgets/tracking_mode_chip.dart';
 
@@ -39,28 +42,23 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
     if (!mounted) return;
     await context.read<AuthProvider>().markLocalSession();
     if (!mounted) return;
-    // Seed the picked start date and any earlier periods as real bleed spans so
-    // PeriodHistory derives true cycle lengths from day one. Days are collected
-    // into a set first so overlapping spans never double-log a date.
+    // Seed the picked start date and any earlier periods as assumed bleed spans
+    // so PeriodHistory derives true cycle lengths from day one. Spans seeded by
+    // an earlier run are wiped first, so re-onboarding can never leave a phantom
+    // period behind. Seeded days stay flagged assumed: history can label them
+    // 'Estimated', and logging a day by hand silently replaces the estimate.
     final logging = context.read<LoggingProvider>();
     final bleedLength = onboarding.bleedLength;
     final today = DateTime.now();
-    final days = <DateTime>{};
-    void collect(DateTime start) {
-      if (start.isAfter(today)) return;
-      for (var i = 0; i < bleedLength; i++) {
-        days.add(DateTime(start.year, start.month, start.day + i));
-      }
-    }
+    logging.wipeAssumed();
 
     final picked = onboarding.pickedDate;
-    if (picked != null) collect(picked);
-    for (final previous in List<DateTime>.of(onboarding.previousPeriodStarts)) {
-      collect(previous);
+    if (picked != null && !picked.isAfter(today)) {
+      logging.seedAssumedSpan(picked, bleedLength, 'Medium');
     }
-    for (final day in days) {
-      if (day.isAfter(today)) continue;
-      logging.setFlow(day, 'Medium');
+    for (final previous in List<DateTime>.of(onboarding.previousPeriodStarts)) {
+      if (previous.isAfter(today)) continue;
+      logging.seedAssumedSpan(previous, onboarding.durationFor(previous), 'Medium');
     }
     // Pregnancy tracker stays decoupled: its LMP is set on the pregnancy screen
     // itself, never auto-seeded from the cycle anchor.
@@ -82,6 +80,8 @@ class _RhythmsScreenState extends State<RhythmsScreen> {
                 child: ListView(
                   children: [
                     const _Header(),
+                    const SizedBox(height: 12),
+                    const _GoalCard(),
                     const SizedBox(height: 12),
                     const _TrackingModeCard(),
                     const SizedBox(height: 12),
@@ -137,6 +137,46 @@ class _TrackingModeCard extends StatelessWidget {
           Text('What shall we track?', style: AppText.secIn),
           const SizedBox(height: 10),
           TrackingModeChips(selected: ob.trackingModes, onToggle: (mode) => context.read<OnboardingProvider>().toggleTrackingMode(mode)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Single-select intent (track / conceive / avoid); tunes the fertility copy.
+class _GoalCard extends StatelessWidget {
+  const _GoalCard();
+
+  static Object _icon(CycleGoal goal) => switch (goal) {
+        CycleGoal.track => AppIcons.spark,
+        CycleGoal.conceive => AppIcons.heart,
+        CycleGoal.avoid => AppIcons.eye,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    final goal = context.watch<SettingsProvider>().goal;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('What brings you here?', style: AppText.secIn),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final option in CycleGoal.values)
+                AppChip(
+                  label: option.label,
+                  icon: _icon(option),
+                  selected: option == goal,
+                  onTap: () => context.read<SettingsProvider>().setGoal(option),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(goal.blurb, style: AppText.sans(10.5, c: AppColors.muted, h: 1.45)),
         ],
       ),
     );

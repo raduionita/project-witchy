@@ -50,6 +50,20 @@ class OnboardingProvider extends ChangeNotifier {
   /// so `PeriodHistory` derives real cycle lengths from them.
   final List<DateTime> previousPeriodStarts = [];
 
+  /// Bleed length per earlier period, keyed by its start date. Defaults to
+  /// [bleedLength]; seeded spans are tagged 'Estimated' in the day-log store.
+  final Map<DateTime, int> previousPeriodDurations = {};
+
+  /// Days of bleed for the earlier period starting on [start]; falls back to the
+  /// onboarding bleed length so entries created before durations existed work.
+  int durationFor(DateTime start) => previousPeriodDurations[_day(start)] ?? bleedLength;
+
+  /// Records how many days that earlier period lasted (clamped to 2-10).
+  void setPreviousPeriodDuration(DateTime start, int days) {
+    previousPeriodDurations[_day(start)] = days.clamp(2, 10);
+    notifyListeners();
+  }
+
   /// Fallback anchor when the user never picked a date. Never lands in the
   /// future - a future "last period" date poisons every cycle calculation.
   static DateTime _derive(int day) {
@@ -139,7 +153,9 @@ class OnboardingProvider extends ChangeNotifier {
     final error = validatePreviousPeriod(d);
     lastValidationError = error;
     if (error != null) return false;
-    previousPeriodStarts.add(_day(d));
+    final day = _day(d);
+    previousPeriodStarts.add(day);
+    previousPeriodDurations.putIfAbsent(day, () => bleedLength);
     previousPeriodStarts.sort((a, b) => b.compareTo(a));
     notifyListeners();
     return true;
@@ -153,7 +169,9 @@ class OnboardingProvider extends ChangeNotifier {
     lastValidationError = error;
     if (error != null) return false;
     previousPeriodStarts.removeWhere((e) => e == oldDay);
-    previousPeriodStarts.add(_day(newDate));
+    final newDay = _day(newDate);
+    previousPeriodStarts.add(newDay);
+    previousPeriodDurations[newDay] = previousPeriodDurations.remove(oldDay) ?? bleedLength;
     previousPeriodStarts.sort((a, b) => b.compareTo(a));
     notifyListeners();
     return true;
@@ -162,6 +180,7 @@ class OnboardingProvider extends ChangeNotifier {
   void removePreviousPeriod(DateTime d) {
     final day = _day(d);
     previousPeriodStarts.removeWhere((e) => e == day);
+    previousPeriodDurations.remove(day);
     notifyListeners();
   }
 
@@ -215,6 +234,7 @@ class OnboardingProvider extends ChangeNotifier {
     cycleLengthFromHistory = false;
     lastValidationError = null;
     previousPeriodStarts.clear();
+    previousPeriodDurations.clear();
     notifyListeners();
   }
 }

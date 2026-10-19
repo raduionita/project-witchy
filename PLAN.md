@@ -350,6 +350,36 @@ Gates: `flutter analyze` = No issues found, `flutter test` = 277/277 passing, `f
 
 ### Phase 5 - 2026.10.19
 
+The "Fixes 2" feedback batch. Phases 1 and 2 below are landed and gated; everything still to do is listed under "Open" so nothing is silently dropped.
+
+**Phase 1 - Prediction engine truth + goal framing (done)**
+
+- [x] **1.1** Fertile window is the fixed biological span: ovulation minus 5 through ovulation plus 1 = 7 days (cycle days 9-15 on a 28-day cycle, 8-14 on a 27-day cycle). The `pad` parameter was removed from `CycleCalculator` (`fertileStartCycleDay`, `fertileEndCycleDay`, `isFertileDay`, `phaseAt`, `phase`, `fertileDaysInMonth`) and from `CalendarFetcher` and the calendar call site. Uncertainty is copy only now, driven by `CycleProvider.uncertaintyPad` ("Timing is estimated and may shift by up to N days.").
+- [x] **1.2** One shared `CycleProvider.fertilityStatus` (beforeWindow, windowOpen, peakToday, windowClosing, passed) replaced the per-screen `ovulationToday` / `fertileToday` ternaries, so Today, Fertility and the calendar read the same state. `ovulationDateThisCycle` names the current cycle's peak even after it has passed while `nextOvulationDate` keeps rolling forward: the old "Peak in 24 Days" copy after the peak was behind us is gone.
+- [x] **1.3** Today fertility card copy: "Peak Today / High chance", "Window Open / Ovulation nears", "Window Closing / Ovulation passed", "Peak Passed / next peak <d MMM>", "In N Days / <d MMM> · window opens".
+- [x] **1.4** Fertility screen rewritten: the chance duo reads Peak / High / Medium / Low with the ovulation date as the sub, the Window card shows the fixed 7-day window and its cycle-day range, tips are phase-aware and goal-aware, a Next Peak card covers the passed case, and the orb caption says "Peak Day", "Peak in N Days" or "Peak passed".
+- [x] **1.5** Spotting rule: `PeriodHistory.minSpanDays = 2` with `periods` and `spotting` helpers. A lone flow day can no longer start a period or shift anything: it is excluded from cycle lengths, the anchor, BBT bleed baselines, the OPK luteal gap and `meanBleedLength`.
+- [x] **1.6** Goal framing: new `CycleGoal` (track / conceive / avoid) persisted as `witchy_goal` through `SettingsProvider` and `PrefsService`, selected during onboarding ("What brings you here?") and changeable from a Profile "Your goal" row with a bottom sheet. It only tunes fertility wording: conceive keeps the TTC tips, track stays neutral, avoid drops the TTC framing and always repeats "not a contraceptive method".
+- [x] **1.7** Tests and docs: new `test/providers/settings_provider_test.dart`; `cycle_provider_test` gained the fixed-window, day-by-day status pipeline and spotting groups; sanctuary, fertility, records, profile and alert_generator tests updated (2-day bleed fixtures, new copy); DESIGN.md prediction-engine bullets, calendar wording, Profile App Settings rows and the Fertility screen row updated.
+
+**Phase 2 - Honest onboarding history (done)**
+
+- [x] **2.1** `DayLog.assumed` (JSON-compatible, defaults false) marks days that came from onboarding history instead of the user's own logging. `LoggingProvider.setFlow` clears the flag, so editing a day by hand silently promotes the estimate into a real log.
+- [x] **2.2** `LoggingProvider.seedAssumedSpan(start, days, flow)` writes whole spans as assumed and `wipeAssumed()` removes every assumed day, so a second onboarding run can never leave a phantom period behind.
+- [x] **2.3** `OnboardingProvider.previousPeriodDurations` with `durationFor` and `setPreviousPeriodDuration` (clamped 2-10) keeps a bleed length per earlier period; durations follow the entry through edit, removal and `resetToDefaults`.
+- [x] **2.4** `rhythms_screen._finish` wipes assumed seeds and then seeds exactly `bleedLength` days for the picked last period and `durationFor(start)` days for each earlier period, so Average Bleed and cycle length come from the user's own numbers instead of a hardcoded 5-day span.
+- [x] **2.5** `bleeding_screen` marks assumed spans with an "Estimated" tag and labels spans shorter than the period threshold as "Spotting".
+
+Gates: `flutter analyze` = No issues found, `flutter test` = 286/286 passing, `flutter build apk --debug` = ✓.
+
+**Open (carried forward)**
+
+- [ ] **2.6** Onboarding period editor UI upgrade: per-row duration control (2-10 days, via `durationFor` / `setPreviousPeriodDuration`), visible pencil edit affordance with a tooltip and one date style, 44px touch targets, an undo SnackBar on removal, the inline `lastValidationError` under the offending row (`Semantics(liveRegion: true)`) with the toast demoted, and the copy "N of 6 earlier periods" plus "Add at least one earlier period to calculate your cycle length".
+- [ ] **2.7** Cycle-length slider: tap the value to type a number; decide on 15-60 versus keeping 20-40 with an "irregular" toggle.
+- [ ] **Phase 3** - log sheet (collection method only after a flow level, an icon for every option, section-title tokens, Cancel / Save labels plus a discard confirm, opening scrolled and highlighted to the tapped category), logging states (Today tiles and the dark summary card showing all four categories, Calendar entry cards likewise) and dark-mode tokenization (`quick_action.dart`, `month_picker_sheet.dart`, `app_text_field.dart`, log sheet header and notes, `privacy_screen.dart`, `app_emblem.dart`, plus theme-level Switch / Dialog / Input / SnackBar).
+- [ ] **Phase 4** - articles resilience (deployment note for `Access-Control-Allow-Origin` on `https://qvonyx.com/witchy/articles.xml` or a same-origin feed, plus a loading skeleton, an explicit error state with a Try again action and a cached-articles fallback banner), Insights empty-state copy (the two-cycle requirement plus a logging CTA), Profile data-management copy, and empty states with next-step CTAs (`widgets/empty_state.dart`).
+- [ ] **Phase 5** - polish: `AppTopBar` always reserving the trailing slot and using a standard back arrow, FAB clearance padding on scrollables (keep the FAB, no auto-hide), cycle-orb period and fertile segments plus a legend, one shared date-format helper, tracking-mode chips equal width in one row, and replacing the bleeding screen's duplicate "Not bleeding today" line with last-period or cycle info.
+
 ### Phase 6 - WIP
 
 - [ ] onboarding -> tracker type card: the 3 chips should expand to occupy the whole width - make their width equal (with/3) + gaps between them - the icon + text must not wrap, the end of the word should get cut off by the chip

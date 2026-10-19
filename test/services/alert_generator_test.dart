@@ -77,13 +77,13 @@ void main() {
     });
 
     test('window start fires the fertile-start alert exactly once', () {
-      // No logged history: pad 2 widens the 28-day window to days 7-17,
-      // so Oct 9 opens the window when the last period began Oct 3.
-      final s = build(DateTime(2026, 10, 3));
+      // No logged history: the 28-day window is fixed at cycle days 9-15,
+      // so Oct 9 opens the window when the last period began Oct 1.
+      final s = build(DateTime(2026, 10, 1));
       final out = AlertGenerator.generate(cycle: s.cycle, logging: s.logging, now: now);
       expect(out.where((a) => a.type == AlertType.fertileWindow).single.id, 'fertile-start-2026-10-09');
       // Mid-window days stay quiet.
-      final mid = build(DateTime(2026, 10, 2));
+      final mid = build(DateTime(2026, 9, 30));
       final midOut = AlertGenerator.generate(cycle: mid.cycle, logging: mid.logging, now: now);
       expect(midOut.where((a) => a.type == AlertType.fertileWindow), isEmpty);
     });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../navigation/app_nav.dart';
+import '../models/cycle_goal.dart';
 import '../models/reminder_item.dart';
 import '../models/tracking_mode.dart';
 import '../providers/alert_provider.dart';
@@ -25,6 +26,7 @@ import '../widgets/app_top_bar.dart';
 import '../widgets/app_avatar.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
+import '../widgets/app_chip.dart';
 import '../widgets/danger_button.dart';
 import '../widgets/icon_badge.dart';
 import '../widgets/info_pill.dart';
@@ -64,6 +66,43 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Cycle goal picker; the choice only tunes copy, so it applies immediately.
+  Future<void> _openGoalSheet(BuildContext context) async {
+    final current = context.read<SettingsProvider>().goal;
+    final picked = await showModalBottomSheet<CycleGoal>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('What brings you here?', style: AppText.secIn),
+              const SizedBox(height: 4),
+              Text('This tunes the wording on your fertility screens.', style: AppText.sans(11, c: AppColors.muted)),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final option in CycleGoal.values)
+                    AppChip(
+                      label: option.label,
+                      selected: option == current,
+                      onTap: () => Navigator.of(sheetContext).pop(option),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (picked == null || !context.mounted) return;
+    context.read<SettingsProvider>().setGoal(picked);
   }
 
   /// Edits the base cycle and bleeding lengths, then persists them; the sheet
@@ -413,6 +452,13 @@ class ProfileScreen extends StatelessWidget {
           SettingsRow(
             label: 'Dark Mode',
             trailing: Switch(value: settings.darkMode, activeThumbColor: AppColors.pur, onChanged: (v) => context.read<SettingsProvider>().setDark(v)),
+          ),
+          SettingsRow(
+            label: 'Your goal',
+            trailing: _buildTapTarget(
+              onTap: () => _openGoalSheet(context),
+              child: Text(settings.goal.label, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)),
+            ),
           ),
         ],
       ),

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../common/log_data.dart';
 import '../models/cycle_phase.dart';
+import '../models/fertility_status.dart';
 import '../navigation/app_nav.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/logging_provider.dart';
@@ -48,6 +49,20 @@ class SanctuaryScreen extends StatelessWidget {
     }
   }
 
+  /// Stat-card copy for the fertility window, derived from the ovulation date so
+  /// the card never claims "ovulation nears" once the peak has passed.
+  (String, String) _fertilityCopy(CycleProvider cycle, DateTime now) {
+    final next = DateFormat('MMM d').format(cycle.nextOvulationDate(today: now));
+    final opens = DateFormat('MMM d').format(cycle.ovulationDateThisCycle(today: now).subtract(const Duration(days: 5)));
+    return switch (cycle.fertilityStatus(today: now)) {
+      FertilityStatus.peakToday => ('Peak Today', 'High chance'),
+      FertilityStatus.windowOpen => ('Window Open', 'Ovulation nears'),
+      FertilityStatus.windowClosing => ('Window Closing', 'Ovulation passed'),
+      FertilityStatus.passed => ('Peak Passed', 'next peak $next'),
+      FertilityStatus.beforeWindow => ('In ${cycle.daysUntilOvulation(today: now)} Days', '$opens · window opens'),
+    };
+  }
+
   /// Bleeding-countdown + fertility-window stat duo.
   /// Perimenopause swaps the single-day countdown for an earliest/latest window.
   Widget _buildStatsRow(BuildContext context) {
@@ -55,21 +70,7 @@ class SanctuaryScreen extends StatelessWidget {
     final now = DateTime.now();
     final DateTime? nextStart = cycle.nextPeriodStart(today: now);
     final daysUntil = cycle.daysUntilPeriod(today: now);
-    final ovuToday = cycle.ovulationToday;
-    final fertileNow = cycle.fertileToday;
-    final daysToOvu = cycle.daysUntilOvulation(today: now);
-    final value =
-        ovuToday
-            ? 'Peak Today'
-            : fertileNow
-            ? 'Window Open'
-            : 'In $daysToOvu Days';
-    final sub =
-        ovuToday
-            ? 'High chance'
-            : fertileNow
-            ? 'Ovulation nears'
-            : '${DateFormat('MMM d').format(cycle.nextOvulationDate(today: now))} · predicted';
+    final (value, sub) = _fertilityCopy(cycle, now);
     String bleedValue;
     String bleedSub;
     // Null once the projection has stopped: nudge a fresh log instead of

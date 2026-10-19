@@ -28,9 +28,11 @@ void main() {
     final logging = LoggingProvider(prefs);
     final cycle = CycleProvider(onboarding, logging);
     if (seedCycles) {
-      logging.setFlow(DateTime(2026, 7, 1), 'Medium');
-      logging.setFlow(DateTime(2026, 7, 29), 'Medium');
-      logging.setFlow(DateTime(2026, 8, 26), 'Medium');
+      for (final start in [DateTime(2026, 7, 1), DateTime(2026, 7, 29), DateTime(2026, 8, 26)]) {
+        logging.setFlow(start, 'Medium');
+        // Two days: a single flow day counts as spotting, not as a period.
+        logging.setFlow(DateTime(start.year, start.month, start.day + 1), 'Light');
+      }
     }
     final settings = await SettingsProvider.load(prefs);
     final reminders = await RemindersProvider.load(prefs);
@@ -70,6 +72,7 @@ void main() {
 
   testWidgets('bell count and version come from real sources', (tester) async {
     await pumpProfile(tester);
+    await tester.scrollUntilVisible(find.text('3 of 5 reminders active'), 400);
     expect(find.text('3 of 5 reminders active'), findsOneWidget);
     await tester.scrollUntilVisible(find.textContaining('Version'), 400);
     expect(find.textContaining('Version 1.2.4'), findsNothing);
@@ -102,7 +105,7 @@ void main() {
 
   testWidgets('changing a reminder frequency updates the pill and persists', (tester) async {
     await pumpProfile(tester);
-    await tester.ensureVisible(find.text('Each bleed day'));
+    await tester.scrollUntilVisible(find.text('Each bleed day'), 400);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Each bleed day'));
     await tester.pumpAndSettle();

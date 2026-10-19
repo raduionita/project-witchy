@@ -61,30 +61,18 @@ void main() {
     test('fertile window spans cycle days 9-15 for 28-day cycle', () {
       expect(CycleCalculator.fertileStartCycleDay(28), 9);
       expect(CycleCalculator.fertileEndCycleDay(28), 15);
+      expect(CycleCalculator.fertileEndCycleDay(28) - CycleCalculator.fertileStartCycleDay(28) + 1, 7);
     });
 
-    test('uncertainty pad widens the window symmetrically and caps width at 14', () {
-      expect(CycleCalculator.fertileStartCycleDay(28, pad: 2), 7);
-      expect(CycleCalculator.fertileEndCycleDay(28, pad: 2), 17);
-      // Full pad on a 28-day cycle would span 15 days; capped to 14.
-      expect(CycleCalculator.fertileStartCycleDay(28, pad: 4), 5);
-      expect(CycleCalculator.fertileEndCycleDay(28, pad: 4), 18);
-      // Start never drops below day 1.
-      expect(CycleCalculator.fertileStartCycleDay(21, pad: 4), 1);
-    });
-
-    test('window always contains ovulation and stays within 14 days', () {
+    test('window is ovulation minus 5 through ovulation plus 1 for every cycle', () {
       for (var length = 21; length <= 40; length++) {
         for (final luteal in [10, 14, 18]) {
-          for (final pad in [0, 2, 4]) {
-            final ovu = CycleCalculator.ovulationCycleDay(length, lutealLength: luteal);
-            final start = CycleCalculator.fertileStartCycleDay(length, lutealLength: luteal, pad: pad);
-            final end = CycleCalculator.fertileEndCycleDay(length, lutealLength: luteal, pad: pad);
-            expect(start, greaterThanOrEqualTo(1), reason: 'L$length l$luteal p$pad');
-            expect(start, lessThanOrEqualTo(ovu), reason: 'L$length l$luteal p$pad');
-            expect(end, greaterThanOrEqualTo(ovu), reason: 'L$length l$luteal p$pad');
-            expect(end - start + 1, lessThanOrEqualTo(14), reason: 'L$length l$luteal p$pad');
-          }
+          final ovu = CycleCalculator.ovulationCycleDay(length, lutealLength: luteal);
+          final start = CycleCalculator.fertileStartCycleDay(length, lutealLength: luteal);
+          final end = CycleCalculator.fertileEndCycleDay(length, lutealLength: luteal);
+          expect(start, greaterThanOrEqualTo(1), reason: 'L$length l$luteal');
+          expect(end, ovu + 1, reason: 'L$length l$luteal');
+          expect(ovu - start, start == 1 ? lessThanOrEqualTo(5) : 5, reason: 'L$length l$luteal');
         }
       }
     });

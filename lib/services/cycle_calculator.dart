@@ -55,51 +55,47 @@ class CycleCalculator {
   static int daysUntilOvulation(DateTime lastStart, DateTime today, int cycleLength, {int lutealLength = 14}) =>
       daysBetween(today, nextOvulationDay(lastStart, today, cycleLength, lutealLength: lutealLength));
 
-  /// First fertile cycle day: 5 days before ovulation (sperm survival) minus
-  /// the uncertainty [pad] for sparse or irregular history. Never below 1.
-  static int fertileStartCycleDay(int cycleLength, {int lutealLength = 14, int pad = 0}) {
-    final day = ovulationCycleDay(cycleLength, lutealLength: lutealLength) - 5 - pad;
+  /// First fertile cycle day: 5 days before ovulation (sperm survival).
+  /// Never below 1. Uncertainty is carried as copy, not by widening the window.
+  static int fertileStartCycleDay(int cycleLength, {int lutealLength = 14}) {
+    final day = ovulationCycleDay(cycleLength, lutealLength: lutealLength) - 5;
     return day < 1 ? 1 : day;
   }
 
-  /// Last fertile cycle day: 1 day after ovulation (egg survival) plus the
-  /// uncertainty [pad]. Total window width is capped at 14 days.
-  static int fertileEndCycleDay(int cycleLength, {int lutealLength = 14, int pad = 0}) {
-    final start = fertileStartCycleDay(cycleLength, lutealLength: lutealLength, pad: pad);
-    final end = ovulationCycleDay(cycleLength, lutealLength: lutealLength) + 1 + pad;
-    return end - start + 1 > 14 ? start + 13 : end;
-  }
+  /// Last fertile cycle day: 1 day after ovulation (egg survival).
+  static int fertileEndCycleDay(int cycleLength, {int lutealLength = 14}) =>
+      ovulationCycleDay(cycleLength, lutealLength: lutealLength) + 1;
 
   static bool isPeriodDay(DateTime lastStart, DateTime date, int cycleLength, int bleedLength) =>
       (daysBetween(lastStart, date) % _len(cycleLength)) < bleedLength;
 
-  static bool isFertileDay(DateTime lastStart, DateTime date, int cycleLength, {int lutealLength = 14, int pad = 0}) {
+  static bool isFertileDay(DateTime lastStart, DateTime date, int cycleLength, {int lutealLength = 14}) {
     final day = (daysBetween(lastStart, date) % _len(cycleLength)) + 1;
-    return day >= fertileStartCycleDay(cycleLength, lutealLength: lutealLength, pad: pad) &&
-        day <= fertileEndCycleDay(cycleLength, lutealLength: lutealLength, pad: pad);
+    return day >= fertileStartCycleDay(cycleLength, lutealLength: lutealLength) &&
+        day <= fertileEndCycleDay(cycleLength, lutealLength: lutealLength);
   }
 
   static bool isOvulationDay(DateTime lastStart, DateTime date, int cycleLength, {int lutealLength = 14}) =>
       (daysBetween(lastStart, date) % _len(cycleLength)) + 1 ==
       ovulationCycleDay(cycleLength, lutealLength: lutealLength);
 
-  static CyclePhase phaseAt(DateTime lastStart, DateTime date, int cycleLength, int bleedLength, {int lutealLength = 14, int pad = 0}) {
+  static CyclePhase phaseAt(DateTime lastStart, DateTime date, int cycleLength, int bleedLength, {int lutealLength = 14}) {
     if (isPeriodDay(lastStart, date, cycleLength, bleedLength)) return CyclePhase.menstrual;
     if (isOvulationDay(lastStart, date, cycleLength, lutealLength: lutealLength)) return CyclePhase.ovulatory;
-    if (isFertileDay(lastStart, date, cycleLength, lutealLength: lutealLength, pad: pad)) return CyclePhase.fertile;
+    if (isFertileDay(lastStart, date, cycleLength, lutealLength: lutealLength)) return CyclePhase.fertile;
     return cycleDay(lastStart, date, cycleLength) < ovulationCycleDay(cycleLength, lutealLength: lutealLength)
         ? CyclePhase.follicular
         : CyclePhase.luteal;
   }
 
-  static String phase(DateTime lastStart, DateTime today, int cycleLength, int bleedLength, {int lutealLength = 14, int pad = 0}) =>
-      phaseAt(lastStart, today, cycleLength, bleedLength, lutealLength: lutealLength, pad: pad).label;
+  static String phase(DateTime lastStart, DateTime today, int cycleLength, int bleedLength, {int lutealLength = 14}) =>
+      phaseAt(lastStart, today, cycleLength, bleedLength, lutealLength: lutealLength).label;
 
   static Set<int> periodDaysInMonth(DateTime lastStart, DateTime month, int cycleLength, int bleedLength) =>
       _daysWhere(month, (date) => isPeriodDay(lastStart, date, cycleLength, bleedLength));
 
-  static Set<int> fertileDaysInMonth(DateTime lastStart, DateTime month, int cycleLength, {int lutealLength = 14, int pad = 0}) =>
-      _daysWhere(month, (date) => isFertileDay(lastStart, date, cycleLength, lutealLength: lutealLength, pad: pad));
+  static Set<int> fertileDaysInMonth(DateTime lastStart, DateTime month, int cycleLength, {int lutealLength = 14}) =>
+      _daysWhere(month, (date) => isFertileDay(lastStart, date, cycleLength, lutealLength: lutealLength));
 
   static Set<int> _daysWhere(DateTime month, bool Function(DateTime date) test) {
     final days = <int>{};

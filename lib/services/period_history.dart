@@ -23,7 +23,19 @@ class PeriodHistory {
     return result;
   }
 
-  static List<DateTime> startsOf(List<PeriodSpan> spans) => [for (final s in spans) s.start];
+  /// Starts of real periods only: spans shorter than [minSpanDays] are spotting
+  /// and never seed cycle math, BBT baselines or OPK luteal estimates.
+  static const int minSpanDays = 2;
+
+  /// Spans that qualify as periods (at least [minSpanDays] consecutive days).
+  static List<PeriodSpan> periods(List<PeriodSpan> spans) =>
+      [for (final s in spans) if (s.length >= minSpanDays) s];
+
+  /// Isolated short spans, surfaced as spotting rather than as periods.
+  static List<PeriodSpan> spotting(List<PeriodSpan> spans) =>
+      [for (final s in spans) if (s.length < minSpanDays) s];
+
+  static List<DateTime> startsOf(List<PeriodSpan> spans) => [for (final s in periods(spans)) s.start];
 
   /// Completed cycle lengths between consecutive period starts.
   static List<int> cycleLengths(List<DateTime> starts) => [

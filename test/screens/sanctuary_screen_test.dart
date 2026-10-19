@@ -31,7 +31,9 @@ void main() {
     );
     final logging = LoggingProvider(prefs);
     for (final start in seedStarts) {
+      // Two days: a single flow day is spotting and would not seed cycle stats.
       logging.setFlow(start, 'Medium');
+      logging.setFlow(DateTime(start.year, start.month, start.day + 1), 'Light');
     }
     final gestation = GestationProvider(prefs, lmpDate: lmpDate);
     final cycle = CycleProvider(onboarding, logging, gestation: gestation);

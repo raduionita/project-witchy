@@ -52,7 +52,7 @@ test/
 
 ---
 
-## Milestone 1 - MVP (done)
+## Milestone 1 - MVP
 
 ### Phase 0 — Foundation & Data Layer ✅
 
@@ -169,7 +169,7 @@ test/
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (81/81 final suite) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
-### Phase 6 - Article Feed & Feature Removal (done)
+### Phase 6 - Article Feed & Feature Removal ✅
 
 > Coven becomes a web-sourced reading feed; Library and Binding are deleted.
 
@@ -184,7 +184,7 @@ test/
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (93/93) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
-### Phase 7 - Tracking Mode Selection (done)
+### Phase 7 - Tracking Mode Selection ✅
 
 > Onboarding gains Cycle / Pregnancy / Perimenopause choice; the mode gates Phases 10-11.
 
@@ -198,7 +198,7 @@ test/
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (99/99) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
-### Phase 8 - BBT Temperature Logging & Real Charts (done)
+### Phase 8 - BBT Temperature Logging & Real Charts ✅
 
 > Real data replaces `TrendBars` fake heights and the fake `36.4°` / `+0.4°`.
 
@@ -211,7 +211,7 @@ test/
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (104/104) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
-### Phase 9 - Real Local Alerts Inbox (done)
+### Phase 9 - Real Local Alerts Inbox ✅
 
 > `MockData.alerts()` dies; alerts are generated from real cycle events.
 
@@ -225,7 +225,7 @@ test/
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (118/118) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
-### Phase 10 - Pregnancy Mode (done)
+### Phase 10 - Pregnancy Mode ✅
 
 > Gestation becomes computed; reachable only when `TrackingMode.pregnancy`.
 
@@ -239,7 +239,7 @@ test/
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (137/137) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
-### Phase 11 - Perimenopause Mode (done)
+### Phase 11 - Perimenopause Mode ✅
 
 > Cycle tracking continues with irregularity-aware predictions.
 
@@ -253,7 +253,7 @@ test/
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (146/146) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
-### Phase 12 - Dark Theme & Profile/Notification Polish (done)
+### Phase 12 - Dark Theme & Profile/Notification Polish ✅
 
 - [x] **12.1** `AppColors` dark token set (bg `#1B0A2A`, card `#26063F`, lav text, line `#3E2A54`, brightened pur) + `buildAppTheme({Brightness})` dark variant in `app_theme.dart`. Mode-varying tokens became getters behind `AppColors.dark` (const call sites and const default params de-consted; `LogData` categories became getters so section colors resolve live).
 - [x] **12.2** `main.dart` theme follows `SettingsProvider.dark` override else platform brightness; `setDark` repaints live (`ListenableBuilder` on the settings instance above `MaterialApp.router`); Profile toggle kept.
@@ -265,7 +265,7 @@ test/
 
 **Gate:** `flutter analyze` ✅ · `flutter test` ✅ (157/157) · `flutter build apk --debug` ✅ · `flutter build web` ✅
 
-### Phase 13 - Release Hardening & Final Gate (done)
+### Phase 13 - Release Hardening & Final Gate ✅
 
 - [x] **13.1** Android - `android/key.properties` + release `signingConfigs` (loaded when the git-ignored file exists, debug-key fallback otherwise so local release builds keep working), applicationId TODO dropped (`com.qvonyx.witchy`), compile/target/min pinned to 36/36/24, `android:label="Witchy"`, keystore generation + `key.properties` steps added to `README.md`, `.gitignore` covers `key.properties`/`*.jks`/`*.keystore`.
 - [x] **13.2** Branded launcher icons via `flutter_launcher_icons` ^0.14.4 - `tool/generate_app_icon.dart` composites the gold cat-moon onto brand purple into `assets/images/app_icon_1024.png`; Android legacy + adaptive (fg gold, bg `#3B0A5E`, generated `colors.xml` + `mipmap-anydpi-v26`), full iOS AppIcon set, web icons + favicon. Reverted the tool's invalid `ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS` rewrite in `project.pbxproj`.
@@ -281,11 +281,7 @@ test/
 
 > Out of scope (flagged): Google/Apple sign-in activation (hidden), real couples/backend sync, Coven posting, sovereign-blood screen from MOCK.html (not in DESIGN.md), localization, analytics/crash reporting.
 
----
-
-## Fixes 1
-
-### Phase 1 - 2026.10.09 (done)
+### Phase 14 - Fixes - 2026.10.09 ✅
 
 - [x] theme -> dark vs light: should start as light (default) - use toggle in profile -> settings
 - [x] rhythyms -> button: should mark user as logged-in and continue to main screen 
@@ -295,7 +291,7 @@ test/
 - [x] rhythyms - tracking mode: should be a multi-toggle - the app MUST allow tracking all modes (cycle, pregnancy, perimenopause) simultaneously on the same interface (calendar, records, sanctuary, fertility, alert)
 - [x] app: app icon needed - should be the same as the one in the splash screen - use images in @resources/
  
-### Phase 2 - 2026.10.12 (done)
+### Phase 15 - Fixes - 2026.10.12 ✅
 
 - [x] rythyms -> tracking: widget/card should be full width - icons neede to be visible when a chip is selected (now backgroundh has the same color as the selected chip = bad contrast) - `TrackingModeChips` now `Row` + `Expanded` (chips fill the card); `AppChip._icon` selected color fixed: uses `onColor(active)` fg instead of the chip background (icons visible on selected chips; benefits every chip incl. log sheet)
 - [x] profile -> session: the buttons need a confirm dialog/drawer - the dialog should explain the consequences of each action - added `_confirmSignOut` dialog (explains: back to welcome, logs/settings stay on device, can sign back in); `Delete All Data` already had `_confirmDeleteData` (explains erasure + not undoable); Sign Out button now wired through the dialog; test updated (confirm tap)
@@ -305,7 +301,7 @@ test/
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 195/195 passing.
 
-### Phase 3 - 2026.10.12 (done)
+### Phase 16 - Fixes - 2026.10.12 ✅
 
 Feedback batch from debug/ screenshots (Issues 1-7 + icon audit). Product name "Witchy", moon glyphs and plum/gold visuals kept; all user-facing copy neutralized to health terminology. Routes, pref keys, enum JSON values, class/file/method names unchanged for stability.
 
@@ -321,8 +317,7 @@ Feedback batch from debug/ screenshots (Issues 1-7 + icon audit). Product name "
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 194/194 passing.
 
-
-### Phase 4 - Prediction engine MVP (done 2026.10.15)
+### Phase 17 - Prediction engine MVP - 2026.10.15 ✅
 
 Algorithm analysis vs Flo/Clue (local-only, no cloud ML - compete on honest rolling statistics + signal integration, not neural nets). MVP = engine correctness + surgical edits to existing screens. Flo-parity decision: pregnancy suppresses BOTH period and fertility predictions, triggered when pregnancy mode is in the set AND gestation has an LMP (mode-only would blank a fresh user who never entered LMP; gap state gets a setup-nudge card). Precedence: pregnancy-suppression > peri-range > normal. Moon-milestone alerts stay in pregnancy mode (lunar events, not cycle predictions). New pref keys use `witchy_` prefix so Delete All Data wipes them. Adapted to commit 2026.10.14 (fertile-start alert, onboarding 20..40 clamps + minGap 15, Records Irregular > 7, alert dismiss/undo, CycleOrb progress).
 
@@ -348,9 +343,7 @@ Gates per phase: `flutter analyze` · `flutter test` · `flutter build apk --deb
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 277/277 passing, `flutter build apk --debug` = ✓.
 
-### Phase 5 - 2026.10.19 (done)
-
-The "Fixes 1" feedback batch. Phases A to F below are all landed and gated, so nothing is left open.
+### Phase 18 - Fixes - 2026.10.19 ✅
 
 A - Prediction engine truth + goal framing (done)
 - [x] **1.1** Fertile window is the fixed biological span: ovulation minus 5 through ovulation plus 1 = 7 days (cycle days 9-15 on a 28-day cycle, 8-14 on a 27-day cycle). The `pad` parameter was removed from `CycleCalculator` (`fertileStartCycleDay`, `fertileEndCycleDay`, `isFertileDay`, `phaseAt`, `phase`, `fertileDaysInMonth`) and from `CalendarFetcher` and the calendar call site. Uncertainty is copy only now, driven by `CycleProvider.uncertaintyPad` ("Timing is estimated and may shift by up to N days.").
@@ -400,32 +393,7 @@ F - Phase 5 polish (done)
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 323/323 passing, `flutter build apk --debug` = ✓.
 
-### Phase 6 - WIP
-
-- [~] onboarding -> tracker type card: recheck: the 3 chips expand to equal widths ((width - gaps) / 3) in one row; a long word is clipped at the chip edge instead of wrapping - done, see Phase 5 bullet 5.4
-
---- 
-
-## Milestone 2 - WIP
-
-Backlog - later updates (bigger gaps, NOT MVP) - needs proper structuring
-- [ ] PMS prediction (onset stats last 6 cycles, calendar dots, start alert)
-- [ ] Cycle insight report on period start (length, vs range, top symptoms)
-- [ ] Perimenopause depth: dedicated symptom category, Perimenopause Score questionnaire, STRAW+10 stage estimate (yearOfBirth), amenorrhea counter, peri content
-- [ ] Symptom-pattern learning (mood/symptom correlations)
-- [ ] Conception depth: OPK trends, fluid auto-annotation, DOT-style validated timing (research spike)
-- [ ] Pregnancy depth: kick count, weight, weekly notifications, contraction timer, postpartum
-- [ ] Wearables: HealthKit / Health Connect BBT+HRV sync
-- [ ] Bulk cycle backfill (Clue quick-log cold start)
-- [ ] Full mode-matrix regression suite (8 mode subsets x 6 surfaces)
-- [ ] Age 45+ variability priors (Flo 19M-user study) once peri metrics exist
-- [ ] Symptom checker: OUT OF SCOPE (clinical validation + regulatory risk) - educational content only
-
----
-
-## Fixes 2 - WIP
-
-### Screen rename - 2026.10.19 (done)
+### Phase 19 - Screen rename - 2026.10.19 ✅
 
 Seven screens were named after implementation vocabulary or the wrong concept, so the file you open never told you the screen you get. Every name now matches the title on the bar and the route in `app_router_delegate.dart`, which is what the route table in DESIGN.md already used.
 
@@ -446,3 +414,42 @@ Seven screens were named after implementation vocabulary or the wrong concept, s
 - Docs: DESIGN.md was swept for the same terms (route table, route tree, screen headings, private-widget lists, app-bar fallbacks, the CycleStats note), so no old route or class name survives outside this log's historical entries.
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 323/323 passing, `flutter build apk --debug` = built.
+
+### Phase 20 - Goal chips - 2026.10.19 ✅
+
+The onboarding goal picker was the last chip block still built from a `Wrap`, so `Track / Conceive / Avoid pregnancy` sat at their natural widths and the long third label wrapped onto a second line, making that chip taller than its siblings. It now uses the same layout as the tracking-mode picker directly below it, so both single-choice blocks read the same way.
+
+- `lib/screens/onboarding_screen.dart` `_GoalCard`: the `Wrap(spacing: 8, runSpacing: 8, ...)` became a `Row` of `Expanded` `AppChip`s with 8dp gaps and `singleLine: true`, so the three goals are equal thirds and "Avoid pregnancy" is clipped at the chip edge instead of wrapping. The icons, the `SettingsProvider.setGoal` wiring and the blurb under the row are unchanged.
+- `DESIGN.md`: the `Equal-Width Chip Rows` bullet and the Screen 04 `Goal Card` bullet now both name the goal picker, not only the tracking modes.
+- Tests: new `test/screens/onboarding_screen_test.dart` - the three goal chips share one width and one line, "Avoid pregnancy" is clipped to a single line (`maxLines: 1`, `softWrap: false`, `TextOverflow.clip`), and tapping `Conceive` records the goal.
+
+Gates: `flutter analyze` = No issues found, `flutter test` = 325/325 passing, `flutter build apk --debug` = ✓.
+
+### Phase 21 - ?
+
+- [~] onboarding -> tracker type card: recheck: the 3 chips expand to equal widths ((width - gaps) / 3) in one row; a long word is clipped at the chip edge instead of wrapping - done, see Phase 5 bullet 5.4
+- [ ] "Get Started" isn't blocked when "Last period" is empty. Disable it until a date is picked, and show a required-field hint.
+- [ ] "What brings you here?" and "What shall we track?" are two similar questions back to back. Remove "What brings you here?" and it's connections
+- [ ] Combine `_LastBleedDateCard` & `_PastPeriodsCard` into one - a calendar "Past periods" with multiple range selections
+- [ ] Insights screen: need to be able to add "Past periods" to the list of periods to analyze
+
+--- 
+
+## Milestone 2 - ?
+
+Backlog - later updates (bigger gaps, NOT MVP) - needs proper structuring
+- [ ] PMS prediction (onset stats last 6 cycles, calendar dots, start alert)
+- [ ] Cycle insight report on period start (length, vs range, top symptoms)
+- [ ] Perimenopause depth: dedicated symptom category, Perimenopause Score questionnaire, STRAW+10 stage estimate (yearOfBirth), amenorrhea counter, peri content
+- [ ] Symptom-pattern learning (mood/symptom correlations)
+- [ ] Conception depth: OPK trends, fluid auto-annotation, DOT-style validated timing (research spike)
+- [ ] Pregnancy depth: kick count, weight, weekly notifications, contraction timer, postpartum
+- [ ] Wearables: HealthKit / Health Connect BBT+HRV sync
+- [ ] Bulk cycle backfill (Clue quick-log cold start)
+- [ ] Full mode-matrix regression suite (8 mode subsets x 6 surfaces)
+- [ ] Age 45+ variability priors (Flo 19M-user study) once peri metrics exist
+- [ ] Symptom checker: OUT OF SCOPE (clinical validation + regulatory risk) - educational content only
+
+---
+
+## Fixes 2 - ?

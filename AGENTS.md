@@ -18,10 +18,11 @@ Provide users with **private, accurate, and empowering reproductive health track
 
 ## Rules
 
-- D0 NOT Firebase, keep data local
-- `shared_preferences` and `provider` for storage and state management
+- Do NOT use em dash (—), ONLY hyphens (-)
+- NEVER `git commit`, `git add` or `git push`
 - Do NOT bundle multiple models, provides, widgets, screens, components into a single file, each in its own file.
-- Do NOT use em dash (—), only hyphens (-)
+- `shared_preferences` and `provider` for storage and state management
+- D0 NOT Firebase, keep data local
 - methods that return a widget should be prefixed with `_build` and placed above the `build()` method
 - `build()` methods stay at the bottom of the class
 

@@ -28,12 +28,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _pickDate() async {
     final ob = context.read<OnboardingProvider>();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: ob.pickedDate ?? DateTime.now(),
-      firstDate: DateTime(DateTime.now().year - 2),
-      lastDate: DateTime.now(),
-    );
+    final picked = await showDatePicker(context: context, initialDate: ob.pickedDate ?? DateTime.now(), firstDate: DateTime(DateTime.now().year - 2), lastDate: DateTime.now());
     if (picked != null && mounted) ob.setDate(picked);
   }
 
@@ -116,11 +111,53 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Set Your Cycle', style: AppText.h2),
-        const SizedBox(height: 5),
-        Text('Set up your cycle. When did your last period start?', style: AppText.sub),
-      ],
+      children: [Text('Set Your Cycle', style: AppText.h2), const SizedBox(height: 5), Text('Set up your cycle. When did your last period start?', style: AppText.sub)],
+    );
+  }
+}
+
+/// Single-select intent (track / conceive / avoid); tunes the fertility copy.
+class _GoalCard extends StatelessWidget {
+  const _GoalCard();
+
+  static Object _icon(CycleGoal goal) => switch (goal) {
+    CycleGoal.track => AppIcons.spark,
+    CycleGoal.conceive => AppIcons.heart,
+    CycleGoal.avoid => AppIcons.eye,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final goal = context.watch<SettingsProvider>().goal;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('What brings you here?', style: AppText.secIn),
+          const SizedBox(height: 10),
+          // One row of equal-width chips, matching the tracking-mode picker
+          // below so both single-choice blocks read the same way. A long label
+          // ('Avoid pregnancy') is clipped at the chip edge, not wrapped.
+          Row(
+            children: [
+              for (var i = 0; i < CycleGoal.values.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(
+                  child: AppChip(
+                    label: CycleGoal.values[i].label,
+                    icon: _icon(CycleGoal.values[i]),
+                    selected: CycleGoal.values[i] == goal,
+                    singleLine: true,
+                    onTap: () => context.read<SettingsProvider>().setGoal(CycleGoal.values[i]),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(goal.blurb, style: AppText.sans(10.5, c: AppColors.muted, h: 1.45)),
+        ],
+      ),
     );
   }
 }
@@ -138,46 +175,6 @@ class _TrackingModeCard extends StatelessWidget {
           Text('What shall we track?', style: AppText.secIn),
           const SizedBox(height: 10),
           TrackingModeChips(selected: ob.trackingModes, onToggle: (mode) => context.read<OnboardingProvider>().toggleTrackingMode(mode)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Single-select intent (track / conceive / avoid); tunes the fertility copy.
-class _GoalCard extends StatelessWidget {
-  const _GoalCard();
-
-  static Object _icon(CycleGoal goal) => switch (goal) {
-        CycleGoal.track => AppIcons.spark,
-        CycleGoal.conceive => AppIcons.heart,
-        CycleGoal.avoid => AppIcons.eye,
-      };
-
-  @override
-  Widget build(BuildContext context) {
-    final goal = context.watch<SettingsProvider>().goal;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('What brings you here?', style: AppText.secIn),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final option in CycleGoal.values)
-                AppChip(
-                  label: option.label,
-                  icon: _icon(option),
-                  selected: option == goal,
-                  onTap: () => context.read<SettingsProvider>().setGoal(option),
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(goal.blurb, style: AppText.sans(10.5, c: AppColors.muted, h: 1.45)),
         ],
       ),
     );
@@ -202,10 +199,7 @@ class _YearOfBirthCard extends StatelessWidget {
               value: year,
               isDense: true,
               hint: Text('Select year', style: AppText.sans(12, c: AppColors.placeholder)),
-              items: [
-                for (var y = nowYear; y >= nowYear - 100; y--)
-                  DropdownMenuItem(value: y, child: Text('$y', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.ink))),
-              ],
+              items: [for (var y = nowYear; y >= nowYear - 100; y--) DropdownMenuItem(value: y, child: Text('$y', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.ink)))],
               onChanged: (v) {
                 if (v != null) context.read<OnboardingProvider>().setYear(v);
               },
@@ -271,12 +265,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
 
   Future<void> _add() async {
     final ob = context.read<OnboardingProvider>();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(DateTime.now().year - 2),
-      lastDate: DateTime.now(),
-    );
+    final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(DateTime.now().year - 2), lastDate: DateTime.now());
     if (picked == null || !mounted) return;
     if (!ob.addPreviousPeriod(picked)) {
       setState(() => _error = ob.lastValidationError ?? 'Could not add that date.');
@@ -288,12 +277,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
 
   Future<void> _editDate(DateTime existing) async {
     final ob = context.read<OnboardingProvider>();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: existing,
-      firstDate: DateTime(DateTime.now().year - 2),
-      lastDate: DateTime.now(),
-    );
+    final picked = await showDatePicker(context: context, initialDate: existing, firstDate: DateTime(DateTime.now().year - 2), lastDate: DateTime.now());
     if (picked == null || !mounted) return;
     if (!ob.replacePreviousPeriod(existing, picked)) {
       setState(() => _error = ob.lastValidationError ?? 'Could not update that date.');
@@ -396,11 +380,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: AppColors.danger.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.danger.withValues(alpha: 0.4)),
-        ),
+        decoration: BoxDecoration(color: AppColors.danger.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.danger.withValues(alpha: 0.4))),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -418,7 +398,12 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
       alignment: Alignment.centerLeft,
       child: TextButton.icon(
         onPressed: _add,
-        style: TextButton.styleFrom(foregroundColor: AppColors.pur, padding: const EdgeInsets.symmetric(horizontal: 4), minimumSize: const Size(48, 36), tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.pur,
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          minimumSize: const Size(48, 36),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
         icon: FaIcon(FontAwesomeIcons.plus, size: 11, color: AppColors.pur),
         label: Text('Add another period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
       ),
@@ -449,10 +434,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
             style: AppText.sans(10.5, c: AppColors.muted, h: 1.45),
           ),
           if (error != null) ...[const SizedBox(height: 8), _buildError(error)],
-          if (entries.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            for (final d in entries) _buildRow(ob, d),
-          ],
+          if (entries.isNotEmpty) ...[const SizedBox(height: 4), for (final d in entries) _buildRow(ob, d)],
           const SizedBox(height: 4),
           _buildAddButton(),
         ],
@@ -505,9 +487,6 @@ class _JourneyButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: canFinish ? 1 : 0.45,
-      child: AppButton(label: 'Get Started', onTap: canFinish ? onComplete : null),
-    );
+    return Opacity(opacity: canFinish ? 1 : 0.45, child: AppButton(label: 'Get Started', onTap: canFinish ? onComplete : null));
   }
 }

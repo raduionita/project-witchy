@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../navigation/app_nav.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_icons.dart';
+import 'app_glyph.dart';
 
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final FaIconData? action;
+  final Object? action;
   final VoidCallback? onAction;
-  final FaIconData leading;
+  final Object leading;
   final VoidCallback? onLeading;
   final bool badge;
   final String? leadingTooltip;
@@ -33,7 +33,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
               tooltip: leadingTooltip ?? (onLeading == null ? 'Back' : null),
               constraints: box,
               iconSize: AppIconSize.base,
-              icon: FaIcon(leading, size: AppIconSize.base, color: AppColors.chipText),
+              icon: AppGlyph(leading, size: AppIconSize.base, color: AppColors.chipText),
             ),
             Expanded(child: Text(title, textAlign: TextAlign.center, style: AppText.appBar)),
             // The trailing slot is always reserved, so a bar without an action
@@ -47,7 +47,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    FaIcon(action, size: AppIconSize.base, color: AppColors.pur),
+                    AppGlyph(action!, size: AppIconSize.base, color: AppColors.pur),
                     if (badge)
                       Positioned(
                         right: 0,

@@ -127,7 +127,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     children: [
                       Text(AppDate.monthYear(_month), style: AppText.serif(13.5)),
                       const SizedBox(width: 6),
-                      Icon(AppIcons.right, size: AppIconSize.xs, color: AppColors.muted),
+                      Icon(Icons.calendar_month, size: AppIconSize.xs, color: AppColors.muted),
                     ],
                   ),
                 ),
@@ -155,36 +155,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  /// Selected day pinned on top (when it has a flow log) + up to 10 newest flow-logged days.
+  /// The selected day on its own. History belongs in Insights, not under the
+  /// calendar, where it read as if every recent bleed happened on the selection.
   Widget _buildLoggedCard() {
     final cycle = context.watch<CycleProvider>();
     final selectedDate = DateTime(_month.year, _month.month, _selectedDay);
-    final recent =
-        context
-            .watch<LoggingProvider>()
-            .snapshot()
-            .entries
-            .where((e) => e.value.flow.isNotEmpty)
-            .toList()
-          ..sort((a, b) => b.key.compareTo(a.key));
-    final selectedIndex = recent.indexWhere((e) => e.key == selectedDate);
-    // Pin the selected day's entry on top when it has a flow log; fill the rest newest-first.
-    final selected = selectedIndex >= 0 ? recent.removeAt(selectedIndex) : null;
-    final top = [if (selected != null) selected, ...recent.take(selected != null ? 9 : 10)];
-    final children = <Widget>[
-      Text('Period logged', style: AppText.sec),
-      const SizedBox(height: 4),
-      Text('Selected: ${AppDate.long(selectedDate)}', style: AppText.sans(11, c: AppColors.muted)),
-      const SizedBox(height: 8),
-    ];
-    if (top.isEmpty) {
-      children.add(Text('No period logged yet', style: AppText.sans(12, c: AppColors.muted)));
-    }
-    for (var i = 0; i < top.length; i++) {
-      if (i > 0) children.add(const SizedBox(height: 10));
-      children.add(_buildEntryCard(cycle, top[i].key, top[i].value));
-    }
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: children);
+    final entry = context.watch<LoggingProvider>().peekDay(selectedDate);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Selected day', style: AppText.sec),
+        const SizedBox(height: 8),
+        if (entry == null) ...[
+          Text(AppDate.long(selectedDate), style: AppText.sans(11, c: AppColors.muted)),
+          const SizedBox(height: 4),
+          Text('No entry for this day', style: AppText.sans(12, c: AppColors.muted)),
+          const SizedBox(height: 4),
+          TextButton(onPressed: () => showLogSheet(context, selectedDate), child: const Text('Log this day')),
+        ] else
+          _buildEntryCard(cycle, selectedDate, entry),
+      ],
+    );
   }
 
   String _glyph(CyclePhase phase, {required bool predictedPeriod}) {

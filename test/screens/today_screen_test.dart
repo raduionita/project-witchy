@@ -67,6 +67,15 @@ void main() {
     expect(find.textContaining('· range'), findsNothing);
   });
 
+  testWidgets('before-window countdown targets the window start, not ovulation', (tester) async {
+    final now = DateTime.now();
+    final last = DateTime(now.year, now.month, now.day - 2);
+    await pumpToday(tester, mode: TrackingMode.cycle, lastPeriodStart: last);
+    // Cycle day 3 with a 28-day cycle: window opens on day 9, six days away.
+    expect(find.text('In 6 Days'), findsOneWidget);
+    expect(find.textContaining('· window opens'), findsOneWidget);
+  });
+
   testWidgets('cycle mode with variable history shows the earliest-latest range', (tester) async {
     final now = DateTime.now();
     final last = DateTime(now.year, now.month, now.day).subtract(const Duration(days: 13));

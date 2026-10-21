@@ -26,7 +26,7 @@ abstract final class AppIcons {
   // Material glyphs: FA chevron/chart/pregnancy render as tofu on web builds.
   static const left = Icons.chevron_left;
   static const right = Icons.chevron_right;
-  static const arrow = FontAwesomeIcons.arrowLeft;
+  static const arrow = Icons.arrow_back;
   static const gear = FontAwesomeIcons.gear; // i-gear (solid-only)
   static const cancel = FontAwesomeIcons.xmark; // sheet cancel (solid-only)
   static const approve = FontAwesomeIcons.check; // sheet approve (solid-only)
@@ -59,8 +59,8 @@ abstract final class AppIcons {
   static const alert = FontAwesomeIcons.triangleExclamation; // i-alert (solid-only)
 
   // chrome not in mock symbols but used by the app shell
-  static const user = FontAwesomeIcons.hatWizard; // regular outline
-  static const alerts = FontAwesomeIcons.meteor; // regular outline
+  static const user = Icons.person_outline;
+  static const alerts = Icons.notifications_none;
 
   // brands
   static const apple = FontAwesomeIcons.apple;

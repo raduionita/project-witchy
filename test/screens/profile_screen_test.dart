@@ -60,14 +60,15 @@ void main() {
     await pumpProfile(tester, seedCycles: true);
     expect(find.text('Average Cycle Length'), findsOneWidget);
     expect(find.text('28 Days'), findsOneWidget);
+    expect(find.text('Calculated'), findsOneWidget);
     expect(find.text('Bleeding Phase Length'), findsOneWidget);
     expect(find.text('5 Days'), findsOneWidget);
   });
 
-  testWidgets('empty history shows a dash instead of a fake average', (tester) async {
+  testWidgets('empty history shows the estimated setup value', (tester) async {
     await pumpProfile(tester);
-    expect(find.text('—'), findsOneWidget);
-    expect(find.text('29 Days'), findsNothing);
+    expect(find.text('28 Days'), findsOneWidget);
+    expect(find.text('Estimated'), findsOneWidget);
   });
 
   testWidgets('bell count and version come from real sources', (tester) async {

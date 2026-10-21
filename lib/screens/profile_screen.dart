@@ -367,6 +367,8 @@ class ProfileScreen extends StatelessWidget {
           children: [
             if (tag != null) ...[tag, const SizedBox(width: 6)],
             Text(value, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)),
+            const SizedBox(width: 4),
+            Icon(AppIcons.right, size: 13, color: AppColors.pur),
           ],
         ),
       ),
@@ -376,7 +378,6 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildCycleAveragesCard(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final onboarding = context.watch<OnboardingProvider>();
-    final meanCycle = cycle.meanCycleLength;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,21 +385,16 @@ class ProfileScreen extends StatelessWidget {
           Text('Cycle Averages', style: AppText.secIn),
           _buildEditableRow(
             label: 'Average Cycle Length',
-            value: meanCycle == null ? '—' : '${meanCycle.round()} Days',
-            tag: cycle.isCycleLengthAuto ? AppTag.gold('Calculated') : null,
+            value: '${cycle.effectiveCycleLength} Days',
+            tag: AppTag.gold(cycle.isCycleLengthAuto ? 'Calculated' : 'Estimated'),
             onTap: () => _openRhythmSheet(context),
             first: true,
           ),
           _buildEditableRow(label: 'Bleeding Phase Length', value: '${cycle.bleedLength} Days', onTap: () => _openRhythmSheet(context)),
-          SettingsRow(
+          _buildEditableRow(
             label: 'Tracking Modes',
-            trailing: _buildTapTarget(
-              onTap: () => _openTrackingSheet(context),
-              child: Text(
-                onboarding.trackingModes.map((m) => m.label).join(', '),
-                style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline),
-              ),
-            ),
+            value: onboarding.trackingModes.map((m) => m.label).join(', '),
+            onTap: () => _openTrackingSheet(context),
           ),
         ],
       ),

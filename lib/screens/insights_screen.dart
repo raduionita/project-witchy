@@ -21,21 +21,21 @@ import '../widgets/app_tag.dart';
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
 
-  /// Short/Long vs a robust reference: median of the other observed cycles,
-  /// so one outlier (e.g. a 49-day cycle) does not drag its own tag threshold.
-  static (String, Color?, Color?) _tagFor(CycleProvider cycle, List<PeriodSpan> spans, int index) {
+  /// Absolute clinical bands keep a 23-day cycle from being called Short just
+  /// because it is shorter than the surrounding cycles.
+  static (String, Color?, Color?) _tagFor(List<PeriodSpan> spans, int index) {
     // spans are newest-first; index 0 starts the cycle currently in progress.
     if (index == 0) return ('Current', null, null);
     final span = spans[index];
     final newer = spans[index - 1];
     final cycleLength = CycleCalculator.daysBetween(span.start, newer.start);
-    final others = [...cycle.observedCycleLengths];
-    // Remove one instance of this cycle's length (it may appear multiple times).
-    others.remove(cycleLength);
-    final reference = others.isNotEmpty ? PeriodHistory.median(others) ?? cycle.effectiveCycleLength : cycle.effectiveCycleLength;
-    if (cycleLength < reference - 2) return ('Short - $cycleLength days', AppColors.goldBg, AppColors.readableOn(AppColors.gold, AppColors.goldBg));
-    if (cycleLength > reference + 2) return ('Long - $cycleLength days', AppColors.pinkBg, AppColors.pinkDark);
-    return ('On Time - $cycleLength days', null, null);
+    if (cycleLength < 21) {
+      return ('Short - $cycleLength days', AppColors.goldBg, AppColors.readableOn(AppColors.gold, AppColors.goldBg));
+    }
+    if (cycleLength > 35) {
+      return ('Long - $cycleLength days', AppColors.pinkBg, AppColors.pinkDark);
+    }
+    return ('Typical - $cycleLength days', null, null);
   }
 
   /// Cycle-length spread card: shortest vs longest observed cycles + status.
@@ -93,16 +93,16 @@ class InsightsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final spans = [...cycle.bleeds].reversed.toList();
-    final avgCycle = cycle.medianRecentCycleLength;
+    final avgCycle = cycle.effectiveCycleLength;
     final avgBleed = cycle.meanBleedLength;
     final observed = cycle.observedCycleLengths;
     final starts = PeriodHistory.startsOf(cycle.bleeds);
     final trendValues = [for (final len in observed.skip(observed.length > 7 ? observed.length - 7 : 0)) len.toDouble()];
-    // Month label of the cycle start for each observed length.
+    // Start date of each observed cycle keeps repeated months distinguishable.
     final skip = observed.length - trendValues.length;
     final trendLabels = [
       for (var i = 0; i < trendValues.length; i++)
-        AppDate.monthShort(starts[skip + i]),
+        AppDate.short(starts[skip + i]),
     ];
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, AppDims.fabClearance),
@@ -127,7 +127,14 @@ class InsightsScreen extends StatelessWidget {
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: StatCard(label: '', value: avgCycle == null ? '-' : '$avgCycle days', sub: 'Average Cycle', onTap: () => context.go('/chart'))),
+            Expanded(
+              child: StatCard(
+                label: '',
+                value: '$avgCycle days',
+                sub: cycle.isCycleLengthAuto ? 'Average Cycle' : 'Average Cycle - Estimated',
+                onTap: () => context.go('/chart'),
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(child: StatCard(label: '', value: avgBleed == null ? '-' : '${avgBleed.round()} days', sub: 'Average Bleeding', onTap: () => context.go('/bleed-history'))),
           ],
@@ -146,7 +153,7 @@ class InsightsScreen extends StatelessWidget {
                   child: Text('Log a bleeding day and your period history will appear here.', style: AppText.sans(11.5, c: AppColors.muted)),
                 )
               else
-                for (var i = 0; i < spans.length; i++) _BleedRow(span: spans[i], tag: _tagFor(cycle, spans, i)),
+                for (var i = 0; i < spans.length; i++) _BleedRow(span: spans[i], tag: _tagFor(spans, i)),
             ],
           ),
         ),

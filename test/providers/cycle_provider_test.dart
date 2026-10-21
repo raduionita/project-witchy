@@ -39,7 +39,6 @@ void main() {
       expect(cycle.effectiveLastStart, DateTime(2026, 9, 1));
       expect(cycle.effectiveCycleLength, 40);
       expect(cycle.bleeds, isEmpty);
-      expect(cycle.meanCycleLength, isNull);
       expect(cycle.meanBleedLength, isNull);
     });
 
@@ -51,7 +50,6 @@ void main() {
       expect(cycle.bleeds, hasLength(2));
       expect(cycle.effectiveCycleLength, 40);
       expect(cycle.effectiveLastStart, DateTime(2026, 9, 14));
-      expect(cycle.meanCycleLength, 29.0);
       expect(cycle.meanBleedLength, 2.0);
     });
 
@@ -158,10 +156,9 @@ void main() {
       }
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.observedCycleLengths, hasLength(14));
-      // Prediction basis is the last-12 median: steady 28s only.
+      // Prediction basis is the last-6 median: steady 28s only.
       expect(cycle.effectiveCycleLength, 28);
-      expect(cycle.medianRecentCycleLength, 28);
-      // Status uses the last-6 spread: regular despite the ancient 45s.
+      // Status uses the same last-6 window: regular despite the ancient 45s.
       expect(cycle.cycleSpread, 0);
       // All-time display still shows the full range.
       expect(cycle.shortestCycleLength, 28);

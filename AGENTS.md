@@ -1,4 +1,4 @@
-# AGENTS.md — Period Tracker Flutter App Project
+# AGENTS.md - Period Tracker Flutter App Project
 
 This document provides context, guidelines, and project structure information to help AI assistants understand and contribute effectively to this Dart + Flutter period tracking application.
 
@@ -25,6 +25,7 @@ Provide users with **private, accurate, and empowering reproductive health track
 - D0 NOT Firebase, keep data local
 - methods that return a widget should be prefixed with `_build` and placed above the `build()` method
 - `build()` methods stay at the bottom of the class
+- Before calling work complete: `flutter analyze` zero issues, `flutter test` green, `flutter build apk --debug` succeeds.
 
 ---
 
@@ -69,4 +70,38 @@ import '../services/period_tracking_service.dart';
 ```bash
 flutter pub get
 flutter run
+```
+
+---
+
+## Plans & Changelog
+
+- `CHANGES.md` is the changelog: one entry per shipped update, `## Update N - YYYY.MM.DD - Title`, appended at the bottom, oldest first.
+- Shipped entries are append-only; fix typos only, never rewrite history.
+- Open work never lives in `CHANGES.md`; it lives in `plans/`.
+- `plans/` holds one file per plan, named `YYYY.MM.DD.<slug>.md`.
+- A plan is only done when the matching update entry is added to `CHANGES.md` with its gate results.
+- NEVER execute plans from this (`plans/`) folder directly - only the user can ask for them.
+
+---
+
+## Project Structure
+
+```
+lib/
+├── main.dart
+├── common/
+├── models/
+├── navigation/
+├── providers/
+├── screens/
+├── services/
+├── theme/
+└── widgets/
+assets/
+├── icons/
+├── images/
+├── legal/
+└── svgs/
+test/
 ```

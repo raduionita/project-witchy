@@ -192,7 +192,7 @@ void main() {
     expect(find.text('Jan'), findsOneWidget);
   });
 
-  testWidgets('selected day entry pins above newer logs without duplicating', (tester) async {
+  testWidgets('selected day shows only that day, not recent history', (tester) async {
     SharedPreferences.setMockInitialValues({
       'witchy_onboarded': true,
       'witchy_privacy_accepted': true,
@@ -241,7 +241,6 @@ void main() {
     final olderStr = DateFormat('MMMM d, yyyy').format(older);
     final newerStr = DateFormat('MMMM d, yyyy').format(newer);
     expect(find.text(olderStr), findsOneWidget);
-    expect(find.text(newerStr), findsOneWidget);
-    expect(tester.getTopLeft(find.text(olderStr)).dy, lessThan(tester.getTopLeft(find.text(newerStr)).dy));
+    expect(find.text(newerStr), findsNothing);
   });
 }

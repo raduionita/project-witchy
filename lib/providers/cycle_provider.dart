@@ -56,7 +56,10 @@ class CycleProvider extends ChangeNotifier {
   void _recompute() {
     bleeds = PeriodHistory.spans(_logging.snapshot());
     observedCycleLengths = PeriodHistory.cycleLengths(PeriodHistory.startsOf(bleeds));
-    effectiveCycleLength = stats.medianWindow ?? _onboarding.cycleLength;
+    // One value drives predictions and every displayed average: the last-6
+    // median once two completed cycles exist, otherwise the setup value.
+    final recentMedian = observedCycleLengths.length >= 2 ? stats.medianRecent : null;
+    effectiveCycleLength = recentMedian ?? _onboarding.cycleLength;
     effectiveLastStart = _resolveAnchor();
     final temps = <DateTime, double?>{for (final e in _logging.snapshot().entries) e.key: e.value.temperature};
     final bbt = BbtAnalyzer.analyze(temps: temps, bleedStarts: PeriodHistory.startsOf(bleeds));
@@ -180,9 +183,6 @@ class CycleProvider extends ChangeNotifier {
   /// Spread of the last 6 observed cycles (null until 2+); drives the
   /// Records irregularity status and the fertile-window uncertainty pad.
   int? get cycleSpread => stats.spreadRecent;
-
-  /// Median of the last 6 observed cycles; feeds the Insights average display.
-  int? get medianRecentCycleLength => stats.medianRecent;
 
   /// Uncertainty in days shown as copy (for example "may shift by 2 days").
   /// It no longer widens the fertile window itself - the window is the
@@ -331,8 +331,6 @@ class CycleProvider extends ChangeNotifier {
   int get fertileStartCycleDay => CycleCalculator.fertileStartCycleDay(effectiveCycleLength, lutealLength: lutealLength);
 
   int get fertileEndCycleDay => CycleCalculator.fertileEndCycleDay(effectiveCycleLength, lutealLength: lutealLength);
-
-  double? get meanCycleLength => PeriodHistory.mean(observedCycleLengths);
 
   double? get meanBleedLength => PeriodHistory.mean([for (final s in PeriodHistory.periods(bleeds)) s.length]);
 }

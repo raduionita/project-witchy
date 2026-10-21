@@ -54,13 +54,15 @@ class TodayScreen extends StatelessWidget {
   /// the card never claims "ovulation nears" once the peak has passed.
   (String, String) _fertilityCopy(CycleProvider cycle, DateTime now) {
     final next = AppDate.short(cycle.nextOvulationDate(today: now));
-    final opens = AppDate.short(cycle.ovulationDateThisCycle(today: now).subtract(const Duration(days: 5)));
+    final windowStart = cycle.ovulationDateThisCycle(today: now).subtract(const Duration(days: 5));
+    final opens = AppDate.short(windowStart);
+    final daysToWindow = CycleCalculator.daysBetween(now, windowStart);
     return switch (cycle.fertilityStatus(today: now)) {
       FertilityStatus.peakToday => ('Peak Today', 'High chance'),
       FertilityStatus.windowOpen => ('Window Open', 'Ovulation nears'),
       FertilityStatus.windowClosing => ('Window Closing', 'Ovulation passed'),
       FertilityStatus.passed => ('Peak Passed', 'next peak $next'),
-      FertilityStatus.beforeWindow => ('In ${cycle.daysUntilOvulation(today: now)} Days', '$opens · window opens'),
+      FertilityStatus.beforeWindow => (daysToWindow == 1 ? 'In 1 Day' : 'In $daysToWindow Days', '$opens · window opens'),
     };
   }
 

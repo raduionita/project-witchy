@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/main.dart';
+import 'package:witchy/models/period_range.dart';
 import 'package:witchy/providers/alert_provider.dart';
 import 'package:witchy/providers/auth_provider.dart';
 import 'package:witchy/providers/cycle_provider.dart';
@@ -14,10 +15,21 @@ import 'package:witchy/providers/reminders_provider.dart';
 import 'package:witchy/providers/settings_provider.dart';
 import 'package:witchy/services/prefs_service.dart';
 
-Future<App> _buildApp({Map<String, Object> initial = const {}}) async {
+Future<App> _buildApp({
+  Map<String, Object> initial = const {},
+  bool withPastPeriod = false,
+}) async {
   SharedPreferences.setMockInitialValues(initial);
   final prefs = PrefsService();
   final onboarding = await OnboardingProvider.load(prefs);
+  if (withPastPeriod) {
+    // Onboarding needs a period to anchor the cycle, so seed one directly.
+    final today = DateTime.now();
+    onboarding.addPeriodRange(PeriodRange(
+      start: DateTime(today.year, today.month, today.day - 28),
+      end: DateTime(today.year, today.month, today.day - 23),
+    ));
+  }
   final logging = await LoggingProvider.load(prefs);
   return App(
     prefs: prefs,
@@ -30,13 +42,6 @@ Future<App> _buildApp({Map<String, Object> initial = const {}}) async {
     alerts: await AlertProvider.load(prefs),
     gestation: await GestationProvider.load(prefs),
   );
-}
-
-Future<void> _pickLastPeriod(WidgetTester tester) async {
-  await tester.tap(find.text('Pick a date'));
-  await tester.pumpAndSettle();
-  await tester.tap(find.text('OK'));
-  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -105,7 +110,10 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
-      await _buildApp(initial: {'witchy_privacy_accepted': true}),
+      await _buildApp(
+        initial: {'witchy_privacy_accepted': true},
+        withPastPeriod: true,
+      ),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Get Started'));
@@ -115,7 +123,6 @@ void main() {
     // Default birth year (now − 25) is preselected, so the CTA is active immediately.
     expect(find.text('${DateTime.now().year - 25}'), findsWidgets);
 
-    await _pickLastPeriod(tester);
     await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
     // Header, log summary card and the orb legend all say 'Today'.
@@ -129,7 +136,10 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
-      await _buildApp(initial: {'witchy_privacy_accepted': true}),
+      await _buildApp(
+        initial: {'witchy_privacy_accepted': true},
+        withPastPeriod: true,
+      ),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Get Started').first);
@@ -139,7 +149,6 @@ void main() {
     // Pregnancy joins the default Cycle mode instead of replacing it.
     await tester.tap(find.text('Pregnancy'));
     await tester.pumpAndSettle();
-    await _pickLastPeriod(tester);
     await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
     // Header, log summary card and the orb legend all say 'Today'.
@@ -169,12 +178,14 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
-      await _buildApp(initial: {'witchy_privacy_accepted': true}),
+      await _buildApp(
+        initial: {'witchy_privacy_accepted': true},
+        withPastPeriod: true,
+      ),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
-    await _pickLastPeriod(tester);
     await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
     // Default Cycle mode shows the fertility stat card (labels render uppercase).
@@ -275,7 +286,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Profile'), findsOneWidget);
 
-    await tester.drag(find.byType(ListView), const Offset(0, -900));
+    await tester.scrollUntilVisible(find.text('Delete All Data'), 300);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete All Data'));
     await tester.pumpAndSettle();

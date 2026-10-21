@@ -357,6 +357,21 @@ void main() {
       expect(cycle.showPeriodRange, isFalse);
     });
 
+    test('a single outlier inside the last 6 is trimmed from the range', () {
+      final last = DateTime(2026, 9, 24);
+      seedGaps(last, [28, 28, 28, 28, 28, 49]);
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.observedCycleLengths, hasLength(6));
+      // Full spread still drives Irregularity; the range trims the 49.
+      expect(cycle.cycleSpread, 21);
+      expect(cycle.stats.spreadTrimmed, 0);
+      expect(cycle.showPeriodRange, isFalse);
+      final range = cycle.predictedRange(today: DateTime(2026, 10, 10));
+      expect(range, isNotNull);
+      expect(range!.earliest, range.latest);
+      expect(range.earliest, DateTime(2026, 10, 22));
+    });
+
     test('recent variation widens the range and flips the Today flag', () {
       final last = DateTime(2026, 9, 2);
       seedGaps(last, [28, 35]);

@@ -3,18 +3,21 @@ import 'package:provider/provider.dart';
 
 import '../common/date_format.dart';
 import '../common/log_data.dart';
+import '../models/period_record.dart';
 import '../models/period_span.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/logging_provider.dart';
 import '../services/cycle_calculator.dart';
 import '../services/period_history.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_icons.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/log_bottom_sheet.dart';
+import '../widgets/period_range_sheet.dart';
 import '../widgets/stat_card.dart';
 
 /// Bleeding detail page behind Today's "Bleeding In" and Insights'
@@ -98,21 +101,46 @@ class BleedHistoryScreen extends StatelessWidget {
     );
   }
 
+  void _openPeriod(BuildContext context, LoggingProvider logging, PeriodSpan span, PeriodRecord? record) {
+    if (record != null) {
+      showPeriodRangeSheet(context, logging: logging, record: record);
+    } else {
+      showLogSheet(context, span.start);
+    }
+  }
+
   /// Newest-first list of logged bleed spans.
-  Widget _buildHistoryCard(CycleProvider cycle) {
+  Widget _buildHistoryCard(BuildContext context, CycleProvider cycle, LoggingProvider logging) {
     final spans = [...cycle.bleeds].reversed.toList();
+    final records = {
+      for (final record in logging.periodRecords) LoggingProvider.keyFor(record.start): record,
+    };
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Recent Periods', style: AppText.secIn),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Recent Periods', style: AppText.secIn),
+              TextButton(
+                onPressed: () => showPeriodRangeSheet(context, logging: logging),
+                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                child: const Text('Add past period'),
+              ),
+            ],
+          ),
           if (spans.isEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 10),
               child: Text('Log a bleeding day and your periods will appear here.', style: AppText.sans(11.5, c: AppColors.muted)),
             )
           else
-            for (final span in spans.take(5)) _BleedRow(span: span),
+            for (final span in spans.take(5))
+              _BleedRow(
+                span: span,
+                onTap: () => _openPeriod(context, logging, span, records[LoggingProvider.keyFor(span.start)]),
+              ),
         ],
       ),
     );
@@ -152,7 +180,7 @@ class BleedHistoryScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _buildTodayCard(context, cycle),
           const SizedBox(height: 12),
-          _buildHistoryCard(cycle),
+          _buildHistoryCard(context, cycle, logging),
           const SizedBox(height: 12),
           _buildFlowLogCard(context, logging),
         ],
@@ -163,34 +191,49 @@ class BleedHistoryScreen extends StatelessWidget {
 
 class _BleedRow extends StatelessWidget {
   final PeriodSpan span;
-  const _BleedRow({required this.span});
+  final VoidCallback onTap;
+  const _BleedRow({required this.span, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final range = AppDate.range(span.start, span.end);
+    final range = span.startOnly ? AppDate.short(span.start) : AppDate.range(span.start, span.end);
     // Days seeded from onboarding history are estimates until logged by hand;
     // spans under the period threshold are spotting, never a real period.
     final estimated = span.estimated;
     final spotting = !span.startOnly && span.length < PeriodHistory.minSpanDays;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 9),
-      decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                Flexible(child: Text(range, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink))),
-                if (estimated) ...[
-                  const SizedBox(width: 8),
-                  AppTag('Estimated'),
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(child: Text(range, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink))),
+                  if (estimated) ...[
+                    const SizedBox(width: 8),
+                    AppTag('Estimated'),
+                  ],
                 ],
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  span.startOnly ? (span.estimated ? 'Estimated start' : 'Start only') : (spotting ? 'Spotting' : '${span.length} Days'),
+                  style: AppText.sans(10.5, c: AppColors.muted),
+                ),
+                const SizedBox(width: 4),
+                Icon(AppIcons.right, size: 13, color: AppColors.muted),
               ],
             ),
-          ),
-          Text(span.startOnly ? (span.estimated ? 'Estimated start' : 'Start only') : (spotting ? 'Spotting' : '${span.length} Days'), style: AppText.sans(10.5, c: AppColors.muted)),
-        ],
+          ],
+        ),
       ),
     );
   }

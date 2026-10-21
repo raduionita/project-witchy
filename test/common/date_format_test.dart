@@ -23,7 +23,14 @@ void main() {
     expect(AppDate.dayMonthYear(d), '5 Jan 2026');
   });
 
-  test('joins a range with an en dash', () {
-    expect(AppDate.range(DateTime(2026, 9, 10), DateTime(2026, 9, 16)), 'Sep 10 – Sep 16');
+  test('joins a range with a hyphen', () {
+    expect(AppDate.range(DateTime(2026, 9, 10), DateTime(2026, 9, 16)), 'Sep 10 - Sep 16');
+  });
+
+  test('joins a long range with a hyphen', () {
+    expect(
+      AppDate.longRange(DateTime(2026, 10, 29), DateTime(2026, 11, 3)),
+      'October 29, 2026 - November 3, 2026',
+    );
   });
 }

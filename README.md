@@ -41,19 +41,36 @@ The Articles tab reads one RSS feed:
 https://qvonyx.com/witchy/articles.xml
 ```
 
-Native builds fetch it directly. **Web builds cannot**: the browser applies CORS to
-that fetch, and the feed currently sends no `Access-Control-Allow-Origin` header, so
-the request is blocked before the app ever sees the response. Fix it on the server
-with either of these:
+Native builds fetch it directly. **Web builds need a CORS header on that response.**
+The web app is served from `https://witchy.qvonyx.com` while the feed lives on
+`https://qvonyx.com`, so the browser treats the feed request as cross-origin. Without
+`Access-Control-Allow-Origin` the request is blocked before the app ever sees a body,
+and the feed is reachable in an address bar but never loads inside the app.
 
-- Send the header with the feed response, for example
-  `Access-Control-Allow-Origin: https://witchy.qvonyx.com` (use `*` only when the
-  feed carries nothing user-specific), plus `Access-Control-Allow-Methods: GET`
-- Serve the feed from the same origin as the web build (for example
-  `https://witchy.qvonyx.com/witchy/articles.xml`) so no CORS check applies
+The fix ships in this repo as `documents/.htaccess`. Upload it next to the feed:
 
-Neither change is needed for the Android and iOS builds. Until one of them lands the
-app degrades gracefully rather than failing: it falls back to the last cached copy of
+```
+public_html/witchy/.htaccess
+```
+
+Then purge the CDN cache for `articles.xml`, otherwise the edge keeps serving the
+headerless response. Confirm it landed:
+
+```bash
+curl -sSI -H 'Origin: https://witchy.qvonyx.com' https://qvonyx.com/witchy/articles.xml | rg -i 'access-control'
+```
+
+The shipped rule uses `Access-Control-Allow-Origin: *`, which is safe here because the
+feed is a public static file with no user-specific content, and it also keeps local web
+development on `http://localhost` working. Narrow it to `https://witchy.qvonyx.com` in
+`documents/.htaccess` if you would rather pin the origin.
+
+The alternative is to serve the feed from the same origin as the web build, for example
+`https://witchy.qvonyx.com/witchy/articles.xml`, so no CORS check applies at all. That
+path is not live today.
+
+Neither change is needed for the Android and iOS builds. If the feed cannot be reached
+the app degrades gracefully rather than failing: it falls back to the last cached copy of
 the feed and shows an "Offline - showing saved articles" banner, and offers a retry
 action when no cache exists yet.
 

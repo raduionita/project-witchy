@@ -39,31 +39,31 @@ class _MainScreenState extends State<MainScreen> {
         badge: unread,
       ),
       body: IndexedStack(index: index, children: const [TodayScreen(), CalendarScreen(), InsightsScreen(), ArticlesScreen()]),
-      floatingActionButton:
-          index == 3
-              ? null
-              : FloatingActionButton(
-                heroTag: 'main_log_fab',
-                onPressed: () => showLogSheet(context, DateTime.now()),
-                backgroundColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                focusElevation: 0,
-                hoverElevation: 0,
-                highlightElevation: 0,
-                elevation: 0,
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: AppColors.plumGradient,
-                    border: Border.fromBorderSide(BorderSide(color: AppColors.gold, width: 1.5)),
-                    boxShadow: [AppColors.primaryShadow],
-                  ),
-                  child: const FaIcon(AppIcons.quill, size: AppIconSize.base, color: AppColors.gold),
+      // The log sheet does not belong on the reading tab.
+      floatingActionButton: index == 3
+          ? null
+          : FloatingActionButton(
+              heroTag: 'main_log_fab',
+              onPressed: () => showLogSheet(context, DateTime.now()),
+              backgroundColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusElevation: 0,
+              hoverElevation: 0,
+              highlightElevation: 0,
+              elevation: 0,
+              child: Container(
+                width: 50,
+                height: 50,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppColors.plumGradient,
+                  border: Border.fromBorderSide(BorderSide(color: AppColors.gold, width: 1.5)),
+                  boxShadow: [AppColors.primaryShadow],
                 ),
+                child: const FaIcon(AppIcons.quill, size: AppIconSize.base, color: AppColors.gold),
               ),
+            ),
       bottomNavigationBar: AppBottomNav(index: index, onTap: (i) => setState(() => index = i)),
     );
   }

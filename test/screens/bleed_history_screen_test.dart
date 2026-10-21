@@ -8,6 +8,11 @@ import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/screens/bleed_history_screen.dart';
 import 'package:witchy/services/prefs_service.dart';
 
+DateTime previousMonth() {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month - 1);
+}
+
 void main() {
   late PrefsService prefs;
   late OnboardingProvider onboarding;
@@ -75,5 +80,27 @@ void main() {
 
     expect(find.text('2 Days Late'), findsOneWidget);
     expect(find.text('log your period to re-anchor'), findsOneWidget);
+  });
+
+  testWidgets('add past period saves a range', (tester) async {
+    await pumpBleeding(tester);
+    await tester.tap(find.text('Add past period'));
+    await tester.pumpAndSettle();
+
+    // Pick the first two days of the previous month, so they are always past.
+    final month = previousMonth();
+    await tester.tap(find.byKey(const Key('period-prev-month')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('period-day-${month.year}-${month.month}-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('period-day-${month.year}-${month.month}-2')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Save period'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save period'));
+    await tester.pumpAndSettle();
+    expect(logging.periodRecords, hasLength(1));
+    expect(logging.periodRecords.single.startOnly, isFalse);
+    expect(logging.periodRecords.single.end, DateTime(month.year, month.month, 2));
   });
 }

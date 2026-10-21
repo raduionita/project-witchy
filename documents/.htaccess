@@ -1,0 +1,36 @@
+# CORS for the Articles feed.
+#
+# The feed lives at https://qvonyx.com/witchy/articles.xml but the web app is
+# served from https://witchy.qvonyx.com, so the browser treats the feed request
+# as cross-origin. Without a response header the browser blocks it before the
+# app sees any body, which is why the feed is reachable in a browser address
+# bar but never loads inside the app. Native builds are not affected.
+#
+# Upload this file next to articles.xml (public_html/witchy/.htaccess) and then
+# purge the CDN cache for articles.xml so the header is not served stale.
+#
+# The feed is a public static RSS file with no user-specific content, so "*"
+# is safe here and also keeps local web development on http://localhost working.
+# To pin it to the web app only, replace "*" with the app origin:
+#   https://witchy.qvonyx.com
+
+<IfModule mod_headers.c>
+  <Files "articles.xml">
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type"
+    Header always set Access-Control-Max-Age "86400"
+  </Files>
+</IfModule>
+
+# Answer the CORS preflight for the feed if the server is asked for it.
+<IfModule mod_headers.c>
+  <FilesMatch "(?i)articles\.xml$">
+    <If "%{REQUEST_METHOD} == 'OPTIONS'">
+      Header always set Access-Control-Allow-Origin "*"
+      Header always set Access-Control-Allow-Methods "GET, OPTIONS"
+      Header always set Access-Control-Allow-Headers "Content-Type"
+      Header always set Access-Control-Max-Age "86400"
+    </If>
+  </FilesMatch>
+</IfModule>

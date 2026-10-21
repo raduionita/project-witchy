@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import '../common/date_format.dart';
 import '../common/legal_links.dart';
 import '../navigation/app_nav.dart';
-import '../models/cycle_goal.dart';
+import '../models/period_record.dart';
+import '../models/period_span.dart';
 import '../models/reminder_item.dart';
 import '../models/tracking_mode.dart';
 import '../providers/alert_provider.dart';
@@ -27,10 +29,11 @@ import '../widgets/app_top_bar.dart';
 import '../widgets/app_avatar.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
-import '../widgets/app_chip.dart';
 import '../widgets/danger_button.dart';
 import '../widgets/icon_badge.dart';
 import '../widgets/info_pill.dart';
+import '../widgets/log_bottom_sheet.dart';
+import '../widgets/period_range_sheet.dart';
 import '../widgets/tracking_mode_chip.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -67,43 +70,6 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// Cycle goal picker; the choice only tunes copy, so it applies immediately.
-  Future<void> _openGoalSheet(BuildContext context) async {
-    final current = context.read<SettingsProvider>().goal;
-    final picked = await showModalBottomSheet<CycleGoal>(
-      context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('What brings you here?', style: AppText.secIn),
-              const SizedBox(height: 4),
-              Text('This tunes the wording on your fertility screens.', style: AppText.sans(11, c: AppColors.muted)),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final option in CycleGoal.values)
-                    AppChip(
-                      label: option.label,
-                      selected: option == current,
-                      onTap: () => Navigator.of(sheetContext).pop(option),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (picked == null || !context.mounted) return;
-    context.read<SettingsProvider>().setGoal(picked);
   }
 
   /// Edits the base cycle and bleeding lengths, then persists them; the sheet
@@ -401,6 +367,81 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  void _openPeriod(BuildContext context, LoggingProvider logging, PeriodSpan span, PeriodRecord? record) {
+    if (record != null) {
+      showPeriodRangeSheet(context, logging: logging, record: record);
+    } else {
+      showLogSheet(context, span.start);
+    }
+  }
+
+  Widget _buildPeriodsCard(BuildContext context) {
+    final cycle = context.watch<CycleProvider>();
+    final logging = context.watch<LoggingProvider>();
+    final spans = [...cycle.bleeds].reversed.toList();
+    final records = {
+      for (final record in logging.periodRecords) LoggingProvider.keyFor(record.start): record,
+    };
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Past periods', style: AppText.secIn),
+              TextButton(
+                onPressed: () => showPeriodRangeSheet(context, logging: logging),
+                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                child: const Text('Add past period'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text('Add or edit dates you remember. Flow logs stay untouched.', style: AppText.sans(11, c: AppColors.muted)),
+          if (spans.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text('No periods yet. Add one above.', style: AppText.sans(11.5, c: AppColors.muted)),
+            )
+          else
+            for (final span in spans.take(5))
+              _buildPeriodRow(context, logging, span, records[LoggingProvider.keyFor(span.start)]),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPeriodRow(BuildContext context, LoggingProvider logging, PeriodSpan span, PeriodRecord? record) {
+    final detail = span.startOnly ? (span.estimated ? 'Estimated start' : 'Start only') : '${span.length} days';
+    return GestureDetector(
+      onTap: () => _openPeriod(context, logging, span, record),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(span.startOnly ? AppDate.short(span.start) : AppDate.range(span.start, span.end), style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)),
+                  Text(detail, style: AppText.sans(9.5, c: AppColors.muted)),
+                ],
+              ),
+            ),
+            if (span.estimated) ...[
+              AppTag.gold('Estimated'),
+              const SizedBox(width: 6),
+            ],
+            Icon(AppIcons.right, size: 13, color: AppColors.muted),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildPregnancyCard(BuildContext context) {
     return AppCard(
       child: Column(
@@ -449,13 +490,6 @@ class ProfileScreen extends StatelessWidget {
           SettingsRow(
             label: 'Dark Mode',
             trailing: Switch(value: settings.darkMode, activeThumbColor: AppColors.pur, onChanged: (v) => context.read<SettingsProvider>().setDark(v)),
-          ),
-          SettingsRow(
-            label: 'Your goal',
-            trailing: _buildTapTarget(
-              onTap: () => _openGoalSheet(context),
-              child: Text(settings.goal.label, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.pur).copyWith(decoration: TextDecoration.underline)),
-            ),
           ),
         ],
       ),
@@ -609,6 +643,8 @@ class ProfileScreen extends StatelessWidget {
           _buildIdentityHeader(context),
           const SizedBox(height: 12),
           _buildCycleAveragesCard(context),
+          const SizedBox(height: 12),
+          _buildPeriodsCard(context),
           const SizedBox(height: 12),
           if (onboarding.trackingModes.contains(TrackingMode.pregnancy)) ...[
             _buildPregnancyCard(context),

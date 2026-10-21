@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../models/cycle_settings.dart';
+import '../models/period_range.dart';
 import '../models/tracking_mode.dart';
-import '../services/cycle_calculator.dart';
 import '../services/period_history.dart';
+import '../services/period_range_rules.dart';
 import '../services/prefs_service.dart';
 
 class OnboardingProvider extends ChangeNotifier {
@@ -18,13 +19,10 @@ class OnboardingProvider extends ChangeNotifier {
     DateTime? lastPeriodStart,
   }) : trackingModes = (trackingModes == null || trackingModes.isEmpty) ? {TrackingMode.cycle} : {...trackingModes},
        yearOfBirth = yearOfBirth ?? DateTime.now().year - 25,
-       lastPeriodStart = lastPeriodStart ?? _derive(selectedDay);
+       _fallbackLastPeriodStart = lastPeriodStart ?? _derive(selectedDay);
 
-  /// Minimum spacing between period start dates (guards typos / same-cycle double logs).
-  static const int minGapDays = 15;
-
-  /// Cap on earlier-period rows so the onboarding list stays scannable.
-  static const int maxPreviousPeriods = 6;
+  /// How many periods can be listed during onboarding.
+  static const int maxPeriods = PeriodRangeRules.maxRanges;
 
   static const int minCycleLength = 15;
   static const int maxCycleLength = 60;
@@ -39,30 +37,27 @@ class OnboardingProvider extends ChangeNotifier {
   int bleedLength;
   Set<TrackingMode> trackingModes;
   int? yearOfBirth;
-  DateTime lastPeriodStart;
-  DateTime? pickedDate;
+
+  /// Anchor used when the user never added a period; keeps the saved rhythm
+  /// of returning users.
+  DateTime _fallbackLastPeriodStart;
 
   /// True while [cycleLength] was last set from the entered history (not the slider).
   bool cycleLengthFromHistory = false;
 
-  /// Start dates of earlier periods entered during onboarding, newest first.
-  /// Persisted indirectly: `onboarding_screen` seeds them into the day-log store,
-  /// so `PeriodHistory` derives real cycle lengths from them.
-  final List<DateTime> previousPeriodStarts = [];
+  /// The periods the user added during onboarding, newest first. The newest
+  /// start is the anchor for every prediction.
+  final List<PeriodRange> pastPeriods = [];
 
-  /// Bleed length per earlier period, keyed by its start date. Defaults to
-  /// [bleedLength]; seeded spans are tagged 'Estimated' in the day-log store.
-  final Map<DateTime, int> previousPeriodDurations = {};
+  /// The picked periods, newest first.
+  List<PeriodRange> get periodRanges => List.unmodifiable(pastPeriods);
 
-  /// Days of bleed for the earlier period starting on [start]; falls back to the
-  /// onboarding bleed length so entries created before durations existed work.
-  int durationFor(DateTime start) => previousPeriodDurations[_day(start)] ?? bleedLength;
+  /// First day of the most recent period, or null when none was added.
+  DateTime? get pickedDate => pastPeriods.isEmpty ? null : pastPeriods.first.start;
 
-  /// Records how many days that earlier period lasted (clamped to 2-10).
-  void setPreviousPeriodDuration(DateTime start, int days) {
-    previousPeriodDurations[_day(start)] = days.clamp(2, 10);
-    notifyListeners();
-  }
+  /// The anchor every prediction starts from: the newest period start.
+  DateTime get lastPeriodStart =>
+      pastPeriods.isEmpty ? _fallbackLastPeriodStart : pastPeriods.first.start;
 
   /// Fallback anchor when the user never picked a date. Never lands in the
   /// future - a future "last period" date poisons every cycle calculation.
@@ -114,93 +109,59 @@ class OnboardingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setDate(DateTime d) {
-    pickedDate = DateTime(d.year, d.month, d.day);
-    selectedDay = pickedDate!.day;
-    notifyListeners();
-  }
-
-  static DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
-
-  /// Gap in days between [a] and [b], always positive.
-  static int _gap(DateTime a, DateTime b) => CycleCalculator.daysBetween(a, b).abs();
-
-  /// Reason [d] cannot be added as an earlier period start, or null when valid.
-  /// Checks duplicates, the 15-day minimum gap, and list capacity.
-  /// Pass [ignoring] to exclude a row being edited in place.
-  String? validatePreviousPeriod(DateTime d, {DateTime? ignoring}) {
-    final day = _day(d);
-    if (previousPeriodStarts.any((e) => e == day && e != ignoring)) return 'This date is already listed.';
-    // Always checked, even when editing: the picked last period is never a list row.
-    if (pickedDate != null && _gap(day, pickedDate!) < minGapDays) {
-      return 'Too close to your last period - keep at least $minGapDays days between starts.';
-    }
-    for (final existing in previousPeriodStarts) {
-      if (ignoring != null && existing == ignoring) continue;
-      if (_gap(day, existing) < minGapDays) {
-        return 'Too close to another period - keep at least $minGapDays days between starts.';
-      }
-    }
-    if (ignoring == null && previousPeriodStarts.length >= maxPreviousPeriods) {
-      return 'Remove an older date first - up to $maxPreviousPeriods earlier periods.';
-    }
-    return null;
-  }
-
-  /// Records an earlier period start; returns false when [validatePreviousPeriod] fails.
-  /// The failing reason is stored in [lastValidationError].
-  bool addPreviousPeriod(DateTime d) {
-    final error = validatePreviousPeriod(d);
+  /// Adds a period range after checking the shared rules. Returns false when
+  /// the range is rejected; the reason lands in [lastValidationError].
+  bool addPeriodRange(PeriodRange range) {
+    final error = PeriodRangeRules.validate(range: range, existing: pastPeriods);
     lastValidationError = error;
     if (error != null) return false;
-    final day = _day(d);
-    previousPeriodStarts.add(day);
-    previousPeriodDurations.putIfAbsent(day, () => bleedLength);
-    previousPeriodStarts.sort((a, b) => b.compareTo(a));
+    pastPeriods.add(range);
+    _sortPeriods();
     notifyListeners();
     return true;
   }
 
-  /// Replaces [old] with [newDate] after re-validating the new date against the rest.
-  bool replacePreviousPeriod(DateTime old, DateTime newDate) {
-    final oldDay = _day(old);
-    if (_day(newDate) == oldDay) return true;
-    final error = validatePreviousPeriod(newDate, ignoring: oldDay);
+  /// Replaces the range that started on [originalStart] with [range], after
+  /// re-checking it against the other periods.
+  bool replacePeriodRange(DateTime originalStart, PeriodRange range) {
+    final others = pastPeriods.where((r) => r.start != originalStart).toList();
+    final error = PeriodRangeRules.validate(
+      range: range,
+      existing: others,
+      editing: PeriodRange(start: originalStart, end: originalStart),
+    );
     lastValidationError = error;
     if (error != null) return false;
-    previousPeriodStarts.removeWhere((e) => e == oldDay);
-    final newDay = _day(newDate);
-    previousPeriodStarts.add(newDay);
-    previousPeriodDurations[newDay] = previousPeriodDurations.remove(oldDay) ?? bleedLength;
-    previousPeriodStarts.sort((a, b) => b.compareTo(a));
+    pastPeriods.removeWhere((r) => r.start == originalStart);
+    pastPeriods.add(range);
+    _sortPeriods();
     notifyListeners();
     return true;
   }
 
-  void removePreviousPeriod(DateTime d) {
-    final day = _day(d);
-    previousPeriodStarts.removeWhere((e) => e == day);
-    previousPeriodDurations.remove(day);
+  /// Removes the period that started on [start].
+  void removePeriodRange(DateTime start) {
+    pastPeriods.removeWhere((r) => r.start == start);
     notifyListeners();
   }
 
-  /// Puts back a period that was removed by mistake (the undo action). Skips
-  /// validation because the date was accepted a moment ago, and restores the
-  /// length the row carried so undo is truly lossless.
-  void restorePreviousPeriod(DateTime d, {int? duration}) {
-    final day = _day(d);
-    if (previousPeriodStarts.any((e) => e == day)) return;
-    previousPeriodStarts.add(day);
-    previousPeriodDurations[day] = (duration ?? bleedLength).clamp(2, 10);
-    previousPeriodStarts.sort((a, b) => b.compareTo(a));
+  /// Puts back a period that was removed by mistake (the undo action). It skips
+  /// the rules because the range was accepted a moment ago.
+  void restorePeriodRange(PeriodRange range) {
+    if (pastPeriods.any((r) => r.start == range.start)) return;
+    pastPeriods.add(range);
+    _sortPeriods();
     lastValidationError = null;
     notifyListeners();
   }
 
+  /// Newest first, so the most recent period always anchors the predictions.
+  void _sortPeriods() => pastPeriods.sort((a, b) => b.start.compareTo(a.start));
+
   /// Median cycle length implied by the entered dates, clamped to the slider range;
   /// null until 2+ complete cycles are known.
   int? deriveCycleLengthFromHistory() {
-    final starts = [...previousPeriodStarts, if (pickedDate != null) pickedDate!]..sort();
+    final starts = pastPeriods.map((range) => range.start).toList()..sort();
     if (starts.length < 2) return null;
     final median = PeriodHistory.median(PeriodHistory.cycleLengths(starts));
     if (median == null) return null;
@@ -224,7 +185,7 @@ class OnboardingProvider extends ChangeNotifier {
 
   Future<void> finish() async {
     final last = pickedDate ?? _derive(selectedDay);
-    lastPeriodStart = last;
+    _fallbackLastPeriodStart = last;
     await _prefs.saveRhythms(cycleLength, bleedLength, last);
     await _prefs.setTrackingModes(trackingModes);
     final year = yearOfBirth;
@@ -242,12 +203,10 @@ class OnboardingProvider extends ChangeNotifier {
     bleedLength = 5;
     trackingModes = {TrackingMode.cycle};
     yearOfBirth = DateTime.now().year - 25;
-    lastPeriodStart = _derive(17);
-    pickedDate = null;
+    _fallbackLastPeriodStart = _derive(17);
     cycleLengthFromHistory = false;
     lastValidationError = null;
-    previousPeriodStarts.clear();
-    previousPeriodDurations.clear();
+    pastPeriods.clear();
     notifyListeners();
   }
 }

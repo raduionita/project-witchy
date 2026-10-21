@@ -140,6 +140,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
           CycleCalendar(cells: cells, onDayTap: _selectDay),
           const SizedBox(height: 12),
           const CalendarLegend(),
+          if (!cycle.pregnancyModeOn) ...[
+            const SizedBox(height: 6),
+            Text(cycle.predictionBasis, style: AppText.sans(9.5, c: AppColors.muted)),
+          ],
           if (showStatusRow) ...[
             const SizedBox(height: 8),
             Row(

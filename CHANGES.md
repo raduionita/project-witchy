@@ -361,3 +361,53 @@ The onboarding goal picker was the last chip block still built from a `Wrap`, so
 - Tests: new `test/screens/onboarding_screen_test.dart` - the three goal chips share one width and one line, "Avoid pregnancy" is clipped to a single line (`maxLines: 1`, `softWrap: false`, `TextOverflow.clip`), and tapping `Conceive` records the goal.
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 325/325 passing, `flutter build apk --debug` = ✓.
+
+## Update 21 - 2026.10.21 - Trust, period history and plan closeout
+
+Closes `plans/2026.10.19.md`. Predictions now share one rolling median, onboarding stops inventing period lengths, past starts can be added and edited from Insights, Bleeding and Profile, and goal-based fertility wording is removed.
+
+### Trust fixes
+- `AppTopBar` now renders both Font Awesome and Material icons, so the back arrow and the Profile/Alerts glyphs no longer fail on web. Profile and Alerts use person and bell icons.
+- Before-window fertility copy counts to the fertile-window start instead of ovulation: `In 14 Days` now means 14 days until the window opens.
+- Profile and Insights show the same cycle length: the last-6 median once two completed cycles exist, otherwise the setup value marked `Estimated`. No screen uses a separate mean.
+- Cycle tags use absolute clinical bands: `Short` below 21 days, `Long` above 35 days, otherwise `Typical`. A 23-day cycle is no longer called short only because its neighbours are longer.
+- Cycle trend labels use full start dates such as `May 3`, so repeated months stay distinguishable.
+- Calendar shows only the selected day in its detail card, or `No entry for this day` with a direct log action. The duplicate header chevron is gone, and FAB clearance is 128 dp.
+- Tracking Modes and the other Profile selector rows are tappable across the full row and carry a chevron.
+
+### Period records and history
+- New `PeriodRecord` model and `witchy_period_records` preference list. A record can be start-only, carry an optional end date, and is marked estimated when it came from onboarding or migration.
+- `PeriodHistory` merges real flow spans with records. Real flow wins on overlap, so editing a saved start cannot overwrite a logged bleed.
+- Onboarding seeds start-only estimated records instead of five days of made-up `Medium` flow. The last period date is required before Get Started, and the last-period row plus earlier starts live in one `Past periods` card.
+- Existing assumed flow is migrated once into estimated records, then cleared only from those days. Notes, symptoms and other non-flow details are kept.
+- `CycleProvider.bleedLength` now comes from real logged spans, clamped 2-10, with the setup value as a fallback. Estimated and start-only records do not count toward the average.
+- New shared `PeriodRangeSheet`: add a period, set an optional last day, save, or delete the saved dates. Deleting a record does not delete flow logged day by day.
+- `Add past period` and tappable history rows are available in Insights, Bleeding and Profile. Start-only records show one date and `Start only` or `Estimated start` instead of a fabricated duration.
+
+### Prediction and screen polish
+- The predicted range trims one lowest and one highest cycle once four recent cycles exist, so a single outlier cannot widen the whole window. Late-cycle thresholds still use the full recent maximum.
+- Today, Calendar and Fertility show whether predictions are `Based on N cycles` or `Based on default 28 days`.
+- Late periods keep the cycle count running, stop new projections after the grace window, and show `Log to update` rather than pretending the next period is still on schedule.
+- Insights Cycle Trends and Irregularity cards gained direct log actions.
+- The Articles tab ships and stays in the bottom navigation even when the feed is empty. The shell, the nav bar and the router are back to four sections (Today, Calendar, Insights, Articles), and the log FAB is hidden on the reading tab.
+- Goal framing is removed: onboarding keeps only the tracking-mode question, Profile has no `Your goal` row, `CycleGoal` and its preference key are gone, and Fertility uses neutral `Cycle notes` copy with a `Fertility` stat. Stored `avoid` values from older builds simply stop being read.
+- Moon-phase differentiation was declined and the plan item is closed.
+
+### Articles feed
+- The web build could not load the feed because of CORS, not because of the URL or the parser. `https://qvonyx.com/witchy/articles.xml` answers `200` with `application/xml` and 18 items that `FeedService.parseFeed` reads without changes, but it sends no `Access-Control-Allow-Origin`, so the browser blocks the XHR from the web app origin `https://witchy.qvonyx.com` and the request dies with `net::ERR_FAILED`. A direct address-bar load still worked because top-level navigation is not CORS-protected, which is why the feed looked reachable in a browser and empty inside the app. Native builds were never affected.
+- `documents/.htaccess` now carries the header rules (`Access-Control-Allow-Origin`, `-Methods`, `-Headers`, `-Max-Age`, plus an `OPTIONS` preflight branch) scoped to `articles.xml`. Upload it next to the feed as `public_html/witchy/.htaccess` and purge the CDN cache for that file, otherwise the edge keeps serving the headerless response. The feed is public and carries no user data, so `*` is used; the file documents how to pin it to the web origin instead.
+- Verified after the header lands with `curl -sSI -H 'Origin: https://witchy.qvonyx.com' https://qvonyx.com/witchy/articles.xml`.
+- Known gap, left as is: the feed links are relative slugs that resolve to `https://qvonyx.com/witchy/<slug>.html`, and none of those article pages are published yet, so every article tap opens a 404 until the bodies are written.
+
+### Onboarding past periods
+- The onboarding `Past periods` card no longer splits into a "last period" row and an "earlier periods" list. It is one list of the periods the user adds, newest first, and the most recent start is the anchor: `OnboardingProvider.lastPeriodStart` and `pickedDate` both come from the newest range, so the cycle day, the predictions and the saved rhythm start from the period the user remembers last. Removing the newest period promotes the next one.
+- Ranges are picked with a booking-style calendar (`PeriodRangeCalendar`), like an airplane or hotel booker: tap the first day, then the last day. The month grid is Monday-first, the header steps between months and can jump to any month of the last two years, the picked range is highlighted, and the summary line reads `October 29, 2026 - November 3, 2026 · 6 days`.
+- The rules are applied while picking, not only on save. `PeriodRangeRules` is the single source of truth and the calendar disables the days that cannot be used: at least 15 days between two period starts (exactly 15 is allowed), 2 to 10 days per period, no overlap with a period already added, no dates in the future, only the last two years, and at most 7 periods. The reason is shown inline in the sheet and the save button stays disabled until the range is valid.
+- Every row shows the full range, `October 29, 2026 - November 3, 2026`, and the `Estimated` tag is gone. The counter reads `2 of 7 periods`, the copy explains that the most recent start sets the cycle day, and the only action is a calendar icon plus `Add past period`. A row can be edited with the pencil or removed with the x, with an undo snackbar.
+- Get Started stays blocked until at least one period is added, and the hint now reads `Add at least one past period to continue.`
+- The periods are stored as real records, `PeriodRecord(start, end, source: onboarding, estimated: false)`. Because they are no longer estimated they also count toward the bleeding length average, so the `Bleeding Phase Length` value in Today and Profile is the average of the periods the user confirmed instead of the onboarding slider. That is the intended trade-off: the user picked both ends, so the length is known.
+- The same calendar and the same rules now back the shared add/edit sheet, so `Add past period` on Insights, Bleeding and Profile picks a range instead of two separate date pickers, and an overlapping or too-close period is refused there too. A stored start-only record counts as a one-day range for the gap and overlap checks.
+- New files: `lib/models/period_range.dart`, `lib/services/period_range_rules.dart`, `lib/widgets/period_range_calendar.dart`, `lib/widgets/period_range_calendar_sheet.dart`.
+- Date ranges use a plain hyphen. The old `AppDate.range` helper used an en dash, and `AppDate.longRange` was added for the full `October 29, 2026 - November 3, 2026` form used by the card rows.
+
+Gates: `flutter analyze` = No issues found, `flutter test` = 383/383 passing, `flutter build apk --debug` = ✓, `flutter build web` = ✓.

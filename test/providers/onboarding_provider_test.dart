@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:witchy/models/period_range.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/services/prefs_service.dart';
 
@@ -14,161 +15,173 @@ void main() {
     onboarding = OnboardingProvider(prefs);
   });
 
-  group('previous period history', () {
-    test('stores newest first and ignores duplicates', () {
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 5));
-      onboarding.addPreviousPeriod(DateTime(2026, 9, 10));
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 5));
-      expect(onboarding.previousPeriodStarts, [DateTime(2026, 9, 10), DateTime(2026, 8, 5)]);
+  /// A period that starts on [start] and lasts [days] days.
+  PeriodRange period(DateTime start, int days) => PeriodRange(
+        start: start,
+        end: DateTime(start.year, start.month, start.day + days - 1),
+      );
 
-      onboarding.removePreviousPeriod(DateTime(2026, 9, 10));
-      expect(onboarding.previousPeriodStarts, [DateTime(2026, 8, 5)]);
+  group('past period ranges', () {
+    test('stores newest first and rejects a duplicate range', () {
+      expect(onboarding.addPeriodRange(period(DateTime(2026, 9, 10), 5)), isTrue);
+      expect(onboarding.addPeriodRange(period(DateTime(2026, 8, 5), 5)), isTrue);
+      expect(onboarding.addPeriodRange(period(DateTime(2026, 8, 5), 5)), isFalse);
+      expect(onboarding.pastPeriods, hasLength(2));
+      expect(onboarding.pastPeriods.first.start, DateTime(2026, 9, 10));
+      expect(onboarding.pastPeriods.last.start, DateTime(2026, 8, 5));
+    });
+
+    test('the newest start anchors the cycle', () {
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 5), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 9, 10), 5));
+      expect(onboarding.lastPeriodStart, DateTime(2026, 9, 10));
+      expect(onboarding.pickedDate, DateTime(2026, 9, 10));
+    });
+
+    test('removing the newest range promotes the next one', () {
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 5), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 9, 10), 5));
+      onboarding.removePeriodRange(DateTime(2026, 9, 10));
+      expect(onboarding.pastPeriods, hasLength(1));
+      expect(onboarding.lastPeriodStart, DateTime(2026, 8, 5));
     });
 
     test('resetToDefaults clears entered history', () {
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 5), 5));
       onboarding.resetToDefaults();
-      expect(onboarding.previousPeriodStarts, isEmpty);
+      expect(onboarding.pastPeriods, isEmpty);
+      expect(onboarding.pickedDate, isNull);
     });
   });
 
   group('deriveCycleLengthFromHistory', () {
     test('is null until two starts exist', () {
       expect(onboarding.deriveCycleLengthFromHistory(), isNull);
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 5), 5));
       expect(onboarding.deriveCycleLengthFromHistory(), isNull);
     });
 
     test('returns the single known gap from two starts', () {
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 10));
-      onboarding.setDate(DateTime(2026, 9, 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 10), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 9, 5), 5));
       expect(onboarding.deriveCycleLengthFromHistory(), 26);
     });
 
     test('returns the median across three completed cycles', () {
-      onboarding.addPreviousPeriod(DateTime(2026, 7, 10));
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 5));
-      onboarding.setDate(DateTime(2026, 8, 31));
+      onboarding.addPeriodRange(period(DateTime(2026, 7, 10), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 5), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 31), 5));
       // Gaps: 26, 26 -> median 26.
       expect(onboarding.deriveCycleLengthFromHistory(), 26);
 
-      onboarding.addPreviousPeriod(DateTime(2026, 6, 15));
+      onboarding.addPeriodRange(period(DateTime(2026, 6, 15), 5));
       // Gaps: 25, 26, 26 -> median 26.
       expect(onboarding.deriveCycleLengthFromHistory(), 26);
     });
 
     test('clamps an extreme median into the slider range', () {
-      // 15-day gaps are the smallest the validator allows, so this is the
-      // shortest derivable cycle length: it lands exactly on the floor.
-      onboarding.addPreviousPeriod(DateTime(2026, 6, 1));
-      onboarding.addPreviousPeriod(DateTime(2026, 6, 16));
-      onboarding.addPreviousPeriod(DateTime(2026, 7, 1));
-      onboarding.setDate(DateTime(2026, 7, 16));
+      // 15-day gaps are the smallest the rules allow, so this is the shortest
+      // derivable cycle length: it lands exactly on the floor.
+      onboarding.addPeriodRange(period(DateTime(2026, 6, 1), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 6, 16), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 7, 1), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 7, 16), 5));
       // Gaps 15,15,15 -> median 15, clamped to minCycleLength 15.
       expect(onboarding.deriveCycleLengthFromHistory(), OnboardingProvider.minCycleLength);
     });
 
     test('clamps a long median down into the slider range', () {
-      onboarding.addPreviousPeriod(DateTime(2026, 6, 1));
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 10));
-      onboarding.setDate(DateTime(2026, 10, 19));
+      onboarding.addPeriodRange(period(DateTime(2026, 6, 1), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 10), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 10, 19), 5));
       // Gaps 70,70 -> median 70, clamped to maxCycleLength 60.
       expect(onboarding.deriveCycleLengthFromHistory(), OnboardingProvider.maxCycleLength);
     });
   });
 
-  group('15-day validation', () {
-    test('rejects a start closer than 15 days to the last period', () {
-      onboarding.setDate(DateTime(2026, 9, 10));
-      expect(onboarding.addPreviousPeriod(DateTime(2026, 9, 5)), isFalse);
+  group('range validation', () {
+    test('rejects a start closer than 15 days to an existing start', () {
+      expect(onboarding.addPeriodRange(period(DateTime(2026, 8, 1), 5)), isTrue);
+      expect(onboarding.addPeriodRange(period(DateTime(2026, 8, 10), 5)), isFalse);
       expect(onboarding.lastValidationError, contains('15 days'));
-      expect(onboarding.previousPeriodStarts, isEmpty);
-    });
-
-    test('rejects a start closer than 15 days to an existing entry', () {
-      expect(onboarding.addPreviousPeriod(DateTime(2026, 8, 1)), isTrue);
-      expect(onboarding.addPreviousPeriod(DateTime(2026, 8, 10)), isFalse);
-      expect(onboarding.lastValidationError, contains('15 days'));
-      expect(onboarding.previousPeriodStarts, hasLength(1));
+      expect(onboarding.pastPeriods, hasLength(1));
     });
 
     test('accepts exactly 15 days apart', () {
-      onboarding.setDate(DateTime(2026, 9, 10));
-      expect(onboarding.addPreviousPeriod(DateTime(2026, 8, 26)), isTrue);
-      expect(onboarding.previousPeriodStarts, hasLength(1));
+      expect(onboarding.addPeriodRange(period(DateTime(2026, 8, 1), 5)), isTrue);
+      expect(onboarding.addPeriodRange(period(DateTime(2026, 8, 16), 5)), isTrue);
+      expect(onboarding.pastPeriods, hasLength(2));
     });
 
-    test('caps the list at maxPreviousPeriods', () {
-      var day = DateTime(2026, 9, 1);
-      for (var i = 0; i < OnboardingProvider.maxPreviousPeriods; i++) {
-        expect(onboarding.addPreviousPeriod(day), isTrue, reason: 'entry $i should fit');
-        day = DateTime(day.year, day.month, day.day - 20);
+    test('rejects a period shorter than two days', () {
+      expect(onboarding.addPeriodRange(period(DateTime(2026, 8, 1), 1)), isFalse);
+      expect(onboarding.lastValidationError, contains('at least 2 days'));
+      expect(onboarding.pastPeriods, isEmpty);
+    });
+
+    test('rejects a period longer than ten days', () {
+      expect(onboarding.addPeriodRange(period(DateTime(2026, 8, 1), 11)), isFalse);
+      expect(onboarding.lastValidationError, contains('at most 10 days'));
+      expect(onboarding.pastPeriods, isEmpty);
+    });
+
+    test('caps the list at maxPeriods', () {
+      var day = DateTime(2026, 1, 1);
+      for (var i = 0; i < OnboardingProvider.maxPeriods; i++) {
+        expect(onboarding.addPeriodRange(period(day, 5)), isTrue, reason: 'entry $i should fit');
+        day = DateTime(day.year, day.month, day.day + 15);
       }
-      expect(onboarding.addPreviousPeriod(DateTime(day.year, day.month, day.day - 20)), isFalse);
-      expect(onboarding.lastValidationError, contains('Remove an older date'));
-      expect(onboarding.previousPeriodStarts, hasLength(OnboardingProvider.maxPreviousPeriods));
+      expect(onboarding.addPeriodRange(period(day, 5)), isFalse);
+      expect(onboarding.lastValidationError, contains('up to 7 periods'));
+      expect(onboarding.pastPeriods, hasLength(OnboardingProvider.maxPeriods));
     });
 
-    test('replace revalidates the new date against remaining entries', () {
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 1));
-      onboarding.addPreviousPeriod(DateTime(2026, 7, 10));
-      // Replacing Jul 10 with a date 4 days from Aug 1 fails.
-      expect(onboarding.replacePreviousPeriod(DateTime(2026, 7, 10), DateTime(2026, 7, 28)), isFalse);
-      expect(onboarding.previousPeriodStarts, hasLength(2));
+    test('replace revalidates the new range against the remaining entries', () {
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 1), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 7, 10), 5));
+      // Replacing Jul 10 with a range 4 days from Aug 1 fails.
+      expect(onboarding.replacePeriodRange(DateTime(2026, 7, 10), period(DateTime(2026, 7, 28), 5)), isFalse);
+      expect(onboarding.pastPeriods, hasLength(2));
       // A valid replace swaps in place.
-      expect(onboarding.replacePreviousPeriod(DateTime(2026, 7, 10), DateTime(2026, 7, 5)), isTrue);
-      expect(onboarding.previousPeriodStarts, contains(DateTime(2026, 7, 5)));
-      expect(onboarding.previousPeriodStarts, isNot(contains(DateTime(2026, 7, 10))));
+      expect(onboarding.replacePeriodRange(DateTime(2026, 7, 10), period(DateTime(2026, 7, 5), 5)), isTrue);
+      expect(onboarding.pastPeriods.map((r) => r.start), contains(DateTime(2026, 7, 5)));
+      expect(onboarding.pastPeriods.map((r) => r.start), isNot(contains(DateTime(2026, 7, 10))));
     });
 
-    test('replace enforces the 15-day gap against the last period', () {
-      onboarding.setDate(DateTime(2026, 9, 10));
-      expect(onboarding.addPreviousPeriod(DateTime(2026, 8, 1)), isTrue);
-      // Editing Aug 1 to within 15 days of the Sep 10 last period fails.
-      expect(onboarding.replacePreviousPeriod(DateTime(2026, 8, 1), DateTime(2026, 9, 5)), isFalse);
+    test('replace ignores the range it is replacing', () {
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 1), 5));
+      // Moving the same range a few days is fine, even though its own start
+      // would be inside the 15-day window of its old position.
+      expect(onboarding.replacePeriodRange(DateTime(2026, 8, 1), period(DateTime(2026, 8, 4), 5)), isTrue);
+      expect(onboarding.pastPeriods.single.start, DateTime(2026, 8, 4));
+    });
+
+    test('replace enforces the 15-day gap against the other periods', () {
+      onboarding.addPeriodRange(period(DateTime(2026, 8, 1), 5));
+      onboarding.addPeriodRange(period(DateTime(2026, 9, 10), 5));
+      // Editing Aug 1 to within 15 days of the Sep 10 period fails.
+      expect(onboarding.replacePeriodRange(DateTime(2026, 8, 1), period(DateTime(2026, 9, 5), 5)), isFalse);
       expect(onboarding.lastValidationError, contains('15 days'));
-      expect(onboarding.previousPeriodStarts, [DateTime(2026, 8, 1)]);
+      expect(onboarding.pastPeriods.map((r) => r.start), [DateTime(2026, 9, 10), DateTime(2026, 8, 1)]);
     });
   });
 
-  group('period lengths', () {
-    test('durationFor falls back to the bleeding length', () {
-      expect(onboarding.durationFor(DateTime(2026, 8, 5)), onboarding.bleedLength);
+  group('restorePeriodRange', () {
+    test('undo puts the range back', () {
+      final range = period(DateTime(2026, 8, 5), 5);
+      onboarding.addPeriodRange(range);
+      onboarding.removePeriodRange(range.start);
+      expect(onboarding.pastPeriods, isEmpty);
+
+      onboarding.restorePeriodRange(range);
+      expect(onboarding.pastPeriods, [range]);
     });
 
-    test('stores a per-period length and clamps it to 2-10', () {
-      final start = DateTime(2026, 8, 5);
-      onboarding.setPreviousPeriodDuration(start, 7);
-      expect(onboarding.durationFor(start), 7);
-      onboarding.setPreviousPeriodDuration(start, 99);
-      expect(onboarding.durationFor(start), 10);
-      onboarding.setPreviousPeriodDuration(start, 1);
-      expect(onboarding.durationFor(start), 2);
-    });
-
-    test('a new entry starts at the bleeding length', () {
-      onboarding.setBleed(6);
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 5));
-      expect(onboarding.durationFor(DateTime(2026, 8, 5)), 6);
-    });
-  });
-
-  group('restorePreviousPeriod', () {
-    test('undo puts the date and its length back', () {
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 5));
-      onboarding.setPreviousPeriodDuration(DateTime(2026, 8, 5), 7);
-      onboarding.removePreviousPeriod(DateTime(2026, 8, 5));
-      expect(onboarding.previousPeriodStarts, isEmpty);
-
-      onboarding.restorePreviousPeriod(DateTime(2026, 8, 5), duration: 7);
-      expect(onboarding.previousPeriodStarts, [DateTime(2026, 8, 5)]);
-      expect(onboarding.durationFor(DateTime(2026, 8, 5)), 7);
-    });
-
-    test('undo skips a date that is already listed', () {
-      onboarding.addPreviousPeriod(DateTime(2026, 8, 5));
-      onboarding.restorePreviousPeriod(DateTime(2026, 8, 5));
-      expect(onboarding.previousPeriodStarts, hasLength(1));
+    test('undo skips a range that is already listed', () {
+      final range = period(DateTime(2026, 8, 5), 5);
+      onboarding.addPeriodRange(range);
+      onboarding.restorePeriodRange(range);
+      expect(onboarding.pastPeriods, hasLength(1));
     });
   });
 

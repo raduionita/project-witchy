@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../common/date_format.dart';
-import '../models/cycle_goal.dart';
+import '../models/period_range.dart';
 import '../models/period_record.dart';
 import '../navigation/app_nav.dart';
 import '../providers/auth_provider.dart';
 import '../providers/logging_provider.dart';
 import '../providers/onboarding_provider.dart';
-import '../providers/settings_provider.dart';
+import '../services/period_range_rules.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_icons.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
-import '../widgets/app_chip.dart';
 import '../widgets/app_slider_row.dart';
-import '../widgets/app_tag.dart';
+import '../widgets/period_range_calendar_sheet.dart';
 import '../widgets/tracking_mode_chip.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -27,30 +26,25 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  Future<void> _pickDate() async {
-    final ob = context.read<OnboardingProvider>();
-    final picked = await showDatePicker(context: context, initialDate: ob.pickedDate ?? DateTime.now(), firstDate: DateTime(DateTime.now().year - 2), lastDate: DateTime.now());
-    if (picked != null && mounted) ob.setDate(picked);
-  }
-
   Future<void> _complete() async {
     final onboarding = context.read<OnboardingProvider>();
     await onboarding.finish();
     if (!mounted) return;
     await context.read<AuthProvider>().markLocalSession();
     if (!mounted) return;
-    // Save only the start dates the user actually entered. No flow days or end
-    // dates are invented from the onboarding sliders; those records stay
-    // start-only and are labelled Estimated until real flow is logged.
+    // Save the ranges the user picked. No flow days are invented: the start
+    // and the last day are the user's own dates, so the records are real and
+    // no longer carry the Estimated label.
     final logging = context.read<LoggingProvider>();
-    final picked = onboarding.pickedDate;
-    if (picked == null) return;
     logging.wipeAssumed();
-    final today = DateTime.now();
     final records = <PeriodRecord>[
-      PeriodRecord(start: picked, source: PeriodSource.onboarding, estimated: true),
-      for (final previous in onboarding.previousPeriodStarts)
-        if (!previous.isAfter(today)) PeriodRecord(start: previous, source: PeriodSource.onboarding, estimated: true),
+      for (final range in onboarding.pastPeriods)
+        PeriodRecord(
+          start: range.start,
+          end: range.end,
+          source: PeriodSource.onboarding,
+          estimated: false,
+        ),
     ];
     logging.replaceOnboardingRecords(records);
     if (!mounted) return;
@@ -62,8 +56,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final ob = context.watch<OnboardingProvider>();
-    // The last period is required because predictions need a real anchor.
-    final canFinish = ob.yearOfBirth != null && ob.pickedDate != null;
+    // At least one period is required because predictions need a real anchor.
+    final canFinish = ob.yearOfBirth != null && ob.pastPeriods.isNotEmpty;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -75,13 +69,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   children: [
                     const _Header(),
                     const SizedBox(height: 12),
-                    const _GoalCard(),
-                    const SizedBox(height: 12),
                     const _TrackingModeCard(),
                     const SizedBox(height: 12),
                     const _YearOfBirthCard(),
                     const SizedBox(height: 12),
-                    _PastPeriodsCard(onPickLast: _pickDate),
+                    _PastPeriodsCard(),
                     const SizedBox(height: 12),
                     const _CycleLengthCard(),
                     const SizedBox(height: 12),
@@ -94,7 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               if (!canFinish)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: Text('Pick your last period date to continue.', style: AppText.sans(10.5, c: AppColors.muted)),
+                  child: Text('Add at least one past period to continue.', style: AppText.sans(10.5, c: AppColors.muted)),
                 ),
               _JourneyButton(canFinish: canFinish, onComplete: _complete),
             ],
@@ -112,50 +104,6 @@ class _Header extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [Text('Set Your Cycle', style: AppText.h2), const SizedBox(height: 5), Text('Your dates stay on this device. You can change them later.', style: AppText.sub)],
-    );
-  }
-}
-
-/// Single-select intent (track / conceive / avoid); tunes the fertility copy.
-class _GoalCard extends StatelessWidget {
-  const _GoalCard();
-
-  static Object _icon(CycleGoal goal) => switch (goal) {
-    CycleGoal.track => AppIcons.spark,
-    CycleGoal.conceive => AppIcons.heart,
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final goal = context.watch<SettingsProvider>().goal;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Your goal', style: AppText.secIn),
-          const SizedBox(height: 10),
-          // One row of equal-width chips, matching the tracking-mode picker
-          // below so both single-choice blocks read the same way.
-          Row(
-            children: [
-              for (var i = 0; i < CycleGoal.values.length; i++) ...[
-                if (i > 0) const SizedBox(width: 8),
-                Expanded(
-                  child: AppChip(
-                    label: CycleGoal.values[i].label,
-                    icon: _icon(CycleGoal.values[i]),
-                    selected: CycleGoal.values[i] == goal,
-                    singleLine: true,
-                    onTap: () => context.read<SettingsProvider>().setGoal(CycleGoal.values[i]),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(goal.blurb, style: AppText.sans(10.5, c: AppColors.muted, h: 1.45)),
-        ],
-      ),
     );
   }
 }
@@ -209,11 +157,10 @@ class _YearOfBirthCard extends StatelessWidget {
   }
 }
 
-/// Optional history of earlier period starts; seeding these makes predictions
-/// reflect the user's real cycle lengths instead of a guessed slider value.
+/// The periods the user remembers. Every row is a range; the most recent start
+/// sets the cycle day and the starts feed the cycle length.
 class _PastPeriodsCard extends StatefulWidget {
-  final VoidCallback onPickLast;
-  const _PastPeriodsCard({required this.onPickLast});
+  const _PastPeriodsCard();
 
   @override
   State<_PastPeriodsCard> createState() => _PastPeriodsCardState();
@@ -221,7 +168,7 @@ class _PastPeriodsCard extends StatefulWidget {
 
 class _PastPeriodsCardState extends State<_PastPeriodsCard> {
   /// Reason the last add/edit failed. Kept on screen instead of in a SnackBar
-  /// so the user can read it while fixing the date.
+  /// so the user can read it while fixing the dates.
   String? _error;
 
   /// Moves the slider onto the length the entered dates imply; leaves a manual
@@ -233,42 +180,48 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
 
   Future<void> _add() async {
     final ob = context.read<OnboardingProvider>();
-    final picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(DateTime.now().year - 2), lastDate: DateTime.now());
+    final picked = await showPeriodRangeCalendarSheet(
+      context,
+      existing: ob.pastPeriods,
+    );
     if (picked == null || !mounted) return;
-    if (!ob.addPreviousPeriod(picked)) {
-      setState(() => _error = ob.lastValidationError ?? 'Could not add that date.');
+    if (!ob.addPeriodRange(picked)) {
+      setState(() => _error = ob.lastValidationError ?? 'Could not add that period.');
       return;
     }
     setState(() => _error = null);
     _applyDerivedLength(ob);
   }
 
-  Future<void> _editDate(DateTime existing) async {
+  Future<void> _editRange(PeriodRange range) async {
     final ob = context.read<OnboardingProvider>();
-    final picked = await showDatePicker(context: context, initialDate: existing, firstDate: DateTime(DateTime.now().year - 2), lastDate: DateTime.now());
+    final picked = await showPeriodRangeCalendarSheet(
+      context,
+      existing: ob.pastPeriods,
+      editing: range,
+    );
     if (picked == null || !mounted) return;
-    if (!ob.replacePreviousPeriod(existing, picked)) {
-      setState(() => _error = ob.lastValidationError ?? 'Could not update that date.');
+    if (!ob.replacePeriodRange(range.start, picked)) {
+      setState(() => _error = ob.lastValidationError ?? 'Could not update that period.');
       return;
     }
     setState(() => _error = null);
     _applyDerivedLength(ob);
   }
-
 
   /// Removes a row and offers an undo.
-  void _remove(DateTime start) {
+  void _remove(PeriodRange range) {
     final ob = context.read<OnboardingProvider>();
-    ob.removePreviousPeriod(start);
+    ob.removePeriodRange(range.start);
     setState(() => _error = null);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Removed ${AppDate.long(start)}'),
+        content: Text('Removed ${AppDate.longRange(range.start, range.end)}'),
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: 'Undo',
           onPressed: () {
-            ob.restorePreviousPeriod(start);
+            ob.restorePeriodRange(range);
             _applyDerivedLength(ob);
           },
         ),
@@ -287,72 +240,32 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
     );
   }
 
-  Widget _buildLastRow(OnboardingProvider ob) {
-    final date = ob.pickedDate;
-    return InkWell(
-      onTap: widget.onPickLast,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.line))),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Last period', style: AppText.sans(10.5, c: AppColors.muted)),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          date == null ? 'Pick a date' : AppDate.long(date),
-                          style: AppText.serif(13, c: date == null ? AppColors.placeholder : AppColors.ink),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (date != null) ...[const SizedBox(width: 8), AppTag.gold('Estimated')],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRow(DateTime d) {
+  Widget _buildRow(PeriodRange range) {
     return SizedBox(
       height: 44,
       child: Row(
         children: [
           Expanded(
             child: _buildTapTarget(
-              onTap: () => _editDate(d),
-              tooltip: 'Edit date',
+              onTap: () => _editRange(range),
+              tooltip: 'Edit period',
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Flexible(child: Text(AppDate.long(d), style: AppText.sans(11.5, w: FontWeight.w600, c: AppColors.ink), overflow: TextOverflow.ellipsis)),
+                  Flexible(child: Text(AppDate.longRange(range.start, range.end), style: AppText.sans(11.5, w: FontWeight.w600, c: AppColors.ink), overflow: TextOverflow.ellipsis)),
                   const SizedBox(width: 6),
                   FaIcon(FontAwesomeIcons.pen, size: 10, color: AppColors.muted),
                 ],
               ),
             ),
           ),
-          AppTag.gold('Estimated'),
           IconButton(
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
             icon: FaIcon(FontAwesomeIcons.xmark, size: 12, color: AppColors.muted),
             tooltip: 'Remove',
-            onPressed: () => _remove(d),
+            onPressed: () => _remove(range),
           ),
         ],
       ),
@@ -390,16 +303,27 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
           minimumSize: const Size(48, 36),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-        icon: FaIcon(FontAwesomeIcons.plus, size: 11, color: AppColors.pur),
-        label: Text('Add an earlier period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
+        icon: FaIcon(AppIcons.calendarAdd, size: 11, color: AppColors.pur),
+        label: Text('Add past period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
       ),
     );
+  }
+
+  /// The hint under the title depends on how much history is in the list.
+  String _copy(int count) {
+    if (count == 0) {
+      return 'Add the period you remember best. The most recent start sets your cycle day. Keep at least ${PeriodRangeRules.minGapDays} days between starts.';
+    }
+    if (count == 1) {
+      return 'Your most recent start sets your cycle day. Add an earlier period to calculate your cycle length.';
+    }
+    return 'Cycle length is calculated from your starts. Tap a period to change it.';
   }
 
   @override
   Widget build(BuildContext context) {
     final ob = context.watch<OnboardingProvider>();
-    final entries = ob.previousPeriodStarts;
+    final entries = ob.pastPeriods;
     final error = _error;
     return AppCard(
       child: Column(
@@ -409,25 +333,16 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Past periods', style: AppText.secIn),
-              Flexible(child: Text('${entries.length} of ${OnboardingProvider.maxPreviousPeriods} earlier periods', style: AppText.sans(10, c: AppColors.muted), textAlign: TextAlign.right)),
+              Flexible(child: Text('${entries.length} of ${OnboardingProvider.maxPeriods} periods', style: AppText.sans(10, c: AppColors.muted), textAlign: TextAlign.right)),
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            entries.length < 2
-                ? 'Your last period is required. Add at least two earlier periods (three starts total) to calculate your cycle length. Keep at least ${OnboardingProvider.minGapDays} days between starts.'
-                : 'Cycle length is calculated from your starts. Tap a date to change it.',
-            style: AppText.sans(10.5, c: AppColors.muted, h: 1.45),
-          ),
-          const SizedBox(height: 8),
-          _buildLastRow(ob),
-          if (error != null) ...[const SizedBox(height: 8), _buildError(error)],
+          Text(_copy(entries.length), style: AppText.sans(10.5, c: AppColors.muted, h: 1.45)),
           if (entries.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text('Earlier periods', style: AppText.sans(10, w: FontWeight.w700, c: AppColors.muted).copyWith(letterSpacing: 0.6)),
-            const SizedBox(height: 2),
-            for (final d in entries) _buildRow(d),
+            for (final range in entries) _buildRow(range),
           ],
+          if (error != null) ...[const SizedBox(height: 8), _buildError(error)],
           const SizedBox(height: 4),
           _buildAddButton(),
         ],

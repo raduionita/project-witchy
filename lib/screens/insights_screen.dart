@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../common/date_format.dart';
+import '../models/period_record.dart';
 import '../models/period_span.dart';
 import '../providers/cycle_provider.dart';
+import '../providers/logging_provider.dart';
 import '../services/cycle_calculator.dart';
 import '../services/period_history.dart';
 import '../navigation/app_nav.dart';
@@ -17,6 +19,7 @@ import '../widgets/stat_card.dart';
 import '../widgets/trend_bars.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
+import '../widgets/period_range_sheet.dart';
 
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
@@ -39,7 +42,7 @@ class InsightsScreen extends StatelessWidget {
   }
 
   /// Cycle-length spread card: shortest vs longest observed cycles + status.
-  Widget _buildIrregularityCard(CycleProvider cycle) {
+  Widget _buildIrregularityCard(BuildContext context, CycleProvider cycle) {
     final spread = cycle.cycleSpread;
     final irregular = (spread ?? 0) > 7;
     return AppCard(
@@ -48,9 +51,16 @@ class InsightsScreen extends StatelessWidget {
         children: [
           Text('Irregularity', style: AppText.secIn),
           const SizedBox(height: 8),
-          if (spread == null)
-            Text('Log two completed cycles to see your spread.', style: AppText.sans(11.5, c: AppColors.muted))
-          else
+          if (spread == null) ...[
+            Text('Log two completed cycles to see your spread.', style: AppText.sans(11.5, c: AppColors.muted)),
+            if (cycle.bleeds.isNotEmpty)
+              TextButton(
+                key: const Key('irregularity-cta'),
+                onPressed: () => showLogSheet(context, DateTime.now()),
+                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                child: const Text('Log a period'),
+              ),
+          ] else
             Row(
               children: [
                 Expanded(
@@ -89,9 +99,27 @@ class InsightsScreen extends StatelessWidget {
     );
   }
 
+  void _openPeriod(
+    BuildContext context,
+    LoggingProvider logging,
+    PeriodSpan span,
+    PeriodRecord? record,
+  ) {
+    if (record != null) {
+      showPeriodRangeSheet(context, logging: logging, record: record);
+    } else {
+      showLogSheet(context, span.start);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
+    final logging = context.watch<LoggingProvider>();
+    final records = {
+      for (final record in logging.periodRecords)
+        LoggingProvider.keyFor(record.start): record,
+    };
     final spans = [...cycle.bleeds].reversed.toList();
     final avgCycle = cycle.effectiveCycleLength;
     final avgBleed = cycle.meanBleedLength;
@@ -120,6 +148,13 @@ class InsightsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 TrendBars(values: trendValues, labels: trendLabels),
+                if (trendValues.length < 2 && spans.isNotEmpty)
+                  TextButton(
+                    key: const Key('cycle-trends-cta'),
+                    onPressed: () => showLogSheet(context, DateTime.now()),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                    child: const Text('Log your period'),
+                  ),
               ],
             ),
           ),
@@ -140,20 +175,35 @@ class InsightsScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        _buildIrregularityCard(cycle),
+        _buildIrregularityCard(context, cycle),
         const SizedBox(height: 12),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Period History', style: AppText.secIn),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Period History', style: AppText.secIn),
+                  TextButton(
+                    onPressed: () => showPeriodRangeSheet(context, logging: logging),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                    child: const Text('Add past period'),
+                  ),
+                ],
+              ),
               if (spans.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text('Log a bleeding day and your period history will appear here.', style: AppText.sans(11.5, c: AppColors.muted)),
                 )
               else
-                for (var i = 0; i < spans.length; i++) _BleedRow(span: spans[i], tag: _tagFor(spans, i)),
+                for (var i = 0; i < spans.length; i++)
+                  _BleedRow(
+                    span: spans[i],
+                    tag: _tagFor(spans, i),
+                    onTap: () => _openPeriod(context, logging, spans[i], records[LoggingProvider.keyFor(spans[i].start)]),
+                  ),
             ],
           ),
         ),
@@ -165,24 +215,47 @@ class InsightsScreen extends StatelessWidget {
 class _BleedRow extends StatelessWidget {
   final PeriodSpan span;
   final (String, Color?, Color?) tag;
-  const _BleedRow({required this.span, required this.tag});
+  final VoidCallback onTap;
+  const _BleedRow({required this.span, required this.tag, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final range = AppDate.range(span.start, span.end);
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 9),
-      decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [Text(range, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)), Text(span.startOnly ? (span.estimated ? 'Estimated start' : 'Start only') : '${span.length} Days', style: AppText.sans(9.5, c: AppColors.muted))],
-          ),
-          const SizedBox(width: 8),
-          Flexible(child: Align(alignment: Alignment.centerRight, child: AppTag(tag.$1, bg: tag.$2, fg: tag.$3))),
-        ],
+    final range = span.startOnly ? AppDate.short(span.start) : AppDate.range(span.start, span.end);
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(range, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)),
+                Text(
+                  span.startOnly ? (span.estimated ? 'Estimated start' : 'Start only') : '${span.length} Days',
+                  style: AppText.sans(9.5, c: AppColors.muted),
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(child: AppTag(tag.$1, bg: tag.$2, fg: tag.$3)),
+                    const SizedBox(width: 4),
+                    Icon(AppIcons.right, size: 13, color: AppColors.muted),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

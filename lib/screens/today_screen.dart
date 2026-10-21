@@ -108,12 +108,21 @@ class TodayScreen extends StatelessWidget {
       bleedSub = 'add dates in Pregnancy Tracker';
       bleedTap = () => context.go('/pregnancy');
     }
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(child: StatCard(label: 'Bleeding In', value: bleedValue, sub: bleedSub, onTap: bleedTap)),
-        if (cycle.showFertilityPredictions) ...[
-          const SizedBox(width: 12),
-          Expanded(child: StatCard(label: 'Fertility Window', value: value, sub: sub, valueColor: AppColors.pink, onTap: () => context.go('/fertility'))),
+        Row(
+          children: [
+            Expanded(child: StatCard(label: 'Bleeding In', value: bleedValue, sub: bleedSub, onTap: bleedTap)),
+            if (cycle.showFertilityPredictions) ...[
+              const SizedBox(width: 12),
+              Expanded(child: StatCard(label: 'Fertility Window', value: value, sub: sub, valueColor: AppColors.pink, onTap: () => context.go('/fertility'))),
+            ],
+          ],
+        ),
+        if (!cycle.pregnancyModeOn) ...[
+          const SizedBox(height: 6),
+          Text(cycle.predictionBasis, style: AppText.sans(9.5, c: AppColors.muted)),
         ],
       ],
     );

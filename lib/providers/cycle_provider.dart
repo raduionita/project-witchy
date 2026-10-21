@@ -142,6 +142,13 @@ class CycleProvider extends ChangeNotifier {
   /// True when the effective cycle length comes from logged history rather than the slider.
   bool get isCycleLengthAuto => observedCycleLengths.length >= 2;
 
+  /// Plain-language source for every prediction: observed history once two
+  /// completed cycles exist, otherwise the onboarding default.
+  String get predictionBasis {
+    final count = observedCycleLengths.length;
+    return count >= 2 ? 'Based on $count cycles' : 'Based on default ${_onboarding.cycleLength} days';
+  }
+
   /// True when [date] falls inside a logged bleed span.
   bool hasLoggedBleedOn(DateTime date) => _spanIndexOf(date) >= 0;
 
@@ -218,23 +225,24 @@ class CycleProvider extends ChangeNotifier {
   /// length: modular projection stops until a new bleed is logged.
   bool projectionStopped({DateTime? today}) => daysLate(today: today) > longestRecentCycleLength + 10;
 
-  /// Earliest/latest predicted next start from the shortest/longest of the
-  /// last 6 observed cycles (outliers age out). Falls back to the effective
-  /// length, so with <2 observations the range collapses to a single day.
-  /// Null once the projection has stopped (see [projectionStopped]).
+  /// Earliest/latest predicted next start from the outlier-resistant recent
+  /// range (one lowest and one highest value trimmed once four cycles exist).
+  /// Falls back to the effective length, so with <2 observations the range
+  /// collapses to a single day. Null once projection has stopped.
   ({DateTime earliest, DateTime latest})? predictedRange({DateTime? today}) {
     final t = today ?? DateTime.now();
     if (projectionStopped(today: t)) return null;
-    final shortest = stats.shortestRecent ?? effectiveCycleLength;
-    final longest = stats.longestRecent ?? effectiveCycleLength;
+    final shortest = stats.shortestTrimmed ?? effectiveCycleLength;
+    final longest = stats.longestTrimmed ?? effectiveCycleLength;
     final a = CycleCalculator.nextPeriodStart(effectiveLastStart, t, shortest);
     final b = CycleCalculator.nextPeriodStart(effectiveLastStart, t, longest);
     return a.isBefore(b) ? (earliest: a, latest: b) : (earliest: b, latest: a);
   }
 
   /// True when the Today countdown renders as an earliest/latest range:
-  /// always in perimenopause, otherwise once recent cycles vary by 2+ days.
-  bool get showPeriodRange => isPerimenopause || (cycleSpread ?? 0) >= 2;
+  /// always in perimenopause, otherwise once the outlier-resistant recent
+  /// range varies by 2+ days.
+  bool get showPeriodRange => isPerimenopause || (stats.spreadTrimmed ?? 0) >= 2;
 
   int cycleDay({DateTime? today}) => CycleCalculator.cycleDay(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
 

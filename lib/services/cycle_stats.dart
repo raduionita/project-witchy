@@ -40,4 +40,22 @@ class CycleStats {
 
   /// Shortest of the last 6 lengths; null with no observations.
   int? get shortestRecent => recent.isEmpty ? null : recent.reduce((a, b) => a < b ? a : b);
+
+  /// Last-6 lengths with one lowest and one highest value removed once four
+  /// cycles exist, so a single outlier cannot widen the prediction range.
+  /// With fewer than four cycles every observation is kept.
+  List<int> get trimmedRecent {
+    final sorted = [...recent]..sort();
+    if (sorted.length >= 4) return sorted.sublist(1, sorted.length - 1);
+    return sorted;
+  }
+
+  /// Shortest outlier-resistant recent length; null with no observations.
+  int? get shortestTrimmed => trimmedRecent.isEmpty ? null : trimmedRecent.first;
+
+  /// Longest outlier-resistant recent length; null with no observations.
+  int? get longestTrimmed => trimmedRecent.isEmpty ? null : trimmedRecent.last;
+
+  /// Spread of the outlier-resistant recent range; null until 2+ cycles.
+  int? get spreadTrimmed => trimmedRecent.length < 2 ? null : longestTrimmed! - shortestTrimmed!;
 }

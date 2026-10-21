@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/alert_item.dart';
 import '../models/article.dart';
-import '../models/cycle_goal.dart';
 import '../models/day_log.dart';
 import '../models/period_record.dart';
 import '../models/tracking_mode.dart';
@@ -28,7 +27,6 @@ class PrefsService {
   static const _alerts = 'witchy_alerts';
   static const _pregnancyLmp = 'witchy_pregnancy_lmp';
   static const _pregnancyEdd = 'witchy_pregnancy_edd_override';
-  static const _goal = 'witchy_goal';
 
   Future<bool> isPrivacyAccepted() async => (await SharedPreferences.getInstance()).getBool(_privacyAccepted) ?? false;
   Future<void> setPrivacyAccepted() async => (await SharedPreferences.getInstance()).setBool(_privacyAccepted, true);
@@ -100,8 +98,6 @@ class PrefsService {
   Future<void> setDarkMode(bool v) async => (await SharedPreferences.getInstance()).setBool(_darkMode, v);
 
   /// Why the app is being used (track / conceive / avoid); defaults to tracking.
-  Future<CycleGoal> goal() async => CycleGoal.fromName((await SharedPreferences.getInstance()).getString(_goal));
-  Future<void> setGoal(CycleGoal goal) async => (await SharedPreferences.getInstance()).setString(_goal, goal.name);
 
   Future<List<Article>?> feedCache() async {
     final raw = (await SharedPreferences.getInstance()).getString(_feedCache);

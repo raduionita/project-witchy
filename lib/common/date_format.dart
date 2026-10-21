@@ -38,5 +38,8 @@ abstract final class AppDate {
   static String weekdayShort(DateTime d) => DateFormat('EEEE, MMM d').format(d);
 
   /// Sep 10 - Sep 16
-  static String range(DateTime from, DateTime to) => '${short(from)} – ${short(to)}';
+  static String range(DateTime from, DateTime to) => '${short(from)} - ${short(to)}';
+
+  /// September 10, 2026 - September 16, 2026
+  static String longRange(DateTime from, DateTime to) => '${long(from)} - ${long(to)}';
 }

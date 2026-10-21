@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../common/date_format.dart';
-import '../models/cycle_goal.dart';
 import '../models/fertility_status.dart';
 import '../providers/cycle_provider.dart';
-import '../providers/settings_provider.dart';
 import '../navigation/app_nav.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
@@ -55,37 +53,22 @@ class FertilityScreen extends StatelessWidget {
         FertilityStatus.passed || FertilityStatus.beforeWindow => 'Low',
       };
 
-  static String _tipsTitle(CycleGoal goal) => switch (goal) {
-        CycleGoal.conceive => 'TTC Tips',
-        CycleGoal.track => 'Cycle notes',
-      };
+  static const String _tipsTitle = 'Cycle notes';
 
-  /// Copy depends on where today sits in the cycle and on the stated goal.
-  static String _tipsFor(CycleGoal goal, FertilityStatus status, int windowStart, String peakLabel) {
-    switch (goal) {
-      case CycleGoal.conceive:
-        return switch (status) {
-          FertilityStatus.peakToday => 'Your fertile window peaks today. Track cervical fluid and LH surge alongside temperature for the clearest conception signal.',
-          FertilityStatus.windowOpen => 'Your fertile window is open. Cervical fluid and LH surge add confidence to the temperature signal.',
-          FertilityStatus.windowClosing => 'Ovulation ($peakLabel) has passed, so today is the last fertile day of this cycle.',
-          FertilityStatus.passed => "This cycle's fertile window has closed. The next one opens around cycle day $windowStart.",
-          FertilityStatus.beforeWindow => 'The fertile window opens on cycle day $windowStart. Track cervical fluid and LH surge alongside temperature for the clearest conception signal.',
-        };
-      case CycleGoal.track:
-        return switch (status) {
-          FertilityStatus.peakToday => 'Estimated ovulation today - the midpoint of your fertile window.',
-          FertilityStatus.windowOpen => 'Your estimated fertile window is open.',
-          FertilityStatus.windowClosing => 'Estimated ovulation was yesterday, so the window is closing.',
-          FertilityStatus.passed => "This cycle's estimated peak has passed. The next window opens around cycle day $windowStart.",
-          FertilityStatus.beforeWindow => 'Your estimated fertile window opens on cycle day $windowStart.',
-        };
-    }
+  /// Neutral copy that describes the estimate without assuming a goal.
+  static String _tipsFor(FertilityStatus status, int windowStart) {
+    return switch (status) {
+      FertilityStatus.peakToday => 'Estimated ovulation today - the midpoint of your fertile window.',
+      FertilityStatus.windowOpen => 'Your estimated fertile window is open.',
+      FertilityStatus.windowClosing => 'Estimated ovulation was yesterday, so the window is closing.',
+      FertilityStatus.passed => "This cycle's estimated peak has passed. The next window opens around cycle day $windowStart.",
+      FertilityStatus.beforeWindow => 'Your estimated fertile window opens on cycle day $windowStart.',
+    };
   }
 
   @override
   Widget build(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
-    final goal = context.watch<SettingsProvider>().goal;
     if (cycle.pregnancyActive) {
       return Scaffold(
         appBar: const AppTopBar(title: 'Fertility Window'),
@@ -112,7 +95,7 @@ class FertilityScreen extends StatelessWidget {
       FertilityStatus.passed => 'Peak was $peakLabel · next $nextPeakLabel',
       FertilityStatus.beforeWindow => 'Peak $peakLabel',
     };
-    final tips = _tipsFor(goal, status, windowStart, peakLabel);
+    final tips = _tipsFor(status, windowStart);
     final peakPassed = status == FertilityStatus.windowClosing || status == FertilityStatus.passed;
 
     return Scaffold(
@@ -135,7 +118,7 @@ class FertilityScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: StatCard(
-                  label: goal == CycleGoal.conceive ? 'Conception chance' : 'Fertility',
+                  label: 'Fertility',
                   value: chanceValue,
                   sub: chanceSub,
                   valueColor: AppColors.pink,
@@ -145,6 +128,8 @@ class FertilityScreen extends StatelessWidget {
               Expanded(child: StatCard(label: 'Window', value: '$windowDays Days', sub: 'Day $windowStart – Day $windowEnd')),
             ],
           ),
+          const SizedBox(height: 6),
+          Text(cycle.predictionBasis, style: AppText.sans(9.5, c: AppColors.muted)),
           if (pad > 0) ...[
             const SizedBox(height: 8),
             Text('Timing is estimated and may shift by up to $pad ${pad == 1 ? 'day' : 'days'}.', style: AppText.sans(10, c: AppColors.muted)),
@@ -155,7 +140,7 @@ class FertilityScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_tipsTitle(goal), style: AppText.serif(13.5, c: Colors.white)),
+                Text(_tipsTitle, style: AppText.serif(13.5, c: Colors.white)),
                 const SizedBox(height: 8),
                 Text(tips, style: AppText.sans(11.5, c: AppColors.insightText, h: 1.55)),
               ],

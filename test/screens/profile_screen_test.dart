@@ -14,6 +14,11 @@ import 'package:witchy/providers/settings_provider.dart';
 import 'package:witchy/screens/profile_screen.dart';
 import 'package:witchy/services/prefs_service.dart';
 
+DateTime previousMonth() {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month - 1);
+}
+
 void main() {
   Future<void> pumpProfile(
     WidgetTester tester, {
@@ -79,6 +84,28 @@ void main() {
     await pumpProfile(tester);
     expect(find.text('28 Days'), findsOneWidget);
     expect(find.text('Estimated'), findsOneWidget);
+  });
+
+  testWidgets('add past period saves a range', (tester) async {
+    await pumpProfile(tester);
+    await tester.scrollUntilVisible(find.text('Add past period'), 400);
+    await tester.tap(find.text('Add past period'));
+    await tester.pumpAndSettle();
+
+    // Pick the first two days of the previous month, so they are always past.
+    final month = previousMonth();
+    await tester.tap(find.byKey(const Key('period-prev-month')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('period-day-${month.year}-${month.month}-1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(Key('period-day-${month.year}-${month.month}-2')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Save period'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save period'));
+    await tester.pumpAndSettle();
+    expect(find.text('Past periods'), findsOneWidget);
+    expect(find.text('Start only'), findsNothing);
   });
 
   testWidgets('bell count and version come from real sources', (tester) async {

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:witchy/models/day_log.dart';
+import 'package:witchy/models/period_range.dart';
 import 'package:witchy/models/tracking_mode.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
@@ -43,9 +44,9 @@ void main() {
     expect(reloaded.selectedDay, onboarding.lastPeriodStart.day);
   });
 
-  test('finish with a picked date persists it and the first bleed day logs', () async {
+  test('finish with an added period persists its start and the first bleed day logs', () async {
     final onboarding = OnboardingProvider(prefs, cycleLength: 28, bleedLength: 5);
-    onboarding.setDate(DateTime(2026, 9, 3));
+    onboarding.addPeriodRange(PeriodRange(start: DateTime(2026, 9, 3), end: DateTime(2026, 9, 7)));
     final logging = LoggingProvider(prefs);
     await onboarding.finish();
     logging.setFlow(onboarding.lastPeriodStart, 'Medium');
@@ -53,7 +54,6 @@ void main() {
 
     final reloaded = await OnboardingProvider.load(prefs);
     expect(reloaded.lastPeriodStart, DateTime(2026, 9, 3));
-    expect(reloaded.selectedDay, 3);
     final restored = await LoggingProvider.load(prefs);
     expect(restored.peekDay(DateTime(2026, 9, 3))?.flow, {'Medium'});
   });

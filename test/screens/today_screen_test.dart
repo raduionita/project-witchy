@@ -65,6 +65,7 @@ void main() {
     expect(find.text('FERTILITY WINDOW'), findsOneWidget);
     expect(find.textContaining('· predicted'), findsWidgets);
     expect(find.textContaining('· range'), findsNothing);
+    expect(find.text('Based on default 28 days'), findsOneWidget);
   });
 
   testWidgets('before-window countdown targets the window start, not ovulation', (tester) async {
@@ -83,6 +84,7 @@ void main() {
     expect(find.text('FERTILITY WINDOW'), findsOneWidget);
     expect(find.textContaining('· range'), findsOneWidget);
     expect(find.textContaining('· predicted'), findsNothing);
+    expect(find.text('Based on 2 cycles'), findsOneWidget);
   });
 
   testWidgets('pregnancy gap state shows the setup nudge', (tester) async {

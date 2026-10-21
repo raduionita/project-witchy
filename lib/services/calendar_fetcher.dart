@@ -21,6 +21,7 @@ class CalendarFetcher {
     // False once the cycle runs long (see CycleProvider.predictionsConfident):
     // predicted period/fertile/ovulation dots hide until a new bleed re-anchors.
     bool predictionsConfident = true,
+    Set<DateTime> estimatedStarts = const {},
   }) {
     final now = today ?? DateTime.now();
     final todayDate = DateTime(now.year, now.month, now.day);
@@ -53,6 +54,7 @@ class CalendarFetcher {
           isOvulation: showFertility && predictionsConfident && CycleCalculator.isOvulationDay(lastStart, date, cycleLength, lutealLength: lutealLength),
           isLogged: log != null,
           isSelected: selectedDay == day,
+          isEstimatedStart: estimatedStarts.contains(date),
         ),
       );
     }

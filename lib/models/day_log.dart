@@ -45,6 +45,22 @@ class DayLog {
        sleep = sleep ?? {},
        discharge = discharge ?? {};
 
+  /// Non-flow content worth keeping when an assumed flow span is migrated.
+  bool get hasDetails =>
+      collection.isNotEmpty ||
+      symptoms.isNotEmpty ||
+      digestion.isNotEmpty ||
+      skinHair.isNotEmpty ||
+      moods.isNotEmpty ||
+      cravings.isNotEmpty ||
+      sex.isNotEmpty ||
+      sleep.isNotEmpty ||
+      discharge.isNotEmpty ||
+      pain != 6 ||
+      temperature != null ||
+      notes.trim().isNotEmpty ||
+      ovulationTest != null;
+
   Map<String, dynamic> toJson() => {
     'flow': flow.toList(),
     'collection': collection.toList(),

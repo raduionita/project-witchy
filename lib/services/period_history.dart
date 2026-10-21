@@ -1,4 +1,5 @@
 import '../models/day_log.dart';
+import '../models/period_record.dart';
 import '../models/period_span.dart';
 import 'cycle_calculator.dart';
 
@@ -23,17 +24,47 @@ class PeriodHistory {
     return result;
   }
 
+  /// Merges explicit period starts with real flow spans. A logged flow span
+  /// always wins over an estimated record that overlaps it, so editing flow
+  /// never leaves a duplicate period behind.
+  static List<PeriodSpan> spansFrom(
+    Map<DateTime, DayLog> logs,
+    Iterable<PeriodRecord> records,
+  ) {
+    final real = spans(logs);
+    final byStart = <DateTime, PeriodSpan>{};
+    for (final record in records) {
+      final start = _day(record.start);
+      final end = _day(record.end ?? record.start);
+      final overlapsReal = real.any(
+        (span) => !start.isAfter(span.end) && !end.isBefore(span.start),
+      );
+      if (overlapsReal) continue;
+      byStart[start] = PeriodSpan(
+        start: start,
+        end: end,
+        estimated: record.estimated,
+        startOnly: record.startOnly,
+      );
+    }
+    for (final span in real) {
+      byStart[_day(span.start)] = span;
+    }
+    return byStart.values.toList()..sort((a, b) => a.start.compareTo(b.start));
+  }
+
   /// Starts of real periods only: spans shorter than [minSpanDays] are spotting
   /// and never seed cycle math, BBT baselines or OPK luteal estimates.
   static const int minSpanDays = 2;
 
-  /// Spans that qualify as periods (at least [minSpanDays] consecutive days).
+  /// Spans that qualify as periods: a known start, even without an end, or at
+  /// least [minSpanDays] consecutive logged days.
   static List<PeriodSpan> periods(List<PeriodSpan> spans) =>
-      [for (final s in spans) if (s.length >= minSpanDays) s];
+      [for (final s in spans) if (s.startOnly || s.length >= minSpanDays) s];
 
   /// Isolated short spans, surfaced as spotting rather than as periods.
   static List<PeriodSpan> spotting(List<PeriodSpan> spans) =>
-      [for (final s in spans) if (s.length < minSpanDays) s];
+      [for (final s in spans) if (!s.startOnly && s.length < minSpanDays) s];
 
   static List<DateTime> startsOf(List<PeriodSpan> spans) => [for (final s in periods(spans)) s.start];
 

@@ -32,8 +32,17 @@ Future<App> _buildApp({Map<String, Object> initial = const {}}) async {
   );
 }
 
+Future<void> _pickLastPeriod(WidgetTester tester) async {
+  await tester.tap(find.text('Pick a date'));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('OK'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
-  testWidgets('Welcome renders brand and CTA without Sign In', (WidgetTester tester) async {
+  testWidgets('Welcome renders brand and CTA without Sign In', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(await _buildApp());
     await tester.pumpAndSettle();
     expect(find.text('Witchy'), findsOneWidget);
@@ -42,29 +51,34 @@ void main() {
     expect(find.text('Sign In'), findsNothing);
   });
 
-  testWidgets('Awaken opens the privacy gate; Accept needs all three consents', (WidgetTester tester) async {
-    await tester.pumpWidget(await _buildApp());
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Get Started'));
-    await tester.pumpAndSettle();
-    expect(find.text('A Note on Privacy'), findsOneWidget);
-
-    // Accept is inert until every box is checked.
-    await tester.tap(find.text('Accept'));
-    await tester.pumpAndSettle();
-    expect(find.text('A Note on Privacy'), findsOneWidget);
-
-    for (var i = 0; i < 3; i++) {
-      await tester.tap(find.byType(Checkbox).at(i));
+  testWidgets(
+    'Awaken opens the privacy gate; Accept needs all three consents',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(await _buildApp());
       await tester.pumpAndSettle();
-    }
-    await tester.tap(find.text('Accept'));
-    await tester.pumpAndSettle();
-    // Auth stays hidden: the gate hands over straight to onboarding.
-    expect(find.text('Set Your Cycle'), findsOneWidget);
-  });
+      await tester.tap(find.text('Get Started'));
+      await tester.pumpAndSettle();
+      expect(find.text('A Note on Privacy'), findsOneWidget);
 
-  testWidgets('Refuse returns to the welcome screen', (WidgetTester tester) async {
+      // Accept is inert until every box is checked.
+      await tester.tap(find.text('Accept'));
+      await tester.pumpAndSettle();
+      expect(find.text('A Note on Privacy'), findsOneWidget);
+
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.byType(Checkbox).at(i));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.text('Accept'));
+      await tester.pumpAndSettle();
+      // Auth stays hidden: the gate hands over straight to onboarding.
+      expect(find.text('Set Your Cycle'), findsOneWidget);
+    },
+  );
+
+  testWidgets('Refuse returns to the welcome screen', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(await _buildApp());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Get Started'));
@@ -75,16 +89,24 @@ void main() {
     expect(find.text('Get Started'), findsOneWidget);
   });
 
-  testWidgets('Saved consent skips the gate straight to onboarding', (WidgetTester tester) async {
-    await tester.pumpWidget(await _buildApp(initial: {'witchy_privacy_accepted': true}));
+  testWidgets('Saved consent skips the gate straight to onboarding', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      await _buildApp(initial: {'witchy_privacy_accepted': true}),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
     expect(find.text('Set Your Cycle'), findsOneWidget);
   });
 
-  testWidgets('Onboarding ready with default birth year', (WidgetTester tester) async {
-    await tester.pumpWidget(await _buildApp(initial: {'witchy_privacy_accepted': true}));
+  testWidgets('Onboarding ready with default birth year', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      await _buildApp(initial: {'witchy_privacy_accepted': true}),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
@@ -93,6 +115,7 @@ void main() {
     // Default birth year (now − 25) is preselected, so the CTA is active immediately.
     expect(find.text('${DateTime.now().year - 25}'), findsWidgets);
 
+    await _pickLastPeriod(tester);
     await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
     // Header, log summary card and the orb legend all say 'Today'.
@@ -102,16 +125,21 @@ void main() {
     expect(stored.getString('witchy_session'), isNotNull);
   });
 
-  testWidgets('Tracking modes are multi-toggle and show together in Profile', (WidgetTester tester) async {
-    await tester.pumpWidget(await _buildApp(initial: {'witchy_privacy_accepted': true}));
+  testWidgets('Tracking modes are multi-toggle and show together in Profile', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      await _buildApp(initial: {'witchy_privacy_accepted': true}),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Get Started').first);
     await tester.pumpAndSettle();
-    expect(find.text('What shall we track?'), findsOneWidget);
+    expect(find.text('What to track'), findsOneWidget);
 
     // Pregnancy joins the default Cycle mode instead of replacing it.
     await tester.tap(find.text('Pregnancy'));
     await tester.pumpAndSettle();
+    await _pickLastPeriod(tester);
     await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
     // Header, log summary card and the orb legend all say 'Today'.
@@ -128,17 +156,25 @@ void main() {
     expect(find.text('Pregnancy Tracker'), findsOneWidget);
 
     final stored = await SharedPreferences.getInstance();
-    final modes = (jsonDecode(stored.getString('witchy_tracking_modes')!) as List<dynamic>).toSet();
+    final modes =
+        (jsonDecode(stored.getString('witchy_tracking_modes')!)
+                as List<dynamic>)
+            .toSet();
     expect(modes, {'cycle', 'pregnancy'});
     // LMP is decoupled: onboarding never auto-seeds the pregnancy tracker.
     expect(stored.getString('witchy_pregnancy_lmp'), isNull);
   });
 
-  testWidgets('Cycle mode keeps fertility visible and hides Pregnancy Tracker', (WidgetTester tester) async {
-    await tester.pumpWidget(await _buildApp(initial: {'witchy_privacy_accepted': true}));
+  testWidgets('Cycle mode keeps fertility visible and hides Pregnancy Tracker', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      await _buildApp(initial: {'witchy_privacy_accepted': true}),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
+    await _pickLastPeriod(tester);
     await tester.tap(find.text('Get Started').last);
     await tester.pumpAndSettle();
     // Default Cycle mode shows the fertility stat card (labels render uppercase).
@@ -150,11 +186,17 @@ void main() {
     expect(find.text('Pregnancy Tracker'), findsNothing);
   });
 
-  testWidgets('Sign Out clears the session and shows identity first', (WidgetTester tester) async {
+  testWidgets('Sign Out clears the session and shows identity first', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       'witchy_onboarded': true,
       'witchy_privacy_accepted': true,
-      'witchy_session': jsonEncode({'method': 'email', 'email': 'selene@moon.co', 'name': 'Selene Moon'}),
+      'witchy_session': jsonEncode({
+        'method': 'email',
+        'email': 'selene@moon.co',
+        'name': 'Selene Moon',
+      }),
     });
     final prefs = PrefsService();
     final onboarding = await OnboardingProvider.load(prefs);
@@ -199,7 +241,9 @@ void main() {
     expect(find.text('Today'), findsNothing);
   });
 
-  testWidgets('Delete All Data wipes app prefs and lands on welcome', (WidgetTester tester) async {
+  testWidgets('Delete All Data wipes app prefs and lands on welcome', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({
       'witchy_onboarded': true,
       'witchy_privacy_accepted': true,

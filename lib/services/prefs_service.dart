@@ -6,6 +6,7 @@ import '../models/alert_item.dart';
 import '../models/article.dart';
 import '../models/cycle_goal.dart';
 import '../models/day_log.dart';
+import '../models/period_record.dart';
 import '../models/tracking_mode.dart';
 
 class PrefsService {
@@ -14,6 +15,7 @@ class PrefsService {
   static const _bleedLen = 'witchy_bleed_len';
   static const _lastPeriod = 'witchy_last_period';
   static const _dayLogs = 'witchy_day_logs';
+  static const _periodRecords = 'witchy_period_records';
   static const _lunarNotifications = 'witchy_lunar_notifications';
   static const _darkMode = 'witchy_dark_mode';
   static const _reminders = 'witchy_reminders';
@@ -74,6 +76,21 @@ class PrefsService {
   Future<void> saveDayLogs(Map<String, DayLog> days) async {
     final encoded = jsonEncode(days.map((key, value) => MapEntry(key, value.toJson())));
     await (await SharedPreferences.getInstance()).setString(_dayLogs, encoded);
+  }
+
+  Future<List<PeriodRecord>> loadPeriodRecords() async {
+    final raw = (await SharedPreferences.getInstance()).getString(_periodRecords);
+    if (raw == null) return [];
+    final decoded = jsonDecode(raw) as List<dynamic>;
+    return [
+      for (final entry in decoded)
+        PeriodRecord.fromJson(entry as Map<String, dynamic>),
+    ];
+  }
+
+  Future<void> savePeriodRecords(List<PeriodRecord> records) async {
+    final encoded = jsonEncode([for (final record in records) record.toJson()]);
+    await (await SharedPreferences.getInstance()).setString(_periodRecords, encoded);
   }
 
   Future<bool> lunarNotifications() async => (await SharedPreferences.getInstance()).getBool(_lunarNotifications) ?? true;

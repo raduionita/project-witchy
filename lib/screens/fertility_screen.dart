@@ -57,12 +57,10 @@ class FertilityScreen extends StatelessWidget {
 
   static String _tipsTitle(CycleGoal goal) => switch (goal) {
         CycleGoal.conceive => 'TTC Tips',
-        CycleGoal.avoid => 'Fertility notes',
         CycleGoal.track => 'Cycle notes',
       };
 
-  /// Copy depends on where today sits in the cycle and on the stated goal:
-  /// `avoid` never reads as conception advice, and always repeats the caveat.
+  /// Copy depends on where today sits in the cycle and on the stated goal.
   static String _tipsFor(CycleGoal goal, FertilityStatus status, int windowStart, String peakLabel) {
     switch (goal) {
       case CycleGoal.conceive:
@@ -72,14 +70,6 @@ class FertilityScreen extends StatelessWidget {
           FertilityStatus.windowClosing => 'Ovulation ($peakLabel) has passed, so today is the last fertile day of this cycle.',
           FertilityStatus.passed => "This cycle's fertile window has closed. The next one opens around cycle day $windowStart.",
           FertilityStatus.beforeWindow => 'The fertile window opens on cycle day $windowStart. Track cervical fluid and LH surge alongside temperature for the clearest conception signal.',
-        };
-      case CycleGoal.avoid:
-        return switch (status) {
-          FertilityStatus.peakToday => 'Today is the estimated peak of your fertile window, so conception is more likely right now.',
-          FertilityStatus.windowOpen => 'You are inside the estimated fertile window, so conception is more likely this week.',
-          FertilityStatus.windowClosing => 'The estimated peak has passed; the chance of conception drops quickly from tomorrow.',
-          FertilityStatus.passed => 'Estimated chance of conception is low until the next fertile window.',
-          FertilityStatus.beforeWindow => 'Estimated chance of conception is low until the fertile window opens on cycle day $windowStart.',
         };
       case CycleGoal.track:
         return switch (status) {
@@ -143,7 +133,14 @@ class FertilityScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: StatCard(label: 'Conception chance', value: chanceValue, sub: chanceSub, valueColor: AppColors.pink)),
+              Expanded(
+                child: StatCard(
+                  label: goal == CycleGoal.conceive ? 'Conception chance' : 'Fertility',
+                  value: chanceValue,
+                  sub: chanceSub,
+                  valueColor: AppColors.pink,
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(child: StatCard(label: 'Window', value: '$windowDays Days', sub: 'Day $windowStart – Day $windowEnd')),
             ],
@@ -161,13 +158,6 @@ class FertilityScreen extends StatelessWidget {
                 Text(_tipsTitle(goal), style: AppText.serif(13.5, c: Colors.white)),
                 const SizedBox(height: 8),
                 Text(tips, style: AppText.sans(11.5, c: AppColors.insightText, h: 1.55)),
-                if (goal == CycleGoal.avoid) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    'Predictions are estimates only and are not a contraceptive method - use protection if you do not want to conceive.',
-                    style: AppText.sans(10, c: AppColors.insightText, h: 1.5),
-                  ),
-                ],
               ],
             ),
           ),

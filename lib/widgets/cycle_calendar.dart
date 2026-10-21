@@ -42,6 +42,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
     } else if (cell.isFertile) {
       parts.add('fertile window');
     }
+    if (cell.isEstimatedStart) parts.add('estimated period start');
     if (cell.isLogged && !cell.isLoggedBleed) parts.add('entries logged');
     parts.add('cycle day ${cell.cycleDay}');
     return parts.join(', ');
@@ -108,6 +109,8 @@ class _CycleCalendarState extends State<CycleCalendar> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (cell.isEstimatedStart) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.gold)),
+                        if (cell.isEstimatedStart && (cell.isOvulation || cell.isLogged)) const SizedBox(width: 3),
                         if (cell.isOvulation) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.teal)),
                         if (cell.isOvulation && cell.isLogged) const SizedBox(width: 3),
                         if (cell.isLogged) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.blue)),

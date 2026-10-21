@@ -10,6 +10,7 @@ class CalendarDayCell {
     this.isOvulation = false,
     this.isLogged = false,
     this.isSelected = false,
+    this.isEstimatedStart = false,
   });
 
   /// Day of month (1–31).
@@ -25,6 +26,7 @@ class CalendarDayCell {
   final bool isOvulation;
   final bool isLogged;
   final bool isSelected;
+  final bool isEstimatedStart;
 
   const CalendarDayCell.padding() : this(day: 0, inMonth: false);
 

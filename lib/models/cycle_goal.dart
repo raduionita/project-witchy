@@ -1,8 +1,7 @@
 /// What the user is here for. Drives the tone of the fertility copy.
 enum CycleGoal {
   track,
-  conceive,
-  avoid;
+  conceive;
 
   /// Parses a stored [name], falling back to [CycleGoal.track].
   static CycleGoal fromName(String? name) =>
@@ -13,12 +12,10 @@ extension CycleGoalLabel on CycleGoal {
   String get label => switch (this) {
         CycleGoal.track => 'Track',
         CycleGoal.conceive => 'Conceive',
-        CycleGoal.avoid => 'Avoid pregnancy',
       };
 
   String get blurb => switch (this) {
         CycleGoal.track => 'Follow your cycle, no goal in mind.',
         CycleGoal.conceive => 'Time things around your fertile days.',
-        CycleGoal.avoid => 'Learn when conception is more or less likely.',
       };
 }

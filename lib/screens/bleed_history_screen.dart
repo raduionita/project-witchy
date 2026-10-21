@@ -170,8 +170,8 @@ class _BleedRow extends StatelessWidget {
     final range = AppDate.range(span.start, span.end);
     // Days seeded from onboarding history are estimates until logged by hand;
     // spans under the period threshold are spotting, never a real period.
-    final estimated = context.watch<LoggingProvider>().peekDay(span.start)?.assumed ?? false;
-    final spotting = span.length < PeriodHistory.minSpanDays;
+    final estimated = span.estimated;
+    final spotting = !span.startOnly && span.length < PeriodHistory.minSpanDays;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 9),
       decoration: BoxDecoration(border: Border(top: BorderSide(color: AppColors.line))),
@@ -189,7 +189,7 @@ class _BleedRow extends StatelessWidget {
               ],
             ),
           ),
-          Text(spotting ? 'Spotting' : '${span.length} Days', style: AppText.sans(10.5, c: AppColors.muted)),
+          Text(span.startOnly ? (span.estimated ? 'Estimated start' : 'Start only') : (spotting ? 'Spotting' : '${span.length} Days'), style: AppText.sans(10.5, c: AppColors.muted)),
         ],
       ),
     );

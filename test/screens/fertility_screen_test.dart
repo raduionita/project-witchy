@@ -54,10 +54,4 @@ void main() {
     expect(find.text('TTC Tips'), findsOneWidget);
   });
 
-  testWidgets('avoid goal drops TTC framing and repeats the caveat', (tester) async {
-    await pumpFertility(tester, goal: CycleGoal.avoid);
-    expect(find.text('Fertility notes'), findsOneWidget);
-    expect(find.text('TTC Tips'), findsNothing);
-    expect(find.textContaining('not a contraceptive method'), findsOneWidget);
-  });
 }

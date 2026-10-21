@@ -7,7 +7,7 @@ import '../theme/app_text_styles.dart';
 class CalendarLegend extends StatelessWidget {
   const CalendarLegend({super.key});
 
-  static const _items = [('Period', _LegendKind.period), ('Predicted', _LegendKind.predicted), ('Fertile', _LegendKind.fertile), ('Ovulation', _LegendKind.ovulation), ('Logged', _LegendKind.logged)];
+  static const _items = [('Period', _LegendKind.period), ('Predicted', _LegendKind.predicted), ('Fertile', _LegendKind.fertile), ('Ovulation', _LegendKind.ovulation), ('Logged', _LegendKind.logged), ('Estimated', _LegendKind.estimated)];
 
   static String? _glyph(_LegendKind kind) => switch (kind) {
     _LegendKind.period => 'assets/svgs/moon-period.svg',
@@ -15,6 +15,7 @@ class CalendarLegend extends StatelessWidget {
     _LegendKind.fertile => 'assets/svgs/moon-fertile.svg',
     _LegendKind.ovulation => 'assets/svgs/moon-ovulation.svg',
     _LegendKind.logged => null,
+    _LegendKind.estimated => null,
   };
 
   Widget _legendItem(String label, _LegendKind kind) {
@@ -25,7 +26,7 @@ class CalendarLegend extends StatelessWidget {
         if (glyph != null)
           SvgPicture.asset(glyph, width: 16, height: 16, excludeFromSemantics: true)
         else
-          Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.blue)),
+          Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: kind == _LegendKind.estimated ? AppColors.gold : AppColors.blue)),
         const SizedBox(width: 5),
         Text(label, style: AppText.sans(10, w: FontWeight.w500, c: AppColors.chipText)),
       ],
@@ -39,4 +40,4 @@ class CalendarLegend extends StatelessWidget {
   }
 }
 
-enum _LegendKind { period, predicted, fertile, ovulation, logged }
+enum _LegendKind { period, predicted, fertile, ovulation, logged, estimated }

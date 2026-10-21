@@ -18,7 +18,7 @@ void main() {
 
   test('resetToDefaults returns the goal to tracking', () async {
     final settings = await SettingsProvider.load(PrefsService());
-    settings.setGoal(CycleGoal.avoid);
+    settings.setGoal(CycleGoal.conceive);
     settings.resetToDefaults();
     expect(settings.goal, CycleGoal.track);
   });

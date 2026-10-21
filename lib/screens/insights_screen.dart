@@ -178,7 +178,7 @@ class _BleedRow extends StatelessWidget {
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [Text(range, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)), Text('${span.length} Days', style: AppText.sans(9.5, c: AppColors.muted))],
+            children: [Text(range, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)), Text(span.startOnly ? (span.estimated ? 'Estimated start' : 'Start only') : '${span.length} Days', style: AppText.sans(9.5, c: AppColors.muted))],
           ),
           const SizedBox(width: 8),
           Flexible(child: Align(alignment: Alignment.centerRight, child: AppTag(tag.$1, bg: tag.$2, fg: tag.$3))),

@@ -47,15 +47,13 @@ void main() {
 
     final widths = chips.map((chip) => tester.getSize(chip).width).toList();
     expect(widths[1], moreOrLessEquals(widths[0], epsilon: 0.5));
-    expect(widths[2], moreOrLessEquals(widths[0], epsilon: 0.5));
 
     final tops = chips.map((chip) => tester.getTopLeft(chip).dy).toList();
     expect(tops[1], moreOrLessEquals(tops[0], epsilon: 0.5));
-    expect(tops[2], moreOrLessEquals(tops[0], epsilon: 0.5));
 
     // A long label is clipped to one line rather than wrapped, so it cannot
     // make its chip taller than the others.
-    final text = tester.widget<Text>(find.text(CycleGoal.avoid.label));
+    final text = tester.widget<Text>(find.text(CycleGoal.conceive.label));
     expect(text.maxLines, 1);
     expect(text.softWrap, isFalse);
     expect(text.overflow, TextOverflow.clip);

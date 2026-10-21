@@ -1,15 +1,82 @@
 import 'package:flutter/material.dart';
 
 import '../models/day_log.dart';
+import '../models/period_record.dart';
+import '../services/period_history.dart';
 import '../services/prefs_service.dart';
 
 class LoggingProvider extends ChangeNotifier {
-  LoggingProvider(this._prefs, {Map<String, DayLog>? days}) : _days = days ?? {};
+  LoggingProvider(
+    this._prefs, {
+    Map<String, DayLog>? days,
+    List<PeriodRecord>? records,
+  }) : _days = days ?? {},
+       _records = records ?? [];
 
   final PrefsService _prefs;
   final Map<String, DayLog> _days;
+  final List<PeriodRecord> _records;
 
-  static Future<LoggingProvider> load(PrefsService prefs) async => LoggingProvider(prefs, days: await prefs.loadDayLogs());
+  static Future<LoggingProvider> load(PrefsService prefs) async {
+    final days = await prefs.loadDayLogs();
+    final records = await prefs.loadPeriodRecords();
+    await _migrateAssumed(prefs, days, records);
+    return LoggingProvider(prefs, days: days, records: records);
+  }
+
+  /// Converts old onboarding-seeded flow days into explicit estimated period
+  /// records, preserving any notes or symptoms logged on those days.
+  static Future<void> _migrateAssumed(
+    PrefsService prefs,
+    Map<String, DayLog> days,
+    List<PeriodRecord> records,
+  ) async {
+    final assumed = <DateTime, DayLog>{
+      for (final entry in days.entries)
+        if (entry.value.assumed) DateTime.parse(entry.key): entry.value,
+    };
+    final knownStarts = {for (final record in records) keyFor(record.start)};
+    var changed = false;
+    for (final span in PeriodHistory.spans(assumed)) {
+      final startKey = keyFor(span.start);
+      if (!knownStarts.contains(startKey)) {
+        records.add(
+          PeriodRecord(
+            start: span.start,
+            end: span.end,
+            source: PeriodSource.migrated,
+            estimated: true,
+          ),
+        );
+        knownStarts.add(startKey);
+      }
+      for (var day = span.start; !day.isAfter(span.end); day = DateTime(day.year, day.month, day.day + 1)) {
+        final key = keyFor(day);
+        final entry = days[key];
+        if (entry == null) continue;
+        entry.flow.clear();
+        entry.assumed = false;
+        if (!entry.hasDetails) days.remove(key);
+        changed = true;
+      }
+    }
+    final last = await prefs.lastPeriod();
+    if (last != null && !knownStarts.contains(keyFor(last))) {
+      records.add(
+        PeriodRecord(
+          start: DateTime(last.year, last.month, last.day),
+          source: PeriodSource.migrated,
+          estimated: true,
+        ),
+      );
+      changed = true;
+    }
+    if (changed) {
+      _sortRecords(records);
+      await prefs.saveDayLogs(days);
+      await prefs.savePeriodRecords(records);
+    }
+  }
 
   static String keyFor(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
@@ -22,6 +89,66 @@ class LoggingProvider extends ChangeNotifier {
   bool hasLog(DateTime d) => _days.containsKey(keyFor(d));
 
   Map<DateTime, DayLog> snapshot() => {for (final e in _days.entries) DateTime.parse(e.key): e.value};
+
+  List<PeriodRecord> get periodRecords => List.unmodifiable(_records);
+
+  void addPeriodRecord(
+    DateTime start, {
+    DateTime? end,
+    PeriodSource source = PeriodSource.manual,
+    bool estimated = false,
+  }) {
+    final dayStart = DateTime(start.year, start.month, start.day);
+    final dayEnd = end == null ? null : DateTime(end.year, end.month, end.day);
+    _records.removeWhere((record) => keyFor(record.start) == keyFor(dayStart));
+    _records.add(
+      PeriodRecord(
+        start: dayStart,
+        end: dayEnd,
+        source: source,
+        estimated: estimated,
+      ),
+    );
+    _sortRecords(_records);
+    notifyListeners();
+    _saveRecords();
+  }
+
+  void updatePeriodRecord(
+    DateTime originalStart, {
+    required DateTime start,
+    DateTime? end,
+    PeriodSource source = PeriodSource.manual,
+    bool estimated = false,
+  }) {
+    final originalKey = keyFor(originalStart);
+    _records.removeWhere((record) => keyFor(record.start) == originalKey);
+    addPeriodRecord(start, end: end, source: source, estimated: estimated);
+  }
+
+  void deletePeriodRecord(DateTime start) {
+    final key = keyFor(start);
+    final before = _records.length;
+    _records.removeWhere((record) => keyFor(record.start) == key);
+    if (_records.length == before) return;
+    notifyListeners();
+    _saveRecords();
+  }
+
+  void replaceOnboardingRecords(Iterable<PeriodRecord> records) {
+    _records.removeWhere(
+      (record) =>
+          record.source == PeriodSource.onboarding ||
+          record.source == PeriodSource.migrated,
+    );
+    _records.addAll(records);
+    _sortRecords(_records);
+    notifyListeners();
+    _saveRecords();
+  }
+
+  static void _sortRecords(List<PeriodRecord> records) =>
+      records.sort((a, b) => a.start.compareTo(b.start));
 
   void deleteDay(DateTime d) {
     if (_days.remove(keyFor(d)) != null) {
@@ -147,9 +274,12 @@ class LoggingProvider extends ChangeNotifier {
 
   void _save() => _prefs.saveDayLogs(_days);
 
+  void _saveRecords() => _prefs.savePeriodRecords(_records);
+
   /// In-memory reset after Delete All Data (prefs already wiped).
   void resetToDefaults() {
     _days.clear();
+    _records.clear();
     notifyListeners();
   }
 }

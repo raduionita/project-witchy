@@ -102,6 +102,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       cycleLength: cycle.effectiveCycleLength,
       bleedLength: cycle.bleedLength,
       logs: logging.snapshot(),
+      estimatedStarts: cycle.estimatedPeriodStarts,
       selectedDay: _selectedDay,
       showFertility: cycle.showFertilityPredictions,
       predictedStart: range?.earliest,
@@ -168,8 +169,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
         const SizedBox(height: 8),
         if (entry == null) ...[
           Text(AppDate.long(selectedDate), style: AppText.sans(11, c: AppColors.muted)),
-          const SizedBox(height: 4),
-          Text('No entry for this day', style: AppText.sans(12, c: AppColors.muted)),
+          const SizedBox(height: 6),
+          if (cycle.estimatedPeriodStarts.contains(selectedDate)) ...[
+            AppTag.gold('Estimated start'),
+            const SizedBox(height: 6),
+            Text('From your onboarding history. Log flow to confirm.', style: AppText.sans(12, c: AppColors.muted)),
+          ] else
+            Text('No entry for this day', style: AppText.sans(12, c: AppColors.muted)),
           const SizedBox(height: 4),
           TextButton(onPressed: () => showLogSheet(context, selectedDate), child: const Text('Log this day')),
         ] else

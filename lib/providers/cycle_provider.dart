@@ -54,7 +54,7 @@ class CycleProvider extends ChangeNotifier {
   }
 
   void _recompute() {
-    bleeds = PeriodHistory.spans(_logging.snapshot());
+    bleeds = PeriodHistory.spansFrom(_logging.snapshot(), _logging.periodRecords);
     observedCycleLengths = PeriodHistory.cycleLengths(PeriodHistory.startsOf(bleeds));
     // One value drives predictions and every displayed average: the last-6
     // median once two completed cycles exist, otherwise the setup value.
@@ -126,9 +126,18 @@ class CycleProvider extends ChangeNotifier {
     return anchor ?? today;
   }
 
-  /// Bleed length always follows the onboarding slider - logged spans are often
-  /// only partially filled in, so inferring a length from them would under-report.
-  int get bleedLength => _onboarding.bleedLength;
+  /// Real logged bleed length, rounded and clamped, falling back to the setup
+  /// slider until at least one complete logged span exists.
+  int get bleedLength {
+    final mean = meanBleedLength;
+    return mean == null ? _onboarding.bleedLength : mean.round().clamp(2, 10).toInt();
+  }
+
+  /// Start dates that came from onboarding or migration rather than flow logs.
+  Set<DateTime> get estimatedPeriodStarts => {
+    for (final span in bleeds)
+      if (span.estimated) span.start,
+  };
 
   /// True when the effective cycle length comes from logged history rather than the slider.
   bool get isCycleLengthAuto => observedCycleLengths.length >= 2;
@@ -140,6 +149,7 @@ class CycleProvider extends ChangeNotifier {
     final d = DateTime(date.year, date.month, date.day);
     for (var i = 0; i < bleeds.length; i++) {
       final s = bleeds[i];
+      if (s.startOnly) continue;
       if (!d.isBefore(s.start) && !d.isAfter(s.end)) return i;
     }
     return -1;
@@ -332,5 +342,8 @@ class CycleProvider extends ChangeNotifier {
 
   int get fertileEndCycleDay => CycleCalculator.fertileEndCycleDay(effectiveCycleLength, lutealLength: lutealLength);
 
-  double? get meanBleedLength => PeriodHistory.mean([for (final s in PeriodHistory.periods(bleeds)) s.length]);
+  double? get meanBleedLength => PeriodHistory.mean([
+    for (final s in PeriodHistory.periods(bleeds))
+      if (!s.estimated && !s.startOnly) s.length,
+  ]);
 }

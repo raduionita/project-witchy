@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../common/date_format.dart';
 import '../models/cycle_goal.dart';
+import '../models/period_record.dart';
 import '../navigation/app_nav.dart';
 import '../providers/auth_provider.dart';
 import '../providers/logging_provider.dart';
@@ -15,7 +16,7 @@ import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_chip.dart';
 import '../widgets/app_slider_row.dart';
-import '../widgets/number_entry_dialog.dart';
+import '../widgets/app_tag.dart';
 import '../widgets/tracking_mode_chip.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -38,24 +39,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!mounted) return;
     await context.read<AuthProvider>().markLocalSession();
     if (!mounted) return;
-    // Seed the picked start date and any earlier periods as assumed bleed spans
-    // so PeriodHistory derives true cycle lengths from day one. Spans seeded by
-    // an earlier run are wiped first, so re-onboarding can never leave a phantom
-    // period behind. Seeded days stay flagged assumed: history can label them
-    // 'Estimated', and logging a day by hand silently replaces the estimate.
+    // Save only the start dates the user actually entered. No flow days or end
+    // dates are invented from the onboarding sliders; those records stay
+    // start-only and are labelled Estimated until real flow is logged.
     final logging = context.read<LoggingProvider>();
-    final bleedLength = onboarding.bleedLength;
-    final today = DateTime.now();
-    logging.wipeAssumed();
-
     final picked = onboarding.pickedDate;
-    if (picked != null && !picked.isAfter(today)) {
-      logging.seedAssumedSpan(picked, bleedLength, 'Medium');
-    }
-    for (final previous in List<DateTime>.of(onboarding.previousPeriodStarts)) {
-      if (previous.isAfter(today)) continue;
-      logging.seedAssumedSpan(previous, onboarding.durationFor(previous), 'Medium');
-    }
+    if (picked == null) return;
+    logging.wipeAssumed();
+    final today = DateTime.now();
+    final records = <PeriodRecord>[
+      PeriodRecord(start: picked, source: PeriodSource.onboarding, estimated: true),
+      for (final previous in onboarding.previousPeriodStarts)
+        if (!previous.isAfter(today)) PeriodRecord(start: previous, source: PeriodSource.onboarding, estimated: true),
+    ];
+    logging.replaceOnboardingRecords(records);
+    if (!mounted) return;
     // Pregnancy tracker stays decoupled: its LMP is set on the pregnancy screen
     // itself, never auto-seeded from the cycle anchor.
     context.reset('/today');
@@ -64,8 +62,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final ob = context.watch<OnboardingProvider>();
-    // Default year (now − 25) is preselected, so this is true from the first frame.
-    final canFinish = ob.yearOfBirth != null;
+    // The last period is required because predictions need a real anchor.
+    final canFinish = ob.yearOfBirth != null && ob.pickedDate != null;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -83,9 +81,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const SizedBox(height: 12),
                     const _YearOfBirthCard(),
                     const SizedBox(height: 12),
-                    _LastBleedDateCard(onTap: _pickDate),
-                    const SizedBox(height: 12),
-                    const _PastPeriodsCard(),
+                    _PastPeriodsCard(onPickLast: _pickDate),
                     const SizedBox(height: 12),
                     const _CycleLengthCard(),
                     const SizedBox(height: 12),
@@ -95,7 +91,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              if (!canFinish)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text('Pick your last period date to continue.', style: AppText.sans(10.5, c: AppColors.muted)),
+                ),
               _JourneyButton(canFinish: canFinish, onComplete: _complete),
             ],
           ),
@@ -111,7 +111,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [Text('Set Your Cycle', style: AppText.h2), const SizedBox(height: 5), Text('Set up your cycle. When did your last period start?', style: AppText.sub)],
+      children: [Text('Set Your Cycle', style: AppText.h2), const SizedBox(height: 5), Text('Your dates stay on this device. You can change them later.', style: AppText.sub)],
     );
   }
 }
@@ -123,7 +123,6 @@ class _GoalCard extends StatelessWidget {
   static Object _icon(CycleGoal goal) => switch (goal) {
     CycleGoal.track => AppIcons.spark,
     CycleGoal.conceive => AppIcons.heart,
-    CycleGoal.avoid => AppIcons.eye,
   };
 
   @override
@@ -133,11 +132,10 @@ class _GoalCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('What brings you here?', style: AppText.secIn),
+          Text('Your goal', style: AppText.secIn),
           const SizedBox(height: 10),
           // One row of equal-width chips, matching the tracking-mode picker
-          // below so both single-choice blocks read the same way. A long label
-          // ('Avoid pregnancy') is clipped at the chip edge, not wrapped.
+          // below so both single-choice blocks read the same way.
           Row(
             children: [
               for (var i = 0; i < CycleGoal.values.length; i++) ...[
@@ -172,7 +170,7 @@ class _TrackingModeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('What shall we track?', style: AppText.secIn),
+          Text('What to track', style: AppText.secIn),
           const SizedBox(height: 10),
           TrackingModeChips(selected: ob.trackingModes, onToggle: (mode) => context.read<OnboardingProvider>().toggleTrackingMode(mode)),
         ],
@@ -211,41 +209,11 @@ class _YearOfBirthCard extends StatelessWidget {
   }
 }
 
-class _LastBleedDateCard extends StatelessWidget {
-  final VoidCallback onTap;
-  const _LastBleedDateCard({required this.onTap});
-  @override
-  Widget build(BuildContext context) {
-    final date = context.watch<OnboardingProvider>().pickedDate;
-    return AppCard(
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: onTap,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Last period', style: AppText.sans(11, c: AppColors.muted)),
-                  const SizedBox(height: 3),
-                  Text(date == null ? 'Pick a date' : AppDate.long(date), style: AppText.serif(14, c: date == null ? AppColors.placeholder : AppColors.ink)),
-                ],
-              ),
-              FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Optional history of earlier period starts; seeding these makes predictions
 /// reflect the user's real cycle lengths instead of a guessed slider value.
 class _PastPeriodsCard extends StatefulWidget {
-  const _PastPeriodsCard();
+  final VoidCallback onPickLast;
+  const _PastPeriodsCard({required this.onPickLast});
 
   @override
   State<_PastPeriodsCard> createState() => _PastPeriodsCardState();
@@ -287,20 +255,10 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
     _applyDerivedLength(ob);
   }
 
-  Future<void> _editLength(DateTime start) async {
-    final ob = context.read<OnboardingProvider>();
-    final days = await showDialog<int>(
-      context: context,
-      builder: (_) => NumberEntryDialog(title: 'Period length', initial: ob.durationFor(start), min: 2, max: 10, hint: 'How many days the period starting ${AppDate.short(start)} lasted.'),
-    );
-    if (days == null) return;
-    ob.setPreviousPeriodDuration(start, days);
-  }
 
-  /// Removes a row and offers an undo that also restores its length.
+  /// Removes a row and offers an undo.
   void _remove(DateTime start) {
     final ob = context.read<OnboardingProvider>();
-    final days = ob.durationFor(start);
     ob.removePreviousPeriod(start);
     setState(() => _error = null);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -310,7 +268,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
         action: SnackBarAction(
           label: 'Undo',
           onPressed: () {
-            ob.restorePreviousPeriod(start, duration: days);
+            ob.restorePreviousPeriod(start);
             _applyDerivedLength(ob);
           },
         ),
@@ -329,7 +287,46 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
     );
   }
 
-  Widget _buildRow(OnboardingProvider ob, DateTime d) {
+  Widget _buildLastRow(OnboardingProvider ob) {
+    final date = ob.pickedDate;
+    return InkWell(
+      onTap: widget.onPickLast,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.line))),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Last period', style: AppText.sans(10.5, c: AppColors.muted)),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          date == null ? 'Pick a date' : AppDate.long(date),
+                          style: AppText.serif(13, c: date == null ? AppColors.placeholder : AppColors.ink),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (date != null) ...[const SizedBox(width: 8), AppTag.gold('Estimated')],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            FaIcon(AppIcons.cal, size: AppIconSize.head, color: AppColors.muted),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRow(DateTime d) {
     return SizedBox(
       height: 44,
       child: Row(
@@ -348,18 +345,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
               ),
             ),
           ),
-          _buildTapTarget(
-            onTap: () => _editLength(d),
-            tooltip: 'Edit length',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('${ob.durationFor(d)} days', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur)),
-                const SizedBox(width: 5),
-                FaIcon(FontAwesomeIcons.pen, size: 9, color: AppColors.pur),
-              ],
-            ),
-          ),
+          AppTag.gold('Estimated'),
           IconButton(
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
@@ -405,7 +391,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         icon: FaIcon(FontAwesomeIcons.plus, size: 11, color: AppColors.pur),
-        label: Text('Add another period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
+        label: Text('Add an earlier period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
       ),
     );
   }
@@ -422,19 +408,26 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Recent periods', style: AppText.secIn),
+              Text('Past periods', style: AppText.secIn),
               Flexible(child: Text('${entries.length} of ${OnboardingProvider.maxPreviousPeriods} earlier periods', style: AppText.sans(10, c: AppColors.muted), textAlign: TextAlign.right)),
             ],
           ),
           const SizedBox(height: 4),
           Text(
-            entries.isEmpty
-                ? 'Add at least one earlier period to calculate your cycle length. Keep at least ${OnboardingProvider.minGapDays} days between dates.'
-                : 'Tap a date to change it, or a length to change how many days that period lasted.',
+            entries.length < 2
+                ? 'Your last period is required. Add at least two earlier periods (three starts total) to calculate your cycle length. Keep at least ${OnboardingProvider.minGapDays} days between starts.'
+                : 'Cycle length is calculated from your starts. Tap a date to change it.',
             style: AppText.sans(10.5, c: AppColors.muted, h: 1.45),
           ),
+          const SizedBox(height: 8),
+          _buildLastRow(ob),
           if (error != null) ...[const SizedBox(height: 8), _buildError(error)],
-          if (entries.isNotEmpty) ...[const SizedBox(height: 4), for (final d in entries) _buildRow(ob, d)],
+          if (entries.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text('Earlier periods', style: AppText.sans(10, w: FontWeight.w700, c: AppColors.muted).copyWith(letterSpacing: 0.6)),
+            const SizedBox(height: 2),
+            for (final d in entries) _buildRow(d),
+          ],
           const SizedBox(height: 4),
           _buildAddButton(),
         ],

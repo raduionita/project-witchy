@@ -95,7 +95,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildCalendarCard() {
     final cycle = context.watch<CycleProvider>();
     final logging = context.watch<LoggingProvider>();
-    final range = cycle.isPerimenopause ? cycle.predictedRange() : null;
+    final range = cycle.showPeriodRange ? cycle.predictedRange() : null;
     final cells = CalendarFetcher.forMonth(
       month: _month,
       lastStart: cycle.effectiveLastStart,
@@ -216,7 +216,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildEntryCard(CycleProvider cycle, DateTime date, DayLog entry) {
     final phase = cycle.phaseAt(date);
     final periodDay = cycle.isPeriodDay(date);
-    final bleedDay = periodDay ? cycle.bleedDayOf(date) : 0;
+    final loggedPeriod = cycle.hasLoggedPeriodBleedOn(date);
+    final bleedDay = loggedPeriod ? cycle.bleedDayOf(date) : 0;
     final selected = _selectedEntry == date;
     return AppCard(
       dark: true,
@@ -244,7 +245,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       ],
                     ),
                   ),
-                  periodDay ? AppTag.pink('Period Day $bleedDay') : AppTag.pink('Period Logged'),
+                  loggedPeriod ? AppTag.pink('Period Day $bleedDay') : AppTag.pink(entry.flow.isEmpty ? 'Logged' : 'Flow Logged'),
                 ],
               ),
               const SizedBox(height: 14),

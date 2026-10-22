@@ -35,7 +35,7 @@ class BleedHistoryScreen extends StatelessWidget {
     String bleedSub;
     final range = cycle.predictedRange(today: now);
     final late = cycle.daysLate(today: now);
-    if (next == null || range == null) {
+    if (range == null) {
       bleedValue = 'Log to update';
       bleedSub = 'cycle running long - log to re-anchor';
     } else if (late > 0) {
@@ -46,9 +46,12 @@ class BleedHistoryScreen extends StatelessWidget {
       final dMax = CycleCalculator.daysBetween(today, range.latest);
       bleedValue = dMin == dMax ? '$dMin Days' : '$dMin–$dMax Days';
       bleedSub = '${AppDate.range(range.earliest, range.latest)} · range';
+    } else if (daysUntil == null) {
+      bleedValue = 'Due now';
+      bleedSub = '${AppDate.short(range.earliest)} · predicted';
     } else {
       bleedValue = daysUntil <= 0 ? 'Today' : 'In $daysUntil Days';
-      bleedSub = '${AppDate.short(next)} · predicted';
+      bleedSub = '${AppDate.short(next ?? range.earliest)} · predicted';
     }
     final avgBleed = cycle.meanBleedLength;
     return Row(

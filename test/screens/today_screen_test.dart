@@ -17,6 +17,7 @@ void main() {
     Set<TrackingMode>? modes,
     DateTime? lmpDate,
     DateTime? lastPeriodStart,
+    DateTime? spottingDay,
     List<DateTime> seedStarts = const [],
   }) async {
     SharedPreferences.setMockInitialValues({});
@@ -35,6 +36,7 @@ void main() {
       logging.setFlow(start, 'Medium');
       logging.setFlow(DateTime(start.year, start.month, start.day + 1), 'Light');
     }
+    if (spottingDay != null) logging.setFlow(spottingDay, 'Spotting');
     final gestation = GestationProvider(prefs, lmpDate: lmpDate);
     final cycle = CycleProvider(onboarding, logging, gestation: gestation);
     await tester.pumpWidget(
@@ -161,6 +163,21 @@ void main() {
     expect(find.text('Log to update'), findsOneWidget);
     expect(find.text('period overdue - consider a test'), findsOneWidget);
     expect(find.text('FERTILITY WINDOW'), findsNothing);
+  });
+
+  testWidgets('a spotting day never shows a Period Day tag', (tester) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final last = DateTime(today.year, today.month, today.day - 13);
+    await pumpToday(
+      tester,
+      mode: TrackingMode.cycle,
+      lastPeriodStart: last,
+      seedStarts: [last],
+      spottingDay: today,
+    );
+    expect(find.text('Cycle Day 14'), findsOneWidget);
+    expect(find.textContaining('Period Day'), findsNothing);
   });
 
   testWidgets('a due window that already started shows Due Now, not next-cycle dates', (tester) async {

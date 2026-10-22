@@ -149,8 +149,18 @@ class CycleProvider extends ChangeNotifier {
     return count >= 2 ? 'Based on $count cycles' : 'Based on default ${_onboarding.cycleLength} days';
   }
 
-  /// True when [date] falls inside a logged bleed span.
+  /// True when [date] falls inside a logged bleed span, including spotting.
   bool hasLoggedBleedOn(DateTime date) => _spanIndexOf(date) >= 0;
+
+  /// True when [date] falls inside a logged period span. Spotting and
+  /// single-day flow records stay visible as bleeding, but do not count as a
+  /// period for phase, tags or cycle-day numbering.
+  bool hasLoggedPeriodBleedOn(DateTime date) {
+    final index = _spanIndexOf(date);
+    if (index < 0) return false;
+    final span = bleeds[index];
+    return !span.spottingOnly && span.length >= PeriodHistory.minSpanDays;
+  }
 
   int _spanIndexOf(DateTime date) {
     final d = DateTime(date.year, date.month, date.day);
@@ -162,13 +172,16 @@ class CycleProvider extends ChangeNotifier {
     return -1;
   }
 
-  /// Bleeding day number for [date]: position within its logged span when the day
-  /// has logged bleeding, otherwise the arithmetic prediction day (0 = not a bleed day).
+  /// Bleeding day number for [date]: position within its logged period span,
+  /// otherwise the arithmetic prediction day (0 = not a bleed day). Spotting
+  /// does not get a period day number.
   int bleedDayOf(DateTime date) {
     final index = _spanIndexOf(date);
     if (index >= 0) {
       final s = bleeds[index];
-      return CycleCalculator.daysBetween(s.start, DateTime(date.year, date.month, date.day)) + 1;
+      if (!s.spottingOnly && s.length >= PeriodHistory.minSpanDays) {
+        return CycleCalculator.daysBetween(s.start, DateTime(date.year, date.month, date.day)) + 1;
+      }
     }
     if (isOverdue(today: date)) return 0;
     return CycleCalculator.bleedDay(effectiveLastStart, date, effectiveCycleLength, bleedLength);
@@ -243,7 +256,12 @@ class CycleProvider extends ChangeNotifier {
 
   /// True once the projection has run past [projectionGraceDays]: no next
   /// start or range is produced until a new bleed re-anchors the cycle.
-  bool projectionStopped({DateTime? today}) => daysLate(today: today) > projectionGraceDays;
+  bool projectionStopped({DateTime? today}) => !CycleCalculator.projectionValid(
+    lastStart: effectiveLastStart,
+    today: today ?? DateTime.now(),
+    latestPlausibleLength: latestPlausibleCycleLength,
+    graceDays: projectionGraceDays,
+  );
 
   /// True while the current cycle is past its latest plausible due date plus
   /// the confidence grace. This is the explicit overdue state: fertility
@@ -279,34 +297,77 @@ class CycleProvider extends ChangeNotifier {
   int elapsedCycleDay({DateTime? today}) =>
       CycleCalculator.elapsedCycleDay(effectiveLastStart, today ?? DateTime.now());
 
-  /// Phase for [date]. A day with logged bleeding is always menstrual, even when
-  /// the pure-arithmetic cycle position would place it in another phase. Once
-  /// the cycle is overdue, the phase freezes at luteal instead of wrapping into
-  /// a phantom next cycle.
+  /// Phase for [date]. A day with logged period flow is always menstrual, even
+  /// when the pure-arithmetic cycle position would place it in another phase.
+  /// Once the cycle is overdue, the phase freezes at luteal instead of wrapping
+  /// into a phantom next cycle. Within the current cycle the BBT/OPK peak moves
+  /// the ovulatory and fertile phases with it.
   CyclePhase phaseAt(DateTime date) {
-    if (hasLoggedBleedOn(date)) return CyclePhase.menstrual;
-    if (isOverdue(today: date)) return CyclePhase.luteal;
-    return CycleCalculator.phaseAt(effectiveLastStart, date, effectiveCycleLength, bleedLength, lutealLength: lutealLength);
+    final day = DateTime(date.year, date.month, date.day);
+    if (hasLoggedPeriodBleedOn(day)) return CyclePhase.menstrual;
+    if (isOverdue(today: day)) return CyclePhase.luteal;
+    if (day.isBefore(effectiveLastStart)) {
+      return CycleCalculator.phaseAt(effectiveLastStart, day, effectiveCycleLength, bleedLength, lutealLength: lutealLength);
+    }
+    final peak = _effectiveOvulation();
+    if (CycleCalculator.daysBetween(day, peak) == 0) return CyclePhase.ovulatory;
+    final start = _addDays(peak, -5);
+    final end = _addDays(peak, 1);
+    if (!day.isBefore(start) && !day.isAfter(end)) return CyclePhase.fertile;
+    return day.isBefore(peak) ? CyclePhase.follicular : CyclePhase.luteal;
   }
 
   CyclePhase phase({DateTime? today}) => phaseAt(today ?? DateTime.now());
 
-  /// Next projected start; null once the projection has stopped
-  /// (see [projectionStopped]) until a new bleed is logged.
+  /// Earliest credible next start for the current cycle. Unlike the old
+  /// rolling projection this never advances to the following cycle: once the
+  /// earliest due date passes, or the projection stops, it returns null until
+  /// a new bleed is logged.
   DateTime? nextPeriodStart({DateTime? today}) {
-    final t = today ?? DateTime.now();
-    if (projectionStopped(today: t)) return null;
-    return CycleCalculator.nextPeriodStart(effectiveLastStart, t, effectiveCycleLength);
+    final date = today ?? DateTime.now();
+    final day = DateTime(date.year, date.month, date.day);
+    if (projectionStopped(today: day)) return null;
+    final due = _addDays(effectiveLastStart, earliestPlausibleCycleLength);
+    return day.isAfter(due) ? null : due;
   }
 
-  int daysUntilPeriod({DateTime? today}) => CycleCalculator.daysUntilPeriod(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
+  /// Days until the earliest credible next start; null once that date has
+  /// passed or the projection has stopped. Due today returns 0.
+  int? daysUntilPeriod({DateTime? today}) {
+    final date = today ?? DateTime.now();
+    final day = DateTime(date.year, date.month, date.day);
+    final next = nextPeriodStart(today: day);
+    if (next == null) return null;
+    final days = CycleCalculator.daysBetween(day, next);
+    return days < 0 ? 0 : days;
+  }
 
-  DateTime ovulationDay({DateTime? today}) => CycleCalculator.ovulationDay(
+  DateTime? _confirmedThisCycle() {
+    final confirmed = confirmedOvulationDate;
+    if (confirmed == null) return null;
+    final day = DateTime(confirmed.year, confirmed.month, confirmed.day);
+    return day.isBefore(effectiveLastStart) ? null : day;
+  }
+
+  DateTime? _opkThisCycle() {
+    final opk = opkIndicatedOvulationDate;
+    if (opk == null) return null;
+    final day = DateTime(opk.year, opk.month, opk.day);
+    return day.isBefore(effectiveLastStart) ? null : day;
+  }
+
+  DateTime _arithmeticOvulation() => _addDays(
     effectiveLastStart,
-    today ?? DateTime.now(),
-    effectiveCycleLength,
-    lutealLength: lutealLength,
+    CycleCalculator.ovulationCycleDay(effectiveCycleLength, lutealLength: lutealLength) - 1,
   );
+
+  /// Current-cycle peak: BBT confirmation first, then a positive OPK, then the
+  /// arithmetic projection. Signals dated before the current anchor belong to
+  /// an earlier cycle and are ignored so the window cannot inherit a stale peak.
+  DateTime _effectiveOvulation() => _confirmedThisCycle() ?? _opkThisCycle() ?? _arithmeticOvulation();
+
+  /// Current-cycle ovulation date, moved by BBT/OPK when one confirms it.
+  DateTime ovulationDay({DateTime? today}) => _effectiveOvulation();
 
   /// First day of the fertile window (ovulation minus 5); null when fertility
   /// predictions are off or the cycle is overdue.
@@ -323,38 +384,36 @@ class CycleProvider extends ChangeNotifier {
   DateTime ovulationDateThisCycle({DateTime? today}) => ovulationDay(today: today);
 
   /// Where today sits relative to this cycle's ovulation. Deriving copy from the
-  /// ovulation date keeps the window from claiming "ovulation nears" after the
-  /// peak has passed.
+  /// effective ovulation date keeps the window from claiming "ovulation nears"
+  /// after the peak has passed or after a BBT/OPK shift.
   FertilityStatus fertilityStatus({DateTime? today}) {
     final date = today ?? DateTime.now();
     if (!showFertilityPredictions) return FertilityStatus.passed;
     if (!predictionsConfident(today: date)) return FertilityStatus.overdue;
     final day = DateTime(date.year, date.month, date.day);
-    final peak = CycleCalculator.ovulationDay(effectiveLastStart, day, effectiveCycleLength, lutealLength: lutealLength);
+    final peak = _effectiveOvulation();
     final daysToPeak = CycleCalculator.daysBetween(day, peak);
-    final cycleDay = CycleCalculator.cycleDay(effectiveLastStart, day, effectiveCycleLength);
     if (daysToPeak > 0) {
-      return cycleDay >= fertileStartCycleDay ? FertilityStatus.windowOpen : FertilityStatus.beforeWindow;
+      return !day.isBefore(_addDays(peak, -5)) ? FertilityStatus.windowOpen : FertilityStatus.beforeWindow;
     }
     if (daysToPeak == 0) return FertilityStatus.peakToday;
-    return cycleDay <= fertileEndCycleDay ? FertilityStatus.windowClosing : FertilityStatus.passed;
+    return !day.isAfter(_addDays(peak, 1)) ? FertilityStatus.windowClosing : FertilityStatus.passed;
   }
 
-  int daysUntilOvulation({DateTime? today}) => CycleCalculator.daysUntilOvulation(
-    effectiveLastStart,
-    today ?? DateTime.now(),
-    effectiveCycleLength,
-    lutealLength: lutealLength,
-  );
+  int daysUntilOvulation({DateTime? today}) {
+    final date = today ?? DateTime.now();
+    final day = DateTime(date.year, date.month, date.day);
+    return CycleCalculator.daysBetween(day, nextOvulationDate(today: day));
+  }
 
   /// The ovulation date [daysUntilOvulation] counts down to - rolls into the next
   /// cycle once this cycle's peak has passed, so value and label never disagree.
-  DateTime nextOvulationDate({DateTime? today}) => CycleCalculator.nextOvulationDay(
-    effectiveLastStart,
-    today ?? DateTime.now(),
-    effectiveCycleLength,
-    lutealLength: lutealLength,
-  );
+  DateTime nextOvulationDate({DateTime? today}) {
+    final date = today ?? DateTime.now();
+    final day = DateTime(date.year, date.month, date.day);
+    final peak = _effectiveOvulation();
+    return day.isAfter(peak) ? _addDays(peak, effectiveCycleLength) : peak;
+  }
 
   /// Days past the latest plausible due date with no new period logged
   /// (0 = not late). Using the latest plausible length means a 35-day cycle is
@@ -366,31 +425,40 @@ class CycleProvider extends ChangeNotifier {
     return diff > 0 ? diff : 0;
   }
 
-  /// A period day is either a logged bleed day or an arithmetic prediction day
-  /// while the current projection is still credible. Once overdue, modular
-  /// period days would be a phantom next cycle and are suppressed.
+  /// A period day is either a logged period-flow day or an arithmetic
+  /// prediction day while the current projection is still credible. Spotting
+  /// never becomes a period day on its own, and overdue modular days are
+  /// suppressed because they would describe a phantom next cycle.
   bool isPeriodDay(DateTime date) =>
-      hasLoggedBleedOn(date) ||
+      hasLoggedPeriodBleedOn(date) ||
       (predictionsConfident(today: date) &&
           CycleCalculator.isPeriodDay(effectiveLastStart, date, effectiveCycleLength, bleedLength));
 
-  bool isFertileDay(DateTime date) =>
-      showFertilityNow(today: date) &&
-      CycleCalculator.isFertileDay(effectiveLastStart, date, effectiveCycleLength, lutealLength: lutealLength);
+  bool isFertileDay(DateTime date) {
+    if (!showFertilityNow(today: date)) return false;
+    final day = DateTime(date.year, date.month, date.day);
+    final peak = _effectiveOvulation();
+    return !day.isBefore(_addDays(peak, -5)) && !day.isAfter(_addDays(peak, 1));
+  }
 
-  bool isOvulationDay(DateTime date) =>
-      showFertilityNow(today: date) &&
-      CycleCalculator.isOvulationDay(effectiveLastStart, date, effectiveCycleLength, lutealLength: lutealLength);
+  bool isOvulationDay(DateTime date) {
+    if (!showFertilityNow(today: date)) return false;
+    final day = DateTime(date.year, date.month, date.day);
+    return CycleCalculator.daysBetween(day, _effectiveOvulation()) == 0;
+  }
 
   bool get fertileToday => isFertileDay(DateTime.now());
 
   bool get ovulationToday => isOvulationDay(DateTime.now());
 
-  int get ovulationCycleDay => CycleCalculator.ovulationCycleDay(effectiveCycleLength, lutealLength: lutealLength);
+  int get ovulationCycleDay => CycleCalculator.daysBetween(effectiveLastStart, _effectiveOvulation()) + 1;
 
-  int get fertileStartCycleDay => CycleCalculator.fertileStartCycleDay(effectiveCycleLength, lutealLength: lutealLength);
+  int get fertileStartCycleDay {
+    final day = ovulationCycleDay - 5;
+    return day < 1 ? 1 : day;
+  }
 
-  int get fertileEndCycleDay => CycleCalculator.fertileEndCycleDay(effectiveCycleLength, lutealLength: lutealLength);
+  int get fertileEndCycleDay => ovulationCycleDay + 1;
 
   double? get meanBleedLength => PeriodHistory.mean([
     for (final s in PeriodHistory.periods(bleeds))

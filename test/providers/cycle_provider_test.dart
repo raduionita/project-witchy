@@ -291,7 +291,8 @@ void main() {
       expect(cycle.predictionsConfident(today: today), isTrue);
       expect(cycle.isOverdue(today: today), isFalse);
       expect(cycle.projectionStopped(today: today), isFalse);
-      expect(cycle.nextPeriodStart(today: today), isNotNull);
+      expect(cycle.nextPeriodStart(today: today), isNull);
+      expect(cycle.daysUntilPeriod(today: today), isNull);
       final range = cycle.predictedRange(today: today);
       expect(range, isNotNull);
       expect(range!.earliest, today.subtract(const Duration(days: 5)));
@@ -305,7 +306,8 @@ void main() {
       expect(cycle.predictionsConfident(today: today), isFalse);
       expect(cycle.isOverdue(today: today), isTrue);
       expect(cycle.projectionStopped(today: today), isFalse);
-      expect(cycle.nextPeriodStart(today: today), isNotNull);
+      expect(cycle.nextPeriodStart(today: today), isNull);
+      expect(cycle.daysUntilPeriod(today: today), isNull);
       final range = cycle.predictedRange(today: today);
       expect(range, isNotNull);
       // The window stays on the current cycle; it does not roll to the next one.
@@ -319,6 +321,8 @@ void main() {
       expect(cycle.daysLate(today: today), 10);
       expect(cycle.predictionsConfident(today: today), isFalse);
       expect(cycle.projectionStopped(today: today), isFalse);
+      expect(cycle.nextPeriodStart(today: today), isNull);
+      expect(cycle.daysUntilPeriod(today: today), isNull);
     });
 
     test('eleven days past the latest due date stops the projection', () {
@@ -492,14 +496,15 @@ void main() {
       expect(cycle.daysUntilPeriod(today: DateTime.now()), 19);
     });
 
-    test('bleeding logged today counts as cycle day 1, not a wrapped-around day', () {
+    test('a lone flow day today anchors at cycle day 1 but stays spotting', () {
       onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 26, bleedLength: 5, lastPeriodStart: day(30));
       logging = LoggingProvider(prefs);
       logging.setFlow(DateTime.now(), 'Medium');
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.effectiveLastStart, DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
       expect(cycle.cycleDay(today: DateTime.now()), 1);
-      expect(cycle.phase(today: DateTime.now()), CyclePhase.menstrual);
+      expect(cycle.hasLoggedPeriodBleedOn(DateTime.now()), isFalse);
+      expect(cycle.phase(today: DateTime.now()), CyclePhase.follicular);
     });
   });
 
@@ -524,12 +529,25 @@ void main() {
     test('bleeding logged outside the predicted window still counts as a period day', () {
       onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 28, bleedLength: 5, lastPeriodStart: day(-20));
       logging = LoggingProvider(prefs);
-      // Cycle day 19 - well past the 5-day predicted bleed window.
+      // Cycle days 19-20 - well past the 5-day predicted bleed window.
       logging.setFlow(day(-2), 'Light');
+      logging.setFlow(day(-1), 'Light');
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.bleedDayOf(day(-2)), 1);
       expect(cycle.phaseAt(day(-2)), CyclePhase.menstrual);
       expect(cycle.isPeriodDay(day(-2)), isTrue);
+    });
+
+    test('a single flow day outside the predicted window stays spotting', () {
+      onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 28, bleedLength: 5, lastPeriodStart: day(-20));
+      logging = LoggingProvider(prefs);
+      logging.setFlow(day(-2), 'Light');
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.hasLoggedBleedOn(day(-2)), isTrue);
+      expect(cycle.hasLoggedPeriodBleedOn(day(-2)), isFalse);
+      expect(cycle.bleedDayOf(day(-2)), 0);
+      expect(cycle.phaseAt(day(-2)), isNot(CyclePhase.menstrual));
+      expect(cycle.isPeriodDay(day(-2)), isFalse);
     });
   });
 
@@ -656,6 +674,66 @@ void main() {
       expect(cycle.confirmedOvulationDate, DateTime(2026, 1, 15));
       expect(cycle.opkIndicatedOvulationDate, DateTime(2026, 1, 11));
       expect(cycle.detectedLutealLength, 14);
+    });
+  });
+
+  group('CycleProvider effective ovulation', () {
+    DateTime ago(int days) {
+      final now = DateTime.now();
+      return DateTime(now.year, now.month, now.day - days);
+    }
+
+    test('a current-cycle positive OPK moves the peak, window and phase', () {
+      buildSources(lastStart: ago(10), cycleLength: 28);
+      logPeriod(ago(10));
+      logging.setOvulationTest(ago(3), 'positive');
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.effectiveLastStart, ago(10));
+      expect(cycle.opkIndicatedOvulationDate, ago(2));
+      expect(cycle.ovulationDateThisCycle(today: ago(0)), ago(2));
+      expect(cycle.ovulationCycleDay, 9);
+      expect(cycle.fertileWindowStart(today: ago(0)), ago(7));
+      expect(cycle.fertileWindowEnd(today: ago(0)), ago(1));
+      expect(cycle.isOvulationDay(ago(2)), isTrue);
+      expect(cycle.isFertileDay(ago(7)), isTrue);
+      expect(cycle.phaseAt(ago(2)), CyclePhase.ovulatory);
+      expect(cycle.phaseAt(ago(8)), CyclePhase.follicular);
+      expect(cycle.fertilityStatus(today: ago(1)), FertilityStatus.windowClosing);
+    });
+
+    test('a prior-cycle positive OPK never becomes the current peak', () {
+      buildSources(lastStart: ago(10), cycleLength: 28);
+      logPeriod(ago(38));
+      logPeriod(ago(10));
+      logging.setOvulationTest(ago(24), 'positive');
+      final cycle = CycleProvider(onboarding, logging);
+
+      // The prior OPK still measures luteal length (13 days), but it must not
+      // place this cycle's peak. Arithmetic uses that length for day 15.
+      expect(cycle.opkIndicatedOvulationDate, ago(23));
+      expect(cycle.detectedLutealLength, 13);
+      expect(cycle.ovulationDateThisCycle(today: ago(0)), ago(-4));
+      expect(cycle.ovulationCycleDay, 15);
+      expect(cycle.isOvulationDay(ago(23)), isFalse);
+    });
+
+    test('current-cycle BBT confirmation outranks a conflicting OPK', () {
+      buildSources(lastStart: ago(13), cycleLength: 28);
+      for (var d = 12; d >= 7; d--) {
+        logging.setTemperature(ago(d), 36.4);
+      }
+      for (var d = 6; d >= 0; d--) {
+        logging.setTemperature(ago(d), 36.8);
+      }
+      logging.setOvulationTest(ago(10), 'positive');
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.confirmedOvulationDate, ago(7));
+      expect(cycle.opkIndicatedOvulationDate, ago(9));
+      expect(cycle.ovulationDateThisCycle(today: ago(0)), ago(7));
+      expect(cycle.phaseAt(ago(7)), CyclePhase.ovulatory);
+      expect(cycle.phaseAt(ago(5)), CyclePhase.luteal);
     });
   });
 

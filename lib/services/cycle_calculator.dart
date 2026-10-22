@@ -36,6 +36,19 @@ class CycleCalculator {
   static int daysUntilPeriod(DateTime lastStart, DateTime today, int cycleLength) =>
       daysBetween(today, nextPeriodStart(lastStart, today, cycleLength));
 
+  /// True while a projection anchored to [lastStart] is still credible.
+  ///
+  /// Direct callers can use this before producing a next start or range. The
+  /// grace keeps a cycle visible briefly past its latest plausible due date,
+  /// then stops modular projections until a new bleed re-anchors it.
+  static bool projectionValid({
+    required DateTime lastStart,
+    required DateTime today,
+    required int latestPlausibleLength,
+    int graceDays = 10,
+  }) =>
+      daysBetween(lastStart, today) <= _len(latestPlausibleLength) + graceDays;
+
   static int bleedDay(DateTime lastStart, DateTime today, int cycleLength, int bleedLength) {
     final day = cycleDay(lastStart, today, cycleLength);
     return day <= bleedLength ? day : 0;

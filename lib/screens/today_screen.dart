@@ -196,7 +196,7 @@ class TodayScreen extends StatelessWidget {
     final phase = cycle.phaseAt(today);
     final cycleDay = cycle.elapsedCycleDay(today: now);
     final predictedPeriod = cycle.isPeriodDay(now);
-    final loggedPeriod = cycle.hasLoggedBleedOn(today);
+    final loggedPeriod = cycle.hasLoggedPeriodBleedOn(today);
     final entry = log.peekDay(now);
     final flow = entry?.flow ?? const <String>{};
     final moods = entry?.moods ?? const <String>{};

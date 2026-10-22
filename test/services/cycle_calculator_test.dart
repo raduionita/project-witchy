@@ -136,6 +136,65 @@ void main() {
     });
   });
 
+  group('projection validity', () {
+    test('stays valid through the latest due date and its grace', () {
+      expect(
+        CycleCalculator.projectionValid(
+          lastStart: lastStart,
+          today: DateTime(2026, 9, 28),
+          latestPlausibleLength: 28,
+        ),
+        isTrue,
+      );
+      expect(
+        CycleCalculator.projectionValid(
+          lastStart: lastStart,
+          today: DateTime(2026, 10, 8),
+          latestPlausibleLength: 28,
+        ),
+        isTrue,
+      );
+      expect(
+        CycleCalculator.projectionValid(
+          lastStart: lastStart,
+          today: DateTime(2026, 10, 9),
+          latestPlausibleLength: 28,
+        ),
+        isTrue,
+      );
+    });
+
+    test('stops the day after the grace and stays stopped', () {
+      expect(
+        CycleCalculator.projectionValid(
+          lastStart: lastStart,
+          today: DateTime(2026, 10, 10),
+          latestPlausibleLength: 28,
+        ),
+        isFalse,
+      );
+      expect(
+        CycleCalculator.projectionValid(
+          lastStart: lastStart,
+          today: DateTime(2026, 12, 1),
+          latestPlausibleLength: 28,
+        ),
+        isFalse,
+      );
+    });
+
+    test('accepts dates before the anchor', () {
+      expect(
+        CycleCalculator.projectionValid(
+          lastStart: lastStart,
+          today: DateTime(2026, 8, 20),
+          latestPlausibleLength: 28,
+        ),
+        isTrue,
+      );
+    });
+  });
+
   group('month helpers', () {
     test('periodDaysInMonth marks bleed days of current and wrapped cycle', () {
       final periodDays = CycleCalculator.periodDaysInMonth(lastStart, DateTime(2026, 10), 28, 5);

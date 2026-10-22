@@ -63,7 +63,7 @@ void main() {
 
     expect(find.text('Medium'), findsOneWidget);
     expect(find.text('Heavy'), findsOneWidget);
-    expect(find.textContaining('Logged as bleed day'), findsOneWidget);
+    expect(find.textContaining('A bleeding day is logged'), findsOneWidget);
     expect(find.text('Recent Periods'), findsOneWidget);
   });
 

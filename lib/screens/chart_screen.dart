@@ -84,12 +84,15 @@ class ChartScreen extends StatelessWidget {
     final endOfToday = DateTime(today.year, today.month, today.day);
     bool inWindow(DateTime day) => !day.isBefore(start) && !day.isAfter(endOfToday);
     final confirmedDay = cycle.confirmedOvulationDate;
+    // A confirmation dated before the latest period start belongs to an earlier
+    // cycle and must not label this one's chart.
+    final currentConfirmed = confirmedDay != null && !confirmedDay.isBefore(cycle.effectiveLastStart) ? confirmedDay : null;
     final predictedDay = cycle.showFertilityNow(today: today) ? cycle.ovulationDay(today: today) : null;
-    // BBT-confirmed ovulation wins over the arithmetic prediction.
-    final markerDay = confirmedDay != null && inWindow(confirmedDay)
-        ? confirmedDay
+    // BBT-confirmed ovulation wins over the effective (BBT/OPK/arithmetic) prediction.
+    final markerDay = currentConfirmed != null && inWindow(currentConfirmed)
+        ? currentConfirmed
         : (predictedDay != null && inWindow(predictedDay) ? predictedDay : null);
-    final markerConfirmed = markerDay != null && markerDay == confirmedDay;
+    final markerConfirmed = markerDay != null && markerDay == currentConfirmed;
     final markerLabel = markerConfirmed ? 'Confirmed ovulation' : 'Predicted ovulation';
     final series = _series(readings, start, markerDay, confirmed: markerConfirmed);
 

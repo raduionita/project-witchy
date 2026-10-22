@@ -414,24 +414,62 @@ Gates: `flutter analyze` = No issues found, `flutter test` = 383/383 passing, `f
 
 ## Update 22 - 2026.10.22 - Overdue cycles and honest period math
 
+This update carries the full P0-P4 cycle-trust roadmap. P0 and P1 are shipped below; P2-P4 continue under this same entry as they land.
+
+### Roadmap
+- **P0 - Stop the app from lying**: shipped.
+- **P1 - Make every screen tell the same story**: shipped.
+- **P2 - Trust the data you already collect**: planned.
+- **P3 - Model the bodies the app cannot represent**: planned.
+- **P4 - Lock it down with tests**: planned.
+
+### Phase P0 - Stop the app from lying
+
 P0 of the cycle-tracking review. The goal was to stop the app from presenting a late cycle as a fresh ovulatory cycle, and to stop low-quality period data from inventing short cycles.
 
-### Overdue state
+#### Overdue state
 - `CycleProvider` now has one due-date basis: earliest due is the trimmed shortest recent cycle, latest due is the trimmed longest. `daysLate` counts from the latest due date, so a 35-day cycle is not called late on day 33 just because the median is 32.
 - Predictions stay confident for 5 days past the latest due date and stop entirely after 10. `isOverdue` is the explicit state between those.
 - When overdue, every fertility surface pauses: `fertilityStatus` returns `FertilityStatus.overdue`, `showFertilityNow` is false, fertile/ovulation day checks are false, the fertile window getters return null, Today hides the fertility stat card and the orb's fertile segment and legend, the Fertility screen shows `Predictions paused` with a test prompt, and the chart hides the predicted ovulation marker.
 - Today keeps the overdue message after the projection stops (`Log to update` plus `period overdue - consider a test`) and the astral card says `Cycle running long` instead of a phase.
 - The period window no longer rolls one bound into the next cycle: `predictedRange` anchors both bounds to the last start, so a range that is already open reads `Due Now` instead of showing next-cycle dates.
 
-### Cycle day and period detection
+#### Cycle day and period detection
 - `CycleCalculator.elapsedCycleDay` returns the real day count since the last start, with no modulo. Today, Fertility, Bleed History and the orb use it, so a 39-day cycle reads `Cycle Day 39`, not `Cycle Day 11`.
 - Today only shows the `Period Day N` tag when bleeding is actually logged; predicted period days are a separate glyph.
 - Spotting is no longer a period: `PeriodHistory` marks all-`Spotting` spans and `periods()` excludes them from starts, cycle lengths, bleed averages and BBT/OPK baselines. Spotting remains visible in the logs and history.
 - A one-day gap inside a bleed is bridged, so an unlogged day cannot split one period into two starts. Observed cycle gaps below 15 days are rejected, matching the manual range floor.
 - An explicit period record is no longer replaced by a spotting or too-short real flow span that happens to share its start date.
 
-### Tests and gates
+#### P0 tests and gates
 - Added regression coverage for the overdue state, elapsed vs modular cycle day, spotting-only spans, the one-day gap bridge, sub-15 cycle rejection, the due-window rollover, and the late-vs-median case.
 - `flutter analyze` = No issues found, `flutter test` = 396/396 passing, `flutter build apk --debug` = ✓.
 
 Files: `lib/models/fertility_status.dart`, `lib/models/period_span.dart`, `lib/services/cycle_calculator.dart`, `lib/services/period_history.dart`, `lib/providers/cycle_provider.dart`, `lib/screens/today_screen.dart`, `lib/screens/fertility_screen.dart`, `lib/screens/bleed_history_screen.dart`, `lib/screens/chart_screen.dart`, `lib/widgets/cycle_orb.dart`, plus the matching tests.
+
+### Phase P1 - Make every screen tell the same story
+
+P1 aligned the countdown, phase, fertility, calendar and chart surfaces with the same cycle state and confidence rules.
+
+#### Countdown
+- `CycleProvider.nextPeriodStart` no longer rolls into the next cycle. It returns the earliest plausible due date while the current cycle is still due or late, then null once that date has passed or the projection stops.
+- `daysUntilPeriod` is nullable and counts to that same anchored date. Today, Bleed History, AlertGenerator and the reminder scheduler treat null as `Due now` or no next-cycle schedule instead of inventing a future date.
+
+#### Effective ovulation
+- The current cycle's peak now has one source priority: BBT confirmation on or after the current anchor, then a positive OPK indication on or after the anchor, then the arithmetic estimate.
+- Confirmations and OPKs from earlier cycles are ignored for the current peak. Chart also ignores a prior-cycle BBT confirmation when choosing its marker.
+- The effective peak drives `ovulationDay`, the fertile window, `fertilityStatus`, fertile and ovulation day checks, cycle-day window bounds, phase classification, Today copy, Fertility copy and the Chart marker. Today, Fertility and Chart now agree when BBT or OPK moves ovulation.
+
+#### Spotting and consistency
+- Added `hasLoggedPeriodBleedOn`, which only matches real period spans. The menstrual phase, `isPeriodDay`, `bleedDayOf`, Today's `Period Day N` tag and Calendar's period tags use it; spotting stays visible as bleeding in logs and Bleed History without becoming a period.
+- Calendar uses the earliest-latest predicted window whenever `showPeriodRange` is true, not only in perimenopause. Its entry fallback now says `Logged` or `Flow Logged`, never `Period Logged`, for a non-period flow day.
+- Audited fertility gating across Today, Fertility, Chart, Calendar and alerts. Every surface still reads the same `showFertilityNow` confidence rule; no bypass was found.
+
+#### Calculator guard
+- Added `CycleCalculator.projectionValid`, which stays true through the latest plausible due date plus the projection grace and then stops. `CycleProvider.projectionStopped` now delegates to it, so direct calculator callers cannot project past the threshold.
+
+#### P1 tests and gates
+- Added coverage for the non-rolling nullable countdown, current-cycle and prior-cycle OPK behavior, BBT confirmation outranking OPK, period-only spotting, the Today spotting tag, Calendar range wiring in cycle mode, and the calculator projection boundary.
+- `flutter analyze` = No issues found, `flutter test` = 405/405 passing, `flutter build apk --debug` = ✓.
+
+Files: `lib/services/cycle_calculator.dart`, `lib/providers/cycle_provider.dart`, `lib/screens/today_screen.dart`, `lib/screens/calendar_screen.dart`, `lib/screens/chart_screen.dart`, `lib/screens/bleed_history_screen.dart`, plus `test/providers/cycle_provider_test.dart`, `test/services/cycle_calculator_test.dart`, `test/screens/today_screen_test.dart`, `test/screens/calendar_screen_test.dart` and `test/screens/bleed_history_screen_test.dart`.

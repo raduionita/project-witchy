@@ -56,17 +56,17 @@ class _CycleCalendarState extends State<CycleCalendar> {
     return null;
   }
 
-  Widget _ring(Color color, double width) =>
+  Widget _buildRing(Color color, double width) =>
       Container(width: 44, height: 44, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: width)));
 
-  Widget _adjacentCell(CalendarDayCell cell) {
+  Widget _buildAdjacentCell(CalendarDayCell cell) {
     return SizedBox(
       height: 54,
       child: Center(child: Semantics(label: _semanticLabel(cell), child: Text('${cell.day}', style: AppText.sans(15, c: AppColors.placeholder)))),
     );
   }
 
-  Widget _dayCell(CalendarDayCell cell) {
+  Widget _buildDayCell(CalendarDayCell cell) {
     final tappable = widget.onDayTap != null;
     final glyph = _glyph(cell);
     // Moon glyphs carry light fills; dark-mode ink would vanish on them.
@@ -89,8 +89,8 @@ class _CycleCalendarState extends State<CycleCalendar> {
                 if (cell.isToday)
                   SizedBox(width: 44, height: 44, child: DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.lav))),
                 if (glyph != null) SvgPicture.asset(glyph, width: 44, height: 44, excludeFromSemantics: true),
-                if (cell.isToday && !cell.isSelected) _ring(AppColors.pur, 1.5),
-                if (cell.isSelected) _ring(AppColors.pur, 2),
+                if (cell.isToday && !cell.isSelected) _buildRing(AppColors.pur, 1.5),
+                if (cell.isSelected) _buildRing(AppColors.pur, 2),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -126,10 +126,10 @@ class _CycleCalendarState extends State<CycleCalendar> {
     );
   }
 
-  Widget _weekRow(List<CalendarDayCell> week, bool isLast) {
+  Widget _buildWeekRow(List<CalendarDayCell> week, bool isLast) {
     return Padding(
       padding: EdgeInsets.only(bottom: isLast ? 0 : 4),
-      child: Row(children: [for (final cell in week) Expanded(child: cell.inMonth ? _dayCell(cell) : _adjacentCell(cell))]),
+      child: Row(children: [for (final cell in week) Expanded(child: cell.inMonth ? _buildDayCell(cell) : _buildAdjacentCell(cell))]),
     );
   }
 
@@ -145,7 +145,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
     final rows = <Widget>[];
     for (var i = 0; i < end; i += 7) {
       final chunk = all.sublist(i, (i + 7).clamp(0, end));
-      rows.add(_weekRow(chunk, i + 7 >= end));
+      rows.add(_buildWeekRow(chunk, i + 7 >= end));
     }
     return Column(
       children: [

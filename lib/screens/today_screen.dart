@@ -63,6 +63,7 @@ class TodayScreen extends StatelessWidget {
       FertilityStatus.windowClosing => ('Window Closing', 'Ovulation passed'),
       FertilityStatus.passed => ('Peak Passed', 'next peak $next'),
       FertilityStatus.beforeWindow => (daysToWindow == 1 ? 'In 1 Day' : 'In $daysToWindow Days', '$opens · window opens'),
+      FertilityStatus.overdue => ('Paused', 'cycle running long'),
     };
   }
 
@@ -71,8 +72,6 @@ class TodayScreen extends StatelessWidget {
   Widget _buildStatsRow(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final now = DateTime.now();
-    final DateTime? nextStart = cycle.nextPeriodStart(today: now);
-    final daysUntil = cycle.daysUntilPeriod(today: now);
     final (value, sub) = _fertilityCopy(cycle, now);
     String bleedValue;
     String bleedSub;
@@ -80,21 +79,27 @@ class TodayScreen extends StatelessWidget {
     // showing a stale countdown.
     final range = cycle.predictedRange(today: now);
     final late = cycle.daysLate(today: now);
-    if (nextStart == null || range == null) {
+    final confident = cycle.predictionsConfident(today: now);
+    if (range == null) {
       bleedValue = 'Log to update';
-      bleedSub = 'cycle running long - log to re-anchor';
+      bleedSub = late > 0 ? 'period overdue - consider a test' : 'cycle running long - log to re-anchor';
     } else if (late > 0) {
       bleedValue = '$late ${late == 1 ? 'Day' : 'Days'} Late';
-      bleedSub = 'log your period to re-anchor';
-    } else if (cycle.showPeriodRange) {
+      bleedSub = confident ? 'log your period to re-anchor' : 'period overdue - consider a test';
+    } else {
       final todayDate = DateTime(now.year, now.month, now.day);
       final dMin = CycleCalculator.daysBetween(todayDate, range.earliest);
       final dMax = CycleCalculator.daysBetween(todayDate, range.latest);
-      bleedValue = dMin == dMax ? '$dMin Days' : '$dMin–$dMax Days';
-      bleedSub = '${AppDate.range(range.earliest, range.latest)} · range';
-    } else {
-      bleedValue = '$daysUntil Days';
-      bleedSub = '${AppDate.short(nextStart)} · predicted';
+      if (dMin <= 0 && dMax >= 0) {
+        bleedValue = 'Due Now';
+        bleedSub = '${AppDate.range(range.earliest, range.latest)} · predicted';
+      } else if (cycle.showPeriodRange) {
+        bleedValue = dMin == dMax ? '$dMin Days' : '$dMin-$dMax Days';
+        bleedSub = '${AppDate.range(range.earliest, range.latest)} · range';
+      } else {
+        bleedValue = dMin == 1 ? '1 Day' : '$dMin Days';
+        bleedSub = '${AppDate.short(range.earliest)} · predicted';
+      }
     }
     // Pregnancy states repurpose the countdown card: active suppresses the
     // period countdown (links the tracker instead), gap state nudges setup.
@@ -114,7 +119,7 @@ class TodayScreen extends StatelessWidget {
         Row(
           children: [
             Expanded(child: StatCard(label: 'Bleeding In', value: bleedValue, sub: bleedSub, onTap: bleedTap)),
-            if (cycle.showFertilityPredictions) ...[
+            if (cycle.showFertilityNow(today: now)) ...[
               const SizedBox(width: 12),
               Expanded(child: StatCard(label: 'Fertility Window', value: value, sub: sub, valueColor: AppColors.pink, onTap: () => context.go('/fertility'))),
             ],
@@ -189,19 +194,22 @@ class TodayScreen extends StatelessWidget {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final phase = cycle.phaseAt(today);
-    final cycleDay = cycle.cycleDay(today: now);
-    final periodDay = cycle.isPeriodDay(now);
+    final cycleDay = cycle.elapsedCycleDay(today: now);
+    final predictedPeriod = cycle.isPeriodDay(now);
+    final loggedPeriod = cycle.hasLoggedBleedOn(today);
     final entry = log.peekDay(now);
     final flow = entry?.flow ?? const <String>{};
     final moods = entry?.moods ?? const <String>{};
     final symptoms = entry?.symptoms ?? const <String>{};
     final sleep = entry?.sleep ?? const <String>{};
     final logged = flow.isNotEmpty;
-    final bleedDay = periodDay ? cycle.bleedDayOf(today) : 0;
+    final bleedDay = loggedPeriod ? cycle.bleedDayOf(today) : 0;
     final daysUntil = cycle.daysUntilPeriod(today: now);
+    final confident = cycle.predictionsConfident(today: now);
     // Softened wording in perimenopause where timing is less predictable.
-    final soonNote = cycle.isPerimenopause ? (daysUntil == 1 || daysUntil == 2) : daysUntil == 1;
+    final soonNote = confident && (cycle.isPerimenopause ? (daysUntil == 1 || daysUntil == 2) : daysUntil == 1);
     final soonText = cycle.isPerimenopause ? 'Period may start any day now' : 'Period may start tomorrow';
+    final phaseLabel = confident ? phase.phaseName : 'Cycle running long';
     return AppCard(
       dark: true,
       child: MouseRegion(
@@ -213,7 +221,7 @@ class TodayScreen extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  _buildMoonCircle(_glyph(phase, predictedPeriod: periodDay && !logged)),
+                  _buildMoonCircle(_glyph(phase, predictedPeriod: predictedPeriod && !loggedPeriod)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -221,12 +229,12 @@ class TodayScreen extends StatelessWidget {
                       children: [
                         Text(AppDate.long(today), style: AppText.serif(13.5, c: Colors.white)),
                         const SizedBox(height: 2),
-                        Text(phase.phaseName, style: AppText.sans(12, c: Colors.white70)),
+                        Text(phaseLabel, style: AppText.sans(12, c: Colors.white70)),
                         if (soonNote) ...[const SizedBox(height: 2), Text(soonText, style: AppText.sans(12, w: FontWeight.w700, c: AppColors.pinkDark))],
                       ],
                     ),
                   ),
-                  periodDay ? AppTag.pink('Period Day $bleedDay') : AppTag.pink('Cycle Day $cycleDay'),
+                  loggedPeriod ? AppTag.pink('Period Day $bleedDay') : AppTag.pink('Cycle Day $cycleDay'),
                 ],
               ),
               const SizedBox(height: 14),
@@ -256,7 +264,8 @@ class TodayScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final now = DateTime.now();
-    final dayNum = cycle.cycleDay(today: now);
+    final dayNum = cycle.elapsedCycleDay(today: now);
+    final confident = cycle.predictionsConfident(today: now);
     final bleedDays = cycle.meanBleedLength?.round() ?? cycle.bleedLength;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, AppDims.fabClearance),
@@ -264,12 +273,13 @@ class TodayScreen extends StatelessWidget {
         const SizedBox(height: 8),
         CycleOrb(
           day: '$dayNum',
-          phase: cycle.phase(today: now).label,
+          phase: confident ? cycle.phase(today: now).label : 'Cycle running long',
           progress: dayNum / cycle.effectiveCycleLength,
           cycleLength: cycle.effectiveCycleLength,
           bleedLength: bleedDays,
           fertileStartDay: cycle.fertileStartCycleDay,
           fertileEndDay: cycle.fertileEndCycleDay,
+          showFertility: confident && cycle.showFertilityPredictions,
         ),
         const SizedBox(height: 12),
         _buildStatsRow(context),

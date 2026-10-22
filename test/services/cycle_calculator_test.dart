@@ -25,6 +25,13 @@ void main() {
       expect(CycleCalculator.nextPeriodStart(lastStart, DateTime(2026, 8, 20), 28), DateTime(2026, 9, 1));
     });
 
+    test('elapsedCycleDay does not wrap', () {
+      expect(CycleCalculator.elapsedCycleDay(lastStart, DateTime(2026, 10, 9)), 39);
+      expect(CycleCalculator.cycleDay(lastStart, DateTime(2026, 10, 9), 28), 11);
+      // Before the anchor it clamps to day 1 instead of going negative.
+      expect(CycleCalculator.elapsedCycleDay(lastStart, DateTime(2026, 8, 20)), 1);
+    });
+
     test('past dates before lastStart get period/fertile marks from earlier cycles', () {
       expect(CycleCalculator.isPeriodDay(lastStart, DateTime(2026, 8, 5), 28, 5), isTrue);
       expect(CycleCalculator.isPeriodDay(lastStart, DateTime(2026, 8, 9), 28, 5), isFalse);

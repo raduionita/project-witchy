@@ -48,27 +48,25 @@ class ProfileScreen extends StatelessWidget {
   void _openTrackingSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Tracking Modes', style: AppText.secIn),
-              const SizedBox(height: 4),
-              Text('Toggle every mode you track - they can all be active at once.', style: AppText.sans(11, c: AppColors.muted)),
-              const SizedBox(height: 12),
-              Consumer<OnboardingProvider>(
-                builder: (consumerContext, ob, _) => TrackingModeChips(
-                  selected: ob.trackingModes,
-                  onToggle: (mode) => consumerContext.read<OnboardingProvider>().toggleTrackingMode(mode),
-                ),
+      builder:
+          (sheetContext) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Tracking Modes', style: AppText.secIn),
+                  const SizedBox(height: 4),
+                  Text('Toggle every mode you track - they can all be active at once.', style: AppText.sans(11, c: AppColors.muted)),
+                  const SizedBox(height: 12),
+                  Consumer<OnboardingProvider>(
+                    builder: (consumerContext, ob, _) => TrackingModeChips(selected: ob.trackingModes, onToggle: (mode) => consumerContext.read<OnboardingProvider>().toggleTrackingMode(mode)),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -81,50 +79,52 @@ class ProfileScreen extends StatelessWidget {
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (builderContext, setSheetState) => SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Cycle Basics', style: AppText.secIn),
-                const SizedBox(height: 4),
-                Text('Base values seed predictions until your logged cycles take over.', style: AppText.sans(11, c: AppColors.muted)),
-                const SizedBox(height: 12),
-                AppSliderRow(
-                  label: 'Cycle length',
-                  value: '$cycleLength Days',
-                  min: OnboardingProvider.minCycleLength.toDouble(),
-                  max: OnboardingProvider.maxCycleLength.toDouble(),
-                  current: cycleLength.toDouble(),
-                  onChanged: (v) => setSheetState(() => cycleLength = v.round()),
+      builder:
+          (sheetContext) => StatefulBuilder(
+            builder:
+                (builderContext, setSheetState) => SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Cycle Basics', style: AppText.secIn),
+                        const SizedBox(height: 4),
+                        Text('Base values seed predictions until your logged cycles take over.', style: AppText.sans(11, c: AppColors.muted)),
+                        const SizedBox(height: 12),
+                        AppSliderRow(
+                          label: 'Cycle length',
+                          value: '$cycleLength Days',
+                          min: OnboardingProvider.minCycleLength.toDouble(),
+                          max: OnboardingProvider.maxCycleLength.toDouble(),
+                          current: cycleLength.toDouble(),
+                          onChanged: (v) => setSheetState(() => cycleLength = v.round()),
+                        ),
+                        const SizedBox(height: 4),
+                        AppSliderRow(
+                          label: 'Bleeding phase length',
+                          value: '$bleedLength Days',
+                          min: 2,
+                          max: 10,
+                          current: bleedLength.toDouble(),
+                          onChanged: (v) => setSheetState(() => bleedLength = v.round()),
+                        ),
+                        const SizedBox(height: 14),
+                        AppButton(
+                          label: 'Save',
+                          onTap: () async {
+                            onboarding.setCycle(cycleLength);
+                            onboarding.setBleed(bleedLength);
+                            await onboarding.persistRhythms();
+                            if (sheetContext.mounted) Navigator.of(sheetContext).pop(true);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 4),
-                AppSliderRow(
-                  label: 'Bleeding phase length',
-                  value: '$bleedLength Days',
-                  min: 2,
-                  max: 10,
-                  current: bleedLength.toDouble(),
-                  onChanged: (v) => setSheetState(() => bleedLength = v.round()),
-                ),
-                const SizedBox(height: 14),
-                AppButton(
-                  label: 'Save',
-                  onTap: () async {
-                    onboarding.setCycle(cycleLength);
-                    onboarding.setBleed(bleedLength);
-                    await onboarding.persistRhythms();
-                    if (sheetContext.mounted) Navigator.of(sheetContext).pop(true);
-                  },
-                ),
-              ],
-            ),
           ),
-        ),
-      ),
     );
     if (saved == true && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cycle basics updated')));
@@ -143,12 +143,7 @@ class ProfileScreen extends StatelessWidget {
     bells.setTime(index, formatted);
     try {
       final cycle = context.read<CycleProvider>();
-      await NotificationService.syncReminder(
-        bells.items[index],
-        predictedStart: _periodStart(cycle),
-        fertileStart: cycle.fertileWindowStart(),
-        bleedLength: cycle.bleedLength,
-      );
+      await NotificationService.syncReminder(bells.items[index], predictedStart: _periodStart(cycle), fertileStart: cycle.fertileWindowStart(), bleedLength: cycle.bleedLength);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update reminder: $e')));
@@ -168,37 +163,21 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Future<void> _pickReminderFrequency(BuildContext context, int index) async {
-    const options = [
-      'Every day',
-      'Each bleed day',
-      'Window start',
-      '3 days prior',
-      'Hourly · 8 AM - 8 PM',
-    ];
+    const options = ['Every day', 'Each bleed day', 'Window start', '3 days prior', 'Hourly · 8 AM - 8 PM'];
     final selected = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => SimpleDialog(
-        title: Text('Frequency', style: AppText.serif(15)),
-        children: [
-          for (final option in options)
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(dialogContext).pop(option),
-              child: Text(option, style: AppText.sans(13, c: AppColors.ink)),
-            ),
-        ],
-      ),
+      builder:
+          (dialogContext) => SimpleDialog(
+            title: Text('Frequency', style: AppText.serif(15)),
+            children: [for (final option in options) SimpleDialogOption(onPressed: () => Navigator.of(dialogContext).pop(option), child: Text(option, style: AppText.sans(13, c: AppColors.ink)))],
+          ),
     );
     if (selected == null || !context.mounted) return;
     final bells = context.read<RemindersProvider>();
     bells.setFrequency(index, selected);
     try {
       final cycle = context.read<CycleProvider>();
-      await NotificationService.syncReminder(
-        bells.items[index],
-        predictedStart: _periodStart(cycle),
-        fertileStart: cycle.fertileWindowStart(),
-        bleedLength: cycle.bleedLength,
-      );
+      await NotificationService.syncReminder(bells.items[index], predictedStart: _periodStart(cycle), fertileStart: cycle.fertileWindowStart(), bleedLength: cycle.bleedLength);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update reminder: $e')));
@@ -209,17 +188,15 @@ class ProfileScreen extends StatelessWidget {
   Future<void> _confirmSignOut(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Sign out?', style: AppText.serif(16)),
-        content: Text(
-          'You will return to the welcome screen. Your logs and settings stay on this device, and you can sign back in at any time.',
-          style: AppText.sans(13, c: AppColors.body),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text('Cancel', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.muted))),
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text('Sign Out', style: AppText.sans(13, w: FontWeight.w700, c: AppColors.danger))),
-        ],
-      ),
+      builder:
+          (dialogContext) => AlertDialog(
+            title: Text('Sign out?', style: AppText.serif(16)),
+            content: Text('You will return to the welcome screen. Your logs and settings stay on this device, and you can sign back in at any time.', style: AppText.sans(13, c: AppColors.body)),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text('Cancel', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.muted))),
+              TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text('Sign Out', style: AppText.sans(13, w: FontWeight.w700, c: AppColors.danger))),
+            ],
+          ),
     );
     if (confirmed != true || !context.mounted) return;
     await context.read<AuthProvider>().signOut();
@@ -229,17 +206,18 @@ class ProfileScreen extends StatelessWidget {
   Future<void> _confirmDeleteData(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Delete all data?', style: AppText.serif(16)),
-        content: Text(
-          'This removes every cycle log, saved setting, reminder and sign-in on this device. Witchy keeps no copy anywhere else, so it cannot be undone.',
-          style: AppText.sans(13, c: AppColors.body),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text('Cancel', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.muted))),
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text('Delete', style: AppText.sans(13, w: FontWeight.w700, c: AppColors.danger))),
-        ],
-      ),
+      builder:
+          (dialogContext) => AlertDialog(
+            title: Text('Delete all data?', style: AppText.serif(16)),
+            content: Text(
+              'This removes every cycle log, saved setting, reminder and sign-in on this device. Witchy keeps no copy anywhere else, so it cannot be undone.',
+              style: AppText.sans(13, c: AppColors.body),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text('Cancel', style: AppText.sans(13, w: FontWeight.w600, c: AppColors.muted))),
+              TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text('Delete', style: AppText.sans(13, w: FontWeight.w700, c: AppColors.danger))),
+            ],
+          ),
     );
     if (confirmed != true || !context.mounted) return;
 
@@ -261,12 +239,7 @@ class ProfileScreen extends StatelessWidget {
 
     try {
       await NotificationService.syncPeriodPrediction(enabled: settings.lunarNotifications, predictedStart: _periodStart(cycle));
-      await NotificationService.syncAll(
-        reminders.items,
-        predictedStart: _periodStart(cycle),
-        fertileStart: cycle.fertileWindowStart(),
-        bleedLength: cycle.bleedLength,
-      );
+      await NotificationService.syncAll(reminders.items, predictedStart: _periodStart(cycle), fertileStart: cycle.fertileWindowStart(), bleedLength: cycle.bleedLength);
     } catch (e) {
       debugPrint('Notification resync after data wipe failed: $e');
     }
@@ -275,10 +248,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildTapTarget({required VoidCallback onTap, required Widget child}) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap, child: child),
-    );
+    return MouseRegion(cursor: SystemMouseCursors.click, child: GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap, child: child));
   }
 
   Widget _buildIdentityHeader(BuildContext context) {
@@ -287,16 +257,7 @@ class ProfileScreen extends StatelessWidget {
     final displayName = (name == null || name.isEmpty) ? 'Guest' : name;
     final email = auth.identity?.email?.trim();
     final local = email == null || email.isEmpty;
-    final initials =
-        (name == null || name.isEmpty)
-            ? 'G'
-            : displayName
-                .split(' ')
-                .where((w) => w.isNotEmpty)
-                .map((w) => w[0])
-                .take(2)
-                .join()
-                .toUpperCase();
+    final initials = (name == null || name.isEmpty) ? 'G' : displayName.split(' ').where((w) => w.isNotEmpty).map((w) => w[0]).take(2).join().toUpperCase();
     return Column(
       children: [
         AppAvatar(initials: initials, big: true),
@@ -314,10 +275,7 @@ class ProfileScreen extends StatelessWidget {
           )
         else
           Text(email, style: AppText.sans(10, c: AppColors.muted)),
-        if (local) ...[
-          const SizedBox(height: 4),
-          Text('Data stored on this device only', style: AppText.sans(10, c: AppColors.muted)),
-        ],
+        if (local) ...[const SizedBox(height: 4), Text('Data stored on this device only', style: AppText.sans(10, c: AppColors.muted))],
       ],
     );
   }
@@ -357,11 +315,7 @@ class ProfileScreen extends StatelessWidget {
             first: true,
           ),
           _buildEditableRow(label: 'Bleeding Phase Length', value: '${cycle.bleedLength} Days', onTap: () => _openRhythmSheet(context)),
-          _buildEditableRow(
-            label: 'Tracking Modes',
-            value: onboarding.trackingModes.map((m) => m.label).join(', '),
-            onTap: () => _openTrackingSheet(context),
-          ),
+          _buildEditableRow(label: 'Tracking Modes', value: onboarding.trackingModes.map((m) => m.label).join(', '), onTap: () => _openTrackingSheet(context)),
         ],
       ),
     );
@@ -379,9 +333,7 @@ class ProfileScreen extends StatelessWidget {
     final cycle = context.watch<CycleProvider>();
     final logging = context.watch<LoggingProvider>();
     final spans = [...cycle.bleeds].reversed.toList();
-    final records = {
-      for (final record in logging.periodRecords) LoggingProvider.keyFor(record.start): record,
-    };
+    final records = {for (final record in logging.periodRecords) LoggingProvider.keyFor(record.start): record};
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -400,13 +352,9 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Text('Add or edit dates you remember. Flow logs stay untouched.', style: AppText.sans(11, c: AppColors.muted)),
           if (spans.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Text('No periods yet. Add one above.', style: AppText.sans(11.5, c: AppColors.muted)),
-            )
+            Padding(padding: const EdgeInsets.only(top: 10), child: Text('No periods yet. Add one above.', style: AppText.sans(11.5, c: AppColors.muted)))
           else
-            for (final span in spans.take(5))
-              _buildPeriodRow(context, logging, span, records[LoggingProvider.keyFor(span.start)]),
+            for (final span in spans.take(5)) _buildPeriodRow(context, logging, span, records[LoggingProvider.keyFor(span.start)]),
         ],
       ),
     );
@@ -431,10 +379,7 @@ class ProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
-            if (span.estimated) ...[
-              AppTag.gold('Estimated'),
-              const SizedBox(width: 6),
-            ],
+            if (span.estimated) ...[AppTag.gold('Estimated'), const SizedBox(width: 6)],
             Icon(AppIcons.right, size: 13, color: AppColors.muted),
           ],
         ),
@@ -487,10 +432,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             first: true,
           ),
-          SettingsRow(
-            label: 'Dark Mode',
-            trailing: Switch(value: settings.darkMode, activeThumbColor: AppColors.pur, onChanged: (v) => context.read<SettingsProvider>().setDark(v)),
-          ),
+          SettingsRow(label: 'Dark Mode', trailing: Switch(value: settings.darkMode, activeThumbColor: AppColors.pur, onChanged: (v) => context.read<SettingsProvider>().setDark(v))),
         ],
       ),
     );
@@ -516,16 +458,10 @@ class ProfileScreen extends StatelessWidget {
                 children: [
                   // Hourly bells ignore the time field; show frequency only.
                   if (!NotificationService.isHourly(bells.items[i])) ...[
-                    _buildTapTarget(
-                      onTap: () => _pickReminderTime(context, i),
-                      child: InfoPill(icon: AppIcons.clock, label: bells.items[i].time),
-                    ),
+                    _buildTapTarget(onTap: () => _pickReminderTime(context, i), child: InfoPill(icon: AppIcons.clock, label: bells.items[i].time)),
                     const SizedBox(width: 8),
                   ],
-                  _buildTapTarget(
-                    onTap: () => _pickReminderFrequency(context, i),
-                    child: InfoPill(icon: bells.items[i].icon, label: bells.items[i].freq),
-                  ),
+                  _buildTapTarget(onTap: () => _pickReminderFrequency(context, i), child: InfoPill(icon: bells.items[i].icon, label: bells.items[i].freq)),
                 ],
               ),
             ],
@@ -541,24 +477,16 @@ class ProfileScreen extends StatelessWidget {
         IconBadge(icon: item.icon, bg: item.badgeBg, fg: item.badgeFg),
         const SizedBox(width: 10),
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [Text(item.title, style: AppText.serif(12.5)), Text(item.subtitle, style: AppText.sans(9.5, c: AppColors.muted))],
-          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(item.title, style: AppText.serif(12.5)), Text(item.subtitle, style: AppText.sans(9.5, c: AppColors.muted))]),
         ),
         Switch(
           value: item.enabled,
-          activeThumbColor: AppColors.pur,
+          activeThumbColor: AppColors.orbSub,
           onChanged: (v) async {
             context.read<RemindersProvider>().toggle(index, v);
             final cycle = context.read<CycleProvider>();
             try {
-              await NotificationService.syncReminder(
-                item,
-                predictedStart: _periodStart(cycle),
-                fertileStart: cycle.fertileWindowStart(),
-                bleedLength: cycle.bleedLength,
-              );
+              await NotificationService.syncReminder(item, predictedStart: _periodStart(cycle), fertileStart: cycle.fertileWindowStart(), bleedLength: cycle.bleedLength);
             } catch (e) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not update reminder: $e')));
@@ -578,11 +506,7 @@ class ProfileScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Data', style: AppText.secIn),
-          SettingsRow(
-            label: 'Where it lives',
-            first: true,
-            trailing: Text('On this device', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.muted)),
-          ),
+          SettingsRow(label: 'Where it lives', first: true, trailing: Text('On this device', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.muted))),
           SettingsRow(label: 'Shared with', trailing: Text('No one', style: AppText.sans(11, w: FontWeight.w600, c: AppColors.muted))),
           SettingsRow(
             label: 'Your privacy policy',
@@ -617,11 +541,7 @@ class ProfileScreen extends StatelessWidget {
         future: _packageInfo,
         builder: (context, snap) {
           final version = snap.data?.version ?? '1.0.0';
-          return Text(
-            'Witchy\nVersion $version',
-            textAlign: TextAlign.center,
-            style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6),
-          );
+          return Text('Witchy\nVersion $version', textAlign: TextAlign.center, style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6));
         },
       ),
     );
@@ -631,12 +551,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final onboarding = context.watch<OnboardingProvider>();
     return Scaffold(
-      appBar: AppTopBar(
-        title: 'Profile',
-        action: AppIcons.alerts,
-        onAction: () => context.go('/alerts'),
-        badge: context.watch<AlertProvider>().unreadCount > 0,
-      ),
+      appBar: AppTopBar(title: 'Profile', action: AppIcons.alerts, onAction: () => context.go('/alerts'), badge: context.watch<AlertProvider>().unreadCount > 0),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
         children: [
@@ -646,10 +561,7 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _buildPeriodsCard(context),
           const SizedBox(height: 12),
-          if (onboarding.trackingModes.contains(TrackingMode.pregnancy)) ...[
-            _buildPregnancyCard(context),
-            const SizedBox(height: 12),
-          ],
+          if (onboarding.trackingModes.contains(TrackingMode.pregnancy)) ...[_buildPregnancyCard(context), const SizedBox(height: 12)],
           _buildAppSettingsCard(context),
           const SizedBox(height: 12),
           _buildRemindersCard(context),

@@ -71,7 +71,7 @@ class BleedHistoryScreen extends StatelessWidget {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final bleeding = cycle.hasLoggedBleedOn(today);
-    final expected = !bleeding && cycle.isPeriodDay(today);
+    final expected = !bleeding && cycle.daysLate(today: now) == 0 && cycle.isPeriodDay(today);
     final String title = bleeding ? 'Bleeding today' : expected ? 'Bleed expected today' : 'Not bleeding today';
     String detail;
     if (bleeding) {
@@ -82,7 +82,7 @@ class BleedHistoryScreen extends StatelessWidget {
     } else {
       // The stats row above already carries the next-bleed countdown, so this
       // line answers the other question: where the user is in the cycle now.
-      final day = cycle.cycleDay(today: now);
+      final day = cycle.elapsedCycleDay(today: now);
       detail = cycle.projectionStopped(today: now)
           ? 'Cycle day $day. Predictions pause until you log your next period.'
           : 'Cycle day $day, counted from your last period start on ${AppDate.short(cycle.effectiveLastStart)}.';

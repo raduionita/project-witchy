@@ -170,6 +170,7 @@ class CycleProvider extends ChangeNotifier {
       final s = bleeds[index];
       return CycleCalculator.daysBetween(s.start, DateTime(date.year, date.month, date.day)) + 1;
     }
+    if (isOverdue(today: date)) return 0;
     return CycleCalculator.bleedDay(effectiveLastStart, date, effectiveCycleLength, bleedLength);
   }
 
@@ -177,6 +178,11 @@ class CycleProvider extends ChangeNotifier {
   /// dated pregnancy suppresses them (Flo parity: no period or fertility
   /// predictions once pregnancy tracking has an LMP).
   bool get showFertilityPredictions => _onboarding.trackingModes.contains(TrackingMode.cycle) && !pregnancyActive;
+
+  /// Fertility predictions for [today] only while the cycle is still credible.
+  /// Mode and pregnancy checks stay in [showFertilityPredictions].
+  bool showFertilityNow({DateTime? today}) =>
+      showFertilityPredictions && predictionsConfident(today: today);
 
   /// Pregnancy mode is selected, with or without dates entered yet.
   bool get pregnancyModeOn => _onboarding.trackingModes.contains(TrackingMode.pregnancy);
@@ -216,28 +222,50 @@ class CycleProvider extends ChangeNotifier {
   /// length until enough history exists.
   int get longestRecentCycleLength => stats.longestRecent ?? effectiveCycleLength;
 
-  /// False once the cycle runs more than 5 days past its longest recent
-  /// length: projections lose credibility, so fertility/peak alerts and
-  /// calendar prediction dots hide and Today nudges a fresh log.
-  bool predictionsConfident({DateTime? today}) => daysLate(today: today) <= longestRecentCycleLength + 5;
+  /// Outlier-resistant shortest/latest due lengths. The trimmed range drives
+  /// the due-date window, so one extreme cycle cannot make the app call a
+  /// normal cycle late.
+  int get earliestPlausibleCycleLength => stats.shortestTrimmed ?? effectiveCycleLength;
+  int get latestPlausibleCycleLength => stats.longestTrimmed ?? effectiveCycleLength;
 
-  /// True once the cycle runs more than 10 days past its longest recent
-  /// length: modular projection stops until a new bleed is logged.
-  bool projectionStopped({DateTime? today}) => daysLate(today: today) > longestRecentCycleLength + 10;
+  /// Days of grace after the latest plausible due date before predictions are
+  /// treated as unreliable.
+  static const int confidenceGraceDays = 5;
 
-  /// Earliest/latest predicted next start from the outlier-resistant recent
-  /// range (one lowest and one highest value trimmed once four cycles exist).
-  /// Falls back to the effective length, so with <2 observations the range
-  /// collapses to a single day. Null once projection has stopped.
+  /// Days past the latest plausible due date after which modular projection
+  /// stops entirely until a new bleed is logged.
+  static const int projectionGraceDays = 10;
+
+  /// False once the cycle runs more than [confidenceGraceDays] past its latest
+  /// plausible due date: fertility/peak surfaces pause, calendar prediction
+  /// dots hide and Today shows an overdue state.
+  bool predictionsConfident({DateTime? today}) => daysLate(today: today) <= confidenceGraceDays;
+
+  /// True once the projection has run past [projectionGraceDays]: no next
+  /// start or range is produced until a new bleed re-anchors the cycle.
+  bool projectionStopped({DateTime? today}) => daysLate(today: today) > projectionGraceDays;
+
+  /// True while the current cycle is past its latest plausible due date plus
+  /// the confidence grace. This is the explicit overdue state: fertility
+  /// predictions are suppressed, not silently re-projected into a new cycle.
+  bool isOverdue({DateTime? today}) => !predictionsConfident(today: today);
+
+  /// Earliest/latest due dates for the current cycle. Unlike a rolling
+  /// projection, the bounds never move into the following cycle on their own:
+  /// the window stays anchored to the last logged start until a new bleed
+  /// arrives. Null once projection has stopped.
   ({DateTime earliest, DateTime latest})? predictedRange({DateTime? today}) {
     final t = today ?? DateTime.now();
     if (projectionStopped(today: t)) return null;
-    final shortest = stats.shortestTrimmed ?? effectiveCycleLength;
-    final longest = stats.longestTrimmed ?? effectiveCycleLength;
-    final a = CycleCalculator.nextPeriodStart(effectiveLastStart, t, shortest);
-    final b = CycleCalculator.nextPeriodStart(effectiveLastStart, t, longest);
-    return a.isBefore(b) ? (earliest: a, latest: b) : (earliest: b, latest: a);
+    final a = _addDays(effectiveLastStart, earliestPlausibleCycleLength);
+    final b = _addDays(effectiveLastStart, latestPlausibleCycleLength);
+    return (
+      earliest: a.isBefore(b) ? a : b,
+      latest: a.isAfter(b) ? a : b,
+    );
   }
+
+  DateTime _addDays(DateTime d, int days) => DateTime(d.year, d.month, d.day + days);
 
   /// True when the Today countdown renders as an earliest/latest range:
   /// always in perimenopause, otherwise once the outlier-resistant recent
@@ -246,10 +274,18 @@ class CycleProvider extends ChangeNotifier {
 
   int cycleDay({DateTime? today}) => CycleCalculator.cycleDay(effectiveLastStart, today ?? DateTime.now(), effectiveCycleLength);
 
+  /// Actual elapsed day since the last period start, with no modular wrap.
+  /// Display surfaces use this; [cycleDay] remains the phase-math projection.
+  int elapsedCycleDay({DateTime? today}) =>
+      CycleCalculator.elapsedCycleDay(effectiveLastStart, today ?? DateTime.now());
+
   /// Phase for [date]. A day with logged bleeding is always menstrual, even when
-  /// the pure-arithmetic cycle position would place it in another phase.
+  /// the pure-arithmetic cycle position would place it in another phase. Once
+  /// the cycle is overdue, the phase freezes at luteal instead of wrapping into
+  /// a phantom next cycle.
   CyclePhase phaseAt(DateTime date) {
     if (hasLoggedBleedOn(date)) return CyclePhase.menstrual;
+    if (isOverdue(today: date)) return CyclePhase.luteal;
     return CycleCalculator.phaseAt(effectiveLastStart, date, effectiveCycleLength, bleedLength, lutealLength: lutealLength);
   }
 
@@ -273,14 +309,14 @@ class CycleProvider extends ChangeNotifier {
   );
 
   /// First day of the fertile window (ovulation minus 5); null when fertility
-  /// predictions are off.
+  /// predictions are off or the cycle is overdue.
   DateTime? fertileWindowStart({DateTime? today}) =>
-      showFertilityPredictions ? ovulationDay(today: today).subtract(const Duration(days: 5)) : null;
+      showFertilityNow(today: today) ? _addDays(ovulationDay(today: today), -5) : null;
 
   /// Last day of the fertile window (ovulation plus 1); null when fertility
-  /// predictions are off.
+  /// predictions are off or the cycle is overdue.
   DateTime? fertileWindowEnd({DateTime? today}) =>
-      showFertilityPredictions ? ovulationDay(today: today).add(const Duration(days: 1)) : null;
+      showFertilityNow(today: today) ? _addDays(ovulationDay(today: today), 1) : null;
 
   /// This cycle's ovulation date. Unlike [nextOvulationDate] it never rolls
   /// forward, so a peak that already passed can still be named.
@@ -290,8 +326,9 @@ class CycleProvider extends ChangeNotifier {
   /// ovulation date keeps the window from claiming "ovulation nears" after the
   /// peak has passed.
   FertilityStatus fertilityStatus({DateTime? today}) {
-    final now = DateTime.now();
-    final date = today ?? now;
+    final date = today ?? DateTime.now();
+    if (!showFertilityPredictions) return FertilityStatus.passed;
+    if (!predictionsConfident(today: date)) return FertilityStatus.overdue;
     final day = DateTime(date.year, date.month, date.day);
     final peak = CycleCalculator.ovulationDay(effectiveLastStart, day, effectiveCycleLength, lutealLength: lutealLength);
     final daysToPeak = CycleCalculator.daysBetween(day, peak);
@@ -319,25 +356,30 @@ class CycleProvider extends ChangeNotifier {
     lutealLength: lutealLength,
   );
 
-  /// Days past the projected due date with no new period logged (0 = not late).
+  /// Days past the latest plausible due date with no new period logged
+  /// (0 = not late). Using the latest plausible length means a 35-day cycle is
+  /// not called late on day 33 just because the median is 32.
   int daysLate({DateTime? today}) {
     final t = today ?? DateTime.now();
-    final due = DateTime(effectiveLastStart.year, effectiveLastStart.month, effectiveLastStart.day + effectiveCycleLength);
+    final due = _addDays(effectiveLastStart, latestPlausibleCycleLength);
     final diff = CycleCalculator.daysBetween(due, t);
     return diff > 0 ? diff : 0;
   }
 
-  /// A period day is either an arithmetic prediction day or a day the user actually logged bleeding on.
+  /// A period day is either a logged bleed day or an arithmetic prediction day
+  /// while the current projection is still credible. Once overdue, modular
+  /// period days would be a phantom next cycle and are suppressed.
   bool isPeriodDay(DateTime date) =>
-      hasLoggedBleedOn(date) || CycleCalculator.isPeriodDay(effectiveLastStart, date, effectiveCycleLength, bleedLength);
-
+      hasLoggedBleedOn(date) ||
+      (predictionsConfident(today: date) &&
+          CycleCalculator.isPeriodDay(effectiveLastStart, date, effectiveCycleLength, bleedLength));
 
   bool isFertileDay(DateTime date) =>
-      showFertilityPredictions &&
+      showFertilityNow(today: date) &&
       CycleCalculator.isFertileDay(effectiveLastStart, date, effectiveCycleLength, lutealLength: lutealLength);
 
   bool isOvulationDay(DateTime date) =>
-      showFertilityPredictions &&
+      showFertilityNow(today: date) &&
       CycleCalculator.isOvulationDay(effectiveLastStart, date, effectiveCycleLength, lutealLength: lutealLength);
 
   bool get fertileToday => isFertileDay(DateTime.now());

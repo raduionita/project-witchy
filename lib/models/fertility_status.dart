@@ -8,6 +8,7 @@ enum FertilityStatus {
   peakToday,
   windowClosing,
   passed,
+  overdue,
 }
 
 extension FertilityStatusLabel on FertilityStatus {
@@ -17,5 +18,6 @@ extension FertilityStatusLabel on FertilityStatus {
         FertilityStatus.peakToday => 'Peak today',
         FertilityStatus.windowClosing => 'Window closing',
         FertilityStatus.passed => 'Peak passed',
+        FertilityStatus.overdue => 'Overdue',
       };
 }

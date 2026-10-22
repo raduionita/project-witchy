@@ -411,3 +411,27 @@ Closes `plans/2026.10.19.md`. Predictions now share one rolling median, onboardi
 - Date ranges use a plain hyphen. The old `AppDate.range` helper used an en dash, and `AppDate.longRange` was added for the full `October 29, 2026 - November 3, 2026` form used by the card rows.
 
 Gates: `flutter analyze` = No issues found, `flutter test` = 383/383 passing, `flutter build apk --debug` = ✓, `flutter build web` = ✓.
+
+## Update 22 - 2026.10.22 - Overdue cycles and honest period math
+
+P0 of the cycle-tracking review. The goal was to stop the app from presenting a late cycle as a fresh ovulatory cycle, and to stop low-quality period data from inventing short cycles.
+
+### Overdue state
+- `CycleProvider` now has one due-date basis: earliest due is the trimmed shortest recent cycle, latest due is the trimmed longest. `daysLate` counts from the latest due date, so a 35-day cycle is not called late on day 33 just because the median is 32.
+- Predictions stay confident for 5 days past the latest due date and stop entirely after 10. `isOverdue` is the explicit state between those.
+- When overdue, every fertility surface pauses: `fertilityStatus` returns `FertilityStatus.overdue`, `showFertilityNow` is false, fertile/ovulation day checks are false, the fertile window getters return null, Today hides the fertility stat card and the orb's fertile segment and legend, the Fertility screen shows `Predictions paused` with a test prompt, and the chart hides the predicted ovulation marker.
+- Today keeps the overdue message after the projection stops (`Log to update` plus `period overdue - consider a test`) and the astral card says `Cycle running long` instead of a phase.
+- The period window no longer rolls one bound into the next cycle: `predictedRange` anchors both bounds to the last start, so a range that is already open reads `Due Now` instead of showing next-cycle dates.
+
+### Cycle day and period detection
+- `CycleCalculator.elapsedCycleDay` returns the real day count since the last start, with no modulo. Today, Fertility, Bleed History and the orb use it, so a 39-day cycle reads `Cycle Day 39`, not `Cycle Day 11`.
+- Today only shows the `Period Day N` tag when bleeding is actually logged; predicted period days are a separate glyph.
+- Spotting is no longer a period: `PeriodHistory` marks all-`Spotting` spans and `periods()` excludes them from starts, cycle lengths, bleed averages and BBT/OPK baselines. Spotting remains visible in the logs and history.
+- A one-day gap inside a bleed is bridged, so an unlogged day cannot split one period into two starts. Observed cycle gaps below 15 days are rejected, matching the manual range floor.
+- An explicit period record is no longer replaced by a spotting or too-short real flow span that happens to share its start date.
+
+### Tests and gates
+- Added regression coverage for the overdue state, elapsed vs modular cycle day, spotting-only spans, the one-day gap bridge, sub-15 cycle rejection, the due-window rollover, and the late-vs-median case.
+- `flutter analyze` = No issues found, `flutter test` = 396/396 passing, `flutter build apk --debug` = ✓.
+
+Files: `lib/models/fertility_status.dart`, `lib/models/period_span.dart`, `lib/services/cycle_calculator.dart`, `lib/services/period_history.dart`, `lib/providers/cycle_provider.dart`, `lib/screens/today_screen.dart`, `lib/screens/fertility_screen.dart`, `lib/screens/bleed_history_screen.dart`, `lib/screens/chart_screen.dart`, `lib/widgets/cycle_orb.dart`, plus the matching tests.

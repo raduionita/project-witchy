@@ -51,4 +51,12 @@ void main() {
     expect(find.text('TTC Tips'), findsNothing);
     expect(find.text('FERTILITY'), findsOneWidget);
   });
+
+  testWidgets('an overdue cycle shows paused predictions instead of a window', (tester) async {
+    final now = DateTime.now();
+    await pumpFertility(tester, lastPeriodStart: DateTime(now.year, now.month, now.day - 34));
+    expect(find.text('Predictions paused'), findsOneWidget);
+    expect(find.text('Log your period'), findsOneWidget);
+    expect(find.text('FERTILITY'), findsNothing);
+  });
 }

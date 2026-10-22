@@ -33,12 +33,43 @@ void main() {
       expect(spans.single.length, 1);
       expect(PeriodHistory.spans(const {}), isEmpty);
     });
+
+    test('bridges a single missing day inside a period', () {
+      final spans = PeriodHistory.spans({
+        DateTime(2026, 9, 1): DayLog(flow: {'Medium'}),
+        DateTime(2026, 9, 2): DayLog(flow: {'Light'}),
+        DateTime(2026, 9, 4): DayLog(flow: {'Light'}),
+        DateTime(2026, 9, 5): DayLog(flow: {'Light'}),
+      });
+      expect(spans, hasLength(1));
+      expect(spans.single.start, DateTime(2026, 9, 1));
+      expect(spans.single.end, DateTime(2026, 9, 5));
+      expect(spans.single.length, 5);
+    });
+
+    test('spotting-only spans stay out of periods', () {
+      final spans = PeriodHistory.spans({
+        DateTime(2026, 9, 1): DayLog(flow: {'Medium'}),
+        DateTime(2026, 9, 2): DayLog(flow: {'Light'}),
+        DateTime(2026, 9, 15): DayLog(flow: {'Spotting'}),
+        DateTime(2026, 9, 16): DayLog(flow: {'Spotting'}),
+      });
+      expect(spans, hasLength(2));
+      expect(spans.last.spottingOnly, isTrue);
+      expect(PeriodHistory.periods(spans), hasLength(1));
+      expect(PeriodHistory.spotting(spans).single.start, DateTime(2026, 9, 15));
+    });
   });
 
   group('PeriodHistory stats', () {
     test('cycleLengths are diffs between consecutive starts', () {
       final starts = [DateTime(2026, 7, 1), DateTime(2026, 7, 29), DateTime(2026, 8, 27)];
       expect(PeriodHistory.cycleLengths(starts), [28, 29]);
+    });
+
+    test('cycleLengths rejects implausible gaps from split periods', () {
+      final starts = [DateTime(2026, 9, 1), DateTime(2026, 9, 4), DateTime(2026, 10, 1)];
+      expect(PeriodHistory.cycleLengths(starts), [27]);
     });
 
     test('median handles odd, even and empty lists', () {

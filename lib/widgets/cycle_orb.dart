@@ -25,6 +25,10 @@ class CycleOrb extends StatelessWidget {
 
   /// Swatch row under the orb explaining the ring colours.
   final bool showLegend;
+
+  /// False hides the fertile segment and legend entry while predictions are
+  /// paused (for example once a cycle is overdue).
+  final bool showFertility;
   const CycleOrb({
     super.key,
     this.day = '14',
@@ -35,6 +39,7 @@ class CycleOrb extends StatelessWidget {
     this.fertileStartDay = 10,
     this.fertileEndDay = 16,
     this.showLegend = true,
+    this.showFertility = true,
   });
 
   /// Ring gradient split into hard-edged slices: period, fertile window, and the
@@ -44,8 +49,8 @@ class CycleOrb extends StatelessWidget {
   SweepGradient _buildRingGradient() {
     final length = cycleLength <= 0 ? 28.0 : cycleLength.toDouble();
     final periodEnd = (bleedLength / length).clamp(0.0, 1.0);
-    final fertileFrom = ((fertileStartDay - 1) / length).clamp(0.0, 1.0);
-    final fertileTo = (fertileEndDay / length).clamp(0.0, 1.0);
+    final fertileFrom = showFertility ? ((fertileStartDay - 1) / length).clamp(0.0, 1.0) : 0.0;
+    final fertileTo = showFertility ? (fertileEndDay / length).clamp(0.0, 1.0) : 0.0;
     final marks = <double>[0.0, periodEnd, fertileFrom, fertileTo, 1.0]..sort();
     final stops = <double>[];
     final colors = <Color>[];
@@ -136,8 +141,10 @@ class CycleOrb extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildLegendEntry(AppColors.pink, 'Period'),
-          const SizedBox(width: 14),
-          _buildLegendEntry(AppColors.pur, 'Fertile'),
+          if (showFertility) ...[
+            const SizedBox(width: 14),
+            _buildLegendEntry(AppColors.pur, 'Fertile'),
+          ],
           const SizedBox(width: 14),
           _buildLegendEntry(AppColors.gold, 'Today'),
         ],
@@ -152,7 +159,8 @@ class CycleOrb extends StatelessWidget {
       child: Column(
         children: [
           Semantics(
-            label: 'Cycle day $day, $phase. Period days 1-$bleedLength, fertile window days $fertileStartDay-$fertileEndDay, ${(fill * 100).round()} percent complete',
+            label:
+                'Cycle day $day, $phase. Period days 1-$bleedLength${showFertility ? ', fertile window days $fertileStartDay-$fertileEndDay' : ''}, ${(fill * 100).round()} percent complete',
             child: Stack(
               alignment: Alignment.center,
               children: [

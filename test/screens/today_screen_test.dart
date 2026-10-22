@@ -132,4 +132,51 @@ void main() {
     // Predictions still run while projecting: fertility card stays.
     expect(find.text('FERTILITY WINDOW'), findsOneWidget);
   });
+
+  testWidgets('an overdue cycle pauses fertility and keeps the real cycle day', (tester) async {
+    final now = DateTime.now();
+    final last = DateTime(now.year, now.month, now.day - 34);
+    await pumpToday(
+      tester,
+      mode: TrackingMode.cycle,
+      lastPeriodStart: last,
+      seedStarts: [DateTime(last.year, last.month, last.day - 28), last],
+    );
+    expect(find.text('6 Days Late'), findsOneWidget);
+    expect(find.text('period overdue - consider a test'), findsOneWidget);
+    expect(find.text('FERTILITY WINDOW'), findsNothing);
+    // Elapsed day, not the wrapped modular day (which would be 7).
+    expect(find.text('Cycle Day 35'), findsOneWidget);
+  });
+
+  testWidgets('a stopped projection still surfaces the overdue test prompt', (tester) async {
+    final now = DateTime.now();
+    final last = DateTime(now.year, now.month, now.day - 39);
+    await pumpToday(
+      tester,
+      mode: TrackingMode.cycle,
+      lastPeriodStart: last,
+      seedStarts: [DateTime(last.year, last.month, last.day - 28), last],
+    );
+    expect(find.text('Log to update'), findsOneWidget);
+    expect(find.text('period overdue - consider a test'), findsOneWidget);
+    expect(find.text('FERTILITY WINDOW'), findsNothing);
+  });
+
+  testWidgets('a due window that already started shows Due Now, not next-cycle dates', (tester) async {
+    final now = DateTime.now();
+    final last = DateTime(now.year, now.month, now.day - 29);
+    await pumpToday(
+      tester,
+      mode: TrackingMode.cycle,
+      lastPeriodStart: last,
+      seedStarts: [
+        DateTime(last.year, last.month, last.day - 63),
+        DateTime(last.year, last.month, last.day - 28),
+        last,
+      ],
+    );
+    expect(find.text('Due Now'), findsOneWidget);
+    expect(find.textContaining('27 Days'), findsNothing);
+  });
 }

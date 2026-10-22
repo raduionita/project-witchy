@@ -84,7 +84,7 @@ class ChartScreen extends StatelessWidget {
     final endOfToday = DateTime(today.year, today.month, today.day);
     bool inWindow(DateTime day) => !day.isBefore(start) && !day.isAfter(endOfToday);
     final confirmedDay = cycle.confirmedOvulationDate;
-    final predictedDay = cycle.showFertilityPredictions ? cycle.ovulationDay(today: today) : null;
+    final predictedDay = cycle.showFertilityNow(today: today) ? cycle.ovulationDay(today: today) : null;
     // BBT-confirmed ovulation wins over the arithmetic prediction.
     final markerDay = confirmedDay != null && inWindow(confirmedDay)
         ? confirmedDay

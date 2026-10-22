@@ -17,6 +17,14 @@ class CycleCalculator {
   static int cycleDay(DateTime lastStart, DateTime today, int cycleLength) =>
       (daysBetween(lastStart, today) % _len(cycleLength)) + 1;
 
+  /// Elapsed day since [lastStart], with no modular wrap. Display surfaces use
+  /// this so a late cycle reads "Cycle Day 39", not a phantom "Cycle Day 12".
+  /// Phase classification keeps using [cycleDay].
+  static int elapsedCycleDay(DateTime lastStart, DateTime today) {
+    final day = daysBetween(lastStart, today) + 1;
+    return day < 1 ? 1 : day;
+  }
+
   static DateTime cycleStart(DateTime lastStart, DateTime today, int cycleLength) {
     final since = daysBetween(lastStart, today);
     return _addDays(_day(lastStart), since - (since % _len(cycleLength)));

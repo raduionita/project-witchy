@@ -51,6 +51,22 @@ void main() {
       expect(spans.last.estimated, isFalse);
     });
 
+    test('short or spotting days do not replace explicit period starts', () {
+      final logs = {
+        DateTime(2026, 9, 1): DayLog()..flow.add('Spotting'),
+        DateTime(2026, 10, 1): DayLog()..flow.add('Light'),
+      };
+      final spans = PeriodHistory.spansFrom(logs, [
+        PeriodRecord(start: DateTime(2026, 9, 1), end: DateTime(2026, 9, 5)),
+        PeriodRecord(start: DateTime(2026, 10, 1), end: DateTime(2026, 10, 4)),
+      ]);
+
+      expect(spans, hasLength(2));
+      expect(PeriodHistory.periods(spans), hasLength(2));
+      expect(spans.first.end, DateTime(2026, 9, 5));
+      expect(spans.last.end, DateTime(2026, 10, 4));
+    });
+
     test('migrates assumed flow into an estimated record and clears it', () async {
       final first = DayLog()..flow.add('Medium');
       first.assumed = true;

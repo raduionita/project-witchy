@@ -10,15 +10,30 @@ class PeriodHistory {
 
   static bool isBleedDay(DayLog? log) => log != null && log.flow.isNotEmpty;
 
-  /// Groups logged bleed days into consecutive spans, oldest first.
+  static const String spottingFlow = 'Spotting';
+
+  /// True when the day has flow and every flow value is spotting.
+  static bool isSpottingDay(DayLog? log) =>
+      log != null && log.flow.isNotEmpty && log.flow.every((flow) => flow == spottingFlow);
+
+  /// Groups logged bleed days into spans, oldest first. A single missing day
+  /// (for example an unlogged day inside a period) is bridged so one forgotten
+  /// entry cannot split a period into two starts and invent a short cycle.
   static List<PeriodSpan> spans(Map<DateTime, DayLog> logs) {
-    final dates = logs.entries.where((e) => isBleedDay(e.value)).map((e) => _day(e.key)).toList()..sort();
+    final byDay = <DateTime, DayLog>{for (final e in logs.entries) _day(e.key): e.value};
+    final dates = byDay.entries.where((e) => isBleedDay(e.value)).map((e) => e.key).toList()..sort();
     final result = <PeriodSpan>[];
     for (final date in dates) {
-      if (result.isNotEmpty && CycleCalculator.daysBetween(result.last.end, date) == 1) {
-        result[result.length - 1] = PeriodSpan(start: result.last.start, end: date);
+      final spotting = isSpottingDay(byDay[date]);
+      if (result.isNotEmpty && CycleCalculator.daysBetween(result.last.end, date) <= 2) {
+        final previous = result.last;
+        result[result.length - 1] = PeriodSpan(
+          start: previous.start,
+          end: date,
+          spottingOnly: previous.spottingOnly && spotting,
+        );
       } else {
-        result.add(PeriodSpan(start: date, end: date));
+        result.add(PeriodSpan(start: date, end: date, spottingOnly: spotting));
       }
     }
     return result;
@@ -32,11 +47,15 @@ class PeriodHistory {
     Iterable<PeriodRecord> records,
   ) {
     final real = spans(logs);
+    final realPeriods = [
+      for (final span in real)
+        if (!span.spottingOnly && span.length >= minSpanDays) span,
+    ];
     final byStart = <DateTime, PeriodSpan>{};
     for (final record in records) {
       final start = _day(record.start);
       final end = _day(record.end ?? record.start);
-      final overlapsReal = real.any(
+      final overlapsReal = realPeriods.any(
         (span) => !start.isAfter(span.end) && !end.isBefore(span.start),
       );
       if (overlapsReal) continue;
@@ -48,7 +67,13 @@ class PeriodHistory {
       );
     }
     for (final span in real) {
-      byStart[_day(span.start)] = span;
+      final key = _day(span.start);
+      final existing = byStart[key];
+      final isPeriod = !span.spottingOnly && span.length >= minSpanDays;
+      // A qualifying real period wins over an explicit record; a spotting or
+      // too-short day never replaces an explicit period start on the same day.
+      if (!isPeriod && existing != null) continue;
+      byStart[key] = span;
     }
     return byStart.values.toList()..sort((a, b) => a.start.compareTo(b.start));
   }
@@ -58,20 +83,35 @@ class PeriodHistory {
   static const int minSpanDays = 2;
 
   /// Spans that qualify as periods: a known start, even without an end, or at
-  /// least [minSpanDays] consecutive logged days.
-  static List<PeriodSpan> periods(List<PeriodSpan> spans) =>
-      [for (final s in spans) if (s.startOnly || s.length >= minSpanDays) s];
+  /// least [minSpanDays] consecutive logged days with at least one non-spotting
+  /// flow entry.
+  static List<PeriodSpan> periods(List<PeriodSpan> spans) => [
+    for (final s in spans)
+      if (s.startOnly || (s.length >= minSpanDays && !s.spottingOnly)) s,
+  ];
 
-  /// Isolated short spans, surfaced as spotting rather than as periods.
-  static List<PeriodSpan> spotting(List<PeriodSpan> spans) =>
-      [for (final s in spans) if (!s.startOnly && s.length < minSpanDays) s];
+  /// Spans that are spotting rather than periods: too short, or every logged
+  /// day is spotting.
+  static List<PeriodSpan> spotting(List<PeriodSpan> spans) => [
+    for (final s in spans)
+      if (!s.startOnly && (s.spottingOnly || s.length < minSpanDays)) s,
+  ];
 
   static List<DateTime> startsOf(List<PeriodSpan> spans) => [for (final s in periods(spans)) s.start];
 
+  /// Gaps shorter than this are rejected: they come from split periods or
+  /// duplicate starts, not from a real cycle.
+  static const int minCycleLength = 15;
+
   /// Completed cycle lengths between consecutive period starts.
-  static List<int> cycleLengths(List<DateTime> starts) => [
-    for (var i = 1; i < starts.length; i++) CycleCalculator.daysBetween(starts[i - 1], starts[i]),
-  ];
+  static List<int> cycleLengths(List<DateTime> starts) {
+    final result = <int>[];
+    for (var i = 1; i < starts.length; i++) {
+      final gap = CycleCalculator.daysBetween(starts[i - 1], starts[i]);
+      if (gap >= minCycleLength) result.add(gap);
+    }
+    return result;
+  }
 
   static int? median(List<int> values) {
     if (values.isEmpty) return null;

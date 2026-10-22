@@ -282,41 +282,50 @@ void main() {
       }
     }
 
-    test('late exactly longest+5 stays confident and projecting', () {
+    test('five days past the latest due date stays confident and projecting', () {
       final today = DateTime(2026, 10, 9);
-      seedTwo28s(today.subtract(const Duration(days: 61)));
+      seedTwo28s(today.subtract(const Duration(days: 33)));
       final cycle = CycleProvider(onboarding, logging);
-      expect(cycle.daysLate(today: today), 33);
-      expect(cycle.longestRecentCycleLength, 28);
+      expect(cycle.daysLate(today: today), 5);
+      expect(cycle.latestPlausibleCycleLength, 28);
       expect(cycle.predictionsConfident(today: today), isTrue);
+      expect(cycle.isOverdue(today: today), isFalse);
       expect(cycle.projectionStopped(today: today), isFalse);
       expect(cycle.nextPeriodStart(today: today), isNotNull);
-      expect(cycle.predictedRange(today: today), isNotNull);
+      final range = cycle.predictedRange(today: today);
+      expect(range, isNotNull);
+      expect(range!.earliest, today.subtract(const Duration(days: 5)));
     });
 
-    test('late past longest+5 loses confidence but keeps projecting', () {
+    test('six days past the latest due date loses confidence but keeps projecting', () {
       final today = DateTime(2026, 10, 9);
-      seedTwo28s(today.subtract(const Duration(days: 62)));
+      seedTwo28s(today.subtract(const Duration(days: 34)));
       final cycle = CycleProvider(onboarding, logging);
-      expect(cycle.daysLate(today: today), 34);
+      expect(cycle.daysLate(today: today), 6);
+      expect(cycle.predictionsConfident(today: today), isFalse);
+      expect(cycle.isOverdue(today: today), isTrue);
+      expect(cycle.projectionStopped(today: today), isFalse);
+      expect(cycle.nextPeriodStart(today: today), isNotNull);
+      final range = cycle.predictedRange(today: today);
+      expect(range, isNotNull);
+      // The window stays on the current cycle; it does not roll to the next one.
+      expect(range!.earliest, today.subtract(const Duration(days: 6)));
+    });
+
+    test('ten days past the latest due date still projects (strict boundary)', () {
+      final today = DateTime(2026, 10, 9);
+      seedTwo28s(today.subtract(const Duration(days: 38)));
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.daysLate(today: today), 10);
       expect(cycle.predictionsConfident(today: today), isFalse);
       expect(cycle.projectionStopped(today: today), isFalse);
-      expect(cycle.nextPeriodStart(today: today), isNotNull);
     });
 
-    test('late exactly longest+10 still projects (strict boundary)', () {
+    test('eleven days past the latest due date stops the projection', () {
       final today = DateTime(2026, 10, 9);
-      seedTwo28s(today.subtract(const Duration(days: 66)));
+      seedTwo28s(today.subtract(const Duration(days: 39)));
       final cycle = CycleProvider(onboarding, logging);
-      expect(cycle.daysLate(today: today), 38);
-      expect(cycle.projectionStopped(today: today), isFalse);
-    });
-
-    test('late past longest+10 stops the projection', () {
-      final today = DateTime(2026, 10, 9);
-      seedTwo28s(today.subtract(const Duration(days: 67)));
-      final cycle = CycleProvider(onboarding, logging);
-      expect(cycle.daysLate(today: today), 39);
+      expect(cycle.daysLate(today: today), 11);
       expect(cycle.predictionsConfident(today: today), isFalse);
       expect(cycle.projectionStopped(today: today), isTrue);
       expect(cycle.nextPeriodStart(today: today), isNull);
@@ -327,6 +336,32 @@ void main() {
       buildSources();
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.longestRecentCycleLength, 40);
+      expect(cycle.latestPlausibleCycleLength, 40);
+    });
+
+    test('overdue pauses every fertility surface and phantom period days', () {
+      final today = DateTime(2026, 10, 9);
+      final last = today.subtract(const Duration(days: 34));
+      seedTwo28s(last);
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.isOverdue(today: today), isTrue);
+      expect(cycle.fertilityStatus(today: today), FertilityStatus.overdue);
+      expect(cycle.showFertilityNow(today: today), isFalse);
+      expect(cycle.isFertileDay(today), isFalse);
+      expect(cycle.isOvulationDay(today), isFalse);
+      expect(cycle.fertileWindowStart(today: today), isNull);
+      expect(cycle.fertileWindowEnd(today: today), isNull);
+      // Two cycles after the anchor would be a modular period day, but the
+      // projection is paused, so no phantom period is claimed.
+      expect(cycle.isPeriodDay(last.add(const Duration(days: 56))), isFalse);
+      expect(cycle.phaseAt(today), CyclePhase.luteal);
+    });
+
+    test('elapsed cycle day keeps counting while the modular day wraps', () {
+      buildSources(lastStart: DateTime(2026, 9, 1), cycleLength: 28);
+      final cycle = CycleProvider(onboarding, logging);
+      expect(cycle.elapsedCycleDay(today: DateTime(2026, 10, 9)), 39);
+      expect(cycle.cycleDay(today: DateTime(2026, 10, 9)), 11);
     });
   });
 
@@ -382,6 +417,28 @@ void main() {
       expect(range, isNotNull);
       expect(range!.earliest, DateTime(2026, 9, 30));
       expect(range.latest, DateTime(2026, 10, 7));
+    });
+
+    test('the window stays on the current cycle after the earliest due date passes', () {
+      final last = DateTime(2026, 9, 2);
+      seedGaps(last, [28, 35]);
+      final cycle = CycleProvider(onboarding, logging);
+      final range = cycle.predictedRange(today: DateTime(2026, 10, 1));
+      expect(range, isNotNull);
+      // The shortest bound has passed, but it must not roll into the next cycle.
+      expect(range!.earliest, DateTime(2026, 9, 30));
+      expect(range.latest, DateTime(2026, 10, 7));
+      expect(cycle.daysLate(today: DateTime(2026, 10, 1)), 0);
+    });
+
+    test('a long cycle is not called late against the median', () {
+      final last = DateTime(2026, 9, 2);
+      seedGaps(last, [28, 35]);
+      final cycle = CycleProvider(onboarding, logging);
+      // Median is 32, but the latest plausible due date is Oct 7.
+      expect(cycle.effectiveCycleLength, 32);
+      expect(cycle.daysLate(today: DateTime(2026, 10, 5)), 0);
+      expect(cycle.daysLate(today: DateTime(2026, 10, 8)), 1);
     });
 
     test('steady cycles keep the single-day countdown', () {

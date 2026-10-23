@@ -18,6 +18,7 @@ import '../widgets/empty_state.dart';
 import '../widgets/log_bottom_sheet.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/trend_bars.dart';
+import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
 import '../widgets/period_range_sheet.dart';
@@ -227,11 +228,13 @@ class InsightsScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 TrendBars(values: trendValues, labels: trendLabels),
                 if (trendValues.length < 2 && spans.isNotEmpty)
-                  TextButton(
-                    key: const Key('cycle-trends-cta'),
-                    onPressed: () => showLogSheet(context, DateTime.now()),
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                    child: const Text('Log your period'),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: AppButton(
+                      key: const Key('cycle-trends-cta'),
+                      label: 'Log your period',
+                      onTap: () => showLogSheet(context, DateTime.now()),
+                    ),
                   ),
               ],
             ),

@@ -73,7 +73,7 @@ class TodayScreen extends StatelessWidget {
   Widget _buildTestAction(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final now = DateTime.now();
-    if (cycle.pregnancyActive || cycle.contraceptionModeOn || cycle.conditionPausesFertility) {
+    if (cycle.pregnancyActive || cycle.conditionPausesFertility) {
       return const SizedBox.shrink();
     }
     if (cycle.daysLate(today: now) <= 0 || cycle.hasNegativeTestThisCycle) {

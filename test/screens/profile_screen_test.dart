@@ -115,6 +115,7 @@ void main() {
     await tester.scrollUntilVisible(find.textContaining('Version'), 400);
     expect(find.textContaining('Version 1.2.4'), findsNothing);
     expect(find.textContaining('Version'), findsOneWidget);
+    expect(find.textContaining('Updated Oct 23, 2026'), findsOneWidget);
   });
 
   testWidgets('guest session offers Sign Out, not Switch Account', (

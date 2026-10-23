@@ -9,6 +9,7 @@ import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/screens/insights_screen.dart';
 import 'package:witchy/services/prediction_snapshot_store.dart';
 import 'package:witchy/services/prefs_service.dart';
+import 'package:witchy/widgets/app_button.dart';
 
 DateTime previousMonth() {
   final now = DateTime.now();
@@ -158,5 +159,17 @@ void main() {
     expect(find.text('Prediction History'), findsOneWidget);
     expect(find.text('Cycle started Sep 2'), findsOneWidget);
     expect(find.text('Peak Sep 16'), findsOneWidget);
+  });
+
+  testWidgets('cycle trends CTA is a primary button', (tester) async {
+    logging.setFlow(DateTime(2026, 9, 2), 'Medium');
+    logging.setFlow(DateTime(2026, 9, 3), 'Light');
+    await pumpInsights(tester);
+
+    final cta = find.byKey(const Key('cycle-trends-cta'));
+    await tester.scrollUntilVisible(cta, 300);
+    final button = tester.widget<AppButton>(cta);
+
+    expect(button.label, 'Log your period');
   });
 }

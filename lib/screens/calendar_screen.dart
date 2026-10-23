@@ -20,6 +20,7 @@ import '../widgets/calendar_legend.dart';
 import '../widgets/cycle_calendar.dart';
 import '../widgets/icon_badge.dart';
 import '../widgets/month_picker_sheet.dart';
+import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
 
@@ -177,15 +178,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
         const SizedBox(height: 8),
         if (entry == null) ...[
           Text(AppDate.long(selectedDate), style: AppText.sans(11, c: AppColors.muted)),
-          const SizedBox(height: 6),
-          if (cycle.estimatedPeriodStarts.contains(selectedDate)) ...[
-            AppTag.gold('Estimated start'),
-            const SizedBox(height: 6),
-            Text('From your onboarding history. Log flow to confirm.', style: AppText.sans(12, c: AppColors.muted)),
-          ] else
-            Text('No entry for this day', style: AppText.sans(12, c: AppColors.muted)),
-          const SizedBox(height: 4),
-          TextButton(onPressed: () => showLogSheet(context, selectedDate), child: const Text('Log this day')),
+          const SizedBox(height: 10),
+          AppCard(
+            child: Column(
+              children: [
+                IconBadge(icon: AppIcons.cal),
+                const SizedBox(height: 10),
+                Text('Nothing logged yet', style: AppText.h2, textAlign: TextAlign.center),
+                const SizedBox(height: 6),
+                if (cycle.estimatedPeriodStarts.contains(selectedDate)) ...[
+                  AppTag.gold('Estimated start'),
+                  const SizedBox(height: 6),
+                  Text('From your onboarding history. Log flow to confirm.', style: AppText.sub, textAlign: TextAlign.center),
+                ] else
+                  Text('Track flow, mood, symptoms or sleep for this day.', style: AppText.sub, textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                AppButton(label: 'Log this day', onTap: () => showLogSheet(context, selectedDate)),
+              ],
+            ),
+          ),
         ] else
           _buildEntryCard(cycle, selectedDate, entry),
       ],

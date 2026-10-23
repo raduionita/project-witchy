@@ -11,10 +11,10 @@ void main() {
     );
   }
 
-  testWidgets('lays all four modes out as wrapped chips', (tester) async {
+  testWidgets('lays all three modes out as wrapped chips', (tester) async {
     await pumpChips(tester, selected: {TrackingMode.cycle}, onToggle: (_) {});
-    expect(find.byType(AppChip), findsNWidgets(4));
-    for (var i = 0; i < 4; i++) {
+    expect(find.byType(AppChip), findsNWidgets(3));
+    for (var i = 0; i < 3; i++) {
       expect(tester.getSize(find.byType(AppChip).at(i)).width, greaterThan(0));
     }
   });

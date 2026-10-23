@@ -43,7 +43,12 @@ class PrefsService {
     final p = await SharedPreferences.getInstance();
     final raw = p.getString(_trackingModes);
     if (raw != null) {
-      return (jsonDecode(raw) as List<dynamic>).map((e) => TrackingMode.fromJson(e)).toSet();
+      final stored = (jsonDecode(raw) as List<dynamic>).map((e) => e.toString()).toSet();
+      final modes = {
+        for (final mode in TrackingMode.values)
+          if (stored.contains(mode.name)) mode,
+      };
+      return modes.isEmpty ? {TrackingMode.cycle} : modes;
     }
     final legacy = p.getString(_trackingMode);
     return legacy == null ? {TrackingMode.cycle} : {TrackingMode.fromJson(legacy)};

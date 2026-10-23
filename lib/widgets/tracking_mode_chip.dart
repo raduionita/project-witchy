@@ -13,14 +13,13 @@ class TrackingModeChips extends StatelessWidget {
     TrackingMode.cycle: AppIcons.drop,
     TrackingMode.pregnancy: AppIcons.pregnancy,
     TrackingMode.perimenopause: AppIcons.moon,
-    TrackingMode.contraception: Icons.shield_outlined,
   };
 
   @override
   Widget build(BuildContext context) {
     final modes = TrackingMode.values;
-    // Wrap instead of a single equal-width row: four modes would otherwise
-    // squeeze "Perimenopause" and "Birth Control" past their labels.
+    // Wrap instead of a single equal-width row so the three labels keep their
+    // full text at narrow widths.
     return Wrap(
       spacing: 8,
       runSpacing: 8,

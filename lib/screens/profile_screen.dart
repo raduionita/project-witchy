@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import '../common/app_metadata.dart';
 import '../common/date_format.dart';
 import '../common/legal_links.dart';
 import '../navigation/app_nav.dart';
@@ -353,11 +354,7 @@ class ProfileScreen extends StatelessWidget {
             onTap: () => _openRhythmSheet(context),
             first: true,
           ),
-          if (cycle.isCycleLengthClamped)
-            Padding(
-              padding: const EdgeInsets.only(left: 2, bottom: 6),
-              child: Text('Predictions use a 15-60 day range.', style: AppText.sans(9.5, c: AppColors.muted)),
-            ),
+          if (cycle.isCycleLengthClamped) Padding(padding: const EdgeInsets.only(left: 2, bottom: 6), child: Text('Predictions use a 15-60 day range.', style: AppText.sans(9.5, c: AppColors.muted))),
           _buildEditableRow(label: 'Bleeding Phase Length', value: '${cycle.bleedLength} Days', onTap: () => _openRhythmSheet(context)),
           _buildEditableRow(label: 'Tracking Modes', value: onboarding.trackingModes.map((m) => m.label).join(', '), onTap: () => _openTrackingSheet(context)),
           _buildEditableRow(label: 'Cycle Conditions', value: conditions, onTap: () => _openConditionsSheet(context)),
@@ -464,7 +461,7 @@ class ProfileScreen extends StatelessWidget {
             label: 'Cycle Notifications',
             trailing: Switch(
               value: settings.lunarNotifications,
-              activeThumbColor: AppColors.pur,
+              activeThumbColor: AppColors.orbSub,
               onChanged: (v) async {
                 context.read<SettingsProvider>().setLunar(v);
                 final cycle = context.read<CycleProvider>();
@@ -479,7 +476,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             first: true,
           ),
-          SettingsRow(label: 'Dark Mode', trailing: Switch(value: settings.darkMode, activeThumbColor: AppColors.pur, onChanged: (v) => context.read<SettingsProvider>().setDark(v))),
+          SettingsRow(label: 'Dark Mode', trailing: Switch(value: settings.darkMode, activeThumbColor: AppColors.orbSub, onChanged: (v) => context.read<SettingsProvider>().setDark(v))),
         ],
       ),
     );
@@ -588,7 +585,7 @@ class ProfileScreen extends StatelessWidget {
         future: _packageInfo,
         builder: (context, snap) {
           final version = snap.data?.version ?? '1.0.0';
-          return Text('Witchy\nVersion $version', textAlign: TextAlign.center, style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6));
+          return Text('Witchy\nVersion $version\nUpdated ${AppDate.shortYear(AppMetadata.lastUpdated)}', textAlign: TextAlign.center, style: AppText.sans(9.5, c: AppColors.placeholder, h: 1.6));
         },
       ),
     );

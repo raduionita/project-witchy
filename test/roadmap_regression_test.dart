@@ -82,19 +82,18 @@ void main() {
     expect(cycle.bleedLength, 5);
   });
 
-  test('P3: contraception and a fertility-pausing condition both suppress predictions', () {
+  test('P3: a fertility-pausing condition suppresses predictions', () {
     onboarding = OnboardingProvider(
       prefs,
       onboarded: true,
       cycleLength: 28,
       bleedLength: 5,
       lastPeriodStart: DateTime(2026, 1, 1),
-      trackingModes: {TrackingMode.cycle, TrackingMode.contraception},
+      trackingModes: {TrackingMode.cycle},
       cycleConditions: {CycleCondition.postpartum},
     );
     final cycle = CycleProvider(onboarding, logging);
 
-    expect(cycle.contraceptionModeOn, isTrue);
     expect(cycle.conditionPausesFertility, isTrue);
     expect(cycle.showFertilityPredictions, isFalse);
     expect(cycle.fertileWindow(today: DateTime(2026, 1, 14)), isNull);

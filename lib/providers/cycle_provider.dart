@@ -386,15 +386,12 @@ class CycleProvider extends ChangeNotifier {
   }
 
   /// Fertility predictions surface while the Cycle mode is active, unless a
-  /// dated pregnancy, birth-control mode or a condition that suppresses
-  /// ovulation predictions is present.
+  /// dated pregnancy or a condition that suppresses ovulation predictions is
+  /// present.
   bool get showFertilityPredictions =>
       _onboarding.trackingModes.contains(TrackingMode.cycle) &&
       !pregnancyActive &&
-      !contraceptionModeOn &&
       !conditionPausesFertility;
-
-  bool get contraceptionModeOn => _onboarding.trackingModes.contains(TrackingMode.contraception);
 
   /// Fertility predictions for [today] only while the cycle is still credible.
   /// Mode and pregnancy checks stay in [showFertilityPredictions].

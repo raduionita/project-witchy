@@ -556,3 +556,41 @@ Files: `lib/models/cycle_condition.dart`, `lib/models/prediction_snapshot.dart`,
 - `flutter analyze` = No issues found, `flutter test` = 462/462 passing, `flutter build apk --debug` = success, `git diff --check` = clean.
 
 Files: `test/roadmap_regression_test.dart`, `test/services/cycle_math_properties_test.dart`, `test/providers/cycle_mode_matrix_test.dart`.
+
+## Update 23 - 2026.10.23 - Calendar polish and Birth Control removal
+
+### Birth Control removal
+
+- Removed the `Birth Control` tracking mode, its chip icon, its fertility gate, and its paused-state copy. Cycle, Pregnancy and Perimenopause remain.
+- `PrefsService.trackingModes` now filters stored mode names to the modes that still exist. A stored `Birth Control` value is dropped; if nothing valid remains, the app falls back to Cycle instead of inventing a mode.
+
+### Calendar selected-day empty state
+
+- The selected day now shows its full date and a proper card when nothing is logged: calendar badge, `Nothing logged yet`, a short prompt, and a full-width primary button.
+- Estimated period starts keep their `Estimated start` tag and onboarding explanation inside the card.
+- The dark entry card is unchanged when the day has a log.
+
+### Primary CTAs
+
+- Calendar `Log this day` and Insights `Log your period` now use the app's primary `AppButton` instead of link-style `TextButton`s.
+- The Insights button keeps the `cycle-trends-cta` key, so it remains directly testable.
+
+### Profile metadata
+
+- Added `AppMetadata.lastUpdated` in `lib/common/app_metadata.dart`. The profile footer now reads `Witchy`, `Version x.y.z`, and `Updated Oct 23, 2026`.
+- Bump `AppMetadata.lastUpdated` together with each shipped `CHANGES.md` entry so the date stays truthful.
+
+### Calendar today marker and legend
+
+- The current day now uses a rounded full-cell background instead of a small circle: plum in light mode and a muted lavender in dark mode. The inner circle keeps the normal cell surface and day label colors, so only the space outside the circle turns purple.
+- Today gets a gold ring when unselected and a white ring when selected.
+- Moon glyph cells keep their dark labels.
+- The legend now lists only Period, Predicted, Fertile and Ovulation. Logged and Estimated were removed because the dots are not explained by the legend and the extra items made it feel cluttered.
+
+### Tests and gates
+
+- Updated tracking-mode, chip, mode-matrix, roadmap regression, calendar, profile and Insights tests.
+- Added `test/services/prefs_service_test.dart` for the stored-mode migration and `test/widgets/calendar_widgets_test.dart` coverage for the today background in both themes.
+- `flutter analyze` = No issues found, `flutter test` = 469/469 passing, `flutter build apk --debug` = success, `git diff --check` = clean.
+
+Files: `lib/models/tracking_mode.dart`, `lib/providers/cycle_provider.dart`, `lib/screens/calendar_screen.dart`, `lib/screens/fertility_screen.dart`, `lib/screens/insights_screen.dart`, `lib/screens/profile_screen.dart`, `lib/screens/today_screen.dart`, `lib/services/prefs_service.dart`, `lib/widgets/calendar_legend.dart`, `lib/widgets/cycle_calendar.dart`, `lib/widgets/tracking_mode_chip.dart`, `lib/common/app_metadata.dart`, plus `test/models/tracking_mode_test.dart`, `test/providers/cycle_mode_matrix_test.dart`, `test/providers/cycle_provider_test.dart`, `test/roadmap_regression_test.dart`, `test/screens/calendar_screen_test.dart`, `test/screens/insights_screen_test.dart`, `test/screens/profile_screen_test.dart`, `test/services/prefs_service_test.dart`, `test/widgets/calendar_widgets_test.dart`, `test/widgets/tracking_mode_chip_test.dart`.

@@ -15,6 +15,6 @@ void main() {
   });
 
   test('labels cover the onboarding chips', () {
-    expect(TrackingMode.values.map((m) => m.label), ['Cycle', 'Pregnancy', 'Perimenopause', 'Birth Control']);
+    expect(TrackingMode.values.map((m) => m.label), ['Cycle', 'Pregnancy', 'Perimenopause']);
   });
 }

@@ -53,14 +53,11 @@ void main() {
         final cycle = buildCycle(modes, lmpDate: lmpDate);
         final hasCycle = modes.contains(TrackingMode.cycle);
         final pregnancyActive = modes.contains(TrackingMode.pregnancy) && lmpDate != null;
-        final expected = hasCycle &&
-            !pregnancyActive &&
-            !modes.contains(TrackingMode.contraception);
+        final expected = hasCycle && !pregnancyActive;
 
         final reason = 'modes=$modes lmp=$lmpDate';
         expect(cycle.pregnancyModeOn, modes.contains(TrackingMode.pregnancy), reason: reason);
         expect(cycle.pregnancyActive, pregnancyActive, reason: reason);
-        expect(cycle.contraceptionModeOn, modes.contains(TrackingMode.contraception), reason: reason);
         expect(cycle.isPerimenopause, modes.contains(TrackingMode.perimenopause), reason: reason);
         expect(cycle.showPeriodRange, modes.contains(TrackingMode.perimenopause), reason: reason);
         expect(cycle.showFertilityPredictions, expected, reason: reason);

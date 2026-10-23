@@ -17,15 +17,13 @@ import '../widgets/app_card.dart';
 class FertilityScreen extends StatelessWidget {
   const FertilityScreen({super.key});
 
-  /// Placeholder while pregnancy, birth control or a suppressing condition
-  /// keeps fertility predictions off. The route stays reachable so deep links
-  /// and the Today card never break.
+  /// Placeholder while pregnancy or a suppressing condition keeps fertility
+  /// predictions off. The route stays reachable so deep links and the Today
+  /// card never break.
   Widget _buildPausedCard(BuildContext context, CycleProvider cycle) {
     final pregnancy = cycle.pregnancyActive;
     final message = pregnancy
         ? 'Pregnancy tracking is active, so fertility predictions are paused. They resume automatically once pregnancy mode is off.'
-        : cycle.contraceptionModeOn
-        ? 'Birth control mode is active, so fertility predictions are paused. Use the mode chips in Profile when this changes.'
         : 'A cycle condition is active, so fertility predictions are paused. Use Cycle Conditions in Profile when this changes.';
     return AppCard(
       dark: true,
@@ -106,7 +104,7 @@ class FertilityScreen extends StatelessWidget {
         body: ListView(padding: const EdgeInsets.fromLTRB(16, 6, 16, 14), children: [const SizedBox(height: 8), _buildPausedCard(context, cycle)]),
       );
     }
-    if (cycle.contraceptionModeOn || cycle.conditionPausesFertility) {
+    if (cycle.conditionPausesFertility) {
       return Scaffold(
         appBar: const AppTopBar(title: 'Fertility Window'),
         body: ListView(padding: const EdgeInsets.fromLTRB(16, 6, 16, 14), children: [const SizedBox(height: 8), _buildPausedCard(context, cycle)]),

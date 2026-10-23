@@ -1,8 +1,7 @@
 enum TrackingMode {
   cycle('Cycle'),
   pregnancy('Pregnancy'),
-  perimenopause('Perimenopause'),
-  contraception('Birth Control');
+  perimenopause('Perimenopause');
 
   const TrackingMode(this.label);
   final String label;

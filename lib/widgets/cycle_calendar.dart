@@ -67,6 +67,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
     final glyph = _glyph(cell);
     // Moon glyphs carry light fills; dark-mode ink would vanish on them.
     final onGlyph = glyph != null;
+    final today = cell.isToday;
     final dayColor = onGlyph ? const Color(0xFF2A0A3C) : AppColors.ink;
     final subColor = onGlyph ? const Color(0xFF5D4A70) : AppColors.muted;
     return SizedBox(
@@ -79,38 +80,53 @@ class _CycleCalendarState extends State<CycleCalendar> {
           cursor: tappable ? SystemMouseCursors.click : SystemMouseCursors.basic,
           child: GestureDetector(
             onTap: tappable ? () => widget.onDayTap!(cell.day) : null,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                if (cell.isToday) SizedBox(width: 44, height: 44, child: DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.lav))),
-                if (glyph != null) SvgPicture.asset(glyph, width: 44, height: 44, excludeFromSemantics: true),
-                if (cell.isToday && !cell.isSelected) _buildRing(AppColors.pur, 1.5),
-                if (cell.isSelected) _buildRing(AppColors.pur, 2),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('${cell.day}', style: AppText.sans(15, w: cell.isToday || cell.isSelected ? FontWeight.w700 : FontWeight.w500, c: dayColor)),
-                    Text('${cell.cycleDay}', style: AppText.sans(9, w: FontWeight.w500, c: subColor)),
-                  ],
-                ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (cell.isEstimatedStart) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.gold)),
-                        if (cell.isEstimatedStart && (cell.isOvulation || cell.isLogged)) const SizedBox(width: 3),
-                        if (cell.isOvulation) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.teal)),
-                        if (cell.isOvulation && cell.isLogged) const SizedBox(width: 3),
-                        if (cell.isLogged) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.blue)),
-                      ],
+            child: Container(
+              key: today ? const Key('calendar-today-cell') : null,
+              width: double.infinity,
+              height: 54,
+              decoration: BoxDecoration(
+                color: today ? (AppColors.dark ? AppColors.lav2 : AppColors.plum) : Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (today)
+                    Container(
+                      key: const Key('calendar-today-inner'),
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.lav),
+                    ),
+                  if (glyph != null) SvgPicture.asset(glyph, width: 44, height: 44, excludeFromSemantics: true),
+                  if (today && !cell.isSelected) _buildRing(AppColors.gold, 1.5),
+                  if (cell.isSelected) _buildRing(today ? Colors.white : AppColors.pur, 2),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('${cell.day}', style: AppText.sans(15, w: today || cell.isSelected ? FontWeight.w700 : FontWeight.w500, c: dayColor)),
+                      Text('${cell.cycleDay}', style: AppText.sans(9, w: FontWeight.w500, c: subColor)),
+                    ],
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (cell.isEstimatedStart) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.gold)),
+                          if (cell.isEstimatedStart && (cell.isOvulation || cell.isLogged)) const SizedBox(width: 3),
+                          if (cell.isOvulation) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.teal)),
+                          if (cell.isOvulation && cell.isLogged) const SizedBox(width: 3),
+                          if (cell.isLogged) Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.blue)),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

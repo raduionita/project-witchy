@@ -877,25 +877,6 @@ void main() {
   });
 
   group('CycleProvider P3 modes, conditions and clamps', () {
-    test('contraception mode turns fertility predictions off', () {
-      onboarding = OnboardingProvider(
-        prefs,
-        onboarded: true,
-        cycleLength: 28,
-        bleedLength: 5,
-        lastPeriodStart: DateTime(2026, 9, 20),
-        trackingModes: {TrackingMode.cycle, TrackingMode.contraception},
-      );
-      logging = LoggingProvider(prefs);
-      final cycle = CycleProvider(onboarding, logging);
-      final today = DateTime(2026, 10, 2);
-
-      expect(cycle.contraceptionModeOn, isTrue);
-      expect(cycle.showFertilityPredictions, isFalse);
-      expect(cycle.fertileWindow(today: today), isNull);
-      expect(cycle.fertilityStatus(today: today), FertilityStatus.passed);
-    });
-
     test('postpartum, breastfeeding and loss pause fertility predictions', () {
       for (final condition in [
         CycleCondition.postpartum,

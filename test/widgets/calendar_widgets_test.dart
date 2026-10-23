@@ -61,9 +61,33 @@ void main() {
 
   testWidgets('CalendarLegend lists every marker type', (tester) async {
     await tester.pumpWidget(const MaterialApp(home: Scaffold(body: CalendarLegend())));
-    for (final label in ['Period', 'Predicted', 'Fertile', 'Ovulation', 'Logged']) {
+    for (final label in ['Period', 'Predicted', 'Fertile', 'Ovulation']) {
       expect(find.text(label), findsOneWidget);
     }
+    expect(find.text('Logged'), findsNothing);
+    expect(find.text('Estimated'), findsNothing);
+  });
+
+  testWidgets('today uses a full rounded background in both themes', (tester) async {
+    final cells = MonthCells(month: DateTime(2026, 9, 1), cells: [const CalendarDayCell(day: 14, cycleDay: 14, isToday: true)]);
+    AppColors.dark = false;
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: CycleCalendar(cells: cells))));
+    final light = tester.widget<Container>(find.byKey(const Key('calendar-today-cell')));
+    final lightDecoration = light.decoration! as BoxDecoration;
+    expect(lightDecoration.color, AppColors.plum);
+    expect(lightDecoration.borderRadius, BorderRadius.circular(16));
+    final lightInner = tester.widget<Container>(find.byKey(const Key('calendar-today-inner')));
+    expect((lightInner.decoration! as BoxDecoration).color, AppColors.lav);
+    expect(tester.widget<Text>(find.text('14').first).style?.color, AppColors.ink);
+
+    AppColors.dark = true;
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: CycleCalendar(cells: cells))));
+    final dark = tester.widget<Container>(find.byKey(const Key('calendar-today-cell')));
+    expect((dark.decoration! as BoxDecoration).color, AppColors.lav2);
+    final darkInner = tester.widget<Container>(find.byKey(const Key('calendar-today-inner')));
+    expect((darkInner.decoration! as BoxDecoration).color, AppColors.lav);
+    expect(tester.widget<Text>(find.text('14').first).style?.color, AppColors.ink);
+    AppColors.dark = false;
   });
 
   group('calendar glyph palette', () {

@@ -266,6 +266,13 @@ class LoggingProvider extends ChangeNotifier {
     _save();
   }
 
+  /// Pregnancy test result: 'negative' / 'positive' / null (cleared).
+  void setPregnancyTest(DateTime d, String? v) {
+    day(d).pregnancyTest = v;
+    notifyListeners();
+    _save();
+  }
+
   void setNotes(DateTime d, String v) {
     day(d).notes = v;
     notifyListeners();

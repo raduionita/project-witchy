@@ -76,6 +76,25 @@ void main() {
       expect(cells.cellFor(1)!.isPredictedPeriod, isTrue);
     });
 
+    test('effective fertile and ovulation dates override the arithmetic marks', () {
+      final cells = CalendarFetcher.forMonth(
+        month: DateTime(2026, 9),
+        lastStart: DateTime(2026, 9, 1),
+        cycleLength: 28,
+        bleedLength: 5,
+        fertileStart: DateTime(2026, 9, 20),
+        fertileEnd: DateTime(2026, 9, 21),
+        effectiveOvulation: DateTime(2026, 9, 20),
+      );
+
+      expect(cells.cellFor(20)!.isFertile, isTrue);
+      expect(cells.cellFor(20)!.isOvulation, isTrue);
+      expect(cells.cellFor(21)!.isFertile, isTrue);
+      expect(cells.cellFor(14)!.isOvulation, isFalse);
+      expect(cells.cellFor(13)!.isFertile, isFalse);
+      expect(cells.cellFor(1)!.isPredictedPeriod, isTrue);
+    });
+
     test('predicted window replaces arithmetic with the whole possible bleed range', () {
       final cells = CalendarFetcher.forMonth(
         month: DateTime(2026, 9),

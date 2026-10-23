@@ -196,4 +196,23 @@ void main() {
     expect(find.text('Due Now'), findsOneWidget);
     expect(find.textContaining('27 Days'), findsNothing);
   });
+
+  testWidgets('a negative test shortcut clears after logging', (tester) async {
+    final now = DateTime.now();
+    final last = DateTime(now.year, now.month, now.day - 32);
+    await pumpToday(
+      tester,
+      mode: TrackingMode.cycle,
+      lastPeriodStart: last,
+      seedStarts: [last],
+    );
+
+    expect(find.text('I tested negative'), findsOneWidget);
+    await tester.ensureVisible(find.text('I tested negative'));
+    await tester.tap(find.text('I tested negative'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('I tested negative'), findsNothing);
+    expect(find.text('negative test logged - retest in 3 days'), findsOneWidget);
+  });
 }

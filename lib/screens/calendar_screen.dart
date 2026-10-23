@@ -96,6 +96,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final cycle = context.watch<CycleProvider>();
     final logging = context.watch<LoggingProvider>();
     final range = cycle.showPeriodRange ? cycle.predictedRange() : null;
+    final fertile = cycle.fertileWindow();
     final cells = CalendarFetcher.forMonth(
       month: _month,
       lastStart: cycle.effectiveLastStart,
@@ -107,6 +108,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
       showFertility: cycle.showFertilityPredictions,
       predictedStart: range?.earliest,
       predictedEnd: range?.latest,
+      fertileStart: fertile?.start,
+      fertileEnd: fertile?.end,
+      effectiveOvulation: fertile?.peak,
       lutealLength: cycle.lutealLength,
       predictionsConfident: cycle.predictionsConfident(),
     );

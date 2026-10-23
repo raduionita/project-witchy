@@ -1,14 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../models/cycle_condition.dart';
 import '../models/cycle_phase.dart';
 import '../models/day_log.dart';
+import '../models/fertile_window.dart';
 import '../models/fertility_status.dart';
 import '../models/period_span.dart';
+import '../models/prediction_snapshot.dart';
 import '../models/tracking_mode.dart';
+import '../models/trend_summary.dart';
 import '../services/bbt_analyzer.dart';
 import '../services/cycle_calculator.dart';
 import '../services/cycle_stats.dart';
 import '../services/period_history.dart';
+import '../services/prediction_snapshot_store.dart';
+import '../services/trend_analyzer.dart';
 import 'logging_provider.dart';
 import 'gestation_provider.dart';
 import 'onboarding_provider.dart';
@@ -17,19 +25,28 @@ import 'onboarding_provider.dart';
 /// Effective inputs adapt to logged period history (median cycle length,
 /// latest logged start) and fall back to onboarding settings otherwise.
 class CycleProvider extends ChangeNotifier {
-  CycleProvider(this._onboarding, this._logging, {GestationProvider? gestation}) : _gestation = gestation {
+  CycleProvider(
+    this._onboarding,
+    this._logging, {
+    GestationProvider? gestation,
+    PredictionSnapshotStore? snapshots,
+  }) : _gestation = gestation,
+       _snapshots = snapshots {
     _onboarding.addListener(_changed);
     _logging.addListener(_changed);
     _gestation?.addListener(_changed);
     _recompute();
+    _recordSnapshot();
   }
 
   final OnboardingProvider _onboarding;
   final LoggingProvider _logging;
   final GestationProvider? _gestation;
+  final PredictionSnapshotStore? _snapshots;
 
   late DateTime effectiveLastStart;
   late int effectiveCycleLength;
+  late int rawCycleLength;
   late List<PeriodSpan> bleeds;
   late List<int> observedCycleLengths;
 
@@ -44,29 +61,99 @@ class CycleProvider extends ChangeNotifier {
   /// null when no positive test is logged. BBT confirmation always wins.
   late DateTime? opkIndicatedOvulationDate;
 
+  /// Ovulation suggested by a current-cycle body log (ovulation pain or
+  /// fertile cervical fluid). Null when no usable signal is logged.
+  late DateTime? loggedSignalOvulationDate;
+
+  /// Most recent pregnancy test result and its date; null when never logged.
+  late DateTime? latestPregnancyTestDate;
+  late String? latestPregnancyTestResult;
+
+  /// Directional summaries for cycle length, bleed length and symptoms.
+  late List<TrendSummary> trends;
+
   /// Luteal length driving every ovulation/fertility computation: personal
   /// when measured, otherwise the population-average fallback.
   int get lutealLength => detectedLutealLength ?? BbtAnalyzer.fallbackLutealLength;
 
   void _changed() {
     _recompute();
+    _recordSnapshot();
     notifyListeners();
   }
 
+  /// Freeze the first prediction seen for this cycle. The store dedupes by
+  /// cycle start, so later signals can update live values without rewriting
+  /// the historical record.
+  void _recordSnapshot() {
+    final store = _snapshots;
+    if (store == null) return;
+    final range = predictedRange();
+    if (range == null) return;
+    final window = showFertilityPredictions ? fertileWindow() : null;
+    unawaited(
+      store.record(
+        PredictionSnapshot(
+          cycleStart: effectiveLastStart,
+          earliest: range.earliest,
+          latest: range.latest,
+          peak: window?.peak,
+          fertileStart: window?.start,
+          fertileEnd: window?.end,
+          recordedAt: DateTime.now(),
+        ),
+      ),
+    );
+  }
+
+  /// Newest-first saved predictions. Empty when no store is attached.
+  List<PredictionSnapshot> get predictionHistory {
+    final saved = _snapshots?.snapshots ?? const <PredictionSnapshot>[];
+    return saved.reversed.toList(growable: false);
+  }
+
   void _recompute() {
-    bleeds = PeriodHistory.spansFrom(_logging.snapshot(), _logging.periodRecords);
+    final logs = _logging.snapshot();
+    bleeds = PeriodHistory.spansFrom(logs, _logging.periodRecords);
     observedCycleLengths = PeriodHistory.cycleLengths(PeriodHistory.startsOf(bleeds));
     // One value drives predictions and every displayed average: the last-6
     // median once two completed cycles exist, otherwise the setup value.
-    final recentMedian = observedCycleLengths.length >= 2 ? stats.medianRecent : null;
-    effectiveCycleLength = recentMedian ?? _onboarding.cycleLength;
+    final recentMedian = observedCycleLengths.length >= 2 ? stats.rawMedianRecent : null;
+    rawCycleLength = recentMedian ?? _onboarding.cycleLength;
+    effectiveCycleLength = rawCycleLength.clamp(OnboardingProvider.minCycleLength, OnboardingProvider.maxCycleLength);
     effectiveLastStart = _resolveAnchor();
-    final temps = <DateTime, double?>{for (final e in _logging.snapshot().entries) e.key: e.value.temperature};
-    final bbt = BbtAnalyzer.analyze(temps: temps, bleedStarts: PeriodHistory.startsOf(bleeds));
+    final temps = <DateTime, double?>{for (final e in logs.entries) e.key: e.value.temperature};
+    final bbt = BbtAnalyzer.analyze(
+      temps: temps,
+      bleedStarts: PeriodHistory.startsOf(bleeds),
+      excludedNights: _disturbedNights(logs),
+    );
     detectedLutealLength = bbt.personalLutealLength;
     confirmedOvulationDate = bbt.confirmedOvulation;
-    opkIndicatedOvulationDate = _latestPositiveOpk(_logging.snapshot());
-    detectedLutealLength ??= _opkLutealLength(_logging.snapshot(), PeriodHistory.startsOf(bleeds));
+    opkIndicatedOvulationDate = _latestPositiveOpk(logs);
+    detectedLutealLength ??= _opkLutealLength(logs, PeriodHistory.startsOf(bleeds));
+    loggedSignalOvulationDate = _loggedSignalOvulation(logs);
+    _readLatestPregnancyTest(logs);
+    trends = TrendAnalyzer.summaries(
+      observedCycleLengths: observedCycleLengths,
+      spans: bleeds,
+      logs: logs,
+    );
+  }
+
+  void _readLatestPregnancyTest(Map<DateTime, DayLog> days) {
+    latestPregnancyTestDate = null;
+    latestPregnancyTestResult = null;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    for (final entry in days.entries) {
+      final day = DateTime(entry.key.year, entry.key.month, entry.key.day);
+      if (day.isAfter(today) || entry.value.pregnancyTest == null) continue;
+      if (latestPregnancyTestDate == null || day.isAfter(latestPregnancyTestDate!)) {
+        latestPregnancyTestDate = day;
+        latestPregnancyTestResult = entry.value.pregnancyTest;
+      }
+    }
   }
 
   /// Latest log date with a positive OPK, shifted to the implied ovulation
@@ -101,6 +188,78 @@ class CycleProvider extends ChangeNotifier {
     return median.clamp(BbtAnalyzer.minLutealLength, BbtAnalyzer.maxLutealLength);
   }
 
+  /// Sleep entries that make a temperature reading unreliable for shift
+  /// detection. The dates are excluded before baseline and post-rise windows
+  /// are built.
+  static const Set<String> _poorSleepSignals = {
+    'Restless sleep',
+    'Insomnia',
+    'Woke up at night',
+    'Woke up early',
+  };
+
+  Set<DateTime> _disturbedNights(Map<DateTime, DayLog> days) {
+    final result = <DateTime>{};
+    for (final entry in days.entries) {
+      if (entry.value.sleep.any(_poorSleepSignals.contains)) {
+        final day = entry.key;
+        result.add(DateTime(day.year, day.month, day.day));
+      }
+    }
+    return result;
+  }
+
+  /// Latest current-cycle body signal that can stand in for ovulation when BBT
+  /// and OPK are absent. Ovulation pain wins over egg-white fluid, which wins
+  /// over watery fluid. The signal must be plausible for this cycle and close
+  /// to the arithmetic estimate, otherwise it is ignored.
+  DateTime? _loggedSignalOvulation(Map<DateTime, DayLog> days) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final candidates = [
+      _latestDayMatching(
+        days,
+        (log) => log.symptoms.contains('Ovulation pain'),
+        today,
+      ),
+      _latestDayMatching(
+        days,
+        (log) => log.discharge.contains('Egg white'),
+        today,
+      ),
+      _latestDayMatching(
+        days,
+        (log) => log.discharge.contains('Watery'),
+        today,
+      ),
+    ];
+    for (final signal in candidates) {
+      if (signal == null) continue;
+      if (signal.isBefore(effectiveLastStart)) continue;
+      final cycleDay = CycleCalculator.daysBetween(effectiveLastStart, signal) + 1;
+      if (cycleDay < 5) continue;
+      final arithmetic = _arithmeticOvulation();
+      if (CycleCalculator.daysBetween(signal, arithmetic).abs() > 7) continue;
+      return signal;
+    }
+    return null;
+  }
+
+  DateTime? _latestDayMatching(
+    Map<DateTime, DayLog> days,
+    bool Function(DayLog log) matches,
+    DateTime today,
+  ) {
+    DateTime? latest;
+    for (final entry in days.entries) {
+      if (!matches(entry.value)) continue;
+      final day = DateTime(entry.key.year, entry.key.month, entry.key.day);
+      if (day.isAfter(today)) continue;
+      if (latest == null || day.isAfter(latest)) latest = day;
+    }
+    return latest;
+  }
+
   /// Latest known bleed start.
   ///
   /// Real logs win over the stated onboarding date, and a candidate dated in the
@@ -126,12 +285,21 @@ class CycleProvider extends ChangeNotifier {
     return anchor ?? today;
   }
 
-  /// Real logged bleed length, rounded and clamped, falling back to the setup
-  /// slider until at least one complete logged span exists.
+  /// Typical logged bleed length, clamped, falling back to the setup slider
+  /// until at least one measured period exists. Estimated and start-only
+  /// records never contribute.
   int get bleedLength {
-    final mean = meanBleedLength;
-    return mean == null ? _onboarding.bleedLength : mean.round().clamp(2, 10).toInt();
+    final median = medianBleedLength;
+    return median == null ? _onboarding.bleedLength : median.clamp(2, 10).toInt();
   }
+
+  /// Median length of the most recent measured periods, or null before one is
+  /// available. This is the single bleed statistic used by predictions and
+  /// display.
+  int? get medianBleedLength => PeriodHistory.medianRecentBleedLength(bleeds);
+
+  /// True when any period span came from an estimated start rather than flow.
+  bool get hasEstimatedPeriods => bleeds.any((span) => span.estimated);
 
   /// Start dates that came from onboarding or migration rather than flow logs.
   Set<DateTime> get estimatedPeriodStarts => {
@@ -141,6 +309,36 @@ class CycleProvider extends ChangeNotifier {
 
   /// True when the effective cycle length comes from logged history rather than the slider.
   bool get isCycleLengthAuto => observedCycleLengths.length >= 2;
+
+  /// True when history fell outside the supported 15-60 day prediction range
+  /// and was clamped for safety.
+  bool get isCycleLengthClamped => rawCycleLength != effectiveCycleLength;
+
+  bool get isPcos => _onboarding.cycleConditions.contains(CycleCondition.pcos);
+
+  bool get isPostpartum => _onboarding.cycleConditions.contains(CycleCondition.postpartum);
+
+  bool get isBreastfeeding => _onboarding.cycleConditions.contains(CycleCondition.breastfeeding);
+
+  bool get hasPregnancyLoss => _onboarding.cycleConditions.contains(CycleCondition.pregnancyLoss);
+
+  /// Conditions that make cycle/fertility predictions unsafe until the user
+  /// turns them off or re-anchors with a new period.
+  bool get conditionPausesFertility => isPostpartum || isBreastfeeding || hasPregnancyLoss;
+
+  /// True when the latest logged test is negative and belongs to this cycle.
+  bool get hasNegativeTestThisCycle =>
+      latestPregnancyTestResult == 'negative' &&
+      latestPregnancyTestDate != null &&
+      !latestPregnancyTestDate!.isBefore(effectiveLastStart);
+
+  /// True when a negative test was logged in the last three days, the window
+  /// where retesting too early is unhelpful.
+  bool get hasRecentNegativeTest {
+    final test = latestPregnancyTestDate;
+    if (test == null || latestPregnancyTestResult != 'negative') return false;
+    return CycleCalculator.daysBetween(test, DateTime.now()) <= 3;
+  }
 
   /// Plain-language source for every prediction: observed history once two
   /// completed cycles exist, otherwise the onboarding default.
@@ -188,9 +386,15 @@ class CycleProvider extends ChangeNotifier {
   }
 
   /// Fertility predictions surface while the Cycle mode is active, unless a
-  /// dated pregnancy suppresses them (Flo parity: no period or fertility
-  /// predictions once pregnancy tracking has an LMP).
-  bool get showFertilityPredictions => _onboarding.trackingModes.contains(TrackingMode.cycle) && !pregnancyActive;
+  /// dated pregnancy, birth-control mode or a condition that suppresses
+  /// ovulation predictions is present.
+  bool get showFertilityPredictions =>
+      _onboarding.trackingModes.contains(TrackingMode.cycle) &&
+      !pregnancyActive &&
+      !contraceptionModeOn &&
+      !conditionPausesFertility;
+
+  bool get contraceptionModeOn => _onboarding.trackingModes.contains(TrackingMode.contraception);
 
   /// Fertility predictions for [today] only while the cycle is still credible.
   /// Mode and pregnancy checks stay in [showFertilityPredictions].
@@ -229,6 +433,15 @@ class CycleProvider extends ChangeNotifier {
     if (spread <= 7) return 0;
     final half = spread ~/ 2;
     return half > 4 ? 4 : half;
+  }
+
+  /// Extra days added to each side of the fertile window for bodies whose
+  /// ovulation timing is less predictable. PCOS adds one day; a wide observed
+  /// spread adds another. Capped at two so the window never becomes a blanket.
+  int get fertileWindowPad {
+    var pad = isPcos ? 1 : 0;
+    if (observedCycleLengths.length >= 3 && (cycleSpread ?? 0) > 7) pad += 1;
+    return pad > 2 ? 2 : pad;
   }
 
   /// Longest of the last 6 observed cycles; falls back to the effective
@@ -311,8 +524,9 @@ class CycleProvider extends ChangeNotifier {
     }
     final peak = _effectiveOvulation();
     if (CycleCalculator.daysBetween(day, peak) == 0) return CyclePhase.ovulatory;
-    final start = _addDays(peak, -5);
-    final end = _addDays(peak, 1);
+    final pad = fertileWindowPad;
+    final start = _addDays(peak, -(5 + pad));
+    final end = _addDays(peak, 1 + pad);
     if (!day.isBefore(start) && !day.isAfter(end)) return CyclePhase.fertile;
     return day.isBefore(peak) ? CyclePhase.follicular : CyclePhase.luteal;
   }
@@ -361,23 +575,40 @@ class CycleProvider extends ChangeNotifier {
     CycleCalculator.ovulationCycleDay(effectiveCycleLength, lutealLength: lutealLength) - 1,
   );
 
-  /// Current-cycle peak: BBT confirmation first, then a positive OPK, then the
-  /// arithmetic projection. Signals dated before the current anchor belong to
-  /// an earlier cycle and are ignored so the window cannot inherit a stale peak.
-  DateTime _effectiveOvulation() => _confirmedThisCycle() ?? _opkThisCycle() ?? _arithmeticOvulation();
+  /// Current-cycle peak: BBT confirmation first, then a positive OPK, then a
+  /// logged body signal, then the arithmetic projection. Signals dated before
+  /// the current anchor belong to an earlier cycle and are ignored so the
+  /// window cannot inherit a stale peak.
+  DateTime _effectiveOvulation() =>
+      _confirmedThisCycle() ??
+      _opkThisCycle() ??
+      loggedSignalOvulationDate ??
+      _arithmeticOvulation();
 
-  /// Current-cycle ovulation date, moved by BBT/OPK when one confirms it.
+  /// Current-cycle ovulation date, moved by BBT, OPK or a logged body signal
+  /// when one confirms it.
   DateTime ovulationDay({DateTime? today}) => _effectiveOvulation();
 
-  /// First day of the fertile window (ovulation minus 5); null when fertility
-  /// predictions are off or the cycle is overdue.
-  DateTime? fertileWindowStart({DateTime? today}) =>
-      showFertilityNow(today: today) ? _addDays(ovulationDay(today: today), -5) : null;
+  /// Resolved fertile window for the current cycle. Null when fertility
+  /// predictions are off, the cycle is overdue, or projection has stopped.
+  FertileWindow? fertileWindow({DateTime? today}) {
+    if (!showFertilityNow(today: today)) return null;
+    final peak = _effectiveOvulation();
+    final pad = fertileWindowPad;
+    return FertileWindow(
+      start: _addDays(peak, -(5 + pad)),
+      peak: peak,
+      end: _addDays(peak, 1 + pad),
+    );
+  }
 
-  /// Last day of the fertile window (ovulation plus 1); null when fertility
-  /// predictions are off or the cycle is overdue.
-  DateTime? fertileWindowEnd({DateTime? today}) =>
-      showFertilityNow(today: today) ? _addDays(ovulationDay(today: today), 1) : null;
+  /// First day of the fertile window; null when fertility predictions are off
+  /// or the cycle is overdue.
+  DateTime? fertileWindowStart({DateTime? today}) => fertileWindow(today: today)?.start;
+
+  /// Last day of the fertile window; null when fertility predictions are off
+  /// or the cycle is overdue.
+  DateTime? fertileWindowEnd({DateTime? today}) => fertileWindow(today: today)?.end;
 
   /// This cycle's ovulation date. Unlike [nextOvulationDate] it never rolls
   /// forward, so a peak that already passed can still be named.
@@ -392,12 +623,13 @@ class CycleProvider extends ChangeNotifier {
     if (!predictionsConfident(today: date)) return FertilityStatus.overdue;
     final day = DateTime(date.year, date.month, date.day);
     final peak = _effectiveOvulation();
+    final pad = fertileWindowPad;
     final daysToPeak = CycleCalculator.daysBetween(day, peak);
     if (daysToPeak > 0) {
-      return !day.isBefore(_addDays(peak, -5)) ? FertilityStatus.windowOpen : FertilityStatus.beforeWindow;
+      return !day.isBefore(_addDays(peak, -(5 + pad))) ? FertilityStatus.windowOpen : FertilityStatus.beforeWindow;
     }
     if (daysToPeak == 0) return FertilityStatus.peakToday;
-    return !day.isAfter(_addDays(peak, 1)) ? FertilityStatus.windowClosing : FertilityStatus.passed;
+    return !day.isAfter(_addDays(peak, 1 + pad)) ? FertilityStatus.windowClosing : FertilityStatus.passed;
   }
 
   int daysUntilOvulation({DateTime? today}) {
@@ -435,10 +667,10 @@ class CycleProvider extends ChangeNotifier {
           CycleCalculator.isPeriodDay(effectiveLastStart, date, effectiveCycleLength, bleedLength));
 
   bool isFertileDay(DateTime date) {
-    if (!showFertilityNow(today: date)) return false;
+    final window = fertileWindow(today: date);
+    if (window == null) return false;
     final day = DateTime(date.year, date.month, date.day);
-    final peak = _effectiveOvulation();
-    return !day.isBefore(_addDays(peak, -5)) && !day.isAfter(_addDays(peak, 1));
+    return !day.isBefore(window.start) && !day.isAfter(window.end);
   }
 
   bool isOvulationDay(DateTime date) {
@@ -454,14 +686,9 @@ class CycleProvider extends ChangeNotifier {
   int get ovulationCycleDay => CycleCalculator.daysBetween(effectiveLastStart, _effectiveOvulation()) + 1;
 
   int get fertileStartCycleDay {
-    final day = ovulationCycleDay - 5;
+    final day = ovulationCycleDay - 5 - fertileWindowPad;
     return day < 1 ? 1 : day;
   }
 
-  int get fertileEndCycleDay => ovulationCycleDay + 1;
-
-  double? get meanBleedLength => PeriodHistory.mean([
-    for (final s in PeriodHistory.periods(bleeds))
-      if (!s.estimated && !s.startOnly) s.length,
-  ]);
+  int get fertileEndCycleDay => ovulationCycleDay + 1 + fertileWindowPad;
 }

@@ -4,8 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/alert_item.dart';
 import '../models/article.dart';
+import '../models/cycle_condition.dart';
 import '../models/day_log.dart';
 import '../models/period_record.dart';
+import '../models/prediction_snapshot.dart';
 import '../models/tracking_mode.dart';
 
 class PrefsService {
@@ -24,6 +26,8 @@ class PrefsService {
   static const _feedCache = 'witchy_feed_cache';
   static const _trackingMode = 'witchy_tracking_mode';
   static const _trackingModes = 'witchy_tracking_modes';
+  static const _cycleConditions = 'witchy_cycle_conditions';
+  static const _predictionSnapshots = 'witchy_prediction_snapshots';
   static const _alerts = 'witchy_alerts';
   static const _pregnancyLmp = 'witchy_pregnancy_lmp';
   static const _pregnancyEdd = 'witchy_pregnancy_edd_override';
@@ -46,6 +50,34 @@ class PrefsService {
   }
 
   Future<void> setTrackingModes(Set<TrackingMode> modes) async => (await SharedPreferences.getInstance()).setString(_trackingModes, jsonEncode([for (final m in modes) m.name]));
+
+  /// Optional cycle conditions. Empty means none declared.
+  Future<Set<CycleCondition>> cycleConditions() async {
+    final raw = (await SharedPreferences.getInstance()).getString(_cycleConditions);
+    if (raw == null) return {};
+    return (jsonDecode(raw) as List<dynamic>).map((e) => CycleCondition.fromJson(e)).toSet();
+  }
+
+  Future<void> setCycleConditions(Set<CycleCondition> conditions) async =>
+      (await SharedPreferences.getInstance()).setString(_cycleConditions, jsonEncode([for (final c in conditions) c.name]));
+
+  Future<List<PredictionSnapshot>> predictionSnapshots() async {
+    final raw = (await SharedPreferences.getInstance()).getString(_predictionSnapshots);
+    if (raw == null) return [];
+    final decoded = jsonDecode(raw) as List<dynamic>;
+    final snapshots = <PredictionSnapshot>[];
+    for (final entry in decoded) {
+      try {
+        snapshots.add(PredictionSnapshot.fromJson(entry as Map<String, dynamic>));
+      } on FormatException {
+        // Keep the rest of the history if one stored entry is corrupt.
+      }
+    }
+    return snapshots;
+  }
+
+  Future<void> savePredictionSnapshots(List<PredictionSnapshot> snapshots) async =>
+      (await SharedPreferences.getInstance()).setString(_predictionSnapshots, jsonEncode([for (final snapshot in snapshots) snapshot.toJson()]));
 
   Future<bool> isOnboarded() async => (await SharedPreferences.getInstance()).getBool(_onboarded) ?? false;
   Future<void> setOnboarded() async => (await SharedPreferences.getInstance()).setBool(_onboarded, true);

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../common/date_format.dart';
 import '../models/period_record.dart';
 import '../models/period_span.dart';
+import '../models/trend_direction.dart';
 import '../providers/cycle_provider.dart';
 import '../providers/logging_provider.dart';
 import '../services/cycle_calculator.dart';
@@ -84,6 +85,83 @@ class InsightsScreen extends StatelessWidget {
     );
   }
 
+  /// Directional card that compares recent values with the prior window.
+  Widget _buildTrendsCard(CycleProvider cycle) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('What Changed', style: AppText.secIn),
+          const SizedBox(height: 4),
+          Text('Last three compared with the three before.', style: AppText.sans(10.5, c: AppColors.muted)),
+          const SizedBox(height: 6),
+          for (final trend in cycle.trends)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 7),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(trend.label, style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)),
+                        const SizedBox(height: 2),
+                        Text(trend.detail, style: AppText.sans(9.5, c: AppColors.muted)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _trendTag(trend.direction),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _trendTag(TrendDirection direction) {
+    return switch (direction) {
+      TrendDirection.up => AppTag.gold(direction.label),
+      TrendDirection.down => AppTag(direction.label, bg: AppColors.pinkBg, fg: AppColors.pinkDark),
+      TrendDirection.stable => AppTag(direction.label),
+      TrendDirection.insufficient => AppTag(direction.label),
+    };
+  }
+
+  Widget _buildSnapshotCard(CycleProvider cycle) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Prediction History', style: AppText.secIn),
+          const SizedBox(height: 4),
+          Text('Saved when each cycle began. Later logs do not rewrite them.', style: AppText.sans(10.5, c: AppColors.muted)),
+          const SizedBox(height: 6),
+          for (final snapshot in cycle.predictionHistory.take(3))
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 7),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(AppDate.range(snapshot.earliest, snapshot.latest), style: AppText.sans(12, w: FontWeight.w600, c: AppColors.ink)),
+                        const SizedBox(height: 2),
+                        Text('Cycle started ${AppDate.short(snapshot.cycleStart)}', style: AppText.sans(9.5, c: AppColors.muted)),
+                      ],
+                    ),
+                  ),
+                  if (snapshot.peak != null) AppTag.gold('Peak ${AppDate.short(snapshot.peak!)}'),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   /// Hero empty state for a brand-new tracker: states the two-cycle
   /// requirement and gives one clear next step instead of four grey
   /// placeholders. The preview cards below stay so the user can see what will
@@ -122,7 +200,7 @@ class InsightsScreen extends StatelessWidget {
     };
     final spans = [...cycle.bleeds].reversed.toList();
     final avgCycle = cycle.effectiveCycleLength;
-    final avgBleed = cycle.meanBleedLength;
+    final typicalBleed = cycle.medianBleedLength;
     final observed = cycle.observedCycleLengths;
     final starts = PeriodHistory.startsOf(cycle.bleeds);
     final trendValues = [for (final len in observed.skip(observed.length > 7 ? observed.length - 7 : 0)) len.toDouble()];
@@ -171,11 +249,17 @@ class InsightsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Expanded(child: StatCard(label: '', value: avgBleed == null ? '-' : '${avgBleed.round()} days', sub: 'Average Bleeding', onTap: () => context.go('/bleed-history'))),
+            Expanded(child: StatCard(label: '', value: typicalBleed == null ? '-' : '$typicalBleed days', sub: 'Typical Bleeding', onTap: () => context.go('/bleed-history'))),
           ],
         ),
         const SizedBox(height: 12),
         _buildIrregularityCard(context, cycle),
+        const SizedBox(height: 12),
+        _buildTrendsCard(cycle),
+        if (cycle.predictionHistory.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _buildSnapshotCard(cycle),
+        ],
         const SizedBox(height: 12),
         AppCard(
           child: Column(

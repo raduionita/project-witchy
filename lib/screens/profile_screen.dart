@@ -7,6 +7,7 @@ import '../navigation/app_nav.dart';
 import '../models/period_record.dart';
 import '../models/period_span.dart';
 import '../models/reminder_item.dart';
+import '../models/cycle_condition.dart';
 import '../models/tracking_mode.dart';
 import '../providers/alert_provider.dart';
 import '../providers/auth_provider.dart';
@@ -62,6 +63,43 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   Consumer<OnboardingProvider>(
                     builder: (consumerContext, ob, _) => TrackingModeChips(selected: ob.trackingModes, onToggle: (mode) => consumerContext.read<OnboardingProvider>().toggleTrackingMode(mode)),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
+  void _openConditionsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder:
+          (sheetContext) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Cycle Conditions', style: AppText.secIn),
+                  const SizedBox(height: 4),
+                  Text('These change how predictions are framed, never the dates you logged.', style: AppText.sans(11, c: AppColors.muted)),
+                  const SizedBox(height: 12),
+                  Consumer<OnboardingProvider>(
+                    builder:
+                        (consumerContext, ob, _) => Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final condition in CycleCondition.values)
+                              FilterChip(
+                                label: Text(condition.label),
+                                selected: ob.cycleConditions.contains(condition),
+                                onSelected: (_) => consumerContext.read<OnboardingProvider>().toggleCycleCondition(condition),
+                              ),
+                          ],
+                        ),
                   ),
                 ],
               ),
@@ -302,6 +340,7 @@ class ProfileScreen extends StatelessWidget {
   Widget _buildCycleAveragesCard(BuildContext context) {
     final cycle = context.watch<CycleProvider>();
     final onboarding = context.watch<OnboardingProvider>();
+    final conditions = onboarding.cycleConditions.isEmpty ? 'None' : onboarding.cycleConditions.map((c) => c.label).join(', ');
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,12 +349,18 @@ class ProfileScreen extends StatelessWidget {
           _buildEditableRow(
             label: 'Average Cycle Length',
             value: '${cycle.effectiveCycleLength} Days',
-            tag: AppTag.gold(cycle.isCycleLengthAuto ? 'Calculated' : 'Estimated'),
+            tag: AppTag.gold(cycle.isCycleLengthClamped ? 'Clamped' : (cycle.isCycleLengthAuto ? 'Calculated' : 'Estimated')),
             onTap: () => _openRhythmSheet(context),
             first: true,
           ),
+          if (cycle.isCycleLengthClamped)
+            Padding(
+              padding: const EdgeInsets.only(left: 2, bottom: 6),
+              child: Text('Predictions use a 15-60 day range.', style: AppText.sans(9.5, c: AppColors.muted)),
+            ),
           _buildEditableRow(label: 'Bleeding Phase Length', value: '${cycle.bleedLength} Days', onTap: () => _openRhythmSheet(context)),
           _buildEditableRow(label: 'Tracking Modes', value: onboarding.trackingModes.map((m) => m.label).join(', '), onTap: () => _openTrackingSheet(context)),
+          _buildEditableRow(label: 'Cycle Conditions', value: conditions, onTap: () => _openConditionsSheet(context)),
         ],
       ),
     );
@@ -351,6 +396,8 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text('Add or edit dates you remember. Flow logs stay untouched.', style: AppText.sans(11, c: AppColors.muted)),
+          const SizedBox(height: 2),
+          Text('Estimated dates guide predictions but stay out of measured bleed averages.', style: AppText.sans(11, c: AppColors.muted)),
           if (spans.isEmpty)
             Padding(padding: const EdgeInsets.only(top: 10), child: Text('No periods yet. Add one above.', style: AppText.sans(11.5, c: AppColors.muted)))
           else

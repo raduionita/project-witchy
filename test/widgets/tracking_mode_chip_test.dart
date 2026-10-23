@@ -11,17 +11,12 @@ void main() {
     );
   }
 
-  testWidgets('lays all three modes out in one row of equal widths', (tester) async {
+  testWidgets('lays all four modes out as wrapped chips', (tester) async {
     await pumpChips(tester, selected: {TrackingMode.cycle}, onToggle: (_) {});
-    expect(find.byType(AppChip), findsNWidgets(3));
-    final widths = [for (var i = 0; i < 3; i++) tester.getSize(find.byType(AppChip).at(i)).width];
-    expect(widths[0], greaterThan(0));
-    expect(widths[1], widths[0]);
-    expect(widths[2], widths[0]);
-    // All three sit on the same line.
-    final tops = [for (var i = 0; i < 3; i++) tester.getTopLeft(find.byType(AppChip).at(i)).dy];
-    expect(tops[1], tops[0]);
-    expect(tops[2], tops[0]);
+    expect(find.byType(AppChip), findsNWidgets(4));
+    for (var i = 0; i < 4; i++) {
+      expect(tester.getSize(find.byType(AppChip).at(i)).width, greaterThan(0));
+    }
   });
 
   testWidgets('every mode label is on screen and taps report the mode', (tester) async {

@@ -21,7 +21,7 @@ import '../widgets/period_range_sheet.dart';
 import '../widgets/stat_card.dart';
 
 /// Bleeding detail page behind Today's "Bleeding In" and Insights'
-/// "Average Bleed" stat cards: countdown, today's status, and the flow log.
+/// "Typical Bleed" stat cards: countdown, today's status, and the flow log.
 class BleedHistoryScreen extends StatelessWidget {
   const BleedHistoryScreen({super.key});
 
@@ -53,16 +53,17 @@ class BleedHistoryScreen extends StatelessWidget {
       bleedValue = daysUntil <= 0 ? 'Today' : 'In $daysUntil Days';
       bleedSub = '${AppDate.short(next ?? range.earliest)} · predicted';
     }
-    final avgBleed = cycle.meanBleedLength;
+    final typicalBleed = cycle.medianBleedLength;
+    final measured = PeriodHistory.measuredPeriods(cycle.bleeds);
     return Row(
       children: [
         Expanded(child: StatCard(label: 'Bleeding In', value: bleedValue, sub: bleedSub)),
         const SizedBox(width: 12),
         Expanded(
           child: StatCard(
-            label: 'Average Bleed',
-            value: avgBleed == null ? '—' : '${avgBleed.toStringAsFixed(1)} Days',
-            sub: cycle.bleeds.isEmpty ? 'No periods logged yet' : 'Across ${cycle.bleeds.length} periods',
+            label: 'Typical Bleed',
+            value: typicalBleed == null ? '-' : '$typicalBleed Days',
+            sub: measured.isEmpty ? 'No measured periods yet' : 'Across ${measured.length} measured periods',
           ),
         ),
       ],
@@ -133,6 +134,14 @@ class BleedHistoryScreen extends StatelessWidget {
               ),
             ],
           ),
+          if (cycle.hasEstimatedPeriods)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'Estimated dates guide predictions but stay out of measured bleed averages.',
+                style: AppText.sans(11.5, c: AppColors.muted, h: 1.45),
+              ),
+            ),
           if (spans.isEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 10),

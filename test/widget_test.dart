@@ -162,7 +162,9 @@ void main() {
     expect(find.text('Tracking Modes'), findsOneWidget);
     expect(find.text('Cycle, Pregnancy'), findsOneWidget);
     // Pregnancy in the set exposes the pregnancy tracker entry point.
-    expect(find.text('Pregnancy Tracker'), findsOneWidget);
+    final tracker = find.text('Pregnancy Tracker');
+    await tester.scrollUntilVisible(tracker, 300);
+    expect(tracker, findsOneWidget);
 
     final stored = await SharedPreferences.getInstance();
     final modes =
@@ -236,9 +238,11 @@ void main() {
     expect(find.text('Selene Moon'), findsOneWidget);
     expect(find.text('selene@moon.co'), findsOneWidget);
 
-    await tester.drag(find.byType(ListView), const Offset(0, -900));
+    final signOut = find.text('Sign Out');
+    await tester.scrollUntilVisible(signOut, 300);
+    await tester.ensureVisible(signOut);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Sign Out'));
+    await tester.tap(signOut);
     await tester.pumpAndSettle();
     // Confirm dialog spells out the consequences before signing out.
     expect(find.text('Sign out?'), findsOneWidget);

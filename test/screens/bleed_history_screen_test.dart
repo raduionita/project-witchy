@@ -42,16 +42,28 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('shows the countdown, averages and empty states', (tester) async {
+  testWidgets('shows the countdown, typical bleed and empty states', (tester) async {
     await pumpBleeding(tester);
     expect(find.text('Bleeding'), findsOneWidget);
     expect(find.text('BLEEDING IN'), findsOneWidget);
-    expect(find.text('AVERAGE BLEED'), findsOneWidget);
-    expect(find.text('—'), findsOneWidget);
+    expect(find.text('TYPICAL BLEED'), findsOneWidget);
+    expect(find.text('-'), findsOneWidget);
     expect(find.text('Recent Periods'), findsOneWidget);
     expect(find.text('Log a bleeding day and your periods will appear here.'), findsOneWidget);
     expect(find.text('Flow Log'), findsOneWidget);
     expect(find.textContaining('No flow logged yet'), findsOneWidget);
+  });
+
+  testWidgets('estimated records stay out of typical bleed and explain the policy', (tester) async {
+    final today = DateTime.now();
+    final start = DateTime(today.year, today.month, today.day - 20);
+    logging.addPeriodRecord(start, end: DateTime(start.year, start.month, start.day + 2), estimated: true);
+    await pumpBleeding(tester);
+
+    expect(find.text('Estimated'), findsOneWidget);
+    expect(find.textContaining('Estimated dates guide predictions'), findsOneWidget);
+    expect(find.text('TYPICAL BLEED'), findsOneWidget);
+    expect(find.text('-'), findsOneWidget);
   });
 
   testWidgets('lists logged bleed spans and flow days', (tester) async {

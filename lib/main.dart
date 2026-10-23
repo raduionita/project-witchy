@@ -13,6 +13,7 @@ import 'providers/onboarding_provider.dart';
 import 'providers/reminders_provider.dart';
 import 'providers/settings_provider.dart';
 import 'services/notification_service.dart';
+import 'services/prediction_snapshot_store.dart';
 import 'services/prefs_service.dart';
 import 'theme/app_theme.dart';
 
@@ -26,7 +27,8 @@ Future<void> main() async {
   final reminders = await RemindersProvider.load(prefs);
   final alerts = await AlertProvider.load(prefs);
   final gestation = await GestationProvider.load(prefs);
-  final cycle = CycleProvider(onboarding, logging, gestation: gestation);
+  final snapshots = await PredictionSnapshotStore.load(prefs);
+  final cycle = CycleProvider(onboarding, logging, gestation: gestation, snapshots: snapshots);
   alerts.bind(cycle, logging);
   try {
     await NotificationService.init();

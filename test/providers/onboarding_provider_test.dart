@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:witchy/models/cycle_condition.dart';
 import 'package:witchy/models/period_range.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/services/prefs_service.dart';
@@ -195,6 +196,23 @@ void main() {
       expect(onboarding.cycleLengthFromHistory, isTrue);
       onboarding.setCycle(28);
       expect(onboarding.cycleLengthFromHistory, isFalse);
+    });
+  });
+
+  group('cycle conditions', () {
+    test('toggle persists and survives a fresh load', () async {
+      onboarding.toggleCycleCondition(CycleCondition.pcos);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      onboarding.toggleCycleCondition(CycleCondition.breastfeeding);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+
+      final reloaded = await OnboardingProvider.load(prefs);
+      expect(reloaded.cycleConditions, {CycleCondition.pcos, CycleCondition.breastfeeding});
+
+      reloaded.toggleCycleCondition(CycleCondition.pcos);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      final cleared = await OnboardingProvider.load(prefs);
+      expect(cleared.cycleConditions, {CycleCondition.breastfeeding});
     });
   });
 }

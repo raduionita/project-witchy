@@ -20,8 +20,11 @@ class CycleStats {
   /// Last-[recentCount] lengths (or everything when fewer), oldest first.
   List<int> get recent => lengths.length <= recentCount ? List.of(lengths) : lengths.sublist(lengths.length - recentCount);
 
+  /// Median of the last 6 lengths before the slider-range clamp.
+  int? get rawMedianRecent => PeriodHistory.median(recent);
+
   /// Median of the last 6 lengths, clamped to the slider range.
-  int? get medianRecent => PeriodHistory.median(recent)?.clamp(minLength, maxLength);
+  int? get medianRecent => rawMedianRecent?.clamp(minLength, maxLength);
 
   /// Spread of the last 6 lengths; null until 2+ cycles are observed.
   int? get spreadRecent {

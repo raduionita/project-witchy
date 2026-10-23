@@ -56,14 +56,10 @@ class _CycleCalendarState extends State<CycleCalendar> {
     return null;
   }
 
-  Widget _buildRing(Color color, double width) =>
-      Container(width: 44, height: 44, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: width)));
+  Widget _buildRing(Color color, double width) => Container(width: 44, height: 44, decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: color, width: width)));
 
   Widget _buildAdjacentCell(CalendarDayCell cell) {
-    return SizedBox(
-      height: 54,
-      child: Center(child: Semantics(label: _semanticLabel(cell), child: Text('${cell.day}', style: AppText.sans(15, c: AppColors.placeholder)))),
-    );
+    return SizedBox(height: 54, child: Center(child: Semantics(label: _semanticLabel(cell), child: Text('${cell.day}', style: AppText.sans(15, c: AppColors.placeholder)))));
   }
 
   Widget _buildDayCell(CalendarDayCell cell) {
@@ -86,19 +82,15 @@ class _CycleCalendarState extends State<CycleCalendar> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                if (cell.isToday)
-                  SizedBox(width: 44, height: 44, child: DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.lav))),
+                if (cell.isToday) SizedBox(width: 44, height: 44, child: DecoratedBox(decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.lav))),
                 if (glyph != null) SvgPicture.asset(glyph, width: 44, height: 44, excludeFromSemantics: true),
                 if (cell.isToday && !cell.isSelected) _buildRing(AppColors.pur, 1.5),
                 if (cell.isSelected) _buildRing(AppColors.pur, 2),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      '${cell.day}',
-                      style: AppText.sans(15, w: cell.isToday || cell.isSelected ? FontWeight.w700 : FontWeight.w500, c: dayColor),
-                    ),
-                    Text('${cell.cycleDay}', style: AppText.sans(10.5, w: FontWeight.w500, c: subColor)),
+                    Text('${cell.day}', style: AppText.sans(15, w: cell.isToday || cell.isSelected ? FontWeight.w700 : FontWeight.w500, c: dayColor)),
+                    Text('${cell.cycleDay}', style: AppText.sans(9, w: FontWeight.w500, c: subColor)),
                   ],
                 ),
                 Positioned(
@@ -127,10 +119,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
   }
 
   Widget _buildWeekRow(List<CalendarDayCell> week, bool isLast) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 4),
-      child: Row(children: [for (final cell in week) Expanded(child: cell.inMonth ? _buildDayCell(cell) : _buildAdjacentCell(cell))]),
-    );
+    return Padding(padding: EdgeInsets.only(bottom: isLast ? 0 : 4), child: Row(children: [for (final cell in week) Expanded(child: cell.inMonth ? _buildDayCell(cell) : _buildAdjacentCell(cell))]));
   }
 
   @override
@@ -151,8 +140,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
       children: [
         Row(
           children: [
-            for (final d in ['M', 'T', 'W', 'T', 'F', 'S', 'S'])
-              Expanded(child: Center(child: Text(d, style: AppText.sans(12, w: FontWeight.w500, c: AppColors.muted)))),
+            for (final d in ['M', 'T', 'W', 'T', 'F', 'S', 'S']) Expanded(child: Center(child: Text(d, style: AppText.sans(12, w: FontWeight.w500, c: AppColors.muted)))),
           ],
         ),
         const SizedBox(height: 4),

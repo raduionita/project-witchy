@@ -13,28 +13,26 @@ class TrackingModeChips extends StatelessWidget {
     TrackingMode.cycle: AppIcons.drop,
     TrackingMode.pregnancy: AppIcons.pregnancy,
     TrackingMode.perimenopause: AppIcons.moon,
+    TrackingMode.contraception: Icons.shield_outlined,
   };
 
   @override
   Widget build(BuildContext context) {
     final modes = TrackingMode.values;
-    // One row of equal-width chips so the set reads as a single choice block.
-    // Labels are clipped rather than wrapped: a wrapped "Perimenopause" used to
-    // make that chip taller than its siblings.
-    return Row(
+    // Wrap instead of a single equal-width row: four modes would otherwise
+    // squeeze "Perimenopause" and "Birth Control" past their labels.
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: [
-        for (var i = 0; i < modes.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
-          Expanded(
-            child: AppChip(
-              label: modes[i].label,
-              icon: _icons[modes[i]],
-              selected: selected.contains(modes[i]),
-              singleLine: true,
-              onTap: () => onToggle(modes[i]),
-            ),
+        for (final mode in modes)
+          AppChip(
+            label: mode.label,
+            icon: _icons[mode],
+            selected: selected.contains(mode),
+            singleLine: true,
+            onTap: () => onToggle(mode),
           ),
-        ],
       ],
     );
   }

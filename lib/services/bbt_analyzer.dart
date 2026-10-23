@@ -22,6 +22,10 @@ class BbtAnalyzer {
   /// Sustained rise over the baseline that counts as a biphasic shift (°C).
   static const double riseThresholdC = 0.3;
 
+  /// Temperatures at or above this are treated as a likely fever, not a
+  /// baseline shift, and are excluded from detection.
+  static const double feverThresholdC = 38.0;
+
   /// Arithmetic fallback when no personal luteal length is measurable.
   static const int fallbackLutealLength = 14;
 
@@ -31,18 +35,24 @@ class BbtAnalyzer {
 
   /// Detects the most recent BBT-confirmed ovulation and the personal luteal
   /// length (median ovulation-to-next-bleed gap, clamped). Either output is
-  /// null when the logged temperatures cannot support it.
+  /// null when the logged temperatures cannot support it. Nights in
+  /// [excludedNights] and readings at or above [feverThresholdC] are ignored so
+  /// poor sleep or illness cannot fake a shift.
   static ({DateTime? confirmedOvulation, int? personalLutealLength}) analyze({
     required Map<DateTime, double?> temps,
     required List<DateTime> bleedStarts,
+    Set<DateTime> excludedNights = const {},
     DateTime? today,
   }) {
     final now = _day(today ?? DateTime.now());
+    final excluded = {for (final d in excludedNights) _day(d)};
     final readings = <DateTime, double>{};
     for (final entry in temps.entries) {
       final value = entry.value;
-      if (value == null) continue;
-      readings[_day(entry.key)] = value;
+      if (value == null || value >= feverThresholdC) continue;
+      final day = _day(entry.key);
+      if (excluded.contains(day)) continue;
+      readings[day] = value;
     }
     if (readings.length < minReadings) {
       return (confirmedOvulation: null, personalLutealLength: null);

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:witchy/models/cycle_condition.dart';
 import 'package:witchy/models/cycle_phase.dart';
 import 'package:witchy/models/fertility_status.dart';
 import 'package:witchy/models/tracking_mode.dart';
@@ -8,6 +9,7 @@ import 'package:witchy/providers/gestation_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/services/cycle_calculator.dart';
+import 'package:witchy/services/prediction_snapshot_store.dart';
 import 'package:witchy/services/prefs_service.dart';
 
 void main() {
@@ -32,6 +34,16 @@ void main() {
     logging.setFlow(DateTime(start.year, start.month, start.day + 1), 'Light');
   }
 
+  /// Logs a measured period of [days] consecutive flow days.
+  void logPeriodDays(DateTime start, int days) {
+    for (var i = 0; i < days; i++) {
+      logging.setFlow(
+        DateTime(start.year, start.month, start.day + i),
+        i == 0 ? 'Medium' : 'Light',
+      );
+    }
+  }
+
   group('CycleProvider adaptation', () {
     test('no logs falls back to onboarding settings', () {
       buildSources();
@@ -39,7 +51,7 @@ void main() {
       expect(cycle.effectiveLastStart, DateTime(2026, 9, 1));
       expect(cycle.effectiveCycleLength, 40);
       expect(cycle.bleeds, isEmpty);
-      expect(cycle.meanBleedLength, isNull);
+      expect(cycle.medianBleedLength, isNull);
     });
 
     test('single observed cycle keeps settings length but adopts logged start', () {
@@ -50,7 +62,7 @@ void main() {
       expect(cycle.bleeds, hasLength(2));
       expect(cycle.effectiveCycleLength, 40);
       expect(cycle.effectiveLastStart, DateTime(2026, 9, 14));
-      expect(cycle.meanBleedLength, 2.0);
+      expect(cycle.medianBleedLength, 2);
     });
 
     test('two observed cycles override length with median and adopt latest start', () {
@@ -100,7 +112,7 @@ void main() {
       expect(cycle.fertileEndCycleDay, 15);
     });
 
-    test('irregular history pads only the copy, never the window', () {
+    test('irregular history widens the window by one day', () {
       buildSources(lastStart: DateTime(2026, 11, 21), cycleLength: 40);
       for (final start in [DateTime(2026, 9, 1), DateTime(2026, 9, 25), DateTime(2026, 10, 19), DateTime(2026, 11, 21)]) {
         logPeriod(start);
@@ -108,18 +120,28 @@ void main() {
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.observedCycleLengths, [24, 24, 33]);
       expect(cycle.uncertaintyPad, 4);
-      expect(cycle.fertileEndCycleDay - cycle.fertileStartCycleDay + 1, 7);
+      expect(cycle.fertileWindowPad, 1);
+      expect(cycle.fertileEndCycleDay - cycle.fertileStartCycleDay + 1, 9);
     });
 
-    test('irregular pads cap at 4 and the window stays 7 days', () {
-      buildSources(lastStart: DateTime(2026, 11, 20), cycleLength: 40);
-      for (final start in [DateTime(2026, 9, 1), DateTime(2026, 9, 21), DateTime(2026, 10, 11), DateTime(2026, 11, 20)]) {
+    test('PCOS and irregular history cap the window pad at two days', () {
+      onboarding = OnboardingProvider(
+        prefs,
+        onboarded: true,
+        cycleLength: 40,
+        bleedLength: 5,
+        lastPeriodStart: DateTime(2025, 11, 15),
+        cycleConditions: {CycleCondition.pcos},
+      );
+      logging = LoggingProvider(prefs);
+      for (final start in [DateTime(2025, 8, 1), DateTime(2025, 9, 1), DateTime(2025, 10, 1), DateTime(2025, 11, 15)]) {
         logPeriod(start);
       }
       final cycle = CycleProvider(onboarding, logging);
-      expect(cycle.observedCycleLengths, [20, 20, 40]);
+      expect(cycle.observedCycleLengths, [31, 30, 45]);
       expect(cycle.uncertaintyPad, 4);
-      expect(cycle.fertileEndCycleDay - cycle.fertileStartCycleDay + 1, 7);
+      expect(cycle.fertileWindowPad, 2);
+      expect(cycle.fertileEndCycleDay - cycle.fertileStartCycleDay + 1, 11);
     });
 
     test('status moves before window -> open -> peak -> closing -> passed', () {
@@ -735,6 +757,97 @@ void main() {
       expect(cycle.phaseAt(ago(7)), CyclePhase.ovulatory);
       expect(cycle.phaseAt(ago(5)), CyclePhase.luteal);
     });
+
+    test('typical bleed uses the median of measured periods', () {
+      buildSources(lastStart: ago(90), cycleLength: 28);
+      logPeriodDays(ago(90), 2);
+      logPeriodDays(ago(60), 4);
+      logPeriodDays(ago(30), 8);
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.medianBleedLength, 4);
+      expect(cycle.bleedLength, 4);
+    });
+
+    test('estimated records are excluded from typical bleed but still anchor', () {
+      buildSources(lastStart: ago(40), cycleLength: 28);
+      logging.addPeriodRecord(ago(10), end: ago(8), estimated: true);
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.effectiveLastStart, ago(10));
+      expect(cycle.hasEstimatedPeriods, isTrue);
+      expect(cycle.medianBleedLength, isNull);
+      expect(cycle.bleedLength, 5);
+    });
+
+    test('ovulation pain moves the current peak, window and phase', () {
+      buildSources(lastStart: ago(20), cycleLength: 28);
+      logPeriod(ago(20));
+      logging.toggleSymptom(ago(5), 'Ovulation pain');
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.loggedSignalOvulationDate, ago(5));
+      expect(cycle.ovulationDateThisCycle(today: ago(0)), ago(5));
+      expect(cycle.ovulationCycleDay, 16);
+      expect(cycle.fertileWindowStart(today: ago(0)), ago(10));
+      expect(cycle.fertileWindowEnd(today: ago(0)), ago(4));
+      expect(cycle.phaseAt(ago(5)), CyclePhase.ovulatory);
+      expect(cycle.phaseAt(ago(4)), CyclePhase.fertile);
+      expect(cycle.isOvulationDay(ago(5)), isTrue);
+    });
+
+    test('egg-white fluid moves the peak when no pain is logged', () {
+      buildSources(lastStart: ago(20), cycleLength: 28);
+      logPeriod(ago(20));
+      logging.toggleDischarge(ago(6), 'Egg white');
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.loggedSignalOvulationDate, ago(6));
+      expect(cycle.ovulationDateThisCycle(today: ago(0)), ago(6));
+    });
+
+    test('a prior-cycle pain never masks current egg-white fluid', () {
+      buildSources(lastStart: ago(20), cycleLength: 28);
+      logPeriod(ago(48));
+      logPeriod(ago(20));
+      logging.toggleSymptom(ago(30), 'Ovulation pain');
+      logging.toggleDischarge(ago(6), 'Egg white');
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.loggedSignalOvulationDate, ago(6));
+      expect(cycle.ovulationDateThisCycle(today: ago(0)), ago(6));
+    });
+
+    test('a prior-cycle logged signal never becomes the current peak', () {
+      buildSources(lastStart: ago(10), cycleLength: 28);
+      logPeriod(ago(38));
+      logPeriod(ago(10));
+      logging.toggleSymptom(ago(24), 'Ovulation pain');
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.loggedSignalOvulationDate, isNull);
+      expect(cycle.ovulationDateThisCycle(today: ago(0)), ago(-3));
+    });
+
+    test('a signal before cycle day 5 is ignored', () {
+      buildSources(lastStart: ago(20), cycleLength: 28);
+      logPeriod(ago(20));
+      logging.toggleSymptom(ago(19), 'Ovulation pain');
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.loggedSignalOvulationDate, isNull);
+      expect(cycle.ovulationDateThisCycle(today: ago(0)), ago(7));
+    });
+
+    test('a signal far from the arithmetic peak is ignored', () {
+      buildSources(lastStart: ago(20), cycleLength: 28);
+      logPeriod(ago(20));
+      logging.toggleSymptom(ago(15), 'Ovulation pain');
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.loggedSignalOvulationDate, isNull);
+      expect(cycle.ovulationDateThisCycle(today: ago(0)), ago(7));
+    });
   });
 
   group('CycleProvider spotting rule', () {
@@ -753,13 +866,110 @@ void main() {
       expect(after.fertilityStatus(today: DateTime(2026, 9, 16)), FertilityStatus.passed);
     });
 
-    test('mean bleed length ignores spotting spans', () {
+    test('typical bleed ignores spotting spans', () {
       buildSources(lastStart: DateTime(2026, 9, 1), cycleLength: 28);
       logPeriod(DateTime(2026, 8, 16), 'Heavy');
       logging.setFlow(DateTime(2026, 9, 16), 'Light');
       final cycle = CycleProvider(onboarding, logging);
       expect(cycle.bleeds, hasLength(2));
-      expect(cycle.meanBleedLength, 2.0);
+      expect(cycle.medianBleedLength, 2);
+    });
+  });
+
+  group('CycleProvider P3 modes, conditions and clamps', () {
+    test('contraception mode turns fertility predictions off', () {
+      onboarding = OnboardingProvider(
+        prefs,
+        onboarded: true,
+        cycleLength: 28,
+        bleedLength: 5,
+        lastPeriodStart: DateTime(2026, 9, 20),
+        trackingModes: {TrackingMode.cycle, TrackingMode.contraception},
+      );
+      logging = LoggingProvider(prefs);
+      final cycle = CycleProvider(onboarding, logging);
+      final today = DateTime(2026, 10, 2);
+
+      expect(cycle.contraceptionModeOn, isTrue);
+      expect(cycle.showFertilityPredictions, isFalse);
+      expect(cycle.fertileWindow(today: today), isNull);
+      expect(cycle.fertilityStatus(today: today), FertilityStatus.passed);
+    });
+
+    test('postpartum, breastfeeding and loss pause fertility predictions', () {
+      for (final condition in [
+        CycleCondition.postpartum,
+        CycleCondition.breastfeeding,
+        CycleCondition.pregnancyLoss,
+      ]) {
+        SharedPreferences.setMockInitialValues({});
+        final localPrefs = PrefsService();
+        final ob = OnboardingProvider(
+          localPrefs,
+          onboarded: true,
+          cycleLength: 28,
+          bleedLength: 5,
+          lastPeriodStart: DateTime(2026, 9, 20),
+          cycleConditions: {condition},
+        );
+        final cycle = CycleProvider(ob, LoggingProvider(localPrefs));
+
+        expect(cycle.conditionPausesFertility, isTrue, reason: condition.label);
+        expect(cycle.showFertilityPredictions, isFalse, reason: condition.label);
+      }
+    });
+
+    test('an observed cycle longer than 60 days is clamped', () {
+      buildSources(lastStart: DateTime(2025, 1, 1), cycleLength: 40);
+      logPeriod(DateTime(2025, 1, 1));
+      logPeriod(DateTime(2025, 3, 12));
+      logPeriod(DateTime(2025, 5, 31));
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.observedCycleLengths, [70, 80]);
+      expect(cycle.rawCycleLength, 75);
+      expect(cycle.effectiveCycleLength, OnboardingProvider.maxCycleLength);
+      expect(cycle.isCycleLengthClamped, isTrue);
+    });
+
+    test('a current-cycle negative test registers and a prior one does not', () {
+      buildSources(lastStart: DateTime(2026, 9, 20), cycleLength: 28);
+      final now = DateTime.now();
+      final day = DateTime(now.year, now.month, now.day);
+      logging.setPregnancyTest(day, 'negative');
+      final cycle = CycleProvider(onboarding, logging);
+
+      expect(cycle.latestPregnancyTestResult, 'negative');
+      expect(cycle.hasNegativeTestThisCycle, isTrue);
+      expect(cycle.hasRecentNegativeTest, isTrue);
+
+      SharedPreferences.setMockInitialValues({});
+      final localPrefs = PrefsService();
+      final priorOnboarding = OnboardingProvider(
+        localPrefs,
+        onboarded: true,
+        cycleLength: 28,
+        bleedLength: 5,
+        lastPeriodStart: DateTime(2026, 9, 20),
+      );
+      final priorLogging = LoggingProvider(localPrefs)
+        ..setPregnancyTest(DateTime(2026, 9, 10), 'negative');
+      final priorCycle = CycleProvider(priorOnboarding, priorLogging);
+
+      expect(priorCycle.hasNegativeTestThisCycle, isFalse);
+      expect(priorCycle.hasRecentNegativeTest, isFalse);
+    });
+
+    test('prediction snapshots record the current cycle', () async {
+      SharedPreferences.setMockInitialValues({});
+      final storePrefs = PrefsService();
+      final store = PredictionSnapshotStore(storePrefs);
+      buildSources(lastStart: DateTime(2026, 9, 20), cycleLength: 28);
+      final cycle = CycleProvider(onboarding, logging, snapshots: store);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cycle.predictionHistory, hasLength(1));
+      expect(cycle.predictionHistory.first.cycleStart, DateTime(2026, 9, 20));
     });
   });
 }

@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:witchy/models/day_log.dart';
+import 'package:witchy/models/period_record.dart';
+import 'package:witchy/models/period_span.dart';
 import 'package:witchy/services/period_history.dart';
 
 void main() {
@@ -58,6 +60,80 @@ void main() {
       expect(spans.last.spottingOnly, isTrue);
       expect(PeriodHistory.periods(spans), hasLength(1));
       expect(PeriodHistory.spotting(spans).single.start, DateTime(2026, 9, 15));
+    });
+  });
+
+  group('PeriodHistory.spansFrom', () {
+    test('merges overlapping explicit records into one period', () {
+      final spans = PeriodHistory.spansFrom(const {}, [
+        PeriodRecord(start: DateTime(2026, 9, 1), end: DateTime(2026, 9, 4)),
+        PeriodRecord(start: DateTime(2026, 9, 3), end: DateTime(2026, 9, 6)),
+      ]);
+      expect(spans, hasLength(1));
+      expect(spans.single.start, DateTime(2026, 9, 1));
+      expect(spans.single.end, DateTime(2026, 9, 6));
+      expect(spans.single.length, 6);
+      expect(spans.single.startOnly, isFalse);
+    });
+
+    test('a measured record wins the estimated flag when records overlap', () {
+      final spans = PeriodHistory.spansFrom(const {}, [
+        PeriodRecord(start: DateTime(2026, 9, 1), end: DateTime(2026, 9, 3), estimated: true),
+        PeriodRecord(start: DateTime(2026, 9, 3), end: DateTime(2026, 9, 5)),
+      ]);
+      expect(spans, hasLength(1));
+      expect(spans.single.end, DateTime(2026, 9, 5));
+      expect(spans.single.estimated, isFalse);
+    });
+
+    test('real flow wins over an overlapping explicit record', () {
+      final spans = PeriodHistory.spansFrom(logs([
+        DateTime(2026, 9, 1),
+        DateTime(2026, 9, 2),
+      ]), [
+        PeriodRecord(start: DateTime(2026, 9, 2), end: DateTime(2026, 9, 5)),
+      ]);
+      expect(spans, hasLength(1));
+      expect(spans.single.start, DateTime(2026, 9, 1));
+      expect(spans.single.end, DateTime(2026, 9, 2));
+      expect(spans.single.estimated, isFalse);
+    });
+
+    test('a spotting day never replaces an explicit record on the same start', () {
+      final spans = PeriodHistory.spansFrom({
+        DateTime(2026, 9, 1): DayLog(flow: {'Spotting'}),
+      }, [
+        PeriodRecord(start: DateTime(2026, 9, 1)),
+      ]);
+      expect(spans, hasLength(1));
+      expect(spans.single.startOnly, isTrue);
+      expect(spans.single.spottingOnly, isFalse);
+    });
+  });
+
+  group('PeriodHistory bleed statistics', () {
+    test('measured periods exclude estimated, start-only and spotting spans', () {
+      final spans = [
+        PeriodSpan(start: DateTime(2026, 7, 1), end: DateTime(2026, 7, 3)),
+        PeriodSpan(start: DateTime(2026, 8, 1), end: DateTime(2026, 8, 5)),
+        PeriodSpan(start: DateTime(2026, 9, 1), end: DateTime(2026, 9, 8), estimated: true),
+        PeriodSpan(start: DateTime(2026, 9, 15), end: DateTime(2026, 9, 15), startOnly: true),
+        PeriodSpan(start: DateTime(2026, 9, 20), end: DateTime(2026, 9, 21), spottingOnly: true),
+        PeriodSpan(start: DateTime(2026, 10, 1), end: DateTime(2026, 10, 7)),
+      ];
+      expect(PeriodHistory.measuredPeriods(spans).map((s) => s.length), [3, 5, 7]);
+      expect(PeriodHistory.medianRecentBleedLength(spans), 5);
+    });
+
+    test('recent bleed median uses the last six measured periods', () {
+      final spans = [
+        for (var i = 0; i < 7; i++)
+          PeriodSpan(
+            start: DateTime(2026, 1 + i, 1),
+            end: DateTime(2026, 1 + i, 2 + i),
+          ),
+      ];
+      expect(PeriodHistory.medianRecentBleedLength(spans), 6);
     });
   });
 

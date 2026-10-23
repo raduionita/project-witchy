@@ -85,5 +85,43 @@ void main() {
       final result = BbtAnalyzer.analyze(temps: temps(entries), bleedStarts: [], today: DateTime(2026, 10, 15));
       expect(result.confirmedOvulation, DateTime(2026, 9, 30));
     });
+    test('fever-range readings do not create a shift', () {
+      final entries = <DateTime, double?>{
+        for (var i = 0; i < 6; i++) DateTime(2026, 9, 25 + i): 36.4,
+        for (var i = 0; i < 3; i++) DateTime(2026, 10, 1 + i): 38.0,
+        for (var i = 0; i < 5; i++) DateTime(2026, 10, 4 + i): 36.4,
+      };
+      final result = BbtAnalyzer.analyze(temps: temps(entries), bleedStarts: [], today: DateTime(2026, 10, 15));
+      expect(result.confirmedOvulation, isNull);
+    });
+
+    test('poor-sleep nights are excluded from shift detection', () {
+      final entries = <DateTime, double?>{
+        for (var i = 0; i < 6; i++) DateTime(2026, 9, 25 + i): 36.4,
+        for (var i = 0; i < 3; i++) DateTime(2026, 10, 1 + i): 36.8,
+        for (var i = 0; i < 5; i++) DateTime(2026, 10, 4 + i): 36.4,
+      };
+      final result = BbtAnalyzer.analyze(
+        temps: temps(entries),
+        bleedStarts: [],
+        excludedNights: {
+          DateTime(2026, 10, 1),
+          DateTime(2026, 10, 2),
+          DateTime(2026, 10, 3),
+        },
+        today: DateTime(2026, 10, 15),
+      );
+      expect(result.confirmedOvulation, isNull);
+    });
+
+    test('the same rise still confirms without exclusions', () {
+      final entries = <DateTime, double?>{
+        for (var i = 0; i < 6; i++) DateTime(2026, 9, 25 + i): 36.4,
+        for (var i = 0; i < 3; i++) DateTime(2026, 10, 1 + i): 36.8,
+        for (var i = 0; i < 5; i++) DateTime(2026, 10, 4 + i): 36.4,
+      };
+      final result = BbtAnalyzer.analyze(temps: temps(entries), bleedStarts: [], today: DateTime(2026, 10, 15));
+      expect(result.confirmedOvulation, DateTime(2026, 9, 30));
+    });
   });
 }

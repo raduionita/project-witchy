@@ -14,7 +14,7 @@ void main() {
     expect(TrackingMode.fromJson(42), TrackingMode.cycle);
   });
 
-  test('labels cover the three onboarding chips', () {
-    expect(TrackingMode.values.map((m) => m.label), ['Cycle', 'Pregnancy', 'Perimenopause']);
+  test('labels cover the onboarding chips', () {
+    expect(TrackingMode.values.map((m) => m.label), ['Cycle', 'Pregnancy', 'Perimenopause', 'Birth Control']);
   });
 }

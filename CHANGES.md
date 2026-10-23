@@ -414,14 +414,14 @@ Gates: `flutter analyze` = No issues found, `flutter test` = 383/383 passing, `f
 
 ## Update 22 - 2026.10.22 - Overdue cycles and honest period math
 
-This update carries the full P0-P4 cycle-trust roadmap. P0 and P1 are shipped below; P2-P4 continue under this same entry as they land.
+This update carries the full P0-P4 cycle-trust roadmap. All four phases are shipped below.
 
 ### Roadmap
 - **P0 - Stop the app from lying**: shipped.
 - **P1 - Make every screen tell the same story**: shipped.
-- **P2 - Trust the data you already collect**: planned.
-- **P3 - Model the bodies the app cannot represent**: planned.
-- **P4 - Lock it down with tests**: planned.
+- **P2 - Trust the data you already collect**: shipped.
+- **P3 - Model the bodies the app cannot represent**: shipped.
+- **P4 - Lock it down with tests**: shipped.
 
 ### Phase P0 - Stop the app from lying
 
@@ -473,3 +473,86 @@ P1 aligned the countdown, phase, fertility, calendar and chart surfaces with the
 - `flutter analyze` = No issues found, `flutter test` = 405/405 passing, `flutter build apk --debug` = ✓.
 
 Files: `lib/services/cycle_calculator.dart`, `lib/providers/cycle_provider.dart`, `lib/screens/today_screen.dart`, `lib/screens/calendar_screen.dart`, `lib/screens/chart_screen.dart`, `lib/screens/bleed_history_screen.dart`, plus `test/providers/cycle_provider_test.dart`, `test/services/cycle_calculator_test.dart`, `test/screens/today_screen_test.dart`, `test/screens/calendar_screen_test.dart` and `test/screens/bleed_history_screen_test.dart`.
+
+### Phase P2 - Trust the data you already collect
+
+P2 improved the inputs the predictions already rely on instead of adding new tracking models.
+
+#### Typical bleed
+- Added `PeriodHistory.measuredPeriods`, which keeps only real logged periods and excludes estimated records, start-only records, spotting and spans shorter than two days.
+- Added `PeriodHistory.medianRecentBleedLength`, using the last six measured periods. `CycleProvider.bleedLength` now uses that median, with the onboarding length as the fallback.
+- Bleed History and Insights now show `Typical Bleed` / `Typical Bleeding` as a whole number of days. Today and Fertility orbs read the same `bleedLength`.
+
+#### Merged records
+- `PeriodHistory.spansFrom` now unions overlapping explicit period records before merging them with logged flow. The union keeps the earliest start, the latest end, a measured flag if any record is measured, and a known end if any record has one.
+- Logged flow still wins over an explicit record that covers the same start, and explicit records that overlap real logged periods are still ignored.
+
+#### Logged signals
+- Added `loggedSignalOvulationDate`, which uses signals already in the logs when BBT and OPK are absent: the latest `Ovulation pain`, then `Egg white` discharge, then `Watery` discharge.
+- A logged signal only counts in the current cycle, on or after cycle day 5, not in the future, and within seven days of the arithmetic peak. The effective peak priority is now BBT, OPK, logged signal, then arithmetic, so the signal moves the fertile window, phase and all prediction surfaces consistently.
+
+#### BBT hardening
+- `BbtAnalyzer.analyze` now accepts excluded nights. CycleProvider excludes nights logged as `Restless sleep`, `Insomnia`, `Woke up at night` or `Woke up early` before detecting a shift.
+- Temperatures at or above 38.0 C are treated as likely fever and dropped, so a fever spike cannot create a false ovulation confirmation or distort the measured luteal length.
+
+#### Estimated policy
+- Estimated period records still anchor predictions and cycle-length history, but they stay out of measured bleed statistics. This is now explicit in Bleed History and Profile: `Estimated dates guide predictions but stay out of measured bleed averages.`
+- The existing gold `Estimated` tags remain, and `CycleProvider.hasEstimatedPeriods` exposes whether the policy note applies.
+
+#### P2 tests and gates
+- Added coverage for median recent bleed, exclusion of estimated and spotting spans, overlapping-record merging, logged ovulation pain and egg-white signals, signal guards, prior-cycle signal rejection, fever filtering and poor-sleep exclusions.
+- `flutter analyze` = No issues found, `flutter test` = 423/423 passing, `flutter build apk --debug` = ✓, `git diff --check` = clean.
+
+Files: `lib/services/period_history.dart`, `lib/services/bbt_analyzer.dart`, `lib/providers/cycle_provider.dart`, `lib/screens/bleed_history_screen.dart`, `lib/screens/insights_screen.dart`, `lib/screens/today_screen.dart`, `lib/screens/fertility_screen.dart`, `lib/screens/profile_screen.dart`, plus `test/services/period_history_test.dart`, `test/services/bbt_analyzer_test.dart`, `test/providers/cycle_provider_test.dart` and `test/screens/bleed_history_screen_test.dart`.
+
+### Phase P3 - Model the bodies the app cannot represent
+
+P3 added models for bodies the single-length, single-window model could not describe, without changing the privacy model.
+
+#### Variable fertile window
+- `CycleProvider.fertileWindowPad` widens the window by one day for PCOS and one day for irregular history (three or more observed cycles with a spread above seven days), capped at two days.
+- `fertileStartCycleDay` and `fertileEndCycleDay` use the pad around the effective ovulation day. The start still clamps to cycle day 1, so an early peak cannot produce a negative day.
+- The padded window drives Today, Fertility, Calendar and the fertile-day checks.
+
+#### Contraception and conditions
+- Added `TrackingMode.contraception` to onboarding and Profile. `contraceptionModeOn` suppresses fertility predictions, the fertile window and fertility status while leaving period predictions intact.
+- Added `CycleCondition` with `postpartum`, `breastfeeding`, `pregnancyLoss` and `pcos`. Profile exposes a conditions sheet.
+- Postpartum, breastfeeding and pregnancy loss pause fertility predictions until the user clears them. PCOS widens the fertile window instead of pausing it.
+- Conditions persist through `PrefsService` and reload with `OnboardingProvider.load`.
+
+#### Missed-period testing
+- `LoggingProvider.setPregnancyTest` stores a negative or positive result on a day log.
+- `hasNegativeTestThisCycle` only counts a negative test on or after the current anchor, and `hasRecentNegativeTest` counts one within three days.
+- Today shows `I tested negative` when the cycle is late and no current-cycle negative exists. After logging, the CTA clears and the late copy reads `negative test logged - retest in 3 days`.
+
+#### Cycle clamp
+- `OnboardingProvider.minCycleLength` and `maxCycleLength` are 15 and 60.
+- `CycleStats.rawMedianRecent` exposes the unclamped recent median. `CycleProvider.rawCycleLength` reports it, `effectiveCycleLength` clamps to 15-60, and `isCycleLengthClamped` drives the Profile warning tag.
+- A very long observed median no longer silently disappears into the slider bounds.
+
+#### Prediction snapshots
+- Added `PredictionSnapshot` and `PredictionSnapshotStore`. The first prediction seen for a cycle start is stored and later logs do not rewrite it.
+- Snapshots dedupe by normalized cycle start and keep the newest 24.
+- `CycleProvider.predictionHistory` is newest-first, and Insights shows a `Prediction History` card with up to three saved predictions.
+
+#### Trends
+- Added `TrendAnalyzer`, which compares the last three values with the prior three for cycle length and measured bleed length.
+- Symptom trends compare the last 30 days with the previous 30 days and report the top symptom.
+- Insights shows a `What Changed` card with `Increasing`, `Decreasing`, `Stable` or `Not enough data` tags.
+
+#### P3 tests and gates
+- Added provider coverage for contraception and condition suppression, the 15-60 clamp, negative-test state and snapshot recording.
+- Added unit coverage for `PredictionSnapshotStore` persistence, dedupe and the 24-item cap; `TrendAnalyzer` cycle, bleed and symptom trends; and Calendar effective fertile and ovulation dates.
+- Added widget coverage for the Today negative-test action, onboarding condition persistence and the Insights trends and history cards.
+- `flutter analyze` = No issues found, `flutter test` = 445/445 passing, `flutter build apk --debug` = success, `git diff --check` = clean.
+
+Files: `lib/models/cycle_condition.dart`, `lib/models/prediction_snapshot.dart`, `lib/models/trend_direction.dart`, `lib/models/trend_summary.dart`, `lib/providers/cycle_provider.dart`, `lib/providers/onboarding_provider.dart`, `lib/services/cycle_stats.dart`, `lib/services/prediction_snapshot_store.dart`, `lib/services/trend_analyzer.dart`, `lib/services/calendar_fetcher.dart`, `lib/screens/today_screen.dart`, `lib/screens/profile_screen.dart`, `lib/screens/insights_screen.dart`, `lib/screens/fertility_screen.dart`, `lib/screens/calendar_screen.dart`, plus `test/providers/cycle_provider_test.dart`, `test/providers/onboarding_provider_test.dart`, `test/services/prediction_snapshot_store_test.dart`, `test/services/trend_analyzer_test.dart`, `test/services/calendar_fetcher_test.dart`, `test/screens/today_screen_test.dart` and `test/screens/insights_screen_test.dart`.
+
+### Phase P4 - Lock it down with tests
+
+- Added `test/roadmap_regression_test.dart` with cross-phase regression checks: overdue cycles pause projections while the elapsed day keeps counting, the due window never rolls forward while late, spotting never anchors the cycle or enters bleed statistics, typical bleed uses the median of measured periods, and contraception plus a fertility-pausing condition suppress every prediction.
+- Added `test/services/cycle_math_properties_test.dart` with leap-day and US daylight-saving boundary checks, cycle position properties across 15-60 day lengths, start/next-period bracketing, exactly one ovulation day and a fixed fertile width per cycle, exact bleed-day counts, projection-validity boundaries, 500 seeded random dates and leap February month sets.
+- Added `test/providers/cycle_mode_matrix_test.dart` covering all 15 non-empty tracking-mode subsets with and without a pregnancy LMP, fertility-pausing conditions across every cycle-mode subset, and PCOS widening without suppression.
+- `flutter analyze` = No issues found, `flutter test` = 462/462 passing, `flutter build apk --debug` = success, `git diff --check` = clean.
+
+Files: `test/roadmap_regression_test.dart`, `test/services/cycle_math_properties_test.dart`, `test/providers/cycle_mode_matrix_test.dart`.

@@ -17,6 +17,9 @@ class CalendarFetcher {
     bool showFertility = true,
     DateTime? predictedStart,
     DateTime? predictedEnd,
+    DateTime? fertileStart,
+    DateTime? fertileEnd,
+    DateTime? effectiveOvulation,
     int lutealLength = 14,
     // False once the cycle runs long (see CycleProvider.predictionsConfident):
     // predicted period/fertile/ovulation dots hide until a new bleed re-anchors.
@@ -43,6 +46,14 @@ class CalendarFetcher {
           predictedStart != null && predictedEnd != null
               ? _inPredictedWindow(predictedStart, predictedEnd, date, bleedLength)
               : CycleCalculator.isPeriodDay(lastStart, date, cycleLength, bleedLength);
+      final fertile =
+          fertileStart != null && fertileEnd != null
+              ? !date.isBefore(fertileStart) && !date.isAfter(fertileEnd)
+              : CycleCalculator.isFertileDay(lastStart, date, cycleLength, lutealLength: lutealLength);
+      final ovulating =
+          effectiveOvulation != null
+              ? CycleCalculator.daysBetween(date, effectiveOvulation) == 0
+              : CycleCalculator.isOvulationDay(lastStart, date, cycleLength, lutealLength: lutealLength);
       cells.add(
         CalendarDayCell(
           day: day,
@@ -50,8 +61,8 @@ class CalendarFetcher {
           isToday: date == todayDate,
           isPredictedPeriod: predicted && predictionsConfident,
           isLoggedBleed: log != null && log.flow.isNotEmpty,
-          isFertile: showFertility && predictionsConfident && CycleCalculator.isFertileDay(lastStart, date, cycleLength, lutealLength: lutealLength),
-          isOvulation: showFertility && predictionsConfident && CycleCalculator.isOvulationDay(lastStart, date, cycleLength, lutealLength: lutealLength),
+          isFertile: showFertility && predictionsConfident && fertile,
+          isOvulation: showFertility && predictionsConfident && ovulating,
           isLogged: log != null,
           isSelected: selectedDay == day,
           isEstimatedStart: estimatedStarts.contains(date),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/cycle_condition.dart';
 import '../models/cycle_settings.dart';
 import '../models/period_range.dart';
 import '../models/tracking_mode.dart';
@@ -15,9 +16,11 @@ class OnboardingProvider extends ChangeNotifier {
     this.cycleLength = 28,
     this.bleedLength = 5,
     Set<TrackingMode>? trackingModes,
+    Set<CycleCondition>? cycleConditions,
     int? yearOfBirth,
     DateTime? lastPeriodStart,
   }) : trackingModes = (trackingModes == null || trackingModes.isEmpty) ? {TrackingMode.cycle} : {...trackingModes},
+       cycleConditions = {...?cycleConditions},
        yearOfBirth = yearOfBirth ?? DateTime.now().year - 25,
        _fallbackLastPeriodStart = lastPeriodStart ?? _derive(selectedDay);
 
@@ -36,6 +39,7 @@ class OnboardingProvider extends ChangeNotifier {
   int cycleLength;
   int bleedLength;
   Set<TrackingMode> trackingModes;
+  Set<CycleCondition> cycleConditions;
   int? yearOfBirth;
 
   /// Anchor used when the user never added a period; keeps the saved rhythm
@@ -79,6 +83,7 @@ class OnboardingProvider extends ChangeNotifier {
       cycleLength: await prefs.cycleLength(),
       bleedLength: await prefs.bleedLength(),
       trackingModes: await prefs.trackingModes(),
+      cycleConditions: await prefs.cycleConditions(),
       yearOfBirth: await prefs.birthYear(),
       selectedDay: selected,
       lastPeriodStart: last ?? _derive(selected),
@@ -97,6 +102,14 @@ class OnboardingProvider extends ChangeNotifier {
     trackingModes = next;
     notifyListeners();
     _prefs.setTrackingModes(next);
+  }
+
+  void toggleCycleCondition(CycleCondition condition) {
+    final next = {...cycleConditions};
+    if (!next.remove(condition)) next.add(condition);
+    cycleConditions = next;
+    notifyListeners();
+    _prefs.setCycleConditions(next);
   }
 
   void setYear(int y) {
@@ -188,6 +201,7 @@ class OnboardingProvider extends ChangeNotifier {
     _fallbackLastPeriodStart = last;
     await _prefs.saveRhythms(cycleLength, bleedLength, last);
     await _prefs.setTrackingModes(trackingModes);
+    await _prefs.setCycleConditions(cycleConditions);
     final year = yearOfBirth;
     if (year != null) await _prefs.setBirthYear(year);
     await _prefs.setOnboarded();
@@ -202,6 +216,7 @@ class OnboardingProvider extends ChangeNotifier {
     cycleLength = 28;
     bleedLength = 5;
     trackingModes = {TrackingMode.cycle};
+    cycleConditions = {};
     yearOfBirth = DateTime.now().year - 25;
     _fallbackLastPeriodStart = _derive(17);
     cycleLengthFromHistory = false;

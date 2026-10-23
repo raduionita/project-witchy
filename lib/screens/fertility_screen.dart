@@ -17,9 +17,16 @@ import '../widgets/app_card.dart';
 class FertilityScreen extends StatelessWidget {
   const FertilityScreen({super.key});
 
-  /// Placeholder while a dated pregnancy suppresses predictions; the route
-  /// stays reachable so deep links and the Today card never break.
-  Widget _buildPausedCard(BuildContext context) {
+  /// Placeholder while pregnancy, birth control or a suppressing condition
+  /// keeps fertility predictions off. The route stays reachable so deep links
+  /// and the Today card never break.
+  Widget _buildPausedCard(BuildContext context, CycleProvider cycle) {
+    final pregnancy = cycle.pregnancyActive;
+    final message = pregnancy
+        ? 'Pregnancy tracking is active, so fertility predictions are paused. They resume automatically once pregnancy mode is off.'
+        : cycle.contraceptionModeOn
+        ? 'Birth control mode is active, so fertility predictions are paused. Use the mode chips in Profile when this changes.'
+        : 'A cycle condition is active, so fertility predictions are paused. Use Cycle Conditions in Profile when this changes.';
     return AppCard(
       dark: true,
       child: Column(
@@ -27,12 +34,12 @@ class FertilityScreen extends StatelessWidget {
         children: [
           Text('Predictions paused', style: AppText.serif(13.5, c: Colors.white)),
           const SizedBox(height: 8),
-          Text(
-            'Pregnancy tracking is active, so fertility predictions are paused. They resume automatically once pregnancy mode is off.',
-            style: AppText.sans(11.5, c: AppColors.insightText, h: 1.55),
-          ),
+          Text(message, style: AppText.sans(11.5, c: AppColors.insightText, h: 1.55)),
           const SizedBox(height: 12),
-          AppButton(label: 'Open Pregnancy Tracker', onTap: () => context.go('/pregnancy')),
+          AppButton(
+            label: pregnancy ? 'Open Pregnancy Tracker' : 'Open Profile',
+            onTap: () => context.go(pregnancy ? '/pregnancy' : '/profile'),
+          ),
         ],
       ),
     );
@@ -96,7 +103,13 @@ class FertilityScreen extends StatelessWidget {
     if (cycle.pregnancyActive) {
       return Scaffold(
         appBar: const AppTopBar(title: 'Fertility Window'),
-        body: ListView(padding: const EdgeInsets.fromLTRB(16, 6, 16, 14), children: [const SizedBox(height: 8), _buildPausedCard(context)]),
+        body: ListView(padding: const EdgeInsets.fromLTRB(16, 6, 16, 14), children: [const SizedBox(height: 8), _buildPausedCard(context, cycle)]),
+      );
+    }
+    if (cycle.contraceptionModeOn || cycle.conditionPausesFertility) {
+      return Scaffold(
+        appBar: const AppTopBar(title: 'Fertility Window'),
+        body: ListView(padding: const EdgeInsets.fromLTRB(16, 6, 16, 14), children: [const SizedBox(height: 8), _buildPausedCard(context, cycle)]),
       );
     }
     final now = DateTime.now();
@@ -109,14 +122,15 @@ class FertilityScreen extends StatelessWidget {
     final cycleDay = cycle.elapsedCycleDay(today: now);
     final status = cycle.fertilityStatus(today: now);
     final daysToOvu = cycle.daysUntilOvulation(today: now);
-    final peakLabel = AppDate.short(cycle.ovulationDateThisCycle(today: now));
+    final window = cycle.fertileWindow(today: now);
+    final peakLabel = AppDate.short(window?.peak ?? cycle.ovulationDateThisCycle(today: now));
     final nextPeakLabel = AppDate.short(cycle.nextOvulationDate(today: now));
-    final windowOpensLabel = AppDate.short(cycle.ovulationDateThisCycle(today: now).subtract(const Duration(days: 5)));
+    final windowOpensLabel = AppDate.short(window?.start ?? cycle.ovulationDateThisCycle(today: now).subtract(const Duration(days: 5)));
     final ovuCycleDay = cycle.ovulationCycleDay;
     final windowStart = cycle.fertileStartCycleDay;
     final windowEnd = cycle.fertileEndCycleDay;
-    final windowDays = windowEnd - windowStart + 1;
-    final pad = cycle.uncertaintyPad;
+    final windowDays = window?.length ?? (windowEnd - windowStart + 1);
+    final pad = cycle.fertileWindowPad;
     final chanceValue = _chanceValue(status);
     final chanceSub = switch (status) {
       FertilityStatus.peakToday => 'Ovulation today ($peakLabel)',
@@ -140,7 +154,7 @@ class FertilityScreen extends StatelessWidget {
             phase: _orbPhase(status, daysToOvu),
             progress: cycleDay / cycle.effectiveCycleLength,
             cycleLength: cycle.effectiveCycleLength,
-            bleedLength: cycle.meanBleedLength?.round() ?? cycle.bleedLength,
+            bleedLength: cycle.bleedLength,
             fertileStartDay: windowStart,
             fertileEndDay: windowEnd,
           ),

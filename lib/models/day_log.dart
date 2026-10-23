@@ -13,6 +13,7 @@ class DayLog {
   double? temperature;
   String notes;
   String? ovulationTest;
+  String? pregnancyTest;
 
   /// True for spans seeded from onboarding history rather than logged by hand.
   /// Assumed days carry an 'Estimated' tag and stay out of the statistics until
@@ -33,6 +34,7 @@ class DayLog {
     this.temperature,
     this.notes = '',
     this.ovulationTest,
+    this.pregnancyTest,
     this.assumed = false,
   }) : flow = flow ?? {},
        collection = collection ?? {},
@@ -59,7 +61,8 @@ class DayLog {
       pain != 6 ||
       temperature != null ||
       notes.trim().isNotEmpty ||
-      ovulationTest != null;
+      ovulationTest != null ||
+      pregnancyTest != null;
 
   Map<String, dynamic> toJson() => {
     'flow': flow.toList(),
@@ -76,6 +79,7 @@ class DayLog {
     'temperature': temperature,
     'notes': notes,
     'ovulationTest': ovulationTest,
+    'pregnancyTest': pregnancyTest,
     'assumed': assumed,
   };
 
@@ -106,6 +110,7 @@ class DayLog {
     temperature: (json['temperature'] as num?)?.toDouble(),
     notes: json['notes'] as String? ?? '',
     ovulationTest: json['ovulationTest'] as String?,
+    pregnancyTest: json['pregnancyTest'] as String?,
     assumed: json['assumed'] as bool? ?? false,
   );
 }

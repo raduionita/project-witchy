@@ -67,6 +67,37 @@ class TodayScreen extends StatelessWidget {
     };
   }
 
+  /// A missed-period test shortcut. Once a negative test is logged for the
+  /// current cycle the shortcut disappears, and the countdown copy tells the
+  /// user when a retest is reasonable.
+  Widget _buildTestAction(BuildContext context) {
+    final cycle = context.watch<CycleProvider>();
+    final now = DateTime.now();
+    if (cycle.pregnancyActive || cycle.contraceptionModeOn || cycle.conditionPausesFertility) {
+      return const SizedBox.shrink();
+    }
+    if (cycle.daysLate(today: now) <= 0 || cycle.hasNegativeTestThisCycle) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          onPressed: () => context.read<LoggingProvider>().setPregnancyTest(now, 'negative'),
+          icon: const Icon(Icons.science_outlined, size: 16),
+          label: const Text('I tested negative'),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.pink,
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(0, 32),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Bleeding-countdown + fertility-window stat duo.
   /// Perimenopause swaps the single-day countdown for an earliest/latest window.
   Widget _buildStatsRow(BuildContext context) {
@@ -101,6 +132,10 @@ class TodayScreen extends StatelessWidget {
         bleedSub = '${AppDate.short(range.earliest)} · predicted';
       }
     }
+    if (late > 0 && cycle.hasRecentNegativeTest) {
+      bleedSub = 'negative test logged - retest in 3 days';
+    }
+
     // Pregnancy states repurpose the countdown card: active suppresses the
     // period countdown (links the tracker instead), gap state nudges setup.
     VoidCallback bleedTap = () => context.go('/bleed-history');
@@ -129,6 +164,7 @@ class TodayScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(cycle.predictionBasis, style: AppText.sans(9.5, c: AppColors.muted)),
         ],
+        _buildTestAction(context),
       ],
     );
   }
@@ -266,7 +302,7 @@ class TodayScreen extends StatelessWidget {
     final now = DateTime.now();
     final dayNum = cycle.elapsedCycleDay(today: now);
     final confident = cycle.predictionsConfident(today: now);
-    final bleedDays = cycle.meanBleedLength?.round() ?? cycle.bleedLength;
+    final bleedDays = cycle.bleedLength;
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 6, 16, AppDims.fabClearance),
       children: [

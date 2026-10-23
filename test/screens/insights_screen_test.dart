@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:witchy/models/prediction_snapshot.dart';
 import 'package:witchy/providers/cycle_provider.dart';
 import 'package:witchy/providers/logging_provider.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/screens/insights_screen.dart';
+import 'package:witchy/services/prediction_snapshot_store.dart';
 import 'package:witchy/services/prefs_service.dart';
 
 DateTime previousMonth() {
@@ -65,7 +67,11 @@ void main() {
 
   testWidgets('add past period saves a range', (tester) async {
     await pumpInsights(tester);
-    await tester.tap(find.text('Add past period'));
+    final addPastPeriod = find.text('Add past period');
+    await tester.scrollUntilVisible(addPastPeriod, 300);
+    await tester.ensureVisible(addPastPeriod);
+    await tester.pumpAndSettle();
+    await tester.tap(addPastPeriod);
     await tester.pumpAndSettle();
     expect(find.text('Save period'), findsOneWidget);
 
@@ -90,8 +96,11 @@ void main() {
   testWidgets('editing a record saves without duplicating it', (tester) async {
     logging.addPeriodRecord(DateTime(2026, 7, 1), end: DateTime(2026, 7, 4));
     await pumpInsights(tester);
-    await tester.scrollUntilVisible(find.text('Jul 1 - Jul 4'), 300);
-    await tester.tap(find.text('Jul 1 - Jul 4'));
+    final record = find.text('Jul 1 - Jul 4');
+    await tester.scrollUntilVisible(record, 300);
+    await tester.ensureVisible(record);
+    await tester.pumpAndSettle();
+    await tester.tap(record);
     await tester.pumpAndSettle();
     expect(find.text('Edit past period'), findsOneWidget);
     await tester.ensureVisible(find.text('Save period'));
@@ -105,8 +114,11 @@ void main() {
   testWidgets('period history row opens the editor and deletes the record', (tester) async {
     logging.addPeriodRecord(DateTime(2026, 7, 1));
     await pumpInsights(tester);
-    await tester.scrollUntilVisible(find.text('Jul 1'), 300);
-    await tester.tap(find.text('Jul 1'));
+    final record = find.text('Jul 1');
+    await tester.scrollUntilVisible(record, 300);
+    await tester.ensureVisible(record);
+    await tester.pumpAndSettle();
+    await tester.tap(record);
     await tester.pumpAndSettle();
     expect(find.text('Edit past period'), findsOneWidget);
     await tester.ensureVisible(find.text('Delete period'));
@@ -117,5 +129,34 @@ void main() {
     await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
     expect(logging.periodRecords, isEmpty);
+  });
+
+  testWidgets('trends and saved predictions render', (tester) async {
+    for (var i = 0; i < 7; i++) {
+      final start = DateTime(2026, 1, 1 + i * 28);
+      logging.setFlow(start, 'Medium');
+      logging.setFlow(DateTime(start.year, start.month, start.day + 1), 'Light');
+    }
+    final store = PredictionSnapshotStore(prefs);
+    await store.record(
+      PredictionSnapshot(
+        cycleStart: DateTime(2026, 9, 2),
+        earliest: DateTime(2026, 9, 30),
+        latest: DateTime(2026, 10, 2),
+        recordedAt: DateTime(2026, 9, 2),
+        peak: DateTime(2026, 9, 16),
+      ),
+    );
+    cycle = CycleProvider(onboarding, logging, snapshots: store);
+
+    await pumpInsights(tester);
+    await tester.scrollUntilVisible(find.text('What Changed'), 300);
+    expect(find.text('What Changed'), findsOneWidget);
+    expect(find.text('Cycle length'), findsOneWidget);
+
+    await tester.scrollUntilVisible(find.text('Prediction History'), 300);
+    expect(find.text('Prediction History'), findsOneWidget);
+    expect(find.text('Cycle started Sep 2'), findsOneWidget);
+    expect(find.text('Peak Sep 16'), findsOneWidget);
   });
 }

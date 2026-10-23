@@ -41,7 +41,9 @@ class PeriodHistory {
 
   /// Merges explicit period starts with real flow spans. A logged flow span
   /// always wins over an estimated record that overlaps it, so editing flow
-  /// never leaves a duplicate period behind.
+  /// never leaves a duplicate period behind. Overlapping explicit records are
+  /// merged into one span so a duplicated or revisited record cannot invent a
+  /// second period start.
   static List<PeriodSpan> spansFrom(
     Map<DateTime, DayLog> logs,
     Iterable<PeriodRecord> records,
@@ -51,7 +53,7 @@ class PeriodHistory {
       for (final span in real)
         if (!span.spottingOnly && span.length >= minSpanDays) span,
     ];
-    final byStart = <DateTime, PeriodSpan>{};
+    final explicit = <PeriodSpan>[];
     for (final record in records) {
       final start = _day(record.start);
       final end = _day(record.end ?? record.start);
@@ -59,12 +61,42 @@ class PeriodHistory {
         (span) => !start.isAfter(span.end) && !end.isBefore(span.start),
       );
       if (overlapsReal) continue;
-      byStart[start] = PeriodSpan(
-        start: start,
-        end: end,
-        estimated: record.estimated,
-        startOnly: record.startOnly,
+      explicit.add(
+        PeriodSpan(
+          start: start,
+          end: end,
+          estimated: record.estimated,
+          startOnly: record.startOnly,
+        ),
       );
+    }
+    explicit.sort((a, b) => a.start.compareTo(b.start));
+    final merged = <PeriodSpan>[];
+    for (final span in explicit) {
+      if (merged.isEmpty) {
+        merged.add(span);
+        continue;
+      }
+      final previous = merged.last;
+      if (span.start.isAfter(previous.end)) {
+        merged.add(span);
+        continue;
+      }
+      final end = span.end.isAfter(previous.end) ? span.end : previous.end;
+      merged[merged.length - 1] = PeriodSpan(
+        start: previous.start,
+        end: end,
+        estimated: previous.estimated && span.estimated,
+        startOnly: previous.startOnly && span.startOnly,
+      );
+    }
+    final byStart = <DateTime, PeriodSpan>{};
+    for (final span in merged) {
+      final overlapsReal = realPeriods.any(
+        (real) => !span.start.isAfter(real.end) && !span.end.isBefore(real.start),
+      );
+      if (overlapsReal) continue;
+      byStart[span.start] = span;
     }
     for (final span in real) {
       final key = _day(span.start);
@@ -81,6 +113,28 @@ class PeriodHistory {
   /// Starts of real periods only: spans shorter than [minSpanDays] are spotting
   /// and never seed cycle math, BBT baselines or OPK luteal estimates.
   static const int minSpanDays = 2;
+
+  /// Number of recent measured periods used for the typical bleed length.
+  static const int recentBleedCount = 6;
+
+  /// Periods with a measured end that can contribute to bleed statistics.
+  /// Estimated records, start-only records and spotting are excluded.
+  static List<PeriodSpan> measuredPeriods(List<PeriodSpan> spans) => [
+    for (final s in spans)
+      if (!s.estimated && !s.startOnly && s.length >= minSpanDays && !s.spottingOnly) s,
+  ];
+
+  /// Median length of the most recent [count] measured periods, oldest first.
+  static int? medianRecentBleedLength(
+    List<PeriodSpan> spans, {
+    int count = recentBleedCount,
+  }) {
+    final measured = measuredPeriods(spans);
+    if (measured.isEmpty) return null;
+    final take = count < 1 ? 1 : count;
+    final recent = measured.length <= take ? measured : measured.sublist(measured.length - take);
+    return median([for (final s in recent) s.length]);
+  }
 
   /// Spans that qualify as periods: a known start, even without an end, or at
   /// least [minSpanDays] consecutive logged days with at least one non-spotting

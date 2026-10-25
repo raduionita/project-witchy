@@ -90,6 +90,15 @@ void main() {
     AppColors.dark = false;
   });
 
+  testWidgets('future days are muted and do not open the log sheet', (tester) async {
+    final cells = MonthCells(month: DateTime(2026, 9, 1), cells: [const CalendarDayCell(day: 20, cycleDay: 20, isFuture: true, isPredictedPeriod: true)]);
+    int? tapped;
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: CycleCalendar(cells: cells, onDayTap: (day) => tapped = day))));
+    expect(tester.widget<Text>(find.text('20').first).style?.color, AppColors.placeholder);
+    await tester.tap(find.text('20').first);
+    expect(tapped, isNull);
+  });
+
   group('calendar glyph palette', () {
     String svg(String name) => File('assets/svgs/$name').readAsStringSync();
 

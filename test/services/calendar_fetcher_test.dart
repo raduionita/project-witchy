@@ -127,6 +127,19 @@ void main() {
       expect(cells.cells.first.isToday, isFalse);
     });
 
+    test('marks dates after today as future', () {
+      final cells = CalendarFetcher.forMonth(
+        month: DateTime(2026, 9),
+        lastStart: DateTime(2026, 9, 1),
+        cycleLength: 28,
+        bleedLength: 5,
+        today: DateTime(2026, 9, 10, 15, 30),
+      );
+      expect(cells.cellFor(9)!.isFuture, isFalse);
+      expect(cells.cellFor(10)!.isFuture, isFalse);
+      expect(cells.cellFor(11)!.isFuture, isTrue);
+    });
+
     test('assigns in-month cycle days and leaves adjacent cells at cycleDay 0', () {
       final cells = CalendarFetcher.forMonth(
         month: DateTime(2026, 9),

@@ -30,6 +30,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
     final date = DateTime(first.year, first.month, 1 + index - leading);
     final parts = [AppDate.weekdayLong(date)];
     if (!cell.inMonth) return '${parts.first}, outside this month';
+    if (cell.isFuture) parts.add('future date');
     if (cell.isToday) parts.add('today');
     if (cell.isSelected) parts.add('selected');
     if (cell.isLoggedBleed) {
@@ -63,13 +64,13 @@ class _CycleCalendarState extends State<CycleCalendar> {
   }
 
   Widget _buildDayCell(CalendarDayCell cell) {
-    final tappable = widget.onDayTap != null;
+    final tappable = widget.onDayTap != null && !cell.isFuture;
     final glyph = _glyph(cell);
     // Moon glyphs carry light fills; dark-mode ink would vanish on them.
     final onGlyph = glyph != null;
     final today = cell.isToday;
-    final dayColor = onGlyph ? const Color(0xFF2A0A3C) : AppColors.ink;
-    final subColor = onGlyph ? const Color(0xFF5D4A70) : AppColors.muted;
+    final dayColor = cell.isFuture ? AppColors.placeholder : onGlyph ? const Color(0xFF2A0A3C) : AppColors.ink;
+    final subColor = cell.isFuture ? AppColors.placeholder : onGlyph ? const Color(0xFF5D4A70) : AppColors.muted;
     return SizedBox(
       height: 54,
       child: Semantics(

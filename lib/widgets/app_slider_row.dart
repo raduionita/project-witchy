@@ -13,6 +13,10 @@ class AppSliderRow extends StatelessWidget {
 
   /// Optional note under the track, e.g. "Calculated from your dates".
   final String? hint;
+
+  /// Width reserved for each step button and its matching min/max label.
+  static const double _stepExtent = 40;
+
   const AppSliderRow({super.key, required this.label, required this.value, required this.min, required this.max, required this.current, required this.onChanged, this.hint});
 
   void _step(int delta) {
@@ -23,10 +27,7 @@ class AppSliderRow extends StatelessWidget {
   /// Types an exact value instead of hunting for a thumb position; the entered
   /// number is clamped into the range the same way the steppers are.
   Future<void> _type(BuildContext context) async {
-    final entered = await showDialog<int>(
-      context: context,
-      builder: (_) => NumberEntryDialog(title: label, initial: current.round(), min: min.round(), max: max.round(), hint: hint),
-    );
+    final entered = await showDialog<int>(context: context, builder: (_) => NumberEntryDialog(title: label, initial: current.round(), min: min.round(), max: max.round(), hint: hint));
     if (entered == null) return;
     final next = entered.toDouble().clamp(min, max);
     if (next != current) onChanged(next);
@@ -42,11 +43,7 @@ class AppSliderRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(value, style: AppText.serif(13.5, c: AppColors.pur)),
-              const SizedBox(width: 5),
-              Icon(Icons.edit_outlined, size: 11, color: AppColors.pur),
-            ],
+            children: [Text(value, style: AppText.serif(13.5, c: AppColors.pur)), const SizedBox(width: 5), Icon(Icons.edit_outlined, size: 11, color: AppColors.pur)],
           ),
         ),
       ),
@@ -58,25 +55,22 @@ class AppSliderRow extends StatelessWidget {
     final divisions = (max - min).round();
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Flexible(child: Text(label, style: AppText.sec, overflow: TextOverflow.ellipsis)), _buildValue(context)],
-        ),
+        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Flexible(child: Text(label, style: AppText.sec, overflow: TextOverflow.ellipsis)), _buildValue(context)]),
         Row(
           children: [
             IconButton(
               onPressed: current > min ? () => _step(-1) : null,
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-              icon: Icon(Icons.remove_circle_outline, size: 18, color: current > min ? AppColors.pur : AppColors.line),
+              constraints: const BoxConstraints(minWidth: _stepExtent, minHeight: 28),
+              icon: Icon(Icons.remove_circle_outline, size: 24, color: current > min ? AppColors.pur : AppColors.line),
               tooltip: 'Decrease',
             ),
             Expanded(
               child: SliderTheme(
                 data: SliderTheme.of(
                   context,
-                ).copyWith(activeTrackColor: AppColors.pur, inactiveTrackColor: AppColors.sliderTrack, thumbColor: Colors.white, overlayShape: SliderComponentShape.noOverlay, trackHeight: 4),
+                ).copyWith(activeTrackColor: AppColors.pur, inactiveTrackColor: AppColors.sliderTrack, thumbColor: Colors.white, overlayShape: SliderComponentShape.noOverlay, trackHeight: 8),
                 child: Slider(min: min, max: max, divisions: divisions, value: current.clamp(min, max), onChanged: onChanged),
               ),
             ),
@@ -84,20 +78,20 @@ class AppSliderRow extends StatelessWidget {
               onPressed: current < max ? () => _step(1) : null,
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-              icon: Icon(Icons.add_circle_outline, size: 18, color: current < max ? AppColors.pur : AppColors.line),
+              constraints: const BoxConstraints(minWidth: _stepExtent, minHeight: 28),
+              icon: Icon(Icons.add_circle_outline, size: 24, color: current < max ? AppColors.pur : AppColors.line),
               tooltip: 'Increase',
             ),
           ],
         ),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [Text('${min.round()}', style: AppText.sans(9.5, c: AppColors.muted)), Text('${max.round()}', style: AppText.sans(9.5, c: AppColors.muted))],
+          children: [
+            SizedBox(width: _stepExtent, child: Center(child: Text('${min.round()}', style: AppText.sans(9.5, c: AppColors.muted)))),
+            const Spacer(),
+            SizedBox(width: _stepExtent, child: Center(child: Text('${max.round()}', style: AppText.sans(9.5, c: AppColors.muted)))),
+          ],
         ),
-        if (hint != null) ...[
-          const SizedBox(height: 2),
-          Align(alignment: Alignment.centerLeft, child: Text(hint!, style: AppText.sans(10, c: AppColors.muted))),
-        ],
+        if (hint != null) ...[const SizedBox(height: 2), Align(alignment: Alignment.centerLeft, child: Text(hint!, style: AppText.sans(10, c: AppColors.muted)))],
       ],
     );
   }

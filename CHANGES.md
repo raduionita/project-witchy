@@ -594,3 +594,38 @@ Files: `test/roadmap_regression_test.dart`, `test/services/cycle_math_properties
 - `flutter analyze` = No issues found, `flutter test` = 469/469 passing, `flutter build apk --debug` = success, `git diff --check` = clean.
 
 Files: `lib/models/tracking_mode.dart`, `lib/providers/cycle_provider.dart`, `lib/screens/calendar_screen.dart`, `lib/screens/fertility_screen.dart`, `lib/screens/insights_screen.dart`, `lib/screens/profile_screen.dart`, `lib/screens/today_screen.dart`, `lib/services/prefs_service.dart`, `lib/widgets/calendar_legend.dart`, `lib/widgets/cycle_calendar.dart`, `lib/widgets/tracking_mode_chip.dart`, `lib/common/app_metadata.dart`, plus `test/models/tracking_mode_test.dart`, `test/providers/cycle_mode_matrix_test.dart`, `test/providers/cycle_provider_test.dart`, `test/roadmap_regression_test.dart`, `test/screens/calendar_screen_test.dart`, `test/screens/insights_screen_test.dart`, `test/screens/profile_screen_test.dart`, `test/services/prefs_service_test.dart`, `test/widgets/calendar_widgets_test.dart`, `test/widgets/tracking_mode_chip_test.dart`.
+
+## Update 24 - 2026.10.24 - Alert freshness, future calendar, and onboarding polish
+
+### Alert freshness
+
+- `AlertProvider.generate` now removes stale live alerts when the current cycle and logging state no longer produce them. Live ids cover late, period countdown, fertile window and log-missing alerts.
+- Still-valid alerts keep their read state. One-shots (`opk-positive-*`, `period-today-*`) and lunar alerts stay untouched.
+- This fixes the Today screen showing Luteal while an old fertile-window alert remained, and `Log Missing` staying after the day was logged.
+
+### Onboarding
+
+- `What to track` chips now sit in one row that fills the card. Widths follow label content, so Perimenopause is the widest chip.
+- Tracking chips use 10px horizontal and 6px vertical padding. `AppChip` takes an optional padding override, so log-sheet chips keep their original 8/4 padding.
+- `Add past period` is now a compact primary button with a calendar icon, matching the Calendar `Log this day` treatment at a smaller size.
+- `AppSliderRow` min and max labels are centered under the 40px minus and plus buttons.
+
+### Calendar
+
+- Future dates are marked in `CalendarFetcher` and render muted day numbers. Prediction glyphs and dots remain visible.
+- Future dates cannot be tapped or logged. Selecting one shows `Future dates cannot be logged. Predictions stay visible on the calendar.` with no log button.
+
+### Articles
+
+- Relative feed links resolve against `https://qvonyx.com/witchy/articles/`, so article slugs open under the correct path.
+- Legacy cached links under `https://qvonyx.com/witchy/<slug>.html` are normalized to the articles path and the cache is rewritten.
+
+### Tests and gates
+
+- Added alert provider coverage for removing stale log-missing and fertility alerts.
+- Added onboarding coverage for proportional tracking chips, compact Add past period, and slider label alignment.
+- Added calendar coverage for future flags, muted future cells, disabled taps, and the future selected-day card.
+- Added feed coverage for relative article links and legacy cache normalization.
+- `flutter analyze` = No issues found, `flutter test` = 476/476 passing, `flutter build apk --debug` = success, `git diff --check` = clean.
+
+Files: `lib/models/article.dart`, `lib/models/calendar_day_cell.dart`, `lib/providers/alert_provider.dart`, `lib/screens/calendar_screen.dart`, `lib/screens/onboarding_screen.dart`, `lib/services/calendar_fetcher.dart`, `lib/services/feed_service.dart`, `lib/widgets/app_button.dart`, `lib/widgets/app_chip.dart`, `lib/widgets/app_slider_row.dart`, `lib/widgets/cycle_calendar.dart`, `lib/widgets/tracking_mode_chip.dart`, `lib/common/app_metadata.dart`, plus `test/providers/alert_provider_test.dart`, `test/screens/calendar_screen_test.dart`, `test/screens/onboarding_screen_test.dart`, `test/services/calendar_fetcher_test.dart`, `test/services/feed_service_test.dart`, `test/widgets/app_slider_row_test.dart`, `test/widgets/calendar_widgets_test.dart`, `test/widgets/tracking_mode_chip_test.dart`.

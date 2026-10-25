@@ -64,9 +64,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void _shiftMonth(int delta) => _setMonth(DateTime(_month.year, _month.month + delta, 1));
 
   void _selectDay(int day) {
+    final date = DateTime(_month.year, _month.month, day);
     setState(() => _selectedDay = day);
-    showLogSheet(context, DateTime(_month.year, _month.month, day));
+    if (!_isFuture(date)) showLogSheet(context, date);
   }
+
+  DateTime get _today {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  bool _isFuture(DateTime date) => date.isAfter(_today);
 
   Future<void> _pickMonth() async {
     final picked = await showMonthPicker(context, _month);
@@ -170,13 +178,28 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildLoggedCard() {
     final cycle = context.watch<CycleProvider>();
     final selectedDate = DateTime(_month.year, _month.month, _selectedDay);
+    final future = _isFuture(selectedDate);
     final entry = context.watch<LoggingProvider>().peekDay(selectedDate);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text('Selected day', style: AppText.sec),
         const SizedBox(height: 8),
-        if (entry == null) ...[
+        if (future) ...[
+          Text(AppDate.long(selectedDate), style: AppText.sans(11, c: AppColors.muted)),
+          const SizedBox(height: 10),
+          AppCard(
+            child: Column(
+              children: [
+                IconBadge(icon: AppIcons.cal),
+                const SizedBox(height: 10),
+                Text('Future date', style: AppText.h2, textAlign: TextAlign.center),
+                const SizedBox(height: 6),
+                Text('Future dates cannot be logged. Predictions stay visible on the calendar.', style: AppText.sub, textAlign: TextAlign.center),
+              ],
+            ),
+          ),
+        ] else if (entry == null) ...[
           Text(AppDate.long(selectedDate), style: AppText.sans(11, c: AppColors.muted)),
           const SizedBox(height: 10),
           AppCard(

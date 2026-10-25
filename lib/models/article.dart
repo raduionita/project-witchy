@@ -6,6 +6,9 @@ class Article {
   final String category;
   const Article({required this.title, required this.link, required this.description, this.pubDate, this.category = 'GUIDE'});
 
+  Article copyWith({String? link}) =>
+      Article(title: title, link: link ?? this.link, description: description, pubDate: pubDate, category: category);
+
   factory Article.fromJson(Map<String, dynamic> json) => Article(
     title: json['title'] as String? ?? '',
     link: json['link'] as String? ?? '',

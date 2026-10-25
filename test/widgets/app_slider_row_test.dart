@@ -59,4 +59,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(calls, 0);
   });
+
+  testWidgets('min and max labels sit under their step buttons', (tester) async {
+    await pumpRow(tester, onChanged: (_) {});
+    expect(tester.getCenter(find.text('15')).dx, closeTo(tester.getCenter(find.byIcon(Icons.remove_circle_outline)).dx, 1));
+    expect(tester.getCenter(find.text('60')).dx, closeTo(tester.getCenter(find.byIcon(Icons.add_circle_outline)).dx, 1));
+  });
 }

@@ -19,6 +19,13 @@ class AlertProvider extends ChangeNotifier {
 
   static const int _maxItems = 30;
 
+  /// Generated alerts that describe the current cycle state. If the underlying
+  /// state changes (logging today, a moved ovulation peak, a new phase), the
+  /// previous version must be dropped instead of lingering beside the new one.
+  static const List<String> _livePrefixes = ['late-d', 'period-d', 'fertile-', 'log-'];
+
+  static bool _isLiveId(String id) => _livePrefixes.any(id.startsWith);
+
   static Future<AlertProvider> load(PrefsService prefs) async =>
       AlertProvider(prefs, items: await prefs.alertItems());
 
@@ -42,9 +49,15 @@ class AlertProvider extends ChangeNotifier {
     final t = now ?? DateTime.now();
     final today = DateTime(t.year, t.month, t.day);
 
+    final fresh = AlertGenerator.generate(cycle: cycle, logging: logging, now: t);
+    final freshIds = {for (final alert in fresh) alert.id};
     final merged = <AlertItem>[..._items];
-    for (final fresh in AlertGenerator.generate(cycle: cycle, logging: logging, now: t)) {
-      if (!merged.any((a) => a.id == fresh.id)) merged.add(fresh);
+    // Live alerts are regenerated from current state. Remove an old one when
+    // the state no longer produces it (e.g. Log Missing after a log, or a
+    // fertility alert after the peak moves into the luteal phase).
+    merged.removeWhere((a) => _isLiveId(a.id) && !freshIds.contains(a.id));
+    for (final alert in fresh) {
+      if (!merged.any((a) => a.id == alert.id)) merged.add(alert);
     }
     // One-shots live here (not in the pure generator): they fire once per
     // stable id and are never re-emitted under a different id.

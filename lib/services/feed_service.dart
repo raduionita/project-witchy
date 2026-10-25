@@ -22,6 +22,8 @@ class FeedService {
   final http.Client _client;
 
   static const feedUrl = 'https://qvonyx.com/witchy/articles.xml';
+  static const articleBase = 'https://qvonyx.com/witchy/articles/';
+  static const _legacyArticleBase = 'https://qvonyx.com/witchy/';
   static const _timeout = Duration(seconds: 12);
 
   Future<List<Article>> load({bool refresh = false}) async => (await loadResult(refresh: refresh)).articles;
@@ -30,7 +32,7 @@ class FeedService {
   Future<FeedResult> loadResult({bool refresh = false}) async {
     if (!refresh) {
       final cached = await _prefs.feedCache();
-      if (cached != null && cached.isNotEmpty) return FeedResult(cached);
+      if (cached != null && cached.isNotEmpty) return FeedResult(await _normalizeCached(cached));
     }
     try {
       final response = await _client.get(Uri.parse(feedUrl)).timeout(_timeout);
@@ -40,9 +42,27 @@ class FeedService {
       return FeedResult(items);
     } catch (_) {
       final cached = await _prefs.feedCache();
-      if (cached != null && cached.isNotEmpty) return FeedResult(cached, stale: true);
+      if (cached != null && cached.isNotEmpty) return FeedResult(await _normalizeCached(cached), stale: true);
       rethrow;
     }
+  }
+
+  /// Rewrites links saved by older builds that resolved relative feed entries
+  /// against `articles.xml`, which dropped the `/articles/` path segment.
+  Future<List<Article>> _normalizeCached(List<Article> cached) async {
+    var changed = false;
+    final normalized = <Article>[];
+    for (final article in cached) {
+      final link = _normalizeLink(article.link);
+      if (link != article.link) {
+        changed = true;
+        normalized.add(article.copyWith(link: link));
+      } else {
+        normalized.add(article);
+      }
+    }
+    if (changed) await _prefs.saveFeedCache(normalized);
+    return normalized;
   }
 
   static List<Article> parseFeed(String body) {
@@ -63,12 +83,24 @@ class FeedService {
     return withoutTags.replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
-  // Feed entries may be relative slugs - resolve them against the feed URL.
+  // Feed entries may be relative slugs - resolve them against the article
+  // directory, not the RSS file itself.
   static String _resolveLink(String raw) {
     if (raw.isEmpty) return raw;
     final uri = Uri.tryParse(raw);
-    if (uri == null || uri.hasScheme) return raw;
-    return Uri.parse(feedUrl).resolve(raw).toString();
+    if (uri == null) return raw;
+    if (uri.hasScheme) return _normalizeLink(raw);
+    return Uri.parse(articleBase).resolve(raw).toString();
+  }
+
+  static String _normalizeLink(String raw) {
+    if (raw.isEmpty) return raw;
+    if (raw.startsWith(articleBase)) return raw;
+    if (raw.startsWith(_legacyArticleBase)) {
+      final tail = raw.substring(_legacyArticleBase.length);
+      if (!tail.startsWith('articles/')) return '$articleBase$tail';
+    }
+    return raw;
   }
 
   static DateTime? _parseDate(String raw) {

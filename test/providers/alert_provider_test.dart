@@ -175,5 +175,23 @@ void main() {
       s.provider.restore(item);
       expect(s.provider.items.where((a) => a.id == id), hasLength(1));
     });
+
+    test('logging today removes the stale Log Missing alert', () {
+      final s = bindStandard();
+      final evening = DateTime(today().year, today().month, today().day, 18, 30);
+      s.provider.generate(now: evening);
+      expect(s.provider.items.where((a) => a.type == AlertType.logMissing), isNotEmpty);
+      s.logging.setFlow(today(), 'Medium');
+      s.provider.generate(now: evening);
+      expect(s.provider.items.where((a) => a.type == AlertType.logMissing), isEmpty);
+    });
+
+    test('removes a stale same-day fertility alert', () {
+      final s = bindStandard(modes: {TrackingMode.pregnancy}, lmp: today().add(const Duration(days: -60)));
+      final id = 'fertile-${todayKey()}';
+      s.provider.restore(item(id, read: true));
+      s.provider.generate();
+      expect(s.provider.items.where((a) => a.id == id), isEmpty);
+    });
   });
 }

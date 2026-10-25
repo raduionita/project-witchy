@@ -295,16 +295,11 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
   Widget _buildAddButton() {
     return Align(
       alignment: Alignment.centerLeft,
-      child: TextButton.icon(
-        onPressed: _add,
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.pur,
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          minimumSize: const Size(48, 36),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        icon: FaIcon(AppIcons.calendarAdd, size: 11, color: AppColors.pur),
-        label: Text('Add past period', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: AppColors.pur, decoration: TextDecoration.underline)),
+      child: AppButton(
+        label: 'Add past period',
+        compact: true,
+        leading: FaIcon(AppIcons.calendarAdd, size: 12, color: Colors.white),
+        onTap: _add,
       ),
     );
   }

@@ -13,10 +13,13 @@ class AppChip extends StatelessWidget {
   final Color? selectedColor;
   final VoidCallback onTap;
 
-  /// Holds the label to one clipped line. Used by the equal-width tracking
+  /// Holds the label to one clipped line. Used by the single-row tracking
   /// chips, where a wrapped label would make one chip taller than its siblings.
   final bool singleLine;
-  const AppChip({super.key, required this.label, this.icon, this.iconColor, this.iconCount = 1, this.selected = false, this.selectedColor, this.singleLine = false, required this.onTap});
+
+  /// Optional padding override, used by the onboarding tracking chips.
+  final EdgeInsetsGeometry padding;
+  const AppChip({super.key, required this.label, this.icon, this.iconColor, this.iconCount = 1, this.selected = false, this.selectedColor, this.singleLine = false, this.padding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4), required this.onTap});
 
   Widget _icon(Color active, Color fg) {
     final color = selected ? fg : (iconColor ?? AppColors.pur);
@@ -36,7 +39,7 @@ class AppChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: padding,
         decoration: BoxDecoration(color: selected ? active : AppColors.chipBg, borderRadius: BorderRadius.circular(8), border: Border.all(color: selected ? active : AppColors.line)),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -66,6 +66,7 @@ class CalendarFetcher {
           isLogged: log != null,
           isSelected: selectedDay == day,
           isEstimatedStart: estimatedStarts.contains(date),
+          isFuture: date.isAfter(todayDate),
         ),
       );
     }

@@ -11,6 +11,7 @@ class CalendarDayCell {
     this.isLogged = false,
     this.isSelected = false,
     this.isEstimatedStart = false,
+    this.isFuture = false,
   });
 
   /// Day of month (1–31).
@@ -27,6 +28,10 @@ class CalendarDayCell {
   final bool isLogged;
   final bool isSelected;
   final bool isEstimatedStart;
+
+  /// True for in-month days after today. Future days stay visible (including
+  /// predictions) but cannot be opened for logging.
+  final bool isFuture;
 
   const CalendarDayCell.padding() : this(day: 0, inMonth: false);
 

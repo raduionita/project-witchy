@@ -76,6 +76,8 @@ void main() {
     expect(find.text('Past periods'), findsOneWidget);
     expect(find.text('0 of 7 periods'), findsOneWidget);
     expect(find.text('Add past period'), findsOneWidget);
+    final addPast = tester.widget<AppButton>(find.widgetWithText(AppButton, 'Add past period'));
+    expect(addPast.compact, isTrue);
     expect(find.text('Estimated'), findsNothing);
     expect(find.text('Add at least one past period to continue.'), findsOneWidget);
     expect(find.text('Pick your last period date to continue.'), findsNothing);

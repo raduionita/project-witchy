@@ -91,4 +91,37 @@ void main() {
     expect(find.text('Log this day'), findsOneWidget);
     expect(find.byType(AppButton), findsOneWidget);
   });
+
+  testWidgets('future dates cannot be logged from the selected day card', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = PrefsService();
+    final now = DateTime.now();
+    final lastStart = DateTime(now.year, now.month, now.day - 13);
+    final onboarding = OnboardingProvider(
+      prefs,
+      onboarded: true,
+      cycleLength: 28,
+      bleedLength: 5,
+      lastPeriodStart: lastStart,
+      trackingModes: {TrackingMode.cycle},
+    );
+    final logging = LoggingProvider(prefs);
+    final cycle = CycleProvider(onboarding, logging);
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<LoggingProvider>.value(value: logging),
+          ChangeNotifierProvider<CycleProvider>.value(value: cycle),
+        ],
+        child: const MaterialApp(home: CalendarScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.chevron_right));
+    await tester.pumpAndSettle();
+    expect(find.text('Future dates cannot be logged. Predictions stay visible on the calendar.'), findsOneWidget);
+    expect(find.text('Log this day'), findsNothing);
+  });
 }

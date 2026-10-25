@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:witchy/models/article.dart';
 import 'package:witchy/services/feed_service.dart';
 import 'package:witchy/services/prefs_service.dart';
 
@@ -70,7 +71,7 @@ void main() {
       </channel></rss>
       ''';
       final items = FeedService.parseFeed(xml);
-      expect(items.single.link, 'https://qvonyx.com/witchy/my-article.html');
+      expect(items.single.link, 'https://qvonyx.com/witchy/articles/my-article.html');
     });
   });
 
@@ -133,5 +134,14 @@ void main() {
       expect(result.articles, hasLength(2));
       expect(result.stale, isFalse);
     });
+  });
+
+  test('normalizes legacy cached article links', () async {
+    const legacy = Article(title: 'Legacy', link: 'https://qvonyx.com/witchy/legacy.html', description: 'Old link');
+    await prefs.saveFeedCache([legacy]);
+    final loaded = await FeedService(prefs).load();
+    expect(loaded.single.link, 'https://qvonyx.com/witchy/articles/legacy.html');
+    final cached = await prefs.feedCache();
+    expect(cached!.single.link, 'https://qvonyx.com/witchy/articles/legacy.html');
   });
 }

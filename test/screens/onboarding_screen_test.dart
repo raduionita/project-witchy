@@ -6,6 +6,7 @@ import 'package:witchy/common/date_format.dart';
 import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/screens/onboarding_screen.dart';
 import 'package:witchy/services/prefs_service.dart';
+import 'package:witchy/widgets/add_past_period_button.dart';
 import 'package:witchy/widgets/app_button.dart';
 
 /// The month before the current one, so picked days are always in the past.
@@ -43,7 +44,7 @@ void main() {
   /// Opens the calendar sheet and picks the first two days of the previous
   /// month, which are always in the past.
   Future<void> pickPreviousMonthRange(WidgetTester tester) async {
-    await tester.tap(find.text('Add past period').last);
+    await tester.tap(find.byType(AddPastPeriodButton));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('period-prev-month')));
     await tester.pumpAndSettle();
@@ -75,9 +76,7 @@ void main() {
     await pumpOnboarding(tester);
     expect(find.text('Past periods'), findsOneWidget);
     expect(find.text('0 of 7 periods'), findsOneWidget);
-    expect(find.text('Add past period'), findsOneWidget);
-    final addPast = tester.widget<AppButton>(find.widgetWithText(AppButton, 'Add past period'));
-    expect(addPast.compact, isTrue);
+    expect(find.byType(AddPastPeriodButton), findsOneWidget);
     expect(find.text('Estimated'), findsNothing);
     expect(find.text('Add at least one past period to continue.'), findsOneWidget);
     expect(find.text('Pick your last period date to continue.'), findsNothing);
@@ -112,7 +111,7 @@ void main() {
 
   testWidgets('the sheet is cancelled without adding anything', (tester) async {
     await pumpOnboarding(tester);
-    await tester.tap(find.text('Add past period').last);
+    await tester.tap(find.byType(AddPastPeriodButton));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Cancel'));
     await tester.pumpAndSettle();
@@ -175,7 +174,7 @@ void main() {
     // The second period is 20 days after the first one.
     final secondStart = DateTime(previousMonth().year, previousMonth().month, 21);
     final secondEnd = DateTime(previousMonth().year, previousMonth().month, 24);
-    await tester.tap(find.text('Add past period').last);
+    await tester.tap(find.byType(AddPastPeriodButton));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('period-prev-month')));
     await tester.pumpAndSettle();
@@ -199,7 +198,7 @@ void main() {
     await pickPreviousMonthRange(tester);
     await saveSheet(tester);
 
-    await tester.tap(find.text('Add past period').last);
+    await tester.tap(find.byType(AddPastPeriodButton));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('period-prev-month')));
     await tester.pumpAndSettle();

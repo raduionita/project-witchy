@@ -197,6 +197,7 @@ class _PeriodRangeCalendarState extends State<PeriodRangeCalendar> {
         end != null &&
         !day.isBefore(start) &&
         !day.isAfter(end);
+    final isSelected = isStart || isEnd || inSelection;
     final inExisting = widget.existing.any((range) => range.contains(day));
     final isToday = _sameDay(day, _today);
 
@@ -206,12 +207,10 @@ class _PeriodRangeCalendarState extends State<PeriodRangeCalendar> {
     if (!inMonth || !enabled) {
       text = AppColors.placeholder;
     }
-    if (isStart || isEnd) {
+    if (isSelected) {
       background = AppColors.pur;
       text = Colors.white;
       weight = FontWeight.w700;
-    } else if (inSelection) {
-      background = AppColors.lav;
     } else if (isToday) {
       background = AppColors.lav;
     }
@@ -220,7 +219,7 @@ class _PeriodRangeCalendarState extends State<PeriodRangeCalendar> {
       key: Key('period-day-${day.year}-${day.month}-${day.day}'),
       label: '${AppDate.weekdayLong(day)}, ${AppDate.long(day)}',
       button: enabled,
-      selected: isStart || isEnd,
+      selected: isSelected,
       child: GestureDetector(
         onTap: enabled ? () => _onDayTap(day) : null,
         behavior: HitTestBehavior.opaque,
@@ -236,13 +235,13 @@ class _PeriodRangeCalendarState extends State<PeriodRangeCalendar> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: background,
-                    border: isToday && !isStart && !isEnd
+                    border: isToday && !isSelected
                         ? Border.all(color: AppColors.pur, width: 1.5)
                         : null,
                   ),
                 ),
                 Text('${day.day}', style: AppText.sans(13, w: weight, c: text)),
-                if (inExisting && !isStart && !isEnd)
+                if (inExisting && !isSelected)
                   Positioned(
                     bottom: 2,
                     child: Container(

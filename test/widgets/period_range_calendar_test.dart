@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:witchy/models/period_range.dart';
+import 'package:witchy/theme/app_colors.dart';
 import 'package:witchy/widgets/period_range_calendar.dart';
 
 void main() {
@@ -139,5 +140,33 @@ void main() {
     await tester.tap(find.byKey(const Key('period-next-month')));
     await tester.pumpAndSettle();
     expect(find.text('October 2026'), findsOneWidget);
+  });
+
+  testWidgets('the first picked day is purple before the range is complete', (tester) async {
+    await pumpCalendar(tester);
+    await tester.tap(find.byKey(dayKey(2026, 10, 10)));
+    await tester.pumpAndSettle();
+    final cell = find.byKey(dayKey(2026, 10, 10));
+    final container = tester.widget<Container>(find.descendant(of: cell, matching: find.byType(Container)).first);
+    expect((container.decoration! as BoxDecoration).color, AppColors.pur);
+    final text = tester.widget<Text>(find.descendant(of: cell, matching: find.text('10')));
+    expect(text.style?.color, Colors.white);
+    expect(text.style?.fontWeight, FontWeight.w700);
+  });
+
+  testWidgets('all days in a picked range use the same purple fill', (tester) async {
+    await pumpCalendar(tester);
+    await tester.tap(find.byKey(dayKey(2026, 10, 10)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(dayKey(2026, 10, 14)));
+    await tester.pumpAndSettle();
+    for (final day in [10, 12, 14]) {
+      final cell = find.byKey(dayKey(2026, 10, day));
+      final container = tester.widget<Container>(find.descendant(of: cell, matching: find.byType(Container)).first);
+      expect((container.decoration! as BoxDecoration).color, AppColors.pur);
+      final text = tester.widget<Text>(find.descendant(of: cell, matching: find.text('$day')));
+      expect(text.style?.color, Colors.white);
+      expect(text.style?.fontWeight, FontWeight.w700);
+    }
   });
 }

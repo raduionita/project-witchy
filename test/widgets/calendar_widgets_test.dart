@@ -76,6 +76,9 @@ void main() {
     final lightDecoration = light.decoration! as BoxDecoration;
     expect(lightDecoration.color, AppColors.plum);
     expect(lightDecoration.borderRadius, BorderRadius.circular(16));
+    final lightSize = tester.getSize(find.byKey(const Key('calendar-today-cell')));
+    expect(lightSize.width, closeTo(lightSize.height, 0.1));
+    expect(lightSize.width, lessThanOrEqualTo(54));
     final lightInner = tester.widget<Container>(find.byKey(const Key('calendar-today-inner')));
     expect((lightInner.decoration! as BoxDecoration).color, AppColors.lav);
     expect(tester.widget<Text>(find.text('14').first).style?.color, AppColors.ink);

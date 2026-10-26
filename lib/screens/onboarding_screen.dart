@@ -11,7 +11,7 @@ import '../providers/onboarding_provider.dart';
 import '../services/period_range_rules.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
-import '../theme/app_icons.dart';
+import '../widgets/add_past_period_button.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_slider_row.dart';
@@ -294,13 +294,8 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
 
   Widget _buildAddButton() {
     return Align(
-      alignment: Alignment.centerLeft,
-      child: AppButton(
-        label: 'Add past period',
-        compact: true,
-        leading: FaIcon(AppIcons.calendarAdd, size: 12, color: Colors.white),
-        onTap: _add,
-      ),
+      alignment: Alignment.centerRight,
+      child: AddPastPeriodButton(onTap: _add),
     );
   }
 
@@ -338,7 +333,7 @@ class _PastPeriodsCardState extends State<_PastPeriodsCard> {
             for (final range in entries) _buildRow(range),
           ],
           if (error != null) ...[const SizedBox(height: 8), _buildError(error)],
-          const SizedBox(height: 4),
+          const SizedBox(height: 10),
           _buildAddButton(),
         ],
       ),

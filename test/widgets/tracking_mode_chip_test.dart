@@ -15,6 +15,9 @@ void main() {
     await pumpChips(tester, selected: {TrackingMode.cycle}, onToggle: (_) {});
     final chips = find.byType(AppChip);
     expect(chips, findsNWidgets(3));
+    for (var i = 0; i < 3; i++) {
+      expect(tester.widget<AppChip>(chips.at(i)).icon, isNull);
+    }
     final row = tester.getRect(find.byType(TrackingModeChips));
     final first = tester.getRect(chips.at(0));
     final middle = tester.getRect(chips.at(1));

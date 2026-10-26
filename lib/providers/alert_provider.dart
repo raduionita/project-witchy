@@ -10,14 +10,21 @@ import 'logging_provider.dart';
 /// Persisted alert inbox. Regenerates candidates from cycle + logging state,
 /// merges them by stable id (keeping read state), and prunes expired entries.
 class AlertProvider extends ChangeNotifier {
-  AlertProvider(this._prefs, {List<AlertItem>? items}) : _items = [...?items];
+  AlertProvider(this._prefs, {List<AlertItem>? items, Set<String>? dismissedIds})
+      : _items = [
+          for (final item in items ?? const <AlertItem>[])
+            if (!(dismissedIds?.contains(item.id) ?? false)) item,
+        ],
+        _dismissedIds = {...?dismissedIds};
 
   final PrefsService _prefs;
   final List<AlertItem> _items;
+  final Set<String> _dismissedIds;
   CycleProvider? _cycle;
   LoggingProvider? _logging;
 
   static const int _maxItems = 30;
+  static const int _maxDismissed = 200;
 
   /// Generated alerts that describe the current cycle state. If the underlying
   /// state changes (logging today, a moved ovulation peak, a new phase), the
@@ -26,8 +33,11 @@ class AlertProvider extends ChangeNotifier {
 
   static bool _isLiveId(String id) => _livePrefixes.any(id.startsWith);
 
-  static Future<AlertProvider> load(PrefsService prefs) async =>
-      AlertProvider(prefs, items: await prefs.alertItems());
+  static Future<AlertProvider> load(PrefsService prefs) async {
+    final items = await prefs.alertItems();
+    final dismissed = await prefs.dismissedAlertIds();
+    return AlertProvider(prefs, items: items, dismissedIds: dismissed.toSet());
+  }
 
   /// Watch cycle data for regeneration and produce the first batch now.
   void bind(CycleProvider cycle, LoggingProvider logging) {
@@ -49,7 +59,11 @@ class AlertProvider extends ChangeNotifier {
     final t = now ?? DateTime.now();
     final today = DateTime(t.year, t.month, t.day);
 
-    final fresh = AlertGenerator.generate(cycle: cycle, logging: logging, now: t);
+    final fresh = AlertGenerator.generate(
+      cycle: cycle,
+      logging: logging,
+      now: t,
+    ).where((a) => !_dismissedIds.contains(a.id)).toList();
     final freshIds = {for (final alert in fresh) alert.id};
     final merged = <AlertItem>[..._items];
     // Live alerts are regenerated from current state. Remove an old one when
@@ -92,6 +106,9 @@ class AlertProvider extends ChangeNotifier {
         ),
       );
     }
+    // A dismissed alert stays dismissed even when the generator or a one-shot
+    // would otherwise recreate the same stable id.
+    merged.removeWhere((a) => _dismissedIds.contains(a.id));
     merged.removeWhere((a) => a.eventDate.isBefore(today));
     // Upcoming events first; same-day ties break by newest generation time.
     merged.sort((a, b) {
@@ -133,15 +150,23 @@ class AlertProvider extends ChangeNotifier {
   void dismiss(String id) {
     final before = _items.length;
     _items.removeWhere((a) => a.id == id);
-    if (_items.length != before) {
+    final added = _dismissedIds.add(id);
+    if (_dismissedIds.length > _maxDismissed) {
+      final overflow = _dismissedIds.length - _maxDismissed;
+      final oldest = _dismissedIds.take(overflow).toList();
+      _dismissedIds.removeAll(oldest);
+    }
+    if (_items.length != before || added) {
       notifyListeners();
       _save();
+      _saveDismissed();
     }
   }
 
   /// Re-inserts a dismissed alert (undo), keeping event-date order.
   void restore(AlertItem item) {
     if (_items.any((a) => a.id == item.id)) return;
+    _dismissedIds.remove(item.id);
     _items.add(item);
     _items.sort((a, b) {
       final byEvent = b.eventDate.compareTo(a.eventDate);
@@ -149,14 +174,18 @@ class AlertProvider extends ChangeNotifier {
     });
     notifyListeners();
     _save();
+    _saveDismissed();
   }
 
   void _save() => _prefs.saveAlertItems(_items);
+
+  void _saveDismissed() => _prefs.saveDismissedAlertIds(_dismissedIds.toList());
 
   /// In-memory reset after Delete All Data (prefs already wiped).
   /// Called last so cycle-triggered regeneration runs before this clears.
   void resetToDefaults() {
     _items.clear();
+    _dismissedIds.clear();
     notifyListeners();
   }
 }

@@ -193,5 +193,23 @@ void main() {
       s.provider.generate();
       expect(s.provider.items.where((a) => a.id == id), isEmpty);
     });
+
+    test('dismissed moon alerts stay gone after generate and reload', () async {
+      final id = 'moon-full-${todayKey()}';
+      final provider = AlertProvider(prefs, items: [item(id, event: today())]);
+      final onboarding = OnboardingProvider(prefs, onboarded: true, cycleLength: 28, bleedLength: 5, lastPeriodStart: today().add(const Duration(days: -10)));
+      final logging = LoggingProvider(prefs);
+      final cycle = CycleProvider(onboarding, logging);
+      provider.bind(cycle, logging);
+
+      provider.dismiss(id);
+      provider.generate();
+      expect(provider.items.where((a) => a.id == id), isEmpty);
+      await pumpEventQueue();
+
+      final reloaded = await AlertProvider.load(prefs);
+      expect(reloaded.items.where((a) => a.id == id), isEmpty);
+      expect(await prefs.dismissedAlertIds(), contains(id));
+    });
   });
 }

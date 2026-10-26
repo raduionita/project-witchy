@@ -7,11 +7,13 @@ class SettingsProvider extends ChangeNotifier {
     this._prefs, {
     this.lunarNotifications = true,
     this.darkMode = false,
+    this.startTab = 0,
   });
 
   final PrefsService _prefs;
   bool lunarNotifications;
   bool darkMode;
+  int startTab;
 
   static Future<SettingsProvider> load(PrefsService prefs) async {
     await prefs.clearLegacyBindingFlags();
@@ -19,6 +21,7 @@ class SettingsProvider extends ChangeNotifier {
       prefs,
       lunarNotifications: await prefs.lunarNotifications(),
       darkMode: await prefs.darkMode(),
+      startTab: await prefs.startTab(),
     );
   }
 
@@ -34,10 +37,17 @@ class SettingsProvider extends ChangeNotifier {
     _prefs.setDarkMode(v);
   }
 
+  void setStartTab(int v) {
+    startTab = v.clamp(0, 3);
+    notifyListeners();
+    _prefs.setStartTab(startTab);
+  }
+
   /// In-memory reset after Delete All Data (prefs already wiped).
   void resetToDefaults() {
     lunarNotifications = true;
     darkMode = false;
+    startTab = 0;
     notifyListeners();
   }
 }

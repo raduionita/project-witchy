@@ -18,6 +18,7 @@ import '../widgets/empty_state.dart';
 import '../widgets/log_bottom_sheet.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/trend_bars.dart';
+import '../widgets/add_past_period_button.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/app_tag.dart';
@@ -272,13 +273,10 @@ class InsightsScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('Period History', style: AppText.secIn),
-                  TextButton(
-                    onPressed: () => showPeriodRangeSheet(context, logging: logging),
-                    style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                    child: const Text('Add past period'),
-                  ),
+                  AddPastPeriodButton(onTap: () => showPeriodRangeSheet(context, logging: logging)),
                 ],
               ),
+              const SizedBox(height: 6),
               if (spans.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),

@@ -111,7 +111,7 @@ class AppRouterDelegate extends RouterDelegate<String> with ChangeNotifier, PopN
       case '/onboarding':
         return const OnboardingScreen();
       case '/today':
-        return const MainScreen(initialIndex: 0);
+        return const MainScreen();
       case '/calendar':
         return const MainScreen(initialIndex: 1);
       case '/insights':

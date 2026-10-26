@@ -3,6 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../navigation/app_nav.dart';
 import '../providers/alert_provider.dart';
+import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_icons.dart';
 import '../widgets/log_bottom_sheet.dart';
@@ -14,15 +15,21 @@ import 'insights_screen.dart';
 import 'today_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  final int initialIndex;
-  const MainScreen({super.key, this.initialIndex = 0});
+  final int? initialIndex;
+  const MainScreen({super.key, this.initialIndex});
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  late int index = widget.initialIndex;
+  late int index;
   static const titles = ['Today', 'Calendar', 'Insights', 'Articles'];
+
+  @override
+  void initState() {
+    super.initState();
+    index = (widget.initialIndex ?? context.read<SettingsProvider>().startTab).clamp(0, 3);
+  }
 
   @override
   Widget build(BuildContext context) {

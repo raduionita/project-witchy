@@ -13,6 +13,7 @@ import 'package:witchy/providers/reminders_provider.dart';
 import 'package:witchy/providers/settings_provider.dart';
 import 'package:witchy/screens/profile_screen.dart';
 import 'package:witchy/services/prefs_service.dart';
+import 'package:witchy/widgets/add_past_period_button.dart';
 
 DateTime previousMonth() {
   final now = DateTime.now();
@@ -88,8 +89,8 @@ void main() {
 
   testWidgets('add past period saves a range', (tester) async {
     await pumpProfile(tester);
-    await tester.scrollUntilVisible(find.text('Add past period'), 400);
-    await tester.tap(find.text('Add past period'));
+    await tester.scrollUntilVisible(find.byType(AddPastPeriodButton), 400);
+    await tester.tap(find.byType(AddPastPeriodButton));
     await tester.pumpAndSettle();
 
     // Pick the first two days of the previous month, so they are always past.
@@ -115,7 +116,21 @@ void main() {
     await tester.scrollUntilVisible(find.textContaining('Version'), 400);
     expect(find.textContaining('Version 1.2.4'), findsNothing);
     expect(find.textContaining('Version'), findsOneWidget);
-    expect(find.textContaining('Updated Oct 24, 2026'), findsOneWidget);
+    expect(find.textContaining('Updated Oct 26, 2026'), findsOneWidget);
+  });
+
+  testWidgets('identity uses a moon avatar and dynamic tracking label', (tester) async {
+    await pumpProfile(tester);
+    expect(find.text('🌙'), findsOneWidget);
+    expect(find.text('Guest'), findsNothing);
+    expect(find.text('CYCLE TRACKING'), findsOneWidget);
+  });
+
+  testWidgets('starting tab setting defaults to Today', (tester) async {
+    await pumpProfile(tester);
+    await tester.scrollUntilVisible(find.text('Starting tab'), 400);
+    expect(find.text('Starting tab'), findsOneWidget);
+    expect(tester.widget<DropdownButton<int>>(find.byType(DropdownButton<int>)).value, 0);
   });
 
   testWidgets('guest session offers Sign Out, not Switch Account', (

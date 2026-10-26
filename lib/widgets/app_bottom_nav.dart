@@ -16,15 +16,14 @@ class AppBottomNav extends StatelessWidget {
       height: 78,
       decoration: BoxDecoration(color: AppColors.navBar, border: Border(top: BorderSide(color: AppColors.line))),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           for (var i = 0; i < items.length; i++)
-            GestureDetector(
-              onTap: () => onTap(i),
-              child: Container(
-                width: 60,
-                padding: const EdgeInsets.only(top: 10),
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onTap(i),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(height: 4),
                     AppGlyph(items[i].$1, size: AppIconSize.head, color: i == index ? AppColors.pur : AppColors.navInactive),

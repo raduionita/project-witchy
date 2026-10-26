@@ -9,6 +9,7 @@ import 'package:witchy/providers/onboarding_provider.dart';
 import 'package:witchy/screens/insights_screen.dart';
 import 'package:witchy/services/prediction_snapshot_store.dart';
 import 'package:witchy/services/prefs_service.dart';
+import 'package:witchy/widgets/add_past_period_button.dart';
 import 'package:witchy/widgets/app_button.dart';
 
 DateTime previousMonth() {
@@ -68,7 +69,7 @@ void main() {
 
   testWidgets('add past period saves a range', (tester) async {
     await pumpInsights(tester);
-    final addPastPeriod = find.text('Add past period');
+    final addPastPeriod = find.byType(AddPastPeriodButton);
     await tester.scrollUntilVisible(addPastPeriod, 300);
     await tester.ensureVisible(addPastPeriod);
     await tester.pumpAndSettle();

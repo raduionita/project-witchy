@@ -50,6 +50,32 @@ class AppSliderRow extends StatelessWidget {
     );
   }
 
+  Widget _buildStep({
+    required int delta,
+    required bool enabled,
+    required IconData icon,
+    required String tooltip,
+    required String label,
+  }) {
+    return SizedBox(
+      width: _stepExtent,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            onPressed: enabled ? () => _step(delta) : null,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: _stepExtent, minHeight: 28),
+            icon: Icon(icon, size: 24, color: enabled ? AppColors.pur : AppColors.line),
+            tooltip: tooltip,
+          ),
+          Text(label, style: AppText.sans(9.5, c: AppColors.muted)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final divisions = (max - min).round();
@@ -58,37 +84,23 @@ class AppSliderRow extends StatelessWidget {
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Flexible(child: Text(label, style: AppText.sec, overflow: TextOverflow.ellipsis)), _buildValue(context)]),
         Row(
           children: [
-            IconButton(
-              onPressed: current > min ? () => _step(-1) : null,
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: _stepExtent, minHeight: 28),
-              icon: Icon(Icons.remove_circle_outline, size: 24, color: current > min ? AppColors.pur : AppColors.line),
-              tooltip: 'Decrease',
-            ),
+            _buildStep(delta: -1, enabled: current > min, icon: Icons.remove_circle_outline, tooltip: 'Decrease', label: '${min.round()}'),
             Expanded(
               child: SliderTheme(
-                data: SliderTheme.of(
-                  context,
-                ).copyWith(activeTrackColor: AppColors.pur, inactiveTrackColor: AppColors.sliderTrack, thumbColor: Colors.white, overlayShape: SliderComponentShape.noOverlay, trackHeight: 8),
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: AppColors.pur,
+                  inactiveTrackColor: AppColors.sliderTrack,
+                  thumbColor: Colors.white,
+                  overlayShape: SliderComponentShape.noOverlay,
+                  trackHeight: 8,
+                  activeTickMarkColor: Colors.white,
+                  inactiveTickMarkColor: AppColors.muted,
+                  tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 1),
+                ),
                 child: Slider(min: min, max: max, divisions: divisions, value: current.clamp(min, max), onChanged: onChanged),
               ),
             ),
-            IconButton(
-              onPressed: current < max ? () => _step(1) : null,
-              visualDensity: VisualDensity.compact,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: _stepExtent, minHeight: 28),
-              icon: Icon(Icons.add_circle_outline, size: 24, color: current < max ? AppColors.pur : AppColors.line),
-              tooltip: 'Increase',
-            ),
-          ],
-        ),
-        Row(
-          children: [
-            SizedBox(width: _stepExtent, child: Center(child: Text('${min.round()}', style: AppText.sans(9.5, c: AppColors.muted)))),
-            const Spacer(),
-            SizedBox(width: _stepExtent, child: Center(child: Text('${max.round()}', style: AppText.sans(9.5, c: AppColors.muted)))),
+            _buildStep(delta: 1, enabled: current < max, icon: Icons.add_circle_outline, tooltip: 'Increase', label: '${max.round()}'),
           ],
         ),
         if (hint != null) ...[const SizedBox(height: 2), Align(alignment: Alignment.centerLeft, child: Text(hint!, style: AppText.sans(10, c: AppColors.muted)))],

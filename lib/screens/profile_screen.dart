@@ -24,11 +24,11 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../theme/app_icons.dart';
 import '../widgets/settings_row.dart';
-import '../widgets/app_glyph.dart';
 import '../widgets/app_slider_row.dart';
 import '../widgets/app_tag.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/app_avatar.dart';
+import '../widgets/add_past_period_button.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_card.dart';
 import '../widgets/danger_button.dart';
@@ -292,29 +292,30 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _buildIdentityHeader(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final onboarding = context.watch<OnboardingProvider>();
     final name = auth.identity?.name?.trim();
-    final displayName = (name == null || name.isEmpty) ? 'Guest' : name;
+    final hasName = name != null && name.isNotEmpty;
     final email = auth.identity?.email?.trim();
-    final local = email == null || email.isEmpty;
-    final initials = (name == null || name.isEmpty) ? 'G' : displayName.split(' ').where((w) => w.isNotEmpty).map((w) => w[0]).take(2).join().toUpperCase();
+    final hasEmail = email != null && email.isNotEmpty;
+    final modes = TrackingMode.values.where(onboarding.trackingModes.contains).map((mode) => mode.label.toUpperCase()).join(' + ');
+    final trackingLabel = modes.isEmpty ? 'TRACKING' : '$modes TRACKING';
     return Column(
       children: [
-        AppAvatar(initials: initials, big: true),
-        const SizedBox(height: 6),
-        Text(displayName, style: AppText.serif(18)),
-        const SizedBox(height: 2),
-        if (local)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('LOCAL · CYCLE TRACKING', style: AppText.sans(9, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.2)),
-              const SizedBox(width: 5),
-              AppGlyph(AppIcons.star, size: 9, color: AppColors.gold),
-            ],
-          )
-        else
+        const AppAvatar(emoji: '🌙', initials: '', big: true),
+        if (hasName) ...[
+          const SizedBox(height: 6),
+          Text(name, style: AppText.serif(18)),
+        ],
+        if (hasEmail) ...[
+          SizedBox(height: hasName ? 2 : 6),
           Text(email, style: AppText.sans(10, c: AppColors.muted)),
-        if (local) ...[const SizedBox(height: 4), Text('Data stored on this device only', style: AppText.sans(10, c: AppColors.muted))],
+        ],
+        const SizedBox(height: 4),
+        Text(trackingLabel, style: AppText.sans(9, w: FontWeight.w700, c: AppColors.gold).copyWith(letterSpacing: 1.2)),
+        if (!hasEmail) ...[
+          const SizedBox(height: 4),
+          Text('Data stored on this device only', style: AppText.sans(10, c: AppColors.muted)),
+        ],
       ],
     );
   }
@@ -384,11 +385,7 @@ class ProfileScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Past periods', style: AppText.secIn),
-              TextButton(
-                onPressed: () => showPeriodRangeSheet(context, logging: logging),
-                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                child: const Text('Add past period'),
-              ),
+              AddPastPeriodButton(onTap: () => showPeriodRangeSheet(context, logging: logging)),
             ],
           ),
           const SizedBox(height: 4),
@@ -458,6 +455,26 @@ class ProfileScreen extends StatelessWidget {
         children: [
           Text('App Settings', style: AppText.secIn),
           SettingsRow(
+            label: 'Starting tab',
+            trailing: DropdownButtonHideUnderline(
+              child: DropdownButton<int>(
+                value: settings.startTab,
+                isDense: true,
+                style: AppText.sans(11, w: FontWeight.w600, c: AppColors.pur),
+                items: const [
+                  DropdownMenuItem(value: 0, child: Text('Today')),
+                  DropdownMenuItem(value: 1, child: Text('Calendar')),
+                  DropdownMenuItem(value: 2, child: Text('Insights')),
+                  DropdownMenuItem(value: 3, child: Text('Articles')),
+                ],
+                onChanged: (value) {
+                  if (value != null) context.read<SettingsProvider>().setStartTab(value);
+                },
+              ),
+            ),
+            first: true,
+          ),
+          SettingsRow(
             label: 'Cycle Notifications',
             trailing: Switch(
               value: settings.lunarNotifications,
@@ -474,7 +491,6 @@ class ProfileScreen extends StatelessWidget {
                 }
               },
             ),
-            first: true,
           ),
           SettingsRow(label: 'Dark Mode', trailing: Switch(value: settings.darkMode, activeThumbColor: AppColors.orbSub, onChanged: (v) => context.read<SettingsProvider>().setDark(v))),
         ],

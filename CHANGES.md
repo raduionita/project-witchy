@@ -629,3 +629,46 @@ Files: `lib/models/tracking_mode.dart`, `lib/providers/cycle_provider.dart`, `li
 - `flutter analyze` = No issues found, `flutter test` = 476/476 passing, `flutter build apk --debug` = success, `git diff --check` = clean.
 
 Files: `lib/models/article.dart`, `lib/models/calendar_day_cell.dart`, `lib/providers/alert_provider.dart`, `lib/screens/calendar_screen.dart`, `lib/screens/onboarding_screen.dart`, `lib/services/calendar_fetcher.dart`, `lib/services/feed_service.dart`, `lib/widgets/app_button.dart`, `lib/widgets/app_chip.dart`, `lib/widgets/app_slider_row.dart`, `lib/widgets/cycle_calendar.dart`, `lib/widgets/tracking_mode_chip.dart`, `lib/common/app_metadata.dart`, plus `test/providers/alert_provider_test.dart`, `test/screens/calendar_screen_test.dart`, `test/screens/onboarding_screen_test.dart`, `test/services/calendar_fetcher_test.dart`, `test/services/feed_service_test.dart`, `test/widgets/app_slider_row_test.dart`, `test/widgets/calendar_widgets_test.dart`, `test/widgets/tracking_mode_chip_test.dart`.
+
+## Update 25 - 2026.10.26 - UI and behavior fixes
+
+### Onboarding
+
+- Removed the icons from the tracking mode chips while keeping the three choices in one proportional row.
+- Replaced the onboarding `Add past period` text button with the shared 34x34 purple icon-only calendar button, right aligned with a 10px top gap.
+- The period range calendar now turns the first clicked start day purple immediately, then paints every day through the end with the same purple fill and white bold text. The existing-period marker stays hidden anywhere inside the selected range.
+- The cycle length slider now exposes 45 divisions from 15 to 60, draws visible tick marks, and aligns the min and max labels under the minus and plus buttons.
+
+### Insights
+
+- The Period History add action now uses the same icon-only purple button as onboarding, stays on the right, and has a small bottom margin under the header.
+
+### Alerts
+
+- Dismissed alert ids now persist in shared preferences and are filtered out of loaded, generated, and one-shot alerts.
+- The dismissed id list is capped at 200 entries, removing the oldest first, and restore or reset clears the matching id.
+- Lunar alerts such as Full Moon stay dismissed after refresh instead of being regenerated on the next pass.
+
+### Profile and starting tab
+
+- The profile identity uses a moon emoji avatar, hides an empty display name, removes the `LOCAL` marker, and keeps the device-only storage line.
+- The tracking label is now derived from the selected modes, for example `CYCLE TRACKING` or `CYCLE + PREGNANCY TRACKING`.
+- The Past periods card uses the shared icon-only purple add button on the right.
+- App Settings gained a Starting tab dropdown, defaulting to Today.
+- The starting tab is persisted by SettingsProvider and used by the normal `/today` startup path, while explicit `/calendar`, `/insights`, and `/articles` routes keep their own indices.
+
+### WebView
+
+- Removed the URL line shown below `Open in browser` in the fallback view.
+
+### Navigation and calendar
+
+- The bottom navigation is now split into four equal full-height tap targets spanning the row, with each icon and label centered in its quarter.
+- The current-day purple calendar background is now a fixed square capped at 54px and clamped to the available width, staying square-ish behind the 44px inner circle.
+
+### Tests and gates
+
+- Added coverage for nav quarter taps, slider divisions and tick marks, chips without icons, first-click and full-range purple selection, the square today surface, starting tab settings and persistence, dismissed Full Moon persistence, profile identity and starting-tab defaults, and the icon-only add buttons.
+- `flutter analyze` = No issues found, `flutter test` = 483/483 passing, `flutter build apk --debug` = success, `git diff --check` = clean.
+
+Files: `lib/common/app_metadata.dart`, `lib/navigation/app_router_delegate.dart`, `lib/providers/alert_provider.dart`, `lib/providers/settings_provider.dart`, `lib/screens/insights_screen.dart`, `lib/screens/main_screen.dart`, `lib/screens/onboarding_screen.dart`, `lib/screens/profile_screen.dart`, `lib/screens/webview_screen.dart`, `lib/services/prefs_service.dart`, `lib/widgets/add_past_period_button.dart`, `lib/widgets/app_avatar.dart`, `lib/widgets/app_bottom_nav.dart`, `lib/widgets/app_slider_row.dart`, `lib/widgets/cycle_calendar.dart`, `lib/widgets/period_range_calendar.dart`, `lib/widgets/tracking_mode_chip.dart`, plus `test/providers/alert_provider_test.dart`, `test/providers/persistence_test.dart`, `test/providers/settings_provider_test.dart`, `test/screens/insights_screen_test.dart`, `test/screens/onboarding_screen_test.dart`, `test/screens/profile_screen_test.dart`, `test/widgets/app_bottom_nav_test.dart`, `test/widgets/app_slider_row_test.dart`, `test/widgets/calendar_widgets_test.dart`, `test/widgets/period_range_calendar_test.dart`, `test/widgets/tracking_mode_chip_test.dart`.

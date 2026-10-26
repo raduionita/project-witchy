@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:witchy/theme/app_colors.dart';
 import 'package:witchy/widgets/app_slider_row.dart';
 import 'package:witchy/widgets/number_entry_dialog.dart';
 
@@ -64,5 +65,15 @@ void main() {
     await pumpRow(tester, onChanged: (_) {});
     expect(tester.getCenter(find.text('15')).dx, closeTo(tester.getCenter(find.byIcon(Icons.remove_circle_outline)).dx, 1));
     expect(tester.getCenter(find.text('60')).dx, closeTo(tester.getCenter(find.byIcon(Icons.add_circle_outline)).dx, 1));
+  });
+
+  testWidgets('shows 45 divisions with visible tick marks', (tester) async {
+    await pumpRow(tester, onChanged: (_) {});
+    final slider = tester.widget<Slider>(find.byType(Slider));
+    expect(slider.divisions, 45);
+    final theme = tester.widget<SliderTheme>(find.byType(SliderTheme));
+    expect(theme.data.activeTickMarkColor, Colors.white);
+    expect(theme.data.inactiveTickMarkColor, AppColors.muted);
+    expect(theme.data.tickMarkShape, isA<RoundSliderTickMarkShape>());
   });
 }

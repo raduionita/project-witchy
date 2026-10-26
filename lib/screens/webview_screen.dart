@@ -74,8 +74,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
             Text(_isAsset ? 'The bundled copy could not be shown here.' : 'Open it in your browser:', style: AppText.sub, textAlign: TextAlign.center),
             const SizedBox(height: 16),
             AppButton(label: 'Open in browser', onTap: _openInBrowser),
-            const SizedBox(height: 12),
-            SelectableText(_browserUrl, style: AppText.sans(12.5, c: AppColors.pur), textAlign: TextAlign.center),
           ],
         ),
       ),

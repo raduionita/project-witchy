@@ -29,6 +29,8 @@ class PrefsService {
   static const _cycleConditions = 'witchy_cycle_conditions';
   static const _predictionSnapshots = 'witchy_prediction_snapshots';
   static const _alerts = 'witchy_alerts';
+  static const _dismissedAlerts = 'witchy_dismissed_alerts';
+  static const _startTab = 'witchy_start_tab';
   static const _pregnancyLmp = 'witchy_pregnancy_lmp';
   static const _pregnancyEdd = 'witchy_pregnancy_edd_override';
 
@@ -157,6 +159,19 @@ class PrefsService {
     final encoded = jsonEncode(items.map((a) => a.toJson()).toList());
     await (await SharedPreferences.getInstance()).setString(_alerts, encoded);
   }
+
+  Future<List<String>> dismissedAlertIds() async {
+    final raw = (await SharedPreferences.getInstance()).getString(_dismissedAlerts);
+    if (raw == null) return [];
+    return (jsonDecode(raw) as List<dynamic>).map((e) => e.toString()).toList();
+  }
+
+  Future<void> saveDismissedAlertIds(List<String> ids) async =>
+      (await SharedPreferences.getInstance()).setString(_dismissedAlerts, jsonEncode(ids));
+
+  Future<int> startTab() async => ((await SharedPreferences.getInstance()).getInt(_startTab) ?? 0).clamp(0, 3);
+
+  Future<void> setStartTab(int value) async => (await SharedPreferences.getInstance()).setInt(_startTab, value.clamp(0, 3));
 
   Future<DateTime?> lmpDate() async {
     final raw = (await SharedPreferences.getInstance()).getString(_pregnancyLmp);

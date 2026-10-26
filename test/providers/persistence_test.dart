@@ -84,11 +84,13 @@ void main() {
 
     settings.setLunar(false);
     settings.setDark(true);
+    settings.setStartTab(2);
     await pumpEventQueue();
 
     final reloaded = await SettingsProvider.load(prefs);
     expect(reloaded.lunarNotifications, isFalse);
     expect(reloaded.darkMode, isTrue);
+    expect(reloaded.startTab, 2);
   });
 
   test('SettingsProvider.load clears legacy binding share keys', () async {

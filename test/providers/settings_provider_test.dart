@@ -13,5 +13,11 @@ void main() {
     settings.resetToDefaults();
     expect(settings.lunarNotifications, isTrue);
     expect(settings.darkMode, isFalse);
+    expect(settings.startTab, 0);
+
+    settings.setStartTab(2);
+    expect(settings.startTab, 2);
+    settings.resetToDefaults();
+    expect(settings.startTab, 0);
   });
 }

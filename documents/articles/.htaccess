@@ -1,0 +1,41 @@
+# No caching for the Articles pages.
+#
+# These are the HTML articles linked from https://qvonyx.com/witchy/articles.xml
+# and opened from the app. They are static pages that get republished, so a
+# cached copy would keep showing stale content after an update.
+#
+# Upload this file into the articles directory (public_html/witchy/articles/)
+# next to the .html files, then purge the CDN cache for the affected paths so
+# the old copies are not served from the edge.
+#
+# This disables HTTP caching for EVERY file and content type served from this
+# directory and everything below it. Note that the CDN in front of qvonyx.com
+# may cache independently of these headers.
+
+# 1. No caching, for all files and all content types.
+<IfModule mod_headers.c>
+  Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+  Header always set Pragma "no-cache"
+  Header always unset Expires
+  Header always set Expires "0"
+
+  # Drop validators so clients cannot revalidate into a stale 304.
+  Header always unset ETag
+  Header always unset Last-Modified
+</IfModule>
+
+# Stop mod_expires from adding its own max-age/Expires policy.
+<IfModule mod_expires.c>
+  ExpiresActive Off
+</IfModule>
+
+# Stop Apache from generating ETags for static files.
+FileETag None
+
+# Allow the web build to show these pages inside the app (in-app iframe).
+# Without this, a future X-Frame-Options or CSP hardening would break the
+# article viewer on https://witchy.qvonyx.com.
+<IfModule mod_headers.c>
+  Header always unset X-Frame-Options
+  Header always set Content-Security-Policy "upgrade-insecure-requests; frame-ancestors 'self' https://witchy.qvonyx.com http://localhost:* http://127.0.0.1:*"
+</IfModule>

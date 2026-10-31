@@ -8,6 +8,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_top_bar.dart';
+import '../widgets/in_app_web_frame.dart';
 
 class WebViewScreen extends StatefulWidget {
   final String title;
@@ -24,6 +25,13 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   /// `assets/...` is a bundled page; anything else is fetched over the network.
   bool get _isAsset => widget.url.startsWith('assets/');
+
+  /// Web builds have no platform webview, so the page is embedded in an iframe
+  /// instead of handing it to a new browser tab.
+  bool get _embedsOnWeb => kIsWeb && widget.url.isNotEmpty;
+
+  /// Flutter serves bundled assets under an extra `assets/` prefix on the web.
+  String get _embedUrl => _isAsset ? 'assets/${widget.url}' : widget.url;
 
   /// What an external browser tab has to load: the online mirror of a bundled
   /// page, or the URL itself when it is already remote.
@@ -42,7 +50,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
   @override
   void initState() {
     super.initState();
-    // webview_flutter has no web implementation; web falls back to the browser.
+    // Web builds render through InAppWebFrame instead of a platform webview.
     if (kIsWeb || widget.url.isEmpty) return;
     _controller = (WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -59,7 +67,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
     }
   }
 
-  Widget _placeholder() {
+  Widget _buildPlaceholder() {
     if (widget.url.isEmpty) {
       return Center(child: Text('Nothing to show here', style: AppText.h2, textAlign: TextAlign.center));
     }
@@ -69,7 +77,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(kIsWeb ? 'This page opens in your browser' : 'This page couldn\u2019t load', style: AppText.h2, textAlign: TextAlign.center),
+            Text('This page couldn\u2019t load', style: AppText.h2, textAlign: TextAlign.center),
             const SizedBox(height: 8),
             Text(_isAsset ? 'The bundled copy could not be shown here.' : 'Open it in your browser:', style: AppText.sub, textAlign: TextAlign.center),
             const SizedBox(height: 16),
@@ -80,13 +88,20 @@ class _WebViewScreenState extends State<WebViewScreen> {
     );
   }
 
+  Widget _buildBody() {
+    if (_embedsOnWeb) return InAppWebFrame(url: _embedUrl);
+    final controller = _controller;
+    if (controller != null && !_loadFailed) {
+      return SizedBox.expand(child: WebViewWidget(controller: controller));
+    }
+    return _buildPlaceholder();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final controller = _controller;
-    final showWebView = controller != null && !_loadFailed;
     return Scaffold(
       appBar: AppTopBar(title: widget.title),
-      body: showWebView ? SizedBox.expand(child: WebViewWidget(controller: controller)) : _placeholder(),
+      body: _buildBody(),
     );
   }
 }

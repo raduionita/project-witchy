@@ -74,6 +74,13 @@ the app degrades gracefully rather than failing: it falls back to the last cache
 the feed and shows an "Offline - showing saved articles" banner, and offers a retry
 action when no cache exists yet.
 
+Article pages open inside the app on every platform: native builds use the platform
+webview, the web build embeds the page in an iframe. The web build needs
+`https://qvonyx.com/witchy/articles/` to allow framing from
+`https://witchy.qvonyx.com`, which `documents/articles/.htaccess` pins with
+`frame-ancestors` and by clearing `X-Frame-Options`. Upload that file next to the
+article HTML files.
+
 ---
 
 ## Important Disclaimers

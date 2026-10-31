@@ -672,3 +672,22 @@ Files: `lib/models/article.dart`, `lib/models/calendar_day_cell.dart`, `lib/prov
 - `flutter analyze` = No issues found, `flutter test` = 483/483 passing, `flutter build apk --debug` = success, `git diff --check` = clean.
 
 Files: `lib/common/app_metadata.dart`, `lib/navigation/app_router_delegate.dart`, `lib/providers/alert_provider.dart`, `lib/providers/settings_provider.dart`, `lib/screens/insights_screen.dart`, `lib/screens/main_screen.dart`, `lib/screens/onboarding_screen.dart`, `lib/screens/profile_screen.dart`, `lib/screens/webview_screen.dart`, `lib/services/prefs_service.dart`, `lib/widgets/add_past_period_button.dart`, `lib/widgets/app_avatar.dart`, `lib/widgets/app_bottom_nav.dart`, `lib/widgets/app_slider_row.dart`, `lib/widgets/cycle_calendar.dart`, `lib/widgets/period_range_calendar.dart`, `lib/widgets/tracking_mode_chip.dart`, plus `test/providers/alert_provider_test.dart`, `test/providers/persistence_test.dart`, `test/providers/settings_provider_test.dart`, `test/screens/insights_screen_test.dart`, `test/screens/onboarding_screen_test.dart`, `test/screens/profile_screen_test.dart`, `test/widgets/app_bottom_nav_test.dart`, `test/widgets/app_slider_row_test.dart`, `test/widgets/calendar_widgets_test.dart`, `test/widgets/period_range_calendar_test.dart`, `test/widgets/tracking_mode_chip_test.dart`.
+
+## Update 26 - 2026.10.30 - Articles stay in the app on the web build
+
+### Article viewer
+
+- Web builds now render article pages in an in-app iframe instead of showing `This page opens in your browser` with an external-browser button. `webview_flutter` has no web implementation, which is why the fallback appeared there; native builds already used the platform webview and are unchanged.
+- `InAppWebFrame` is exported through a conditional import, so the web implementation registers a sandboxed iframe view while a stub keeps the widget tree valid on mobile.
+- The frame is sandboxed (`allow-scripts allow-same-origin allow-forms`) and cannot navigate the Flutter app away.
+- Bundled legal pages load in the same frame from the Flutter asset URL (`assets/assets/legal/...`), so the first-run privacy gate also stays in the app and still works offline.
+- `documents/articles/.htaccess` now also clears `X-Frame-Options` and pins `frame-ancestors` to the web app origin, so framing keeps working if the host tightens headers later. Upload it next to the article HTML files.
+- `README.md` documents the framing requirement next to the existing feed deployment notes.
+
+### Tests and gates
+
+- Repaired the prediction-snapshot test, whose hard-coded cycle start aged past the projection window and failed from 2026.10.30 onward; it now anchors the fixture to today.
+- `flutter analyze` = No issues found, `flutter test` = 483/483 passing, `flutter build apk --debug` = success, `flutter build web` = success, `git diff --check` = clean.
+- Verified in Chrome against a local web build: an article and the bundled terms page both render inside the app frame, and Back returns to the Articles list.
+
+Files: `lib/screens/webview_screen.dart`, `lib/widgets/in_app_web_frame.dart`, `lib/widgets/in_app_web_frame_stub.dart`, `lib/widgets/in_app_web_frame_web.dart`, `pubspec.yaml`, `pubspec.lock`, `documents/articles/.htaccess`, `README.md`, plus `test/providers/cycle_provider_test.dart`.

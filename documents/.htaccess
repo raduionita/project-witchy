@@ -13,7 +13,33 @@
 # is safe here and also keeps local web development on http://localhost working.
 # To pin it to the web app only, replace "*" with the app origin:
 #   https://witchy.qvonyx.com
+#
+# This file also disables HTTP caching for EVERY file and content type served
+# from this directory and everything below it. Note that the CDN in front of
+# qvonyx.com may cache independently of these headers: purge the CDN cache for
+# the affected paths after uploading.
 
+# 1. No caching, for all files and all content types.
+<IfModule mod_headers.c>
+  Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+  Header always set Pragma "no-cache"
+  Header always unset Expires
+  Header always set Expires "0"
+
+  # Drop validators so clients cannot revalidate into a stale 304.
+  Header always unset ETag
+  Header always unset Last-Modified
+</IfModule>
+
+# Stop mod_expires from adding its own max-age/Expires policy.
+<IfModule mod_expires.c>
+  ExpiresActive Off
+</IfModule>
+
+# Stop Apache from generating ETags for static files.
+FileETag None
+
+# 2. CORS for the Articles feed (kept separate from the cache policy).
 <IfModule mod_headers.c>
   <Files "articles.xml">
     Header always set Access-Control-Allow-Origin "*"

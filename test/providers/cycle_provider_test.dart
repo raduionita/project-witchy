@@ -945,12 +945,17 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final storePrefs = PrefsService();
       final store = PredictionSnapshotStore(storePrefs);
-      buildSources(lastStart: DateTime(2026, 9, 20), cycleLength: 28);
+      // Anchored to today: projections stop a few days after the latest
+      // plausible due date, so a hard-coded start would age out and make this
+      // test fail once the calendar moves past it.
+      final today = DateTime.now();
+      final lastStart = DateTime(today.year, today.month, today.day - 10);
+      buildSources(lastStart: lastStart, cycleLength: 28);
       final cycle = CycleProvider(onboarding, logging, snapshots: store);
       await Future<void>.delayed(Duration.zero);
 
       expect(cycle.predictionHistory, hasLength(1));
-      expect(cycle.predictionHistory.first.cycleStart, DateTime(2026, 9, 20));
+      expect(cycle.predictionHistory.first.cycleStart, lastStart);
     });
   });
 }
